@@ -23,7 +23,8 @@ python serve.py
 Paste this prompt into Claude Code:
 
 ```
-I want to study [TOPIC]. Run `python3 lib/run.py "[TOPIC]" "[DIFFICULTIES]"` to fetch clues,
+I want to study [TOPIC]. Run `python3 lib/run.py "[TOPIC]" "[DIFFICULTIES]"` to fetch clues
+(add "[CATEGORY]" as 4th arg if the topic name is ambiguous),
 then read the output file and analyze it following docs/analysis_instructions.md.
 Generate the HTML study guide using render.py and save the analysis JSON.
 After the initial analysis, suggest recursive searches into important works/subtopics.
@@ -43,6 +44,11 @@ and analyze the clues. This is a literary work so organize by themes/characters.
 ```
 
 ```
+I want to study the novel Indiana. Run `python3 lib/run.py "Indiana" "7,8,9,10" 2012 "Literature"`
+and analyze the clues. Use the Literature category filter since "Indiana" also matches the US state.
+```
+
+```
 I want to study Caravaggio. Run `python3 lib/run.py "Caravaggio" "7,8,9,10"` and analyze.
 This is a visual artist so look up painting images from Wikimedia Commons using lib/images.py.
 ```
@@ -52,6 +58,10 @@ This is a visual artist so look up painting images from Wikimedia Commons using 
 - **Difficulties**: 1-10 scale. Example:
   - `7,8,9,10` — college competitive (default recommendation)
 - **Min year**: defaults to 2012 (older questions suck)
+- **Category**: optional filter to restrict results to a qbreader category. Useful when a topic name is ambiguous (e.g., "Indiana" the novel vs. the state). Example:
+  - `python3 lib/run.py "Indiana" "7,8,9,10" 2012 "Literature"`
+  - Multiple categories: `"Literature,Fine Arts"`
+  - Available categories: Literature, Fine Arts, History, Science, Religion, Mythology, Philosophy, Social Science, Geography, Current Events, Trash
 
 ## File Structure
 
@@ -99,6 +109,7 @@ stock/
 
 - **Start with answerline clues** — these are the richest (entire question is about your topic)
 - **Recursive searches** — after initial analysis, search for major works as their own answerlines
+- **Ambiguous topics** — use the category filter when a topic name collides with a more common answerline (e.g., "Indiana" the novel vs. the US state, "Sand" the material vs. George Sand). Even with category filtering, some irrelevant results may slip through — see the analysis instructions for how to handle these during analysis.
 - **Text mentions** — for rare topics, also fetch text mentions: `fetch_text_mentions()` in lib/fetch.py
 - **Visual topics** — use `lib/images.py` to find Wikimedia Commons images to embed
 - **Re-render** — if you change the CSS in render.py, run `python rerender.py` to update all guides

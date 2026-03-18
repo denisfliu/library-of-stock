@@ -2,12 +2,13 @@
 run.py — Runner script for the stock knowledge pipeline.
 
 Usage:
-    python run.py <topic> [difficulties] [min_year]
+    python run.py <topic> [difficulties] [min_year] [category]
 
 Examples:
     python run.py "Smetana" "7,8,9,10"
     python run.py "Beethoven" "7,8,9,10" 2015
     python run.py "The Rite of Spring"
+    python run.py "Indiana" "5,6,7,8,9,10" 2012 "Literature"
 """
 
 import json
@@ -100,21 +101,26 @@ def format_clues_for_analysis(parsed: dict) -> str:
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python run.py <topic> [difficulties] [min_year]")
+        print("Usage: python run.py <topic> [difficulties] [min_year] [category]")
         print('Example: python run.py "Smetana" "7,8,9,10"')
+        print('Example: python run.py "Indiana" "7,8,9,10" 2012 "Literature"')
         sys.exit(1)
 
     topic = sys.argv[1]
     diffs = None
     min_year = 2012
+    categories = None
 
     if len(sys.argv) > 2:
         diffs = [int(d) for d in sys.argv[2].split(",")]
     if len(sys.argv) > 3:
         min_year = int(sys.argv[3])
+    if len(sys.argv) > 4:
+        categories = [c.strip() for c in sys.argv[4].split(",")]
 
     # Fetch and parse
-    data = fetch_topic(topic, difficulties=diffs, min_year=min_year)
+    data = fetch_topic(topic, difficulties=diffs, categories=categories,
+                       min_year=min_year)
     parsed = parse_answer_clues(data)
 
     # Format for analysis

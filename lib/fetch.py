@@ -43,12 +43,14 @@ def _sanitize_filename(name: str) -> str:
 
 
 def _cache_key(query_string: str, difficulties: list[int] | None,
-               min_year: int) -> str:
+               min_year: int, categories: list[str] | None = None) -> str:
     """Build a unique cache filename incorporating filter params."""
     safe = _sanitize_filename(query_string)
     parts = [safe]
     if difficulties:
         parts.append(f"d{'_'.join(str(d) for d in sorted(difficulties))}")
+    if categories:
+        parts.append(f"c{'_'.join(_sanitize_filename(c) for c in sorted(categories))}")
     parts.append(f"y{min_year}")
     return "_".join(parts)
 
@@ -110,7 +112,7 @@ def fetch_topic(
         - query_string, difficulties, min_year
         - answer_matches: {tossups, bonuses, tossups_found, bonuses_found}
     """
-    key = _cache_key(query_string, difficulties, min_year)
+    key = _cache_key(query_string, difficulties, min_year, categories)
     cache_path = CACHE_DIR / f"{key}.json"
 
     if use_cache and cache_path.exists():
@@ -154,7 +156,7 @@ def fetch_text_mentions(
     Fetch questions where the topic appears in the text (but may not be
     the answer). Kept separate so we only call this when needed.
     """
-    key = _cache_key(query_string, difficulties, min_year) + "_mentions"
+    key = _cache_key(query_string, difficulties, min_year, categories) + "_mentions"
     cache_path = CACHE_DIR / f"{key}.json"
 
     if use_cache and cache_path.exists():
