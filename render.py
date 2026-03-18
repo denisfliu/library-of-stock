@@ -34,6 +34,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
             ...
         ],
         "recursive_suggestions": ["The Moldau", "From My Life", ...],
+        "comprehensive_summary": "Paragraph(s) synthesizing all facts from the clues...",
         "links": [{"text": "...", "url": "..."}, ...],
     }
     """
@@ -120,6 +121,19 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         <section class="suggestions">
             <h2>Suggested Deep Dives</h2>
             <ul>{items}</ul>
+        </section>
+        """
+
+    comp_summary = analysis.get("comprehensive_summary", "")
+    comp_summary_html = ""
+    if comp_summary:
+        # Support multiple paragraphs separated by newlines
+        paragraphs = [p.strip() for p in comp_summary.split("\n\n") if p.strip()]
+        body = "".join(f"<p>{escape(p)}</p>" for p in paragraphs)
+        comp_summary_html = f"""
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            {body}
         </section>
         """
 
@@ -327,6 +341,30 @@ h1 {{
 }}
 .links a {{ color: #6b9eff; text-decoration: none; }}
 .links a:hover {{ text-decoration: underline; }}
+.comp-summary {{
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}}
+.comp-summary h2 {{
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}}
+.comp-summary p {{
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}}
+.comp-summary p:last-child {{
+    margin-bottom: 0;
+}}
 </style>
 </head>
 <body>
@@ -334,6 +372,7 @@ h1 {{
 <div class="summary">{summary}</div>
 {works_html}
 {suggestions_html}
+{comp_summary_html}
 {links_html}
 </body>
 </html>"""

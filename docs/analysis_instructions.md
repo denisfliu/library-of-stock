@@ -2,6 +2,12 @@
 
 When analyzing clues for a quizbowl topic, follow this protocol. **Only use information from the clues themselves** — do not inject outside knowledge except for hyperlinks and images.
 
+## Step 0: Filter Out Irrelevant Results
+
+Some topic names are ambiguous — "Indiana" could be the George Sand novel or the US state; "Sand" could be the material or the author. Even with category filtering at fetch time, the results may contain questions about the wrong topic.
+
+Before analyzing, scan all returned tossups and bonuses and **discard any that are clearly about a different topic.** Check the answerline and question content — if a question is about "Indiana (the state)" when you're studying the novel, skip it entirely. Note how many results you discarded so the user knows.
+
 ## Step 1: Identify What the Topic Is (from clues only)
 
 Write a brief summary of what the topic is, based solely on how the clues describe it. For example, if the clues say "this Czech composer of Ma vlast," then the summary is "Czech composer, associated with Ma vlast." Do not add biographical details that don't appear in the clues.
@@ -41,9 +47,19 @@ For each work/subtopic, provide:
    - 1-2 example quotes from actual questions showing how it's worded
 3. Mark which clues tend to appear in power (early/hard) vs. giveaway (late/easy)
 
-## Step 5: Suggest Recursive Searches
+## Step 5: Write a Comprehensive Summary
+
+After completing the clue-by-clue analysis, write a prose summary that synthesizes all the facts accumulated from the clues into a readable reference. This is different from the brief topic identification in Step 1 — it should be a thorough, paragraph-form account of everything the clues tell us.
+
+For a creator, this might cover: biographical details, major works and their plots/content, key relationships and associations, and how the topic connects to other frequently clued subjects. For a concept or event, cover all aspects and angles that appeared across the clues.
+
+Write this as if someone who knows nothing about the topic will read it to get a complete picture of what quizbowl expects them to know. Use only facts from the clues. Store this in the `"comprehensive_summary"` field of the analysis JSON.
+
+## Step 6: Suggest Recursive Searches
 
 After analysis, identify works or subtopics that deserve their own deep dive. For example, if "The Moldau" comes up 10 times with varied clues, suggest searching for it as its own answerline. Present these as suggestions for user confirmation.
+
+When suggesting recursive searches, flag any topic names that are likely ambiguous and recommend a category filter. For example, suggest `"Indiana" ... "Literature"` rather than just `"Indiana"` if the unfiltered search would be dominated by Indiana the US state.
 
 ## Output Format
 
@@ -52,6 +68,7 @@ The final output should be an HTML file with:
 - Clue frequency indicators (visual, like bars or counts)
 - Example quotes styled distinctly (blockquote or similar)
 - Power vs. giveaway indicators
+- A comprehensive prose summary of all accumulated facts (above the reference links)
 - Hyperlinks to relevant Wikipedia articles for further reading
 - Space for images (paintings, scores) where relevant — these can be added later
 - Clean, readable typography suitable for studying
