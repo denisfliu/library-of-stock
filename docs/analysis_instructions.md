@@ -73,9 +73,19 @@ The final output should be an HTML file with:
 - Space for images (paintings, scores) where relevant — these can be added later
 - Clean, readable typography suitable for studying
 
+## Metadata Fields
+
+The analysis JSON must include these fields for the index page:
+
+- **`category`** and **`subcategory`**: pulled automatically from qbreader API data (see `docs/categories.md`)
+- **`year`**: birth year for people, creation/publication year for works, start year for periods/movements. Use negative numbers for BCE. This is outside knowledge — OK to use here.
+- **`continent`**: where the topic is primarily associated with. One of: Africa, Asia, Europe, North America, Oceania, South America. This is outside knowledge — OK to use here.
+- **`country`**: country the topic is primarily associated with (e.g., "France", "Japan", "England"). This is outside knowledge — OK to use here.
+- **`tags`**: list of notable movements, schools, or styles (e.g., `["Hudson River School", "Romanticism"]` for Thomas Cole, `["Surrealism", "Absurdism"]` for Kobo Abe). Only include specific, recognized movements — NOT broad geographic descriptors like "Japanese literature" or "American landscape." These are used for cross-topic filtering in the index. This is outside knowledge — OK to use here.
+
 ## Constraints
 
 - **No outside knowledge for clue content.** Only describe what the clues say.
-- **Outside knowledge OK for:** hyperlinks, images, identifying what a referenced work/person is for linking purposes.
+- **Outside knowledge OK for:** hyperlinks, images, identifying what a referenced work/person is for linking purposes, and metadata fields (year, continent) above.
 - **Sentences may contain multiple clues** — separate them during analysis.
 - **Giveaway clues** (containing "For 10/ten points") are still clues — they tell you what the most common/easy identification is.

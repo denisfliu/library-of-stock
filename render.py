@@ -45,6 +45,10 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     suggestions = analysis.get("recursive_suggestions", [])
     links = analysis.get("links", [])
 
+    # Nav link to questions page
+    questions_file = str(output_path.stem).replace("_stock", "_questions") + ".html"
+    nav_html = f'<div class="nav-bar"><a href="{questions_file}">View source questions</a></div>'
+
     works_html = ""
     for i, work in enumerate(works):
         clues_html = ""
@@ -365,10 +369,22 @@ h1 {{
 .comp-summary p:last-child {{
     margin-bottom: 0;
 }}
+.nav-bar {{
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}}
+.nav-bar a {{
+    color: #6b9eff;
+    text-decoration: none;
+}}
+.nav-bar a:hover {{
+    text-decoration: underline;
+}}
 </style>
 </head>
 <body>
 <h1>{topic}</h1>
+{nav_html}
 <div class="summary">{summary}</div>
 {works_html}
 {suggestions_html}

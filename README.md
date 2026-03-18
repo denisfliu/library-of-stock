@@ -13,8 +13,10 @@ A quizbowl study tool that pulls clues from the [qbreader](https://www.qbreader.
 
 ### Browse existing guides
 
+Open `index.html` in a browser, or run a local server:
+
 ```bash
-python serve.py
+python -m http.server
 # Opens at http://localhost:8000
 ```
 
@@ -67,7 +69,6 @@ This is a visual artist so look up painting images from Wikimedia Commons using 
 
 ```
 stock/
-├── serve.py          # Web server to browse guides
 ├── render.py         # HTML study guide generator (tweak CSS here)
 ├── rerender.py       # Re-render all guides from saved analysis JSON
 ├── lib/              # Pipeline internals (Claude runs these)
