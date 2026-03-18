@@ -11,11 +11,15 @@ Examples:
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 
-from fetch import fetch_topic
-from parse import parse_answer_clues
+# Ensure project root is on sys.path so imports work from any cwd
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from lib.fetch import fetch_topic
+from lib.parse import parse_answer_clues
 
 
 def format_clues_for_analysis(parsed: dict) -> str:

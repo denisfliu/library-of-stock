@@ -23,7 +23,7 @@ python serve.py
 Paste this prompt into Claude Code:
 
 ```
-I want to study [TOPIC]. Run `python3 run.py "[TOPIC]" "[DIFFICULTIES]"` to fetch clues,
+I want to study [TOPIC]. Run `python3 lib/run.py "[TOPIC]" "[DIFFICULTIES]"` to fetch clues,
 then read the output file and analyze it following docs/analysis_instructions.md.
 Generate the HTML study guide using render.py and save the analysis JSON.
 After the initial analysis, suggest recursive searches into important works/subtopics.
@@ -32,19 +32,19 @@ After the initial analysis, suggest recursive searches into important works/subt
 **Example prompts:**
 
 ```
-I want to study Smetana. Run `python3 run.py "Smetana" "7,8,9,10"` to fetch clues,
+I want to study Smetana. Run `python3 lib/run.py "Smetana" "7,8,9,10"` to fetch clues,
 then read the output and analyze following docs/analysis_instructions.md.
 Generate the HTML with render.py, save analysis JSON, and suggest deep dives.
 ```
 
 ```
-I want to study "The Great Gatsby". Run `python3 run.py "The Great Gatsby" "7,8,9,10"`
+I want to study "The Great Gatsby". Run `python3 lib/run.py "The Great Gatsby" "7,8,9,10"`
 and analyze the clues. This is a literary work so organize by themes/characters.
 ```
 
 ```
-I want to study Caravaggio. Run `python3 run.py "Caravaggio" "7,8,9,10"` and analyze.
-This is a visual artist so look up painting images from Wikimedia Commons using images.py.
+I want to study Caravaggio. Run `python3 lib/run.py "Caravaggio" "7,8,9,10"` and analyze.
+This is a visual artist so look up painting images from Wikimedia Commons using lib/images.py.
 ```
 
 ### Parameters
@@ -57,22 +57,21 @@ This is a visual artist so look up painting images from Wikimedia Commons using 
 
 ```
 stock/
-├── fetch.py          # qbreader API data collection
-├── parse.py          # Clue extraction from raw data
-├── render.py         # HTML study guide generator
-├── images.py         # Wikimedia Commons image lookup
-├── run.py            # Combined fetch + parse runner
-├── rerender.py       # Re-render guides from saved analysis JSON
 ├── serve.py          # Web server to browse guides
+├── render.py         # HTML study guide generator (tweak CSS here)
+├── rerender.py       # Re-render all guides from saved analysis JSON
+├── lib/              # Pipeline internals (Claude runs these)
+│   ├── fetch.py      # qbreader API data collection
+│   ├── parse.py      # Clue extraction from raw data
+│   ├── images.py     # Wikimedia Commons image lookup
+│   └── run.py        # Combined fetch + parse runner
 ├── docs/
-│   ├── INSTRUCTIONS.md            # Project goals and design
-│   ├── analysis_instructions.md   # How Claude should analyze clues
-│   └── qbreader_documentation.txt # API reference
-├── cache/            # Cached API responses (auto-generated)
-├── output/           # Generated guides and analysis data
+│   └── analysis_instructions.md   # How Claude should analyze clues
+├── cache/            # Cached API responses (auto-generated, gitignored)
+├── output/           # Generated guides and analysis data (gitignored)
 │   ├── *_stock.html      # Study guides (open in browser)
 │   └── *_analysis.json   # Saved analysis data for re-rendering
-└── memory/           # Claude Code persistent memory
+└── memory/           # Claude Code persistent memory (gitignored)
 ```
 
 ## Example Renders
@@ -100,6 +99,6 @@ stock/
 
 - **Start with answerline clues** — these are the richest (entire question is about your topic)
 - **Recursive searches** — after initial analysis, search for major works as their own answerlines
-- **Text mentions** — for rare topics, also fetch text mentions: `fetch_text_mentions()` in fetch.py
-- **Visual topics** — use `images.py` to find Wikimedia Commons images to embed
+- **Text mentions** — for rare topics, also fetch text mentions: `fetch_text_mentions()` in lib/fetch.py
+- **Visual topics** — use `lib/images.py` to find Wikimedia Commons images to embed
 - **Re-render** — if you change the CSS in render.py, run `python rerender.py` to update all guides
