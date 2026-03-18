@@ -52,11 +52,18 @@ h1 {
 }
 .search:focus { border-color: #6b9eff; }
 .search::placeholder { color: #666; }
-.filters {
+.control-bar {
     display: flex;
     flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+    align-items: flex-start;
+}
+.control-group {
+    display: flex;
+    align-items: center;
     gap: 0.4rem;
-    margin-bottom: 0.8rem;
+    flex-wrap: wrap;
 }
 .filter-btn {
     padding: 0.25rem 0.6rem;
@@ -113,6 +120,120 @@ h1 {
     flex-shrink: 0;
     margin-left: 0.5rem;
 }
+.sort-label {
+    font-size: 0.78rem;
+    color: #808790;
+}
+.dropdown-wrap {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-btn {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.78rem;
+    background: #1a1f25;
+    color: #9aa0a7;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.dropdown-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+}
+.dropdown-btn.active {
+    background: #2a3545;
+    color: #6b9eff;
+    border-color: #6b9eff;
+}
+.dropdown-panel {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.3rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 240px;
+    z-index: 100;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.dropdown-panel.open {
+    display: block;
+}
+.dropdown-search {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.82rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: none;
+    border-bottom: 1px solid #3a3f47;
+    outline: none;
+    font-family: inherit;
+}
+.dropdown-search::placeholder {{ color: #555; }}
+.dropdown-list {
+    max-height: 250px;
+    overflow-y: auto;
+    list-style: none;
+}
+.dropdown-list label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.82rem;
+    color: #9aa0a7;
+    cursor: pointer;
+}
+.dropdown-list label:hover {
+    background: #262d37;
+    color: #c8ccd1;
+}
+.dropdown-list label.cat-header {
+    font-weight: 600;
+    color: #c8ccd1;
+    padding-top: 0.4rem;
+}
+.dropdown-list label.sub-item {
+    padding-left: 1.6rem;
+}
+.dropdown-list input[type="checkbox"] {
+    accent-color: #6b9eff;
+    flex-shrink: 0;
+}
+.dropdown-list .item-count {
+    color: #555;
+    margin-left: auto;
+    font-size: 0.75rem;
+}
+.guide-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-top: 0.2rem;
+}
+.guide-tag {
+    font-size: 0.68rem;
+    color: #808790;
+    background: #15191e;
+    border: 1px solid #2a2f37;
+    border-radius: 8px;
+    padding: 0.05rem 0.4rem;
+    cursor: pointer;
+}
+.guide-tag:hover {
+    color: #6b9eff;
+    border-color: #6b9eff;
+}
+.guide-tag.active {
+    color: #6b9eff;
+    border-color: #6b9eff;
+    background: #2a3545;
+}
 .empty {
     color: #666;
     font-style: italic;
@@ -128,102 +249,264 @@ h1 {
 <body>
 <h1>Stock Knowledge Guides</h1>
 <input class="search" type="text" placeholder="Search guides..." autofocus>
-<div class="filters" id="cat-filters"></div>
-<div class="filters" id="subcat-filters"></div>
+<div class="control-bar">
+    <div class="control-group">
+        <span class="sort-label">Category:</span>
+        <div class="dropdown-wrap" id="cat-wrap">
+            <button class="dropdown-btn" id="cat-btn">All</button>
+            <div class="dropdown-panel" id="cat-panel">
+                <input class="dropdown-search" id="cat-search" type="text" placeholder="Search categories...">
+                <div class="dropdown-list" id="cat-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="control-bar">
+    <div class="control-group">
+        <span class="sort-label">Tags:</span>
+        <div class="dropdown-wrap" id="tag-wrap">
+            <button class="dropdown-btn" id="tag-btn">All</button>
+            <div class="dropdown-panel" id="tag-panel">
+                <input class="dropdown-search" id="tag-search" type="text" placeholder="Search tags...">
+                <div class="dropdown-list" id="tag-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="control-bar">
+    <div class="control-group">
+        <span class="sort-label">Sort:</span>
+        <button class="filter-btn active" data-sort="alpha">A-Z</button>
+        <button class="filter-btn" data-sort="year">Chronological</button>
+        <button class="filter-btn" data-sort="continent">Continent</button>
+        <button class="filter-btn" data-sort="created">Date added</button>
+    </div>
+</div>
 <div class="count"></div>
 <ul class="guide-list"></ul>
 <script>
 const guides = GUIDE_DATA;
 const list = document.querySelector('.guide-list');
 const search = document.querySelector('.search');
-const count = document.querySelector('.count');
-const catFiltersEl = document.getElementById('cat-filters');
-const subcatFiltersEl = document.getElementById('subcat-filters');
+const countEl = document.querySelector('.count');
 
-let activeCategory = null;
-let activeSubcategory = null;
+// --- State ---
+let selectedCats = new Set();     // category or subcategory strings
+let selectedTags = new Set();
+let activeSort = 'alpha';
 
-// Build category filter buttons
+// --- Helpers ---
 const categories = [...new Set(guides.map(g => g.category).filter(Boolean))].sort();
+const allTags = [...new Set(guides.flatMap(g => g.tags || []))].sort();
 
-function buildCatButtons() {
-    catFiltersEl.innerHTML = '';
-    const allBtn = document.createElement('button');
-    allBtn.className = 'filter-btn' + (activeCategory === null ? ' active' : '');
-    allBtn.textContent = 'All';
-    allBtn.onclick = () => { activeCategory = null; activeSubcategory = null; buildCatButtons(); buildSubcatButtons(); render(); };
-    catFiltersEl.appendChild(allBtn);
+function setupDropdown(wrapId, btnId, panelId, searchId) {
+    const wrap = document.getElementById(wrapId);
+    const btn = document.getElementById(btnId);
+    const panel = document.getElementById(panelId);
+    const searchInput = document.getElementById(searchId);
+    btn.onclick = (e) => {
+        e.stopPropagation();
+        // close other panels
+        document.querySelectorAll('.dropdown-panel.open').forEach(p => {
+            if (p !== panel) p.classList.remove('open');
+        });
+        panel.classList.toggle('open');
+        if (panel.classList.contains('open')) {
+            searchInput.value = '';
+            setTimeout(() => searchInput.focus(), 0);
+        }
+    };
+    searchInput.addEventListener('click', e => e.stopPropagation());
+    return { wrap, btn, panel, searchInput };
+}
+
+const catDD = setupDropdown('cat-wrap', 'cat-btn', 'cat-panel', 'cat-search');
+const tagDD = setupDropdown('tag-wrap', 'tag-btn', 'tag-panel', 'tag-search');
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-panel.open').forEach(p => p.classList.remove('open'));
+});
+
+// prevent dropdown clicks from closing
+document.querySelectorAll('.dropdown-panel').forEach(p => {
+    p.addEventListener('click', e => e.stopPropagation());
+});
+
+// --- Category dropdown (checkboxes, hierarchical) ---
+function buildCatList(filter) {
+    const q = (filter || '').toLowerCase();
+    const el = document.getElementById('cat-list');
+    el.innerHTML = '';
 
     categories.forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = 'filter-btn' + (cat === activeCategory ? ' active' : '');
-        btn.textContent = cat;
+        const subcats = [...new Set(guides.filter(g => g.category === cat).map(g => g.subcategory).filter(Boolean))].sort();
+        const catMatches = cat.toLowerCase().includes(q);
+        const subMatches = subcats.some(s => s.toLowerCase().includes(q));
+        if (!catMatches && !subMatches) return;
+
+        // Category header with checkbox
         const catCount = guides.filter(g => g.category === cat).length;
-        btn.textContent = cat + ' (' + catCount + ')';
-        btn.onclick = () => {
-            activeCategory = activeCategory === cat ? null : cat;
-            activeSubcategory = null;
-            buildCatButtons();
-            buildSubcatButtons();
+        const catLabel = document.createElement('label');
+        catLabel.className = 'cat-header';
+        const catCb = document.createElement('input');
+        catCb.type = 'checkbox';
+        catCb.checked = selectedCats.has(cat);
+        catCb.onchange = () => {
+            if (catCb.checked) {
+                selectedCats.add(cat);
+                // also select all visible subcats
+                subcats.forEach(s => selectedCats.add(s));
+            } else {
+                selectedCats.delete(cat);
+                subcats.forEach(s => selectedCats.delete(s));
+            }
+            updateCatBtn();
+            buildCatList(filter);
+            buildTagList(document.getElementById('tag-search').value);
             render();
         };
-        catFiltersEl.appendChild(btn);
+        catLabel.appendChild(catCb);
+        catLabel.appendChild(document.createTextNode(cat));
+        const span = document.createElement('span');
+        span.className = 'item-count';
+        span.textContent = catCount;
+        catLabel.appendChild(span);
+        el.appendChild(catLabel);
+
+        // Subcategories
+        if (subcats.length > 1) {
+            subcats.forEach(sub => {
+                if (q && !sub.toLowerCase().includes(q) && !catMatches) return;
+                const subCount = guides.filter(g => g.subcategory === sub).length;
+                const subLabel = document.createElement('label');
+                subLabel.className = 'sub-item';
+                const subCb = document.createElement('input');
+                subCb.type = 'checkbox';
+                subCb.checked = selectedCats.has(sub);
+                subCb.onchange = () => {
+                    if (subCb.checked) {
+                        selectedCats.add(sub);
+                    } else {
+                        selectedCats.delete(sub);
+                        selectedCats.delete(cat); // uncheck parent
+                    }
+                    updateCatBtn();
+                    buildCatList(filter);
+                    buildTagList(document.getElementById('tag-search').value);
+                    render();
+                };
+                subLabel.appendChild(subCb);
+                subLabel.appendChild(document.createTextNode(sub));
+                const sspan = document.createElement('span');
+                sspan.className = 'item-count';
+                sspan.textContent = subCount;
+                subLabel.appendChild(sspan);
+                el.appendChild(subLabel);
+            });
+        }
     });
 }
 
-function buildSubcatButtons() {
-    subcatFiltersEl.innerHTML = '';
-    if (!activeCategory) return;
+function updateCatBtn() {
+    if (selectedCats.size === 0) {
+        catDD.btn.textContent = 'All';
+        catDD.btn.classList.remove('active');
+    } else {
+        catDD.btn.textContent = selectedCats.size + ' selected';
+        catDD.btn.classList.add('active');
+    }
+}
 
-    const subcats = [...new Set(
-        guides.filter(g => g.category === activeCategory)
-              .map(g => g.subcategory)
-              .filter(Boolean)
-    )].sort();
+catDD.searchInput.addEventListener('input', e => buildCatList(e.target.value));
+buildCatList('');
 
-    if (subcats.length <= 1) return;
+// --- Tag dropdown (checkboxes, flat but context-aware) ---
+function getVisibleGuides() {
+    if (selectedCats.size === 0) return guides;
+    return guides.filter(g => selectedCats.has(g.category) || selectedCats.has(g.subcategory));
+}
 
-    const allBtn = document.createElement('button');
-    allBtn.className = 'filter-btn' + (activeSubcategory === null ? ' active' : '');
-    allBtn.textContent = 'All ' + activeCategory;
-    allBtn.onclick = () => { activeSubcategory = null; buildSubcatButtons(); render(); };
-    subcatFiltersEl.appendChild(allBtn);
+function buildTagList(filter) {
+    const q = (filter || '').toLowerCase();
+    const el = document.getElementById('tag-list');
+    el.innerHTML = '';
 
-    subcats.forEach(sub => {
-        const btn = document.createElement('button');
-        const subCount = guides.filter(g => g.category === activeCategory && g.subcategory === sub).length;
-        btn.className = 'filter-btn' + (sub === activeSubcategory ? ' active' : '');
-        btn.textContent = sub.replace(activeCategory + ' - ', '').replace('Other ', 'Other') + ' (' + subCount + ')';
-        btn.onclick = () => {
-            activeSubcategory = activeSubcategory === sub ? null : sub;
-            buildSubcatButtons();
+    const visible = getVisibleGuides();
+    const visibleTags = [...new Set(visible.flatMap(g => g.tags || []))].sort();
+    const filtered = visibleTags.filter(t => t.toLowerCase().includes(q));
+
+    // Remove tags that are no longer visible
+    selectedTags.forEach(t => {
+        if (!visibleTags.includes(t)) selectedTags.delete(t);
+    });
+
+    filtered.forEach(tag => {
+        const tagCount = visible.filter(g => (g.tags || []).includes(tag)).length;
+        const label = document.createElement('label');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = selectedTags.has(tag);
+        cb.onchange = () => {
+            if (cb.checked) selectedTags.add(tag);
+            else selectedTags.delete(tag);
+            updateTagBtn();
             render();
         };
-        subcatFiltersEl.appendChild(btn);
+        label.appendChild(cb);
+        label.appendChild(document.createTextNode(tag));
+        const span = document.createElement('span');
+        span.className = 'item-count';
+        span.textContent = tagCount;
+        label.appendChild(span);
+        el.appendChild(label);
     });
 }
 
+function updateTagBtn() {
+    if (selectedTags.size === 0) {
+        tagDD.btn.textContent = 'All';
+        tagDD.btn.classList.remove('active');
+    } else {
+        tagDD.btn.textContent = selectedTags.size + ' selected';
+        tagDD.btn.classList.add('active');
+    }
+}
+
+tagDD.searchInput.addEventListener('input', e => buildTagList(e.target.value));
+buildTagList('');
+
+// --- Render ---
 function render() {
     const q = (search.value || '').toLowerCase();
-    const filtered = guides.filter(g => {
+    let filtered = guides.filter(g => {
         const matchesText = g.name.toLowerCase().includes(q);
-        const matchesCat = !activeCategory || g.category === activeCategory;
-        const matchesSub = !activeSubcategory || g.subcategory === activeSubcategory;
-        return matchesText && matchesCat && matchesSub;
+        const matchesCat = selectedCats.size === 0 || selectedCats.has(g.category) || selectedCats.has(g.subcategory);
+        const matchesTag = selectedTags.size === 0 || (g.tags && g.tags.some(t => selectedTags.has(t)));
+        return matchesText && matchesCat && matchesTag;
     });
-    count.textContent = filtered.length + ' guide' + (filtered.length !== 1 ? 's' : '');
+    filtered.sort(sortFns[activeSort] || sortFns.alpha);
+    countEl.textContent = filtered.length + ' guide' + (filtered.length !== 1 ? 's' : '');
     if (filtered.length === 0) {
         list.innerHTML = '<li class="empty">No guides found.</li>';
         return;
     }
     list.innerHTML = filtered.map(g => {
         const subLabel = g.subcategory || g.category || '?';
+        let meta = g.works + ' works';
+        if (g.year) meta += ' &middot; ' + (g.year < 0 ? Math.abs(g.year) + ' BCE' : g.year);
+        if (g.country && g.continent) meta += ' &middot; ' + g.continent + ' &middot; ' + g.country;
+        else if (g.continent) meta += ' &middot; ' + g.continent;
+        const tagsHtml = (g.tags || []).map(t => {
+            const isActive = selectedTags.has(t);
+            return `<span class="guide-tag${isActive ? ' active' : ''}" onclick="event.preventDefault();event.stopPropagation();if(selectedTags.has('${t}'))selectedTags.delete('${t}');else selectedTags.add('${t}');updateTagBtn();buildTagList('');render();">${t}</span>`;
+        }).join('');
         return `
         <li class="guide-item">
             <a href="${g.path}">
                 <div class="guide-info">
                     ${g.name}
-                    <div class="guide-meta">${g.works} works &middot; ${g.modified}</div>
+                    <div class="guide-meta">${meta}</div>
+                    <div class="guide-tags">${tagsHtml}</div>
                 </div>
                 <span class="guide-cat">${subLabel}</span>
             </a>
@@ -231,8 +514,24 @@ function render() {
     }).join('');
 }
 
+// --- Sorting ---
+const sortFns = {
+    alpha: (a, b) => a.name.localeCompare(b.name),
+    year: (a, b) => (a.year || 9999) - (b.year || 9999),
+    continent: (a, b) => (a.continent || 'ZZZ').localeCompare(b.continent || 'ZZZ') || a.name.localeCompare(b.name),
+    created: (a, b) => b.modified.localeCompare(a.modified),
+};
+
+document.querySelectorAll('.filter-btn[data-sort]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        activeSort = btn.dataset.sort;
+        document.querySelectorAll('.filter-btn[data-sort]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render();
+    });
+});
+
 search.addEventListener('input', () => render());
-buildCatButtons();
 render();
 </script>
 </body>
@@ -250,6 +549,10 @@ def build():
         works_count = "?"
         category = ""
         subcategory = ""
+        year = None
+        continent = ""
+        country = ""
+        tags = []
         if analysis_json.exists():
             try:
                 with open(analysis_json) as af:
@@ -257,20 +560,30 @@ def build():
                     works_count = str(len(data.get("works", [])))
                     category = data.get("category", "")
                     subcategory = data.get("subcategory", "")
+                    year = data.get("year")
+                    continent = data.get("continent", "")
+                    country = data.get("country", "")
+                    tags = data.get("tags", [])
                     if data.get("topic"):
                         name = data["topic"]
             except Exception:
                 pass
 
         mtime = datetime.fromtimestamp(f.stat().st_mtime).strftime("%Y-%m-%d")
-        guides.append({
+        guide = {
             "name": name,
             "path": f"output/{f.name}",
             "works": works_count,
             "category": category,
             "subcategory": subcategory,
             "modified": mtime,
-        })
+            "continent": continent,
+            "country": country,
+            "tags": tags,
+        }
+        if year is not None:
+            guide["year"] = year
+        guides.append(guide)
 
     html = INDEX_TEMPLATE.replace("GUIDE_DATA", json.dumps(guides))
     out_path = Path("index.html")

@@ -145,38 +145,33 @@ def extract_analysis_from_html(html: str) -> dict:
 
 def main():
     output_dir = Path("output")
-    files = [
-        "smetana_stock.html",
-        "kobo_abe_stock.html",
-        "emily_carr_stock.html",
-        "thomas_cole_stock.html",
-    ]
 
-    for fname in files:
-        fpath = output_dir / fname
+    # Re-render from analysis JSON if available, otherwise extract from HTML
+    for fpath in sorted(output_dir.glob("*_stock.html")):
+        fname = fpath.name
+        json_path = output_dir / fname.replace("_stock.html", "_analysis.json")
+
         print(f"\nProcessing {fname}...")
 
-        html = fpath.read_text()
-        analysis = extract_analysis_from_html(html)
+        if json_path.exists():
+            with open(json_path) as f:
+                analysis = json.load(f)
+        else:
+            html = fpath.read_text()
+            analysis = extract_analysis_from_html(html)
+            with open(json_path, "w") as f:
+                json.dump(analysis, f, indent=2, ensure_ascii=False)
+            print(f"  Saved analysis data to {json_path}")
 
-        # Save analysis dict as JSON for future re-rendering
-        json_path = output_dir / fname.replace("_stock.html", "_analysis.json")
-        with open(json_path, "w") as f:
-            json.dump(analysis, f, indent=2, ensure_ascii=False)
-        print(f"  Saved analysis data to {json_path}")
+        total_clues = sum(len(w.get("clues", [])) for w in analysis.get("works", []))
+        total_images = sum(len(w.get("images", [])) for w in analysis.get("works", []))
+        print(f"  Topic: {analysis.get('topic', '?')}")
+        print(f"  Works: {len(analysis.get('works', []))}, Clues: {total_clues}, Images: {total_images}")
 
-        # Count extracted data
-        total_clues = sum(len(w.get("clues", [])) for w in analysis["works"])
-        total_images = sum(len(w.get("images", [])) for w in analysis["works"])
-        print(f"  Topic: {analysis['topic']}")
-        print(f"  Works: {len(analysis['works'])}, Clues: {total_clues}, Images: {total_images}")
-        print(f"  Suggestions: {len(analysis['recursive_suggestions'])}, Links: {len(analysis['links'])}")
-
-        # Re-render with new template
         out_path = render_html(analysis, fpath)
         print(f"  Re-rendered to {out_path}")
 
-    print("\nDone! All four guides re-rendered with updated CSS.")
+    print(f"\nDone! Re-rendered {len(list(output_dir.glob('*_stock.html')))} guides.")
 
 
 if __name__ == "__main__":
