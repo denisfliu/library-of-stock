@@ -244,10 +244,150 @@ h1 {
     color: #808790;
     margin-bottom: 0.8rem;
 }
+.view-toggle {
+    display: flex;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+}
+.view-btn {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.82rem;
+    background: #1a1f25;
+    color: #9aa0a7;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.view-btn:hover { background: #262d37; color: #c8ccd1; }
+.view-btn.active { background: #2a3545; color: #6b9eff; border-color: #6b9eff; }
+.map-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.continent-section h3 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-weight: normal;
+    font-size: 1.1rem;
+    color: #e0e0e0;
+    border-bottom: 1px solid #2a2f37;
+    padding-bottom: 0.2rem;
+    margin-bottom: 0.6rem;
+}
+.country-bubbles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+.country-bubble {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.82rem;
+    background: #1a1f25;
+    color: #9aa0a7;
+    border: 1px solid #3a3f47;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+.country-bubble:hover {
+    background: #2a3545;
+    color: #6b9eff;
+    border-color: #6b9eff;
+}
+.country-bubble.active {
+    background: #2a3545;
+    color: #6b9eff;
+    border-color: #6b9eff;
+}
+.country-bubble .bubble-count {
+    font-size: 0.72rem;
+    color: #555;
+    margin-left: 0.2rem;
+}
+.map-timeline {
+    margin-top: 1.5rem;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    background: #1a1f25;
+    overflow: hidden;
+}
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #3a3f47;
+    background: #15191e;
+}
+.timeline-header h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-weight: normal;
+    font-size: 1rem;
+    color: #e0e0e0;
+}
+.timeline-close {
+    background: none;
+    border: none;
+    color: #808790;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 0.3rem;
+}
+.timeline-close:hover { color: #c8ccd1; }
+.timeline-entries {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.timeline-entry {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.timeline-entry:last-child { border-bottom: none; }
+.timeline-entry:hover { background: #262d37; }
+.timeline-year {
+    font-size: 0.78rem;
+    color: #808790;
+    min-width: 3.5rem;
+    text-align: right;
+    flex-shrink: 0;
+}
+.timeline-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6b9eff;
+    flex-shrink: 0;
+    margin-top: 0.35rem;
+}
+.timeline-link {
+    color: #6b9eff;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.timeline-link:hover { text-decoration: underline; }
+.timeline-cat {
+    font-size: 0.68rem;
+    color: #808790;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    padding: 0.05rem 0.3rem;
+    margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
 </style>
 </head>
 <body>
 <h1>Stock Knowledge Guides</h1>
+<div class="view-toggle">
+    <button class="view-btn active" data-view="list">List</button>
+    <button class="view-btn" data-view="map">Map</button>
+</div>
 <input class="search" type="text" placeholder="Search guides..." autofocus>
 <div class="control-bar">
     <div class="control-group">
@@ -273,6 +413,7 @@ h1 {
         </div>
     </div>
 </div>
+<div id="list-view">
 <div class="control-bar">
     <div class="control-group">
         <span class="sort-label">Sort:</span>
@@ -284,6 +425,19 @@ h1 {
 </div>
 <div class="count"></div>
 <ul class="guide-list"></ul>
+</div>
+<div id="map-view" style="display:none;">
+    <div class="map-container">
+        <div class="map-grid" id="map-grid"></div>
+    </div>
+    <div id="map-timeline" class="map-timeline" style="display:none;">
+        <div class="timeline-header">
+            <h2 id="timeline-title"></h2>
+            <button class="timeline-close" onclick="closeTimeline()">&times;</button>
+        </div>
+        <div id="timeline-entries" class="timeline-entries"></div>
+    </div>
+</div>
 <script>
 const guides = GUIDE_DATA;
 const list = document.querySelector('.guide-list');
@@ -363,7 +517,7 @@ function buildCatList(filter) {
             updateCatBtn();
             buildCatList(filter);
             buildTagList(document.getElementById('tag-search').value);
-            render();
+            update();
         };
         catLabel.appendChild(catCb);
         catLabel.appendChild(document.createTextNode(cat));
@@ -393,7 +547,7 @@ function buildCatList(filter) {
                     updateCatBtn();
                     buildCatList(filter);
                     buildTagList(document.getElementById('tag-search').value);
-                    render();
+                    update();
                 };
                 subLabel.appendChild(subCb);
                 subLabel.appendChild(document.createTextNode(sub));
@@ -450,7 +604,7 @@ function buildTagList(filter) {
             if (cb.checked) selectedTags.add(tag);
             else selectedTags.delete(tag);
             updateTagBtn();
-            render();
+            update();
         };
         label.appendChild(cb);
         label.appendChild(document.createTextNode(tag));
@@ -498,7 +652,7 @@ function render() {
         else if (g.continent) meta += ' &middot; ' + g.continent;
         const tagsHtml = (g.tags || []).map(t => {
             const isActive = selectedTags.has(t);
-            return `<span class="guide-tag${isActive ? ' active' : ''}" onclick="event.preventDefault();event.stopPropagation();if(selectedTags.has('${t}'))selectedTags.delete('${t}');else selectedTags.add('${t}');updateTagBtn();buildTagList('');render();">${t}</span>`;
+            return `<span class="guide-tag${isActive ? ' active' : ''}" onclick="event.preventDefault();event.stopPropagation();if(selectedTags.has('${t}'))selectedTags.delete('${t}');else selectedTags.add('${t}');updateTagBtn();buildTagList('');update();">${t}</span>`;
         }).join('');
         return `
         <li class="guide-item">
@@ -531,8 +685,119 @@ document.querySelectorAll('.filter-btn[data-sort]').forEach(btn => {
     });
 });
 
-search.addEventListener('input', () => render());
+function isMapActive() {
+    return document.getElementById('map-view').style.display !== 'none';
+}
+function update() {
+    render();
+    if (isMapActive()) buildMap();
+}
+search.addEventListener('input', () => update());
 render();
+
+// --- View toggle ---
+document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const view = btn.dataset.view;
+        document.getElementById('list-view').style.display = view === 'list' ? '' : 'none';
+        document.getElementById('map-view').style.display = view === 'map' ? '' : 'none';
+        if (view === 'map') buildMap();
+    });
+});
+
+// --- Map view ---
+function getFilteredGuides() {
+    const q = (search.value || '').toLowerCase();
+    return guides.filter(g => {
+        const matchesText = g.name.toLowerCase().includes(q);
+        const matchesCat = selectedCats.size === 0 || selectedCats.has(g.category) || selectedCats.has(g.subcategory);
+        const matchesTag = selectedTags.size === 0 || (g.tags && g.tags.some(t => selectedTags.has(t)));
+        return matchesText && matchesCat && matchesTag;
+    });
+}
+
+function buildMap() {
+    const grid = document.getElementById('map-grid');
+    grid.innerHTML = '';
+    closeTimeline();
+
+    const filtered = getFilteredGuides();
+    const continentOrder = ['Europe', 'North America', 'Asia', 'South America', 'Africa', 'Oceania'];
+    const byContinent = {};
+    filtered.forEach(g => {
+        const cont = g.continent || 'Other';
+        if (!byContinent[cont]) byContinent[cont] = {};
+        const country = g.country || 'Unknown';
+        if (!byContinent[cont][country]) byContinent[cont][country] = [];
+        byContinent[cont][country].push(g);
+    });
+
+    const sortedContinents = Object.keys(byContinent).sort((a, b) => {
+        const ai = continentOrder.indexOf(a); const bi = continentOrder.indexOf(b);
+        return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+
+    if (sortedContinents.length === 0) {
+        grid.innerHTML = '<div class="empty">No guides match current filters.</div>';
+        return;
+    }
+
+    sortedContinents.forEach(cont => {
+        const section = document.createElement('div');
+        section.className = 'continent-section';
+        const h3 = document.createElement('h3');
+        const total = Object.values(byContinent[cont]).reduce((s, arr) => s + arr.length, 0);
+        h3.textContent = cont + ' (' + total + ')';
+        section.appendChild(h3);
+
+        const bubbles = document.createElement('div');
+        bubbles.className = 'country-bubbles';
+        const countries = Object.entries(byContinent[cont]).sort((a, b) => b[1].length - a[1].length);
+        countries.forEach(([country, countryGuides]) => {
+            const bubble = document.createElement('button');
+            bubble.className = 'country-bubble';
+            bubble.innerHTML = country + ' <span class="bubble-count">' + countryGuides.length + '</span>';
+            bubble.onclick = () => {
+                document.querySelectorAll('.country-bubble.active').forEach(b => b.classList.remove('active'));
+                bubble.classList.add('active');
+                showTimeline(country, countryGuides);
+            };
+            bubbles.appendChild(bubble);
+        });
+        section.appendChild(bubbles);
+        grid.appendChild(section);
+    });
+}
+
+function showTimeline(country, countryGuides) {
+    const panel = document.getElementById('map-timeline');
+    const title = document.getElementById('timeline-title');
+    const entries = document.getElementById('timeline-entries');
+
+    title.textContent = country;
+    panel.style.display = '';
+
+    // Sort by year
+    const sorted = [...countryGuides].sort((a, b) => (a.year || 9999) - (b.year || 9999));
+
+    entries.innerHTML = sorted.map(g => {
+        const yearStr = g.year ? (g.year < 0 ? Math.abs(g.year) + ' BCE' : g.year) : '?';
+        const catLabel = g.subcategory || g.category || '';
+        return `<div class="timeline-entry">
+            <span class="timeline-year">${yearStr}</span>
+            <span class="timeline-dot"></span>
+            <a href="${g.path}" class="timeline-link">${g.name}</a>
+            <span class="timeline-cat">${catLabel}</span>
+        </div>`;
+    }).join('');
+}
+
+function closeTimeline() {
+    document.getElementById('map-timeline').style.display = 'none';
+    document.querySelectorAll('.country-bubble.active').forEach(b => b.classList.remove('active'));
+}
 </script>
 </body>
 </html>"""
