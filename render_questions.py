@@ -81,7 +81,7 @@ def render_questions_html(cache_data: dict, output_path: str | Path,
 
     back_link = ""
     if stock_link:
-        back_link = f'<a href="{escape(stock_link)}" class="back-link">&larr; Back to study guide</a>'
+        back_link = f'<div class="back-link"><a href="../index.html">&larr; Home</a> · <a href="{escape(stock_link)}">Study guide</a></div>'
 
     html = f"""<!DOCTYPE html>
 <html lang="en">

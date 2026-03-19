@@ -275,7 +275,7 @@ h1 {{
 </style>
 </head>
 <body>
-<a href="{stock_link}" class="back-link">&larr; Back to study guide</a>
+<div class="back-link"><a href="../index.html">&larr; Home</a> · <a href="{stock_link}">Study guide</a></div>
 <h1>Cards: {escape(topic)}</h1>
 
 <div class="toolbar">
