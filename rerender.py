@@ -146,32 +146,33 @@ def extract_analysis_from_html(html: str) -> dict:
 def main():
     output_dir = Path("output")
 
-    # Re-render from analysis JSON if available, otherwise extract from HTML
-    for fpath in sorted(output_dir.glob("*_stock.html")):
-        fname = fpath.name
-        json_path = output_dir / fname.replace("_stock.html", "_analysis.json")
+    # Re-render ONLY from analysis JSON — the JSON is the source of truth.
+    # Never extract from HTML or overwrite the JSON.
+    count = 0
+    skipped = 0
+    for json_path in sorted(output_dir.glob("*_analysis.json")):
+        stock_path = output_dir / json_path.name.replace("_analysis.json", "_stock.html")
 
-        print(f"\nProcessing {fname}...")
-
-        if json_path.exists():
-            with open(json_path) as f:
-                analysis = json.load(f)
-        else:
-            html = fpath.read_text()
-            analysis = extract_analysis_from_html(html)
-            with open(json_path, "w") as f:
-                json.dump(analysis, f, indent=2, ensure_ascii=False)
-            print(f"  Saved analysis data to {json_path}")
+        with open(json_path) as f:
+            analysis = json.load(f)
 
         total_clues = sum(len(w.get("clues", [])) for w in analysis.get("works", []))
         total_images = sum(len(w.get("images", [])) for w in analysis.get("works", []))
-        print(f"  Topic: {analysis.get('topic', '?')}")
-        print(f"  Works: {len(analysis.get('works', []))}, Clues: {total_clues}, Images: {total_images}")
+        topic = analysis.get("topic", "?")
+        print(f"  {topic}: {len(analysis.get('works', []))} works, {total_clues} clues, {total_images} images")
 
-        out_path = render_html(analysis, fpath)
-        print(f"  Re-rendered to {out_path}")
+        render_html(analysis, stock_path)
+        count += 1
 
-    print(f"\nDone! Re-rendered {len(list(output_dir.glob('*_stock.html')))} guides.")
+    # Warn about orphaned HTML files with no JSON
+    for html_path in sorted(output_dir.glob("*_stock.html")):
+        json_path = output_dir / html_path.name.replace("_stock.html", "_analysis.json")
+        if not json_path.exists():
+            print(f"  WARNING: {html_path.name} has no analysis JSON — skipped")
+            skipped += 1
+
+    print(f"\nDone! Re-rendered {count} guides." +
+          (f" ({skipped} skipped — missing JSON)" if skipped else ""))
 
 
 if __name__ == "__main__":

@@ -45,9 +45,13 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     suggestions = analysis.get("recursive_suggestions", [])
     links = analysis.get("links", [])
 
-    # Nav link to questions page
-    questions_file = str(output_path.stem).replace("_stock", "_questions") + ".html"
-    nav_html = f'<div class="nav-bar"><a href="{questions_file}">View source questions</a></div>'
+    # Nav links
+    topic_key = str(output_path.stem).replace("_stock", "")
+    questions_file = f"{topic_key}_questions.html"
+    cards_file = f"{topic_key}_cards.html"
+    has_cards = bool(analysis.get("cards"))
+    cards_link = f' · <a href="{cards_file}">Make cards</a>' if has_cards else ""
+    nav_html = f'<div class="nav-bar"><a href="{questions_file}">View source questions</a>{cards_link}</div>'
 
     works_html = ""
     for i, work in enumerate(works):

@@ -40,7 +40,7 @@ Within each work/subtopic, identify the individual clues. Note:
 ## Step 4: Format the Output
 
 For each work/subtopic, provide:
-1. **Work name** and brief identification (from clues)
+1. **Work name**, brief identification (from clues), and **`indicator`** field — the card type indicator for this work (e.g., `"Play"`, `"Novel"`, `"Painting"`). For general/biographical sections, use the creator type (e.g., `"Playwright"`, `"Composer"`). This is stored on the work object in the JSON and used during card generation.
 2. **Clues ranked by frequency**, each with:
    - A clear statement of what the clue is
    - How many times it appeared (approximate)
@@ -82,6 +82,67 @@ The analysis JSON must include these fields for the index page:
 - **`continent`**: where the topic is primarily associated with. One of: Africa, Asia, Europe, North America, Oceania, South America. This is outside knowledge — OK to use here.
 - **`country`**: country the topic is primarily associated with (e.g., "France", "Japan", "England"). This is outside knowledge — OK to use here.
 - **`tags`**: list of notable movements, schools, or styles (e.g., `["Hudson River School", "Romanticism"]` for Thomas Cole, `["Surrealism", "Absurdism"]` for Kobo Abe). Only include specific, recognized movements — NOT broad geographic descriptors like "Japanese literature" or "American landscape." These are used for cross-topic filtering in the index. This is outside knowledge — OK to use here.
+
+## Step 7: Generate Anki Cards
+
+After analysis, generate a default set of Anki cards from the clues. Store them in the `"cards"` field of the analysis JSON as a list of card objects.
+
+### Card format
+
+Each card object has:
+- **`type`**: `"basic"` or `"image"` (or `"cloze"` in the future)
+- **`indicator`**: the type indicator for the front (e.g., `"Play"`, `"Novel"`, `"Composer"`, `"Painting"`)
+- **`front`**: the full card front text including indicator (e.g., `"Play: the protagonist tricks..."`)
+- **`back`**: the card back text
+- **`work`**: which work/subtopic the card is from
+- **`frequency`**: the approximate frequency of the underlying clue
+- **`image_url`**: (optional) URL of an image for the back (basic) or front (image cards)
+- **`tags`**: empty list by default `[]` — user adds tags interactively in the card editor
+
+### Basic cards (work-based clues)
+
+For each clue that has specific, learnable content (not just "this Czech composer" identifiers), generate a basic card:
+
+- **Front**: `Indicator: self-contained clue, lowercase start after colon`
+- **Back**: `Work Name (Creator)` when the card is about a specific work, or just `Creator Name` when the card is a general fact about the person (collaborations, biographical info, etc.). Only use the `Work (Creator)` format when it makes sense — i.e., the clue is specifically about that work.
+
+The **indicator** is the type of thing being tested. Choose the most specific applicable one:
+- Works: `Novel:`, `Play:`, `Poem:`, `Opera:`, `Symphony:`, `Painting:`, `Sculpture:`, `Film:`, `Short Story:` etc.
+- Creators: `Author:`, `Composer:`, `Painter:`, `Playwright:`, `Philosopher:` etc.
+- Other: `Work:` (generic fallback), `Concept:`, `Event:`, `Place:` etc.
+
+The clue text should be a clean, self-contained statement — not a raw quote from a question. Rewrite if needed for clarity, but preserve the factual content. Preserve proper noun capitalization; only lowercase common words at the start (e.g., "the protagonist" not "The protagonist", but "Vindice" stays capitalized).
+
+Each card object includes an `"indicator"` field storing which indicator was used.
+
+Examples:
+- Front: `Play: the protagonist tricks the Duke into kissing a poisoned skull, which eats away at his lips`
+  Back: `The Revenger's Tragedy (Thomas Middleton)`
+- Front: `Play: bed trick with Diaphanta on wedding night; De Flores starts fire to murder Diaphanta`
+  Back: `The Changeling (with William Rowley) (Thomas Middleton)` — keep full work name including collaborators
+- Front: `Painting: a white church completely surrounded by greenery, controversially renamed in 2018`
+  Back: `Indian Church / Church at Yuquot Village (Emily Carr)`
+- Front: `Composer: went deaf in 1874; depicted this with a sustained high E in a string quartet`
+  Back: `Bedrich Smetana`
+
+### Image cards (visual arts only)
+
+For topics with embedded images, generate an extra card per image:
+- **Front**: the image (stored as `image_url`)
+- **Back**: `"Work Name (Artist)"`
+
+### What NOT to card
+
+- Pure identifier clues ("this Czech composer of X") — these are giveaways, not learnable facts
+- Clues that are too vague without context
+- Clues that essentially restate the answer — if the front is just describing what the back says, it's circular
+- Duplicate information already covered by another card
+
+### Card quality rules
+
+- **Never leak the answer on the front.** If the back is "Work (Creator)", do not mention the creator's name on the front. Rewrite to remove it — e.g., "Lawren Harris called this work its artist's best work" not "Lawren Harris called it Carr's best work." Another example:  "totem poles in the wilderness" when the work of art is Totem Pole Paintings (Emily Carr)
+- **Use general indicators**: `Artist:` (not `Painter:` or `Sculptor:`), `Author:` (not `Novelist:`), etc.
+- **The front must teach something specific.** Every card front should contain a fact that, once memorized, helps you identify the answer in a quizbowl question.
 
 ## Constraints
 
