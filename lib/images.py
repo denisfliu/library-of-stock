@@ -29,10 +29,12 @@ def _get_session():
     global _session
     if _session is None:
         _session = requests.Session()
+        # Wikimedia User-Agent policy: BotName/version (URL; contact email)
         _session.headers['User-Agent'] = (
-            'StockQB/1.0 (quizbowl study tool; '
-            'contact: github.com/denisfliu/library-of-stock)'
+            'StockQB/1.0 (https://github.com/denisfliu/library-of-stock; '
+            'denisfliu@gmail.com)'
         )
+        # Session automatically handles cookies (WMF-Uniq etc.)
     return _session
 
 
@@ -55,15 +57,20 @@ def _save_cache():
 
 
 def _api_get(base_url, params, retries=3):
-    """API call with retry and backoff. Returns parsed JSON or {}."""
+    """API call with retry and Retry-After support. Returns parsed JSON or {}."""
     session = _get_session()
     for attempt in range(retries):
         try:
             time.sleep(API_DELAY)
             r = session.get(base_url, params=params, timeout=15)
             if r.status_code == 429:
-                wait = API_DELAY * (2 ** (attempt + 1))
-                print(f'    Rate limited, waiting {wait:.0f}s...', flush=True)
+                # Respect Retry-After header per Wikimedia policy
+                retry_after = r.headers.get('Retry-After')
+                if retry_after:
+                    wait = int(retry_after)
+                else:
+                    wait = max(5, API_DELAY * (2 ** (attempt + 1)))
+                print(f'    Rate limited, Retry-After: {wait}s', flush=True)
                 time.sleep(wait)
                 continue
             return r.json()
@@ -74,13 +81,23 @@ def _api_get(base_url, params, retries=3):
 
 
 def verify_url(url):
-    """Confirm URL returns HTTP 200."""
+    """Confirm URL returns HTTP 200. Respects Retry-After on 429."""
     session = _get_session()
-    try:
-        r = session.head(url, timeout=10, allow_redirects=True)
-        return r.status_code == 200
-    except Exception:
-        return False
+    for attempt in range(2):
+        try:
+            r = session.head(url, timeout=10, allow_redirects=True)
+            if r.status_code == 200:
+                return True
+            if r.status_code == 429:
+                retry_after = r.headers.get('Retry-After')
+                wait = int(retry_after) if retry_after else max(5, API_DELAY * (2 ** (attempt + 1)))
+                print(f'    Verify rate limited, Retry-After: {wait}s', flush=True)
+                time.sleep(wait)
+                continue
+            return False
+        except Exception:
+            return False
+    return False
 
 
 def _search_commons(query, limit=3):

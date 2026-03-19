@@ -1,53 +1,50 @@
 #!/usr/bin/env python3
 """Verify all image URLs across VFA analysis JSONs.
 
-Checks every embedded image URL returns HTTP 200.
-Broken URLs are cleared (set to empty string) so fix_images.py can re-find them.
-Uses persistent cache to avoid re-verifying known-good URLs.
+Checks every unique embedded image URL returns HTTP 200.
+Works through the image_urls.json cache to deduplicate.
+Broken URLs are cleared from cache so fix_images.py can re-find them.
+
+Respects Wikimedia Retry-After headers per rate limit policy.
 
 Usage:
-    python3 lib/verify_images.py          # default 1s delay
-    python3 lib/verify_images.py 0.5      # faster
+    python3 lib/verify_images.py          # default 2s delay
+    python3 lib/verify_images.py 1        # 1s delay (faster)
 """
 import requests, json, time, sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
-VERIFIED_CACHE = ROOT / 'cache' / 'verified_urls.json'
+CACHE_FILE = ROOT / 'cache' / 'image_urls.json'
 
 session = requests.Session()
-session.headers['User-Agent'] = 'StockQB/1.0 (quizbowl study tool)'
-
-
-def load_verified():
-    if VERIFIED_CACHE.exists():
-        with open(VERIFIED_CACHE) as f:
-            return set(json.load(f))
-    return set()
-
-def save_verified(verified):
-    VERIFIED_CACHE.parent.mkdir(exist_ok=True)
-    with open(VERIFIED_CACHE, 'w') as f:
-        json.dump(sorted(verified), f)
+# Wikimedia User-Agent policy: BotName/version (URL; contact email)
+session.headers['User-Agent'] = (
+    'StockQB/1.0 (https://github.com/denisfliu/library-of-stock; '
+    'denisfliu@gmail.com)'
+)
 
 
 def check_url(url, delay, retries=2):
-    """Return True if URL returns 200, False if 404, None if rate-limited."""
+    """Return True if URL returns 200, False if broken, None if rate-limited and exhausted retries."""
     for attempt in range(retries):
         try:
             time.sleep(delay)
             r = session.head(url, timeout=10, allow_redirects=True)
             if r.status_code == 200:
                 return True
-            elif r.status_code == 404:
-                return False
             elif r.status_code == 429:
-                wait = delay * (2 ** (attempt + 1))
-                print(f'    Rate limited, waiting {wait:.0f}s...', flush=True)
+                # Respect Retry-After header per Wikimedia policy
+                retry_after = r.headers.get('Retry-After')
+                if retry_after:
+                    wait = int(retry_after)
+                else:
+                    wait = max(5, delay * (2 ** (attempt + 1)))
+                print(f'    Rate limited, Retry-After: {wait}s', flush=True)
                 time.sleep(wait)
                 continue
             else:
-                return False  # other errors = broken
+                return False  # 404, 403, etc = broken
         except:
             if attempt < retries - 1:
                 time.sleep(delay * 2)
@@ -55,18 +52,54 @@ def check_url(url, delay, retries=2):
 
 
 def main():
+    delay = float(sys.argv[1]) if len(sys.argv) > 1 else 2.0
     output_dir = ROOT / 'output'
-    delay = float(sys.argv[1]) if len(sys.argv) > 1 else 1.0
 
-    verified_cache = load_verified()
-    print(f'Verified cache: {len(verified_cache)} known-good URLs', flush=True)
+    # Work through image_urls.json cache — check each unique URL once
+    if not CACHE_FILE.exists():
+        print('No image cache found. Run fix_images.py first.', flush=True)
+        return
 
-    total = 0
+    with open(CACHE_FILE) as f:
+        cache = json.load(f)
+
+    # Deduplicate: group cache keys by URL
+    url_to_keys = {}
+    for key, url in cache.items():
+        if url:
+            url_to_keys.setdefault(url, []).append(key)
+
+    unique_count = len(url_to_keys)
+    print(f'Unique URLs to verify: {unique_count} (delay: {delay}s)', flush=True)
+    print(f'Estimated time: ~{unique_count * delay / 60:.0f} minutes', flush=True)
+
     ok = 0
-    broken = 0
+    broken_urls = {}  # url -> keys
     rate_limited = 0
-    cleared_files = set()
 
+    for i, (url, keys) in enumerate(url_to_keys.items()):
+        result = check_url(url, delay)
+        if result is True:
+            ok += 1
+        elif result is False:
+            broken_urls[url] = keys
+            print(f'  [{i+1}/{unique_count}] BROKEN: {keys[0]}', flush=True)
+        else:
+            rate_limited += 1
+            print(f'  [{i+1}/{unique_count}] RATE LIMITED: {keys[0]} — will retry later', flush=True)
+
+        if (i + 1) % 50 == 0:
+            print(f'  ... {i+1}/{unique_count} checked (ok={ok}, broken={len(broken_urls)}, rate_limited={rate_limited})', flush=True)
+
+    # Clear broken URLs from cache
+    cleared = 0
+    for url, keys in broken_urls.items():
+        for key in keys:
+            cache[key] = ''  # Mark as not-found
+            cleared += 1
+
+    # Also clear broken URLs from analysis JSONs and cards
+    files_modified = set()
     for f in sorted(output_dir.glob('*_analysis.json')):
         with open(f) as fh:
             data = json.load(fh)
@@ -74,56 +107,35 @@ def main():
         changed = False
         for w in data.get('works', []):
             for img in w.get('images', []):
-                url = img.get('url', '')
-                if not url:
-                    continue
-                total += 1
-
-                # Skip if already verified
-                if url in verified_cache:
-                    ok += 1
-                    continue
-
-                result = check_url(url, delay)
-                if result is True:
-                    ok += 1
-                    verified_cache.add(url)
-                elif result is False:
-                    broken += 1
-                    print(f'  BROKEN: {data.get("topic", "?")} / {w["name"]}', flush=True)
-                    print(f'          {url[:90]}', flush=True)
-                    img['url'] = ''  # Clear so fix_images.py can re-find it
+                if img.get('url') in broken_urls:
+                    img['url'] = ''
                     changed = True
-                else:
-                    rate_limited += 1
-                    print(f'  SKIP (rate limited): {data.get("topic", "?")} / {w["name"]}', flush=True)
-
-        if changed:
-            # Also clear matching card images
-            for w in data.get('works', []):
-                for img in w.get('images', []):
-                    if not img.get('url'):
-                        work_name = w['name']
-                        for c in data.get('cards', []):
-                            if c.get('work') == work_name:
-                                for ci in c.get('images', []):
+                    # Clear matching card images
+                    for c in data.get('cards', []):
+                        if c.get('work') == w['name']:
+                            for ci in c.get('images', []):
+                                if ci.get('url') in broken_urls:
                                     ci['url'] = ''
 
+        if changed:
             with open(f, 'w') as fh:
                 json.dump(data, fh, indent=2, ensure_ascii=False)
-            cleared_files.add(f.name)
+            files_modified.add(f.name)
 
-    save_verified(verified_cache)
+    with open(CACHE_FILE, 'w') as f:
+        json.dump(cache, f, indent=2, ensure_ascii=False)
 
     print(f'\n=== Results ===', flush=True)
-    print(f'Total URLs checked: {total}', flush=True)
+    print(f'Unique URLs checked: {ok + len(broken_urls) + rate_limited}/{unique_count}', flush=True)
     print(f'OK: {ok}', flush=True)
-    print(f'Broken (cleared): {broken}', flush=True)
-    print(f'Rate limited (skipped): {rate_limited}', flush=True)
-    print(f'Files modified: {len(cleared_files)}', flush=True)
+    print(f'Broken (cleared from cache + JSONs): {len(broken_urls)} ({cleared} cache entries)', flush=True)
+    print(f'Rate limited (unchecked): {rate_limited}', flush=True)
+    print(f'Files modified: {len(files_modified)}', flush=True)
 
-    if broken > 0:
+    if broken_urls:
         print(f'\nRun `python3 lib/fix_images.py` to re-find cleared images.', flush=True)
+    if rate_limited:
+        print(f'Re-run `python3 lib/verify_images.py` later to check remaining {rate_limited} URLs.', flush=True)
 
 
 if __name__ == '__main__':
