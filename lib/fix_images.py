@@ -1,84 +1,43 @@
 #!/usr/bin/env python3
-"""Fix missing/broken images across all VFA analysis JSONs.
+"""Fix missing images across all VFA analysis JSONs.
 
-Uses Wikimedia Commons search API to find painting images by name.
-Saves progress incrementally so it can be interrupted and resumed.
+Thin wrapper around lib/images.py — scans all analysis files and calls
+find_image() for any visual work missing an embedded image URL.
+
+Usage:
+    python3 lib/fix_images.py          # fix all missing
+    python3 lib/fix_images.py --delay 1  # custom delay (default 2s)
 """
-import requests, json, time, re, sys
+import json, sys
 from pathlib import Path
 
-session = requests.Session()
-session.headers['User-Agent'] = 'StockQB/1.0'
+# Add parent to path so we can import from lib
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from lib.images import find_image, set_work_image, API_DELAY
+import lib.images as img_module
 
-def search_commons(query, limit=3):
-    try:
-        params = {
-            'action': 'query', 'list': 'search',
-            'srsearch': f'{query} filetype:bitmap',
-            'srnamespace': 6, 'srlimit': limit, 'format': 'json',
-        }
-        r = session.get('https://commons.wikimedia.org/w/api.php', params=params, timeout=10)
-        return [item['title'].replace('File:', '') for item in r.json().get('query', {}).get('search', [])]
-    except:
-        time.sleep(3)
-        return []
+ROOT = Path(__file__).parent.parent
 
-def get_thumb(filename, width=500):
-    try:
-        params = {
-            'action': 'query', 'titles': f'File:{filename}',
-            'prop': 'imageinfo', 'iiprop': 'url',
-            'iiurlwidth': width, 'format': 'json',
-        }
-        r = session.get('https://commons.wikimedia.org/w/api.php', params=params, timeout=10)
-        pages = r.json().get('query', {}).get('pages', {})
-        for page in pages.values():
-            return page.get('imageinfo', [{}])[0].get('thumburl')
-    except:
-        time.sleep(3)
-    return None
+# Indicators that represent visual works (should have images)
+VISUAL_INDICATORS = {'Painting', 'Sculpture', 'Fresco', 'Print', 'Engraving',
+                     'Mural', 'Drawing', 'Installation', 'Relief', 'Mosaic'}
 
-def verify(url):
-    try:
-        r = session.head(url, timeout=5, allow_redirects=True)
-        return r.status_code == 200
-    except:
-        return False
+SKIP_NAME_FRAGMENTS = ['General', 'Biographical', 'Other Works', 'sonnet',
+                       'poem', 'Poem', 'symphony', 'Symphony']
 
-def clean_work_name(name):
-    name = re.sub(r'\(.*?\)', '', name).strip()
-    name = re.sub(r'\s*/\s*.*', '', name).strip()
-    name = re.sub(r',?\s*c\.\s*\d{4}.*', '', name).strip()
-    return name
-
-def find_image(work_name, artist, delay=0.4):
-    clean = clean_work_name(work_name)
-
-    # Strategy 1: painting + artist
-    time.sleep(delay)
-    files = search_commons(f'{clean} {artist}')
-    for fn in files:
-        time.sleep(delay)
-        url = get_thumb(fn)
-        if url and verify(url):
-            return url
-
-    # Strategy 2: just painting name
-    time.sleep(delay)
-    files = search_commons(clean)
-    for fn in files:
-        time.sleep(delay)
-        url = get_thumb(fn)
-        if url and verify(url):
-            return url
-
-    return None
 
 def main():
-    output_dir = Path(__file__).parent.parent / 'output'
-    delay = float(sys.argv[1]) if len(sys.argv) > 1 else 0.4
+    output_dir = ROOT / 'output'
 
-    # Collect all works needing images
+    # Parse --delay flag
+    delay = API_DELAY
+    if '--delay' in sys.argv:
+        idx = sys.argv.index('--delay')
+        if idx + 1 < len(sys.argv):
+            delay = float(sys.argv[idx + 1])
+            img_module.API_DELAY = delay
+
+    # Collect visual works needing images
     needs_fix = []
     for f in sorted(output_dir.glob('*_analysis.json')):
         with open(f) as fh:
@@ -88,53 +47,44 @@ def main():
         for w in data.get('works', []):
             ind = w.get('indicator', '')
             name = w.get('name', '')
-            # Skip non-visual works: poems, novels, compositions, general sections
-            skip_indicators = ('Artist', 'Movement', 'Poet', 'Poem', 'Author', 'Novel',
-                               'Play', 'Playwright', 'Composer', 'Composition', 'Theorist', 'Architect')
-            if ind in skip_indicators or any(x in name for x in ['General', 'Biographical', 'Other Works', 'sonnet', 'poem', 'Poem']):
+            # Only search for visual works
+            if ind not in VISUAL_INDICATORS:
+                continue
+            if any(x in name for x in SKIP_NAME_FRAGMENTS):
                 continue
             has_url = any(i.get('url') for i in w.get('images', []))
             if not has_url:
                 needs_fix.append((f, data['topic'], w['name']))
 
-    print(f'Works needing images: {len(needs_fix)}', flush=True)
+    print(f'Visual works needing images: {len(needs_fix)} (delay: {delay}s)',
+          flush=True)
 
     fixed = 0
+    cached = 0
     failed = 0
 
     for f, topic, work_name in needs_fix:
-        url = find_image(work_name, topic, delay)
+        url = find_image(work_name, topic)
 
-        # Load fresh, update, save immediately
+        if not url:
+            failed += 1
+            print(f'  MISS: {topic} / {work_name}', flush=True)
+            continue
+
+        # Load fresh, update, save
         with open(f) as fh:
             data = json.load(fh)
 
-        for w in data.get('works', []):
-            if w['name'] == work_name:
-                if url:
-                    if w.get('images'):
-                        w['images'][0]['url'] = url
-                    else:
-                        w['images'] = [{'url': url, 'caption': work_name}]
+        set_work_image(data, work_name, url)
 
-                    # Sync cards
-                    for c in data.get('cards', []):
-                        if c.get('work') == work_name:
-                            for ci in c.get('images', []):
-                                if not ci.get('url'):
-                                    ci['url'] = url
+        with open(f, 'w') as fh:
+            json.dump(data, fh, indent=2, ensure_ascii=False)
 
-                    with open(f, 'w') as fh:
-                        json.dump(data, fh, indent=2, ensure_ascii=False)
-
-                    fixed += 1
-                    print(f'  OK: {topic} / {work_name}', flush=True)
-                else:
-                    failed += 1
-                    print(f'  MISS: {topic} / {work_name}', flush=True)
-                break
+        fixed += 1
+        print(f'  OK: {topic} / {work_name}', flush=True)
 
     print(f'\nDone! Fixed: {fixed}, Missing: {failed}', flush=True)
+
 
 if __name__ == '__main__':
     main()
