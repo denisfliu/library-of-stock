@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Petrarch</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+.clue-row td {
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.clue-freq {
+    width: 2.5rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.45;
+}
+.clue-text {
+    font-weight: 600;
+    color: #d4d8dd;
+}
+.badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.examples {
+    margin-top: 0.15rem;
+}
+.examples summary {
+    font-size: 0.78rem;
+    color: #6b9eff;
+    cursor: pointer;
+    display: inline;
+}
+.examples summary:hover { text-decoration: underline; }
+.examples ul {
+    margin: 0.2rem 0 0.2rem 1.2rem;
+    padding: 0;
+    font-size: 0.82rem;
+    color: #808790;
+    font-style: italic;
+}
+.examples li {
+    margin-bottom: 0.1rem;
+}
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Petrarch</h1>
+<div class="nav-bar"><a href="petrarch_questions.html">View source questions</a> · <a href="petrarch_cards.html">Make cards</a></div>
+<div class="summary">14th-century Italian poet and humanist, called the &#x27;father of Humanism.&#x27; Most commonly identified by Il Canzoniere (Songbook / Rime Sparse), a collection of 366 poems (mostly sonnets) addressed to Laura, whom he met in Avignon on Good Friday 1327. Also wrote the epic poem Africa (about Scipio Africanus), the Triumphs, Secretum (dialogues with Augustine), and the famous letter &#x27;Ascent of Mont Ventoux.&#x27; Namesake of the Petrarchan sonnet (octave + sestet).</div>
+
+        <details class="work" open>
+            <summary class="work-title">Il Canzoniere (Songbook / Rime Sparse)</summary>
+            <p class="work-desc">Collection of 366 poems, mostly sonnets, addressed to Laura. Opens 'You who hear the sound, in scattered rhymes.' Divided into 'In Life' and 'In Death' sections.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">15x</td>
+                <td class="clue-body">
+                    <span class="clue-text">366 poems addressed to Laura — opens &#x27;You who hear the sound, in scattered rhymes&#x27; (Voi ch&#x27;ascoltate)</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>You who hear the sound, in scattered rhymes</li><li>366 poems about a figure whom he first encountered on Good Friday 1327</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Met Laura in Avignon on Good Friday 1327</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a woman whom this author met in Avignon on Good Friday</li><li>first encountered on Good Friday 1327</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Now I have become an old tale amongst all these people&#x27; / &#x27;shame is the fruit of my vanities&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>I have become / an old tale amongst all these people</li><li>shame is the fruit of my vanities</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Love found him &#x27;all weaponless&#x27; — &#x27;on that day when the sun&#x27;s ray was darkened&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>love found him &#x27;all weaponless&#x27; upon being spellbound by &#x27;lovely eyes&#x27;</li><li>the Sun&#x27;s ray&#x27;s turned pale with grief</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poem about &#x27;Clear, sweet fresh water&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>one of his best known poems begins with an image of &#x27;Clear, sweet fresh water&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;My ship sails on, packed with forgetfulness&#x27; — ship between Charybdis and Scylla, reason and art drowned by waves</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>My ship sails on, packed with forgetfulness</li><li>wrote of a ship sailing between Charybdis and Scylla &#x27;full of forgetful cargo&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laura addressed as &#x27;filled with every grace&#x27; and &#x27;clothed in glory, crowned with stars&#x27;; asks her to send speaker to Jesus</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>prostrates himself before a figure who is &#x27;filled with every grace&#x27; and &#x27;clothed in glory, crowned with stars&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Flower poem: &#x27;like chased gold and pearl,&#x27; one &#x27;rested on the ground,&#x27; one &#x27;seemed to say, Here love rules&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>described a flower that was seen &#x27;like chased gold and pearl&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poem with five stanzas where last line of each quotes a previous poet (Arnaut Daniel, Cavalcanti, Dante, Cino da Pistoia, himself)</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>wrote a poem in five stanzas, where the last line of each stanza is a quotation from a previous poem</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Translated into English by Thomas Wyatt and Henry Howard, Earl of Surrey — spread his popularity in England</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>popularity in England was spread by the translations of Henry Howard, Earl of Surrey and Thomas Wyatt</li><li>this poetic form introduced to England by Thomas Wyatt, who translated many poems by Petrarch</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Troilus states &#x27;If it&#x27;s not love, then what is it that I feel?&#x27; in Chaucer&#x27;s first English translation</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Troilus states &#x27;If it&#x27;s not love, then what is it that I feel?&#x27; in the first English translation</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pietro Bembo published 1501 Aldine edition; chose not to use title Rerum Vulgarium Fragmenta</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Pietro Bembo published an Aldine version of this author&#x27;s works</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Divided into &#x27;In Life&#x27; and &#x27;In Death&#x27; sections</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Sections labeled &#x27;In life&#x27; and &#x27;In death&#x27; divide this poet&#x27;s best known collection</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;He ends well, who dies loving well&#x27; — translated by Earl of Surrey as &#x27;Love, that doth reign and live within my thought&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>he ends well, who dies loving well</li><li>The line &#x27;Love, that doth reign and live within my thought&#x27; opens the Earl of Surrey&#x27;s translation</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Patriotic poem: &#x27;virtue against fury shall take up arms&#x27; / &#x27;ancient valor is not dead&#x27; in countrymen&#x27;s hearts</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>wrote a patriotic poem predicting that &#x27;virtue against fury / shall take up arms&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Clément Marot translated six of his works to curry favor in Francis I&#x27;s court</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Clement Marot translated six works by this author to curry favor in Francis I&#x27;s court</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">Ascent of Mont Ventoux</summary>
+            <p class="work-desc">Famous letter from the Epistolae Familiares describing climbing a mountain for pleasure, reading Augustine at the summit.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Letter describing climbing Mont Ventoux for pleasure; ignoring a shepherd along the way; read Augustine at the top</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>described ignoring a shepherd and climbing a mountain for pleasure</li><li>a letter addressed to Dionigi di Borgo San Sepolcro written following his ascent of Mont Ventoux</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Augustine&#x27;s quote provided an epiphany: &#x27;men wonder at the heights of mountains... but they consider themselves not&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>&#x27;men wonder at the heights of mountains, and the mighty waves of the sea...but they consider themselves not&#x27; provided Petrarch an epiphany</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Realized he had left university exactly ten years earlier on the journey</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>describes realizing that he had left university exactly ten years earlier</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">Africa</summary>
+            <p class="work-desc">Unfinished epic poem in Latin hexameter about Scipio Africanus during the Second Punic War.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Epic poem in hexameter about Scipio Africanus in the Second Punic War — inspired by Livy&#x27;s third decade</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>described the heroics of Scipio Africanus during the Second Punic War in his epic poem Africa</li><li>inspired by the third deca of Livy&#x27;s History of Rome</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains section &#x27;Scipio&#x27;s Dream&#x27;; based on research for On Illustrious Men</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>contains the section Scipio&#x27;s Dream</li><li>based research done for his On Illustrious Men</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Robert of Naples examined it to grant Petrarch Poet Laureate of Rome</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Robert of Naples examined one of this writer&#x27;s work to grant the position of Poet Laureate of Rome</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laureate speech: laurels &#x27;equally appropriate for Caesars and poets&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>described laurels as &#x27;equally appropriate for Caesars and poets&#x27; in his &#x27;Coronation Oration&#x27;</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">Triumphs (Trionfi)</summary>
+            <p class="work-desc">Collection of six allegorical poems depicting the successive conquering of Love, Chastity, Death, Fame, Time, and Eternity.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Six allegorical poems about conquering of Love, Chastity, Death, Fame, Time, Eternity</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>wrote about the conquering of allegorical figures like Death, Fame, and Eternity in his collection Triumphs</li><li>described the tendency of Chastity to overcome Love, and that of Fame to overcome Death</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Biographical details and other works.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called &#x27;father of Humanism&#x27; — 14th-century Italian poet</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>supposedly the &#x27;father of Humanism&#x27;</li><li>this Italian poet and humanist</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Namesake of the Petrarchan sonnet — octave (ABBAABBA) + sestet, with volta/turn in the middle</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this poetic form whose &#x27;Petrarchan&#x27; variant consists of an octave and a sestet</li><li>namesake of a type of sonnet divided into an octave and a sestet</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Secretum — imagined dialogues with Augustine (My Secret Book); also wrote Phisicke Against Fortune (253 dialogues translated by Thomas Twyne)</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>known for his imagined dialogues with Augustine, collected as My Secret Book</li><li>Augustine chastises a later author for forgetting his mortality in three dialogues from the book Secretum</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Epistolae Familiares and Seniles — letter collections inspired by rediscovery of Cicero&#x27;s ad Atticum</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>collect his letters into two books, Epistolae Familiares and Seniles</li><li>After discovering the ad Atticum, a collection of letters by Cicero, this man composed a series of letters to the orator</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Letter to Posterity&#x27; — last work in the Seniles; hailed as first Western autobiography since Augustine&#x27;s Confessions</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the last is addressed &#x27;To Posterity&#x27;</li><li>That oft-revised letter addressed to posterity gives an account of Petrarch&#x27;s life hailed as the first Western autobiography</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Liber sine nomine (Book Without a Name) — harshly criticized the Avignon Papacy</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>harshly criticized the Avignon Papacy in The Book Without A Name</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A letter credited with coining the idea of the &#x27;Dark Ages&#x27; — written to Agapito Colonna</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>another to Agapito Colonna which is credited with coining the idea of the Dark Ages</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Crowned Poet Laureate of Rome; one of the &#x27;three crowns&#x27; alongside Dante and Boccaccio</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Fourteen years before he was crowned Rome&#x27;s poet laureate</li><li>the other two of the &#x27;three crowns&#x27; looked inward and upward</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="suggestions">
+            <h2>Suggested Deep Dives</h2>
+            <ul><li>Il Canzoniere — has its own answerline as &#x27;Petrarchan sonnet&#x27;</li><li>Africa — may appear in Classical history contexts</li></ul>
+        </section>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Petrarch (Francesco Petrarca) was a 14th-century Italian poet and humanist, called the &#x27;father of Humanism&#x27; and one of the &#x27;three crowns&#x27; of Italian literature alongside Dante and Boccaccio. He is the namesake of the Petrarchan sonnet (octave + sestet with a volta or &#x27;turn&#x27;).</p><p>His most famous work is Il Canzoniere (Songbook / Rime Sparse), a collection of 366 poems, mostly sonnets, addressed to Laura, whom he met in Avignon on Good Friday 1327. It opens &#x27;You who hear the sound, in scattered rhymes&#x27; and is divided into &#x27;In Life&#x27; and &#x27;In Death&#x27; sections. The speaker declares &#x27;Now I have become an old tale amongst all these people&#x27; and &#x27;shame is the fruit of my vanities.&#x27; Love found him &#x27;all weaponless&#x27; on &#x27;that day when the sun&#x27;s ray was darkened.&#x27; Other poems describe &#x27;Clear, sweet fresh water,&#x27; a ship &#x27;packed with forgetfulness&#x27; sailing between Charybdis and Scylla, and flowers. One poem features five stanzas where each ends with a quotation from a previous poet (Arnaut Daniel, Cavalcanti, Dante, Cino da Pistoia, then himself). His work was spread in England through translations by Thomas Wyatt and Henry Howard, Earl of Surrey (&#x27;Love, that doth reign and live within my thought&#x27;). Clément Marot translated six of his works. Pietro Bembo published the 1501 Aldine edition.</p><p>His famous letter &#x27;The Ascent of Mont Ventoux&#x27; (from the Epistolae Familiares) describes climbing the mountain for pleasure, ignoring a shepherd&#x27;s warnings, and having an epiphany when reading Augustine at the summit (&#x27;men wonder at the heights of mountains... but they consider themselves not&#x27;). His letter collections (Familiares and Seniles) were inspired by his rediscovery of Cicero&#x27;s ad Atticum. His &#x27;Letter to Posterity,&#x27; the last work in the Seniles, is hailed as the first Western autobiography since Augustine&#x27;s Confessions. Another letter to Agapito Colonna is credited with coining the concept of the &#x27;Dark Ages.&#x27; The Liber sine nomine (Book Without a Name) harshly criticized the Avignon Papacy.</p><p>Africa is an unfinished epic in Latin hexameter about Scipio Africanus in the Second Punic War, inspired by Livy&#x27;s third decade. It contains &#x27;Scipio&#x27;s Dream&#x27; and was based on research for On Illustrious Men. Robert of Naples examined it before granting Petrarch the title of Poet Laureate of Rome. The Triumphs (Trionfi) is a collection of six allegorical poems depicting the conquering of Love, Chastity, Death, Fame, Time, and Eternity. Secretum contains imagined dialogues with Augustine.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Petrarch" target="_blank">Petrarch — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Il_Canzoniere" target="_blank">Il Canzoniere — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Africa_(Petrarch)" target="_blank">Africa (epic poem) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Petrarchan_sonnet" target="_blank">Petrarchan sonnet — Wikipedia</a></li></ul>
+        </section>
+        
+</body>
+</html>

@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Aristophanes</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+.clue-row td {
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.clue-freq {
+    width: 2.5rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.45;
+}
+.clue-text {
+    font-weight: 600;
+    color: #d4d8dd;
+}
+.badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.examples {
+    margin-top: 0.15rem;
+}
+.examples summary {
+    font-size: 0.78rem;
+    color: #6b9eff;
+    cursor: pointer;
+    display: inline;
+}
+.examples summary:hover { text-decoration: underline; }
+.examples ul {
+    margin: 0.2rem 0 0.2rem 1.2rem;
+    padding: 0;
+    font-size: 0.82rem;
+    color: #808790;
+    font-style: italic;
+}
+.examples li {
+    margin-bottom: 0.1rem;
+}
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Aristophanes</h1>
+<div class="nav-bar"><a href="aristophanes_questions.html">View source questions</a> · <a href="aristophanes_cards.html">Make cards</a></div>
+<div class="summary">Ancient Greek comic playwright, the master of Old Comedy. Known for The Clouds, Lysistrata, The Frogs, The Birds, The Wasps, Thesmophoriazusae, The Acharnians, Peace, Ecclesiazusae (Assemblywomen), and Plutus. Frequently satirized Athenian politics, Socrates, and Euripides. Works performed at the City Dionysia.</div>
+
+        <details class="work" open>
+            <summary class="work-title">The Clouds</summary>
+            <p class="work-desc">Comedy satirizing Socrates and intellectual culture through the Thinkery, a school run by Socrates.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Strepsiades sends his son Pheidippides to the Thinkery to learn how to avoid paying debts from buying horses</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Strepsiades tries to get out of his debts by enrolling his son Pheidippides in Socrates&#x27;s &#x27;Thinkery&#x27;</li><li>Pheidippides beats up his father Strepsiades after learning sophism from Socrates at the Thinkery</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Play ends with Strepsiades and slave Xanthias burning down the Thinkery</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>ends the play by burning down the Thinkery with his slave Xanthias</li><li>the protagonist avoids paying his debts when he and Xanthias burn down the Thinkery</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Right Logic (Superior Argument) vs. Wrong Logic (Inferior Argument) debate — worse argument wins</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>summons the personifications of a better argument and a worse argument, who argue with each other until the worse argument wins</li><li>critiqued intellectuals through an agon, or debate, between Superior and Inferior Arguments</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Socrates sits in a basket floating in the air, says he doesn&#x27;t want his mind to dry out like lettuce</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>When asked why he is sitting in a basket floating in the air, this man says that he doesn&#x27;t want his mind to dry out like a piece of lettuce</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A lizard defecates on Socrates while he contemplates the moon</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>one of these animals defecated on Socrates while the philosopher was busy contemplating the moon&#x27;s path</li><li>A scholar from this city who was once defecated on by a lizard</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Strepsiades dismissed after Socrates finds him masturbating under a blanket instead of meditating</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>dismissed as a student after Socrates finds him masturbating under a blanket instead of meditating</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">Lysistrata</summary>
+            <p class="work-desc">Comedy in which Athenian women withhold sex to end the Peloponnesian War.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Women withhold sex from husbands to end the Peloponnesian War</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>convinces Athenian women to withhold sex from their husbands in an attempt to end the Peloponnesian War</li><li>a group of women attempts to stop the Peloponnesian War</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Women swear an oath on a skin of Thasian wine not to &#x27;crouch down like a lioness on all fours&#x27; / &#x27;take the pose of a lioness on a cheese grater&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>characters in a play by this man swear an oath using a skin of Thasian wine instead of sacrificing a sheep</li><li>vow not to &#x27;take the pose of a lioness on a cheese grater&#x27; while swearing an oath on a wine skin</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lysistrata pours water on a magistrate who scorns her wool-working analogy for society</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>pours a bucket of water over the head of a magistrate who scorns her for analogizing the ideal workings of society to the woolworking</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A magistrate confuses a herald&#x27;s erection for a hidden lance</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>A play by this man includes a scene in which a magistrate confuses a herald&#x27;s erection for a hidden lance</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Characters include Caloniki and Lampito</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>characters including Caloniki and Lampito vow not to &#x27;take the pose of a lioness on a cheese grater&#x27;</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">The Frogs</summary>
+            <p class="work-desc">Comedy in which Dionysus travels to the underworld to bring back a dead playwright.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dionysus travels to the underworld to bring back Euripides (but ends up bringing Aeschylus instead)</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Dionysus goes to the underworld to bring back Euripides in his play The Frogs</li><li>bringing Aeschylus back from the dead</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dionysus trades clothes with slave Xanthias to avoid being mistaken for Heracles</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Dionysus trades clothes with his slave Xanthias before bringing Aeschylus back from the dead</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chorus of frogs chants &#x27;brekekek koax koax&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Frogs who go &#x27;brekekek koax koax&#x27;</li><li>Dionysus engages in a comedic debate with this play&#x27;s chanting chorus</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Quote about Alcibiades: &#x27;Twere best to rear no lion in the state&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a playwright claims that &#x27;&#x27;Twere best to rear no lion in the state: But having reared, &#x27;tis best to humour him&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">1974 Yale musical adaptation used the varsity swim team as the chorus, water splashed out of pool</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>adapted into a disastrous 1974 musical in New Haven, where the title croaking chorus of his The Frogs was played by the Yale varsity swim team</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">The Birds</summary>
+            <p class="work-desc">Comedy in which Pisthetaerus and Euelpides create the city of Cloudcuckooland to block the gods from receiving offerings.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pisthetaerus creates Cloudcuckooland to blockade the Olympian gods from receiving human offerings</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Pisthetaerus takes over the city of Cloudcuckooland and blocks the offerings of the people below to the gods</li><li>The goal of creating this location is to blockade the Olympian gods from reaching Earth</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Prometheus visits secretly with a parasol so Zeus cannot see him</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Prometheus visits this city secretly</li><li>He wields a parasol so Zeus cannot see him</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Iris mistreated; she flies away and reports to Zeus</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Iris is the subject of many raunchy jokes during her trip to this city</li><li>Iris flies away and reports her mistreatment to Zeus</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Heracles tricked into a treaty after being told he&#x27;s a bastard who can&#x27;t inherit Zeus&#x27;s estate</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this city&#x27;s ruler convinces Heracles to agree to a treaty after convincing him that, as a bastard, he cannot inherit Zeus&#x27;s estate</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Meton the geometer chased away</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>one character chases away the geometer Meton</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chorus threatens to defecate on the judges if the play doesn&#x27;t win</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the chorus threatens to shit on the judges if the play doesn&#x27;t win the City Dionysia</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">The Wasps</summary>
+            <p class="work-desc">Comedy about Philocleon, who is addicted to serving on juries, and his son Anticleon who tries to stop him.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Philocleon is addicted to jury service; son Anticleon tries to cure him; mock trial of a dog for stealing cheese</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a son who hates Cleon sets up a mock court for his father, who loves Cleon, and is addicted to serving on juries</li><li>a mock-trial wherein a household dog accuses another of stealing cheese</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Criticizes the politician Cleon</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Aristophanes criticizes the politician Cleon both in The Clouds and in this later play</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">Thesmophoriazusae</summary>
+            <p class="work-desc">Comedy set at the Thesmophoria festival, where women discuss Euripides's unflattering portrayals of them.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Euripides uses disguises to rescue a friend captured at the Thesmophoria festival; women including Micca discuss Euripides&#x27;s portrayal of women</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Euripides uses various disguises to try to save his friend after he is captured at the title festival</li><li>a man threatens what he believes to be a baby, only to learn that it is just a wine skin</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains the first documented use of the word &#x27;mimesis&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>This play contains the first documented use of the word mimesis</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A man cross-dresses to infiltrate the festival to spy on what women think of him</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>A character cross-dresses to infiltrate this event so that he can spy on a group of women</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">Peace</summary>
+            <p class="work-desc">Comedy in which Trygaeus rides a giant dung beetle to free the goddess Peace.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Trygaeus flies to an audience with the gods on a giant dung beetle</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>one character flies to an audience with the gods on the back of a giant dung beetle</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Festival and Harvest are companions of Peace; Trygaeus marries Harvest</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Festival and Harvest are companions of the title character</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" open>
+            <summary class="work-title">Other Works and General</summary>
+            <p class="work-desc">Ecclesiazusae (Assemblywomen), Plutus, The Acharnians, The Knights, and general facts about Old Comedy.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ecclesiazusae: Praxagora leads women to disguise as men and vote themselves into power; impose communal property and sexual rules</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Praxagora gets the women of Athens to disguise themselves as men and vote themselves into power so that they can impose glorious socialism</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Acharnians: Dicaeopolis tries to secure peace with Sparta; Euripides asked for vegetables and a beggar&#x27;s costume</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this play about Dicaeopolis&#x27; attempt to secure peace with Sparta</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Knights: Agoracritus (sausage seller) vs. Cleon the Paphlagonian for Demos&#x27;s favor; oracle says sausage seller will rule Athens</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Agoracritus and Cleon the Paphlagonian get into a shouting contest</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Plutus: slave Cario impersonates a snake in Temple of Asclepius; Chremylus visits Delphic Oracle</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the slave Cario reminisces about impersonating a snake in the Temple of Asclepius</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Master of Old Comedy; parabasis is the section where the chorus addresses the audience</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>This Athenian playwright was the most famous writer of Old Comedy</li><li>the paragon of this genre, in which obscenity, mythological characters, and political topics were common</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Won first place for comedy at the City Dionysia with The Babylonians in 426 BC</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>In 426 BC, Aristophanes won first place for comedy with his play The Babylonians at this Athenian festival</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="suggestions">
+            <h2>Suggested Deep Dives</h2>
+            <ul><li>Lysistrata</li><li>The Clouds</li><li>The Frogs</li><li>The Birds</li></ul>
+        </section>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Aristophanes was the foremost playwright of Athenian Old Comedy, a genre characterized by obscenity, mythological characters, political satire, and a six-part structure including the parodos, agon, and parabasis (where the chorus directly addresses the audience). He won first place for comedy at the City Dionysia in 426 BC with The Babylonians.</p><p>The Clouds satirizes Socrates and intellectualism. Strepsiades, drowning in debt from his son Pheidippides&#x27;s horse purchases, enrolls at Socrates&#x27;s school, the Thinkery. Socrates sits in a basket floating in the air to keep his mind from drying out like lettuce and was once defecated on by a lizard while contemplating the moon. A debate between Right Logic (Superior Argument) and Wrong Logic (Inferior Argument) results in the worse argument winning. The play ends when Strepsiades and his slave Xanthias burn down the Thinkery.</p><p>Lysistrata follows women who withhold sex from their husbands to end the Peloponnesian War. The women swear an oath on a skin of Thasian wine, vowing not to &#x27;crouch like a lioness on all fours.&#x27; Characters include Caloniki and the Spartan Lampito. Lysistrata pours water on a magistrate who scorns her woolworking analogy for society.</p><p>The Frogs follows Dionysus traveling to the underworld to bring back Euripides but ultimately choosing Aeschylus instead. Dionysus swaps clothes with his slave Xanthias to avoid being mistaken for Heracles. The chorus of frogs chants &#x27;brekekek koax koax.&#x27; A 1974 Yale musical adaptation used the varsity swim team as the frog chorus.</p><p>The Birds features Pisthetaerus and Euelpides creating Cloudcuckooland to blockade the gods from human offerings. Prometheus sneaks in under a parasol so Zeus can&#x27;t see him. Iris is mistreated; Heracles is tricked into a treaty. The geometer Meton is chased away.</p><p>The Wasps centers on Philocleon&#x27;s jury addiction and his son Anticleon&#x27;s efforts to cure him, culminating in a mock trial where a household dog is accused of stealing cheese. Thesmophoriazusae is set at the Thesmophoria festival where women discuss Euripides&#x27;s unflattering portrayals; it contains the first documented use of the word &#x27;mimesis.&#x27; Peace has Trygaeus riding a giant dung beetle to rescue the goddess Peace. Ecclesiazusae (Assemblywomen) features Praxagora leading women to disguise as men, vote themselves into power, and impose communal property. The Knights pits the sausage-seller Agoracritus against Cleon for the favor of Demos.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Aristophanes" target="_blank">Aristophanes - Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Old_Comedy" target="_blank">Old Comedy - Wikipedia</a></li></ul>
+        </section>
+        
+</body>
+</html>
