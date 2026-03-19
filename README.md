@@ -69,9 +69,12 @@ This is a visual artist so look up painting images from Wikimedia Commons using 
 
 ```
 stock/
-├── render.py         # HTML study guide generator (tweak CSS here)
-├── rerender.py       # Re-render all guides from saved analysis JSON
-├── lib/              # Pipeline internals (Claude runs these)
+├── render.py             # HTML study guide generator (tweak CSS here)
+├── render_cards.py       # Card editor page generator
+├── render_questions.py   # Source question page generator
+├── rerender.py           # Re-render all stock guides from saved analysis JSON
+├── build_index.py        # Index page generator (list + map views)
+├── lib/                  # Pipeline internals (Claude runs these)
 │   ├── fetch.py      # qbreader API data collection
 │   ├── parse.py      # Clue extraction from raw data
 │   ├── images.py     # Wikimedia Commons image lookup
@@ -114,3 +117,10 @@ stock/
 - **Text mentions** — for rare topics, also fetch text mentions: `fetch_text_mentions()` in lib/fetch.py
 - **Visual topics** — use `lib/images.py` to find Wikimedia Commons images to embed
 - **Re-render** — if you change the CSS in render.py, run `python rerender.py` to update all guides
+- **Full rebuild** — after generating new guides, run all renderers:
+  ```bash
+  python3 rerender.py          # stock guide HTML pages
+  python3 render_cards.py      # card editor HTML pages
+  python3 render_questions.py  # source question HTML pages
+  python3 build_index.py       # index page
+  ```
