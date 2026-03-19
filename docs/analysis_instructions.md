@@ -144,6 +144,15 @@ For topics with embedded images, generate an extra card per image:
 - **Use general indicators**: `Artist:` (not `Painter:` or `Sculptor:`), `Author:` (not `Novelist:`), etc.
 - **The front must teach something specific.** Every card front should contain a fact that, once memorized, helps you identify the answer in a quizbowl question.
 
+## Image Verification (Visual Arts)
+
+When adding images for paintings/sculptures/artworks, **never guess Wikimedia URLs**. Always use the API:
+
+1. **Search** for the correct filename via `commons.wikimedia.org/w/api.php` with `action=query&list=search&srsearch=QUERY&srnamespace=6`
+2. **Get the thumbnail URL** via `en.wikipedia.org/w/api.php` with `action=query&titles=File:FILENAME&prop=imageinfo&iiprop=url&iiurlwidth=500`
+3. **Verify** the URL returns HTTP 200 before saving it
+4. For **copyrighted works** not on Commons (modern/contemporary art), use a link-only image: `{"url": "", "link": "https://museum-page...", "caption": "Work Name (Year)"}` — this renders as a "View" link instead of an embedded image
+
 ## Constraints
 
 - **No outside knowledge for clue content.** Only describe what the clues say.
