@@ -629,11 +629,16 @@ function updateTagBtn() {
 tagDD.searchInput.addEventListener('input', e => buildTagList(e.target.value));
 buildTagList('');
 
+// --- Helpers ---
+function normalize(s) {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
 // --- Render ---
 function render() {
-    const q = (search.value || '').toLowerCase();
+    const q = normalize(search.value || '');
     let filtered = guides.filter(g => {
-        const matchesText = g.name.toLowerCase().includes(q);
+        const matchesText = normalize(g.name).includes(q);
         const matchesCat = selectedCats.size === 0 || selectedCats.has(g.category) || selectedCats.has(g.subcategory);
         const matchesTag = selectedTags.size === 0 || (g.tags && g.tags.some(t => selectedTags.has(t)));
         return matchesText && matchesCat && matchesTag;
