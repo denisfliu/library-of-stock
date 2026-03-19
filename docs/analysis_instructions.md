@@ -1,6 +1,6 @@
 # Stock Knowledge Analysis Instructions
 
-When analyzing clues for a quizbowl topic, follow this protocol. **Only use information from the clues themselves** — do not inject outside knowledge except for hyperlinks and images.
+When analyzing clues for a quizbowl topic, follow this protocol. **Only use information from the clues themselves** — do not inject outside knowledge except for hyperlinks.
 
 ## Step 0: Filter Out Irrelevant Results
 
@@ -70,7 +70,6 @@ The final output should be an HTML file with:
 - Power vs. giveaway indicators
 - A comprehensive prose summary of all accumulated facts (above the reference links)
 - Hyperlinks to relevant Wikipedia articles for further reading
-- Space for images (paintings, scores) where relevant — these can be added later
 - Clean, readable typography suitable for studying
 
 ## Metadata Fields
@@ -96,7 +95,6 @@ Each card object has:
 - **`back`**: the card back text
 - **`work`**: which work/subtopic the card is from
 - **`frequency`**: the approximate frequency of the underlying clue
-- **`image_url`**: (optional) URL of an image for the back (basic) or front (image cards)
 - **`tags`**: empty list by default `[]` — user adds tags interactively in the card editor
 
 ### Basic cards (work-based clues)
@@ -125,12 +123,6 @@ Examples:
 - Front: `Composer: went deaf in 1874; depicted this with a sustained high E in a string quartet`
   Back: `Bedrich Smetana`
 
-### Image cards (visual arts only)
-
-For topics with embedded images, generate an extra card per image:
-- **Front**: the image (stored as `image_url`)
-- **Back**: `"Work Name (Artist)"`
-
 ### What NOT to card
 
 - Pure identifier clues ("this Czech composer of X") — these are giveaways, not learnable facts
@@ -144,66 +136,9 @@ For topics with embedded images, generate an extra card per image:
 - **Use general indicators**: `Artist:` (not `Painter:` or `Sculptor:`), `Author:` (not `Novelist:`), etc.
 - **The front must teach something specific.** Every card front should contain a fact that, once memorized, helps you identify the answer in a quizbowl question.
 
-## Image Verification (Visual Arts)
-
-### Image rules
-
-**Never construct or guess Wikimedia URLs.** All image URLs must go through `lib/images.py`:
-
-```python
-from lib.images import find_image, set_work_image
-
-url = find_image("The Great Wave off Kanagawa", "Hokusai")  # returns verified URL or None
-if url:
-    set_work_image(analysis_data, work_name, url)  # sets on work + syncs cards
-```
-
-`find_image()` handles everything: searches Commons, gets thumbnails, verifies HTTP 200, and caches results.
-
-**Three-way image validation:**
-- **Auto-pass**: artist name appears in the filename → accepted immediately
-- **Auto-fail**: filename names a *different* artist, or is obviously generic (thumbnail.jpg, random photos) → rejected immediately
-- **Pending**: ambiguous filenames (non-English titles, catalog numbers, etc.) → saved to `cache/pending_images.json` for LLM review
-
-After running `fix_images.py`, the LLM must review `cache/pending_images.json` and approve/reject each entry. This prevents wrong-artist images (e.g., Cesare Rossetti's St. George being used for Altdorfer).
-
-**Other rules:**
-- Only search for **visual works** (Painting/Sculpture/Fresco/Print/Engraving). Never search for poems, novels, compositions, plays.
-- For **copyrighted works** not on Commons: `{"url": "", "link": "https://en.wikipedia.org/wiki/...", "caption": "Work Name"}` — renders as a "View" link.
-- Most 20th/21st century works are copyrighted and won't be on Commons. Always add a Wikipedia link for these.
-- **Wikipedia links must point to the specific work's article**, not the artist's general page. E.g., `The_Giantess_(The_Guardian_of_the_Egg)` not `Leonora_Carrington#Works`. Use `Artist#Section` only if the work has no dedicated article.
-
-### Image pipeline (full process)
-
-1. **Agents do NOT search for images during analysis.** They only create the analysis JSON with work sections.
-2. After analysis, run `python3 lib/fix_images.py` — this searches Commons for all missing visual works.
-3. Review `cache/pending_images.json` — the LLM approves or rejects ambiguous matches.
-4. For works that remain imageless (copyrighted, not on Commons), manually add Wikipedia links.
-5. Run `python3 lib/verify_images.py` to confirm all URLs return HTTP 200.
-
-### Avoiding Wikimedia rate limits
-
-1. **Never search for images inside parallel agents.** Image search is always a separate, sequential step run AFTER analysis is complete.
-2. **All image operations go through `lib/images.py`** which enforces 2s delays and has retry/backoff with `Retry-After` header support.
-3. **Persistent cache** (`cache/image_urls.json`) — repeated runs only hit the API for new/uncached paintings.
-4. **Agents must NOT use WebSearch, manual Commons lookups, or construct URLs.** Always use `find_image()` or `fix_images.py`.
-5. **User-Agent** must comply with Wikimedia policy: `BotName/version (URL; email)`.
-6. **Limit concurrent requests to 3 or fewer** (we use 1 sequential).
-7. If rate-limited (429), respect the `Retry-After` header — do not guess backoff times.
-
-### Lessons learned (image debacle)
-
-Previous agent runs made these mistakes — future agents MUST avoid them:
-
-1. **Agents guessed Wikimedia URLs** by constructing them from assumed filenames. These were often wrong (404s) or pointed to the wrong painting (different artist's version of same subject). **Fix:** All URLs go through `find_image()` which searches the API and verifies.
-2. **Wrong-artist images passed undetected.** Searching "St. George Altdorfer" returned Cesare Rossetti's St. George. Searching "Atlas Richter" returned the Ortelius world map. Searching "Danae Klimt" returned Titian's Danae. **Fix:** Three-way filename validation with LLM review for ambiguous cases.
-3. **Parallel agents all hit Wikimedia simultaneously**, causing rate limiting that persisted for hours. **Fix:** Image search is always sequential, never inside parallel agents.
-4. **No verification of existing URLs** meant broken images went undetected. **Fix:** `verify_images.py` audits all URLs, and the persistent cache tracks what's been verified.
-5. **Cache remembered failed searches** so re-runs couldn't find images that the API could actually provide. **Fix:** Clear not-found cache entries before re-searching; the LLM can manually clear specific entries when needed.
-
 ## Constraints
 
 - **No outside knowledge for clue content.** Only describe what the clues say.
-- **Outside knowledge OK for:** hyperlinks, images, identifying what a referenced work/person is for linking purposes, and metadata fields (year, continent) above.
+- **Outside knowledge OK for:** hyperlinks, identifying what a referenced work/person is for linking purposes, and metadata fields (year, continent) above.
 - **Sentences may contain multiple clues** — separate them during analysis.
 - **Giveaway clues** (containing "For 10/ten points") are still clues — they tell you what the most common/easy identification is.

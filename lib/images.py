@@ -12,11 +12,12 @@ Usage:
     if url:
         set_work_image(analysis_data, "The Great Wave off Kanagawa", url)
 """
-import requests, json, time, re
+import requests, json, time, re, fcntl
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 CACHE_FILE = ROOT / 'cache' / 'image_urls.json'
+LOCK_FILE = ROOT / 'cache' / '.images.lock'
 
 # Delay between API calls (seconds). 2s keeps us well under rate limits.
 API_DELAY = 2.0
@@ -209,6 +210,24 @@ def find_image(work_name, artist_name):
     if cache_key in cache:
         return cache[cache_key] or None
 
+    # Acquire file lock so only one process hits Wikimedia at a time
+    LOCK_FILE.parent.mkdir(exist_ok=True)
+    lock_fd = open(LOCK_FILE, 'w')
+    fcntl.flock(lock_fd, fcntl.LOCK_EX)
+    try:
+        # Re-check cache after acquiring lock (another process may have found it)
+        cache = _load_cache()
+        if cache_key in cache:
+            return cache[cache_key] or None
+
+        return _search_and_validate(work_name, artist_name, cache_key, cache)
+    finally:
+        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        lock_fd.close()
+
+
+def _search_and_validate(work_name, artist_name, cache_key, cache):
+    """Internal: search Commons, validate, cache. Called under lock."""
     clean = _clean_work_name(work_name)
     pending = _load_pending()
 
