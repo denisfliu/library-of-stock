@@ -4,9 +4,66 @@ render.py — Generate HTML study guide from analysis data.
 Takes a structured analysis dict and renders it as a self-contained HTML file.
 """
 
-import json
+import json, re
 from pathlib import Path
 from html import escape
+
+
+def _load_crossref_index():
+    """Load the topic index for inline linking."""
+    idx_path = Path(__file__).parent / 'output' / 'topic_index.json'
+    if idx_path.exists():
+        with open(idx_path) as f:
+            return json.load(f)
+    return {}
+
+
+def _linkify(text, cross_refs, self_topic, escaped=True):
+    """Replace cross-ref names in text with hyperlinks.
+
+    Blue links for existing pages, red spans for future pages.
+    Only replaces names listed in cross_refs (LLM-curated, not regex guessing).
+    """
+    if not cross_refs:
+        return escape(text) if escaped else text
+
+    if escaped:
+        text = escape(text)
+
+    # Sort by name length descending so longer matches take priority
+    refs_sorted = sorted(cross_refs, key=lambda r: len(r.get('name', '')), reverse=True)
+
+    replaced = set()  # track what we've already linked (only link first occurrence)
+    for ref in refs_sorted:
+        name = ref.get('name', '')
+        if not name or name in replaced:
+            continue
+
+        # Escape the name for HTML context
+        name_escaped = escape(name) if escaped else name
+
+        # Match whole word (case-insensitive)
+        pattern = r'(?<![/>])(\b' + re.escape(name_escaped) + r'\b)(?![^<]*>)'
+
+        if ref.get('exists'):
+            slug = ref.get('target_slug', '')
+            href = f"{slug}_stock.html"
+            # If linking to a specific work within a page, add anchor
+            target_work = ref.get('target_work')
+            if target_work:
+                anchor = re.sub(r'[^a-z0-9]+', '-', target_work.lower()).strip('-')
+                href += f"#{anchor}"
+            replacement = f'<a href="{href}" class="crossref-inline">{name_escaped}</a>'
+        else:
+            target = escape(ref.get('target_topic', name))
+            replacement = f'<span class="crossref-inline-red" title="No page yet: {target}">{name_escaped}</span>'
+
+        new_text, count = re.subn(pattern, replacement, text, count=1, flags=re.IGNORECASE)
+        if count > 0:
+            text = new_text
+            replaced.add(name)
+
+    return text
 
 
 def render_html(analysis: dict, output_path: str | Path) -> Path:
@@ -40,7 +97,9 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     """
     output_path = Path(output_path)
     topic = escape(analysis.get("topic", "Unknown"))
-    summary = escape(analysis.get("summary", ""))
+    cross_refs = analysis.get("cross_refs", [])
+    self_topic = analysis.get("topic", "")
+    summary = _linkify(analysis.get("summary", ""), cross_refs, self_topic)
     works = analysis.get("works", [])
     suggestions = analysis.get("recursive_suggestions", [])
     links = analysis.get("links", [])
@@ -81,7 +140,8 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
             """
 
         # description allows raw HTML (for image links, etc.)
-        desc = work.get("description", "")
+        # Apply cross-ref linking (escaped=False since desc may contain HTML)
+        desc = _linkify(work.get("description", ""), cross_refs, self_topic, escaped=False)
 
         # Render images if provided
         images_html = ""
@@ -113,9 +173,28 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
 
         clues_table = f'<table class="clue-table">{clues_html}</table>' if clues_html else ""
 
+        # Check if this work/section links to another topic's page
+        work_link_btn = ""
+        work_name_raw = work.get("name", "")
+        for ref in cross_refs:
+            ref_name = ref.get('name', '')
+            if ref.get('exists') and ref_name and ref_name.lower() in work_name_raw.lower():
+                slug = ref.get('target_slug', '')
+                href = f"{slug}_stock.html"
+                # If the ref points to a work (not the topic itself), add anchor
+                target_work = ref.get('target_work')
+                if target_work:
+                    anchor = re.sub(r'[^a-z0-9]+', '-', target_work.lower()).strip('-')
+                    href += f"#{anchor}"
+                work_link_btn = f' <a href="{href}" class="work-link-btn" title="Go to {escape(ref.get("target_topic", ""))}">&rarr;</a>'
+                break
+
+        # Generate anchor ID from work name
+        anchor_id = re.sub(r'[^a-z0-9]+', '-', work_name_raw.lower()).strip('-')
+
         works_html += f"""
-        <details class="work" open>
-            <summary class="work-title">{escape(work.get("name", ""))}</summary>
+        <details class="work" id="{anchor_id}" open>
+            <summary class="work-title">{escape(work_name_raw)}{work_link_btn}</summary>
             <p class="work-desc">{desc}</p>
             {images_html}
             {clues_table}
@@ -126,10 +205,8 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     if suggestions:
         items = "".join(f"<li>{escape(s)}</li>" for s in suggestions)
         suggestions_html = f"""
-        <section class="suggestions">
-            <h2>Suggested Deep Dives</h2>
-            <ul>{items}</ul>
-        </section>
+        <h3>Suggested Deep Dives</h3>
+        <ul>{items}</ul>
         """
 
     comp_summary = analysis.get("comprehensive_summary", "")
@@ -137,7 +214,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     if comp_summary:
         # Support multiple paragraphs separated by newlines
         paragraphs = [p.strip() for p in comp_summary.split("\n\n") if p.strip()]
-        body = "".join(f"<p>{escape(p)}</p>" for p in paragraphs)
+        body = "".join(f"<p>{_linkify(p, cross_refs, self_topic)}</p>" for p in paragraphs)
         comp_summary_html = f"""
         <section class="comp-summary">
             <h2>Summary of Facts</h2>
@@ -145,16 +222,21 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         </section>
         """
 
+    # cross_refs are used for inline linking only (no separate section)
+
     links_html = ""
-    if links:
-        items = "".join(
-            f'<li><a href="{escape(l["url"])}" target="_blank">{escape(l["text"])}</a></li>'
-            for l in links
-        )
+    if links or suggestions:
+        link_items = ""
+        if links:
+            link_items = "".join(
+                f'<li><a href="{escape(l["url"])}" target="_blank">{escape(l["text"])}</a></li>'
+                for l in links
+            )
         links_html = f"""
         <section class="links">
             <h2>Further Reading</h2>
-            <ul>{items}</ul>
+            {'<ul>' + link_items + '</ul>' if link_items else ''}
+            {suggestions_html}
         </section>
         """
 
@@ -225,6 +307,21 @@ h1 {{
 }}
 .work-title:hover {{
     background: #262d37;
+}}
+.work-link-btn {{
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}}
+.work-link-btn:hover {{
+    background: #223050;
+    text-decoration: none;
 }}
 .work-desc {{
     padding: 0.3rem 0.8rem;
@@ -349,6 +446,20 @@ h1 {{
 }}
 .links a {{ color: #6b9eff; text-decoration: none; }}
 .links a:hover {{ text-decoration: underline; }}
+.crossref-inline {{
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}}
+.crossref-inline:hover {{
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}}
+.crossref-inline-red {{
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}}
 .comp-summary {{
     margin-top: 1.2rem;
     background: #1a1f25;
@@ -391,7 +502,6 @@ h1 {{
 {nav_html}
 <div class="summary">{summary}</div>
 {works_html}
-{suggestions_html}
 {comp_summary_html}
 {links_html}
 </body>
