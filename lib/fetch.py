@@ -25,16 +25,22 @@ MIN_INTERVAL = 1.0 / RATE_LIMIT + 0.01
 _last_request_time = 0.0
 
 
-def _rate_limited_get(url: str, params: dict) -> requests.Response:
-    """Make a GET request, respecting the rate limit."""
+def _rate_limited_get(url: str, params: dict, max_retries: int = 5) -> requests.Response:
+    """Make a GET request, respecting the rate limit. Retries on 503 with backoff."""
     global _last_request_time
-    elapsed = time.time() - _last_request_time
-    if elapsed < MIN_INTERVAL:
-        time.sleep(MIN_INTERVAL - elapsed)
-    _last_request_time = time.time()
-    resp = requests.get(url, params=params)
-    resp.raise_for_status()
-    return resp
+    for attempt in range(max_retries):
+        elapsed = time.time() - _last_request_time
+        if elapsed < MIN_INTERVAL:
+            time.sleep(MIN_INTERVAL - elapsed)
+        _last_request_time = time.time()
+        resp = requests.get(url, params=params)
+        if resp.status_code == 503 and attempt < max_retries - 1:
+            wait = 2 ** attempt * 5  # 5, 10, 20, 40, 80 seconds
+            print(f"    503 error, retrying in {wait}s (attempt {attempt + 1}/{max_retries})...")
+            time.sleep(wait)
+            continue
+        resp.raise_for_status()
+        return resp
 
 
 def _sanitize_filename(name: str) -> str:
