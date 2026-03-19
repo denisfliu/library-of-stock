@@ -132,11 +132,72 @@ def _clean_work_name(name):
     return name
 
 
+def _filename_matches(filename, work_name, artist_name):
+    """Check if a Commons filename matches the artist and work.
+
+    Returns:
+        'pass'    — auto-accept (artist name in filename)
+        'fail'    — auto-reject (different artist named, or generic junk)
+        'pending' — needs LLM review (ambiguous)
+    """
+    fn_lower = filename.lower()
+
+    # Build name variants for the artist
+    parts = artist_name.split()
+    name_variants = set()
+    for p in parts:
+        if len(p) > 2 and p.lower() not in ('the', 'von', 'van', 'de', 'del', 'di', 'el', 'der', 'den'):
+            name_variants.add(p.lower())
+    name_variants.add(artist_name.lower().replace(' ', '_'))
+
+    artist_match = any(nv in fn_lower for nv in name_variants)
+
+    # AUTO-PASS: artist name in filename
+    if artist_match:
+        return 'pass'
+
+    # AUTO-FAIL: filename explicitly names a DIFFERENT artist
+    if re.match(r'^[a-z]+_[a-z]+_-_', fn_lower):
+        return 'fail'
+    if '_by_' in fn_lower:
+        return 'fail'
+
+    # AUTO-FAIL: obviously generic filenames
+    generic = ['thumbnail', 'photo', 'image', 'picture', 'file', 'untitled',
+               'img_', 'dsc_', 'screenshot', 'panorama', 'cute', 'vacation',
+               'nature', 'abstract_design']
+    if any(g in fn_lower for g in generic):
+        return 'fail'
+
+    # Everything else → pending for LLM review
+    return 'pending'
+
+
+PENDING_FILE = ROOT / 'cache' / 'pending_images.json'
+
+
+def _load_pending():
+    if PENDING_FILE.exists():
+        with open(PENDING_FILE) as f:
+            return json.load(f)
+    return {}
+
+
+def _save_pending(pending):
+    PENDING_FILE.parent.mkdir(exist_ok=True)
+    with open(PENDING_FILE, 'w') as f:
+        json.dump(pending, f, indent=2, ensure_ascii=False)
+
+
 def find_image(work_name, artist_name):
     """Find a verified Wikimedia Commons image URL for a painting.
 
     Returns a verified URL string, or None if not found.
     Results are cached — repeated calls for the same painting are free.
+
+    Images that auto-pass (artist name in filename) are accepted immediately.
+    Images that auto-fail (wrong artist, generic) are rejected.
+    Ambiguous images are saved to cache/pending_images.json for LLM review.
 
     This is the ONLY function that should be used to get image URLs.
     Never construct Wikimedia URLs manually.
@@ -149,26 +210,47 @@ def find_image(work_name, artist_name):
         return cache[cache_key] or None
 
     clean = _clean_work_name(work_name)
+    pending = _load_pending()
 
-    # Strategy 1: painting name + artist
-    files = _search_commons(f'{clean} {artist_name}')
-    for fn in files:
+    # Search both strategies, collect candidates
+    all_files = []
+    files1 = _search_commons(f'{clean} {artist_name}')
+    files2 = _search_commons(clean)
+    seen = set()
+    for fn in files1 + files2:
+        if fn not in seen:
+            seen.add(fn)
+            all_files.append(fn)
+
+    for fn in all_files:
+        verdict = _filename_matches(fn, work_name, artist_name)
+
+        if verdict == 'fail':
+            continue
+
         url = _get_thumb(fn)
-        if url and verify_url(url):
+        if not url or not verify_url(url):
+            continue
+
+        if verdict == 'pass':
+            # Auto-accept
             cache[cache_key] = url
             _save_cache()
             return url
 
-    # Strategy 2: just painting name
-    files = _search_commons(clean)
-    for fn in files:
-        url = _get_thumb(fn)
-        if url and verify_url(url):
-            cache[cache_key] = url
-            _save_cache()
-            return url
+        if verdict == 'pending':
+            # Save for LLM review — don't auto-accept
+            pending[cache_key] = {
+                'url': url,
+                'filename': fn,
+                'artist': artist_name,
+                'work': work_name,
+            }
+            _save_pending(pending)
+            print(f'    PENDING: {cache_key} → {fn[:60]}', flush=True)
+            break  # Only save the first pending candidate
 
-    # Not found — cache as empty so we don't re-search
+    # Not auto-accepted — cache as not found for now
     cache[cache_key] = ''
     _save_cache()
     return None

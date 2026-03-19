@@ -158,21 +158,48 @@ if url:
     set_work_image(analysis_data, work_name, url)  # sets on work + syncs cards
 ```
 
-`find_image()` handles everything: searches Commons, gets thumbnails, verifies HTTP 200, and caches results. A URL that hasn't been verified will never be written.
+`find_image()` handles everything: searches Commons, gets thumbnails, verifies HTTP 200, and caches results.
 
+**Three-way image validation:**
+- **Auto-pass**: artist name appears in the filename → accepted immediately
+- **Auto-fail**: filename names a *different* artist, or is obviously generic (thumbnail.jpg, random photos) → rejected immediately
+- **Pending**: ambiguous filenames (non-English titles, catalog numbers, etc.) → saved to `cache/pending_images.json` for LLM review
+
+After running `fix_images.py`, the LLM must review `cache/pending_images.json` and approve/reject each entry. This prevents wrong-artist images (e.g., Cesare Rossetti's St. George being used for Altdorfer).
+
+**Other rules:**
 - Only search for **visual works** (Painting/Sculpture/Fresco/Print/Engraving). Never search for poems, novels, compositions, plays.
-- For **copyrighted works** not on Commons: `{"url": "", "link": "https://en.wikipedia.org/wiki/...", "caption": "Work Name"}`
+- For **copyrighted works** not on Commons: `{"url": "", "link": "https://en.wikipedia.org/wiki/...", "caption": "Work Name"}` — renders as a "View" link.
+- Most 20th/21st century works are copyrighted and won't be on Commons. Always add a Wikipedia link for these.
+- **Wikipedia links must point to the specific work's article**, not the artist's general page. E.g., `The_Giantess_(The_Guardian_of_the_Egg)` not `Leonora_Carrington#Works`. Use `Artist#Section` only if the work has no dedicated article.
 
-### Bulk image fixing
+### Image pipeline (full process)
 
-After generating VFA analyses, run `python3 lib/fix_images.py`. It scans all analysis JSONs and calls `find_image()` for any visual work missing an embedded URL.
+1. **Agents do NOT search for images during analysis.** They only create the analysis JSON with work sections.
+2. After analysis, run `python3 lib/fix_images.py` — this searches Commons for all missing visual works.
+3. Review `cache/pending_images.json` — the LLM approves or rejects ambiguous matches.
+4. For works that remain imageless (copyrighted, not on Commons), manually add Wikipedia links.
+5. Run `python3 lib/verify_images.py` to confirm all URLs return HTTP 200.
 
 ### Avoiding Wikimedia rate limits
 
 1. **Never search for images inside parallel agents.** Image search is always a separate, sequential step run AFTER analysis is complete.
-2. **All image operations go through `lib/images.py`** which enforces 2s delays and has retry/backoff.
+2. **All image operations go through `lib/images.py`** which enforces 2s delays and has retry/backoff with `Retry-After` header support.
 3. **Persistent cache** (`cache/image_urls.json`) — repeated runs only hit the API for new/uncached paintings.
 4. **Agents must NOT use WebSearch, manual Commons lookups, or construct URLs.** Always use `find_image()` or `fix_images.py`.
+5. **User-Agent** must comply with Wikimedia policy: `BotName/version (URL; email)`.
+6. **Limit concurrent requests to 3 or fewer** (we use 1 sequential).
+7. If rate-limited (429), respect the `Retry-After` header — do not guess backoff times.
+
+### Lessons learned (image debacle)
+
+Previous agent runs made these mistakes — future agents MUST avoid them:
+
+1. **Agents guessed Wikimedia URLs** by constructing them from assumed filenames. These were often wrong (404s) or pointed to the wrong painting (different artist's version of same subject). **Fix:** All URLs go through `find_image()` which searches the API and verifies.
+2. **Wrong-artist images passed undetected.** Searching "St. George Altdorfer" returned Cesare Rossetti's St. George. Searching "Atlas Richter" returned the Ortelius world map. Searching "Danae Klimt" returned Titian's Danae. **Fix:** Three-way filename validation with LLM review for ambiguous cases.
+3. **Parallel agents all hit Wikimedia simultaneously**, causing rate limiting that persisted for hours. **Fix:** Image search is always sequential, never inside parallel agents.
+4. **No verification of existing URLs** meant broken images went undetected. **Fix:** `verify_images.py` audits all URLs, and the persistent cache tracks what's been verified.
+5. **Cache remembered failed searches** so re-runs couldn't find images that the API could actually provide. **Fix:** Clear not-found cache entries before re-searching; the LLM can manually clear specific entries when needed.
 
 ## Constraints
 
