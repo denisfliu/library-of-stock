@@ -55,7 +55,35 @@ For a creator, this might cover: biographical details, major works and their plo
 
 Write this as if someone who knows nothing about the topic will read it to get a complete picture of what quizbowl expects them to know. Use only facts from the clues. Store this in the `"comprehensive_summary"` field of the analysis JSON.
 
-## Step 6: Suggest Recursive Searches
+## Step 6: Cross-References
+
+After analysis, identify mentions of other topics/works that exist (or could exist) in the library. Store these in the `"cross_refs"` field of the analysis JSON.
+
+Use `python3 lib/crossref.py --lookup "Name"` to check if a topic/work has a page. Or read `output/topic_index.json` directly.
+
+Each cross-ref is:
+```json
+{
+  "name": "Schopenhauer",           // the name as it appears in this page's text
+  "target_topic": "Arthur Schopenhauer",  // full topic name (or null if no page)
+  "target_slug": "arthur_schopenhauer",   // slug for linking (or null)
+  "type": "topic",                  // "topic" or "work"
+  "exists": false                   // true = blue link, false = red link (future page)
+}
+```
+
+**Blue links**: the target has a page → renders as a clickable link to that page.
+**Red links** (Wikipedia-style): the target doesn't have a page yet but is notable enough that it might in the future → renders as a red link indicating a gap.
+
+Examples for Kant:
+- Schopenhauer (red — no page yet, but frequently mentioned interlocutor)
+- David Hume (red — no page yet)
+- Thomas Cole / The Oxbow (blue — page exists)
+- Ashcan School (blue — page exists)
+
+When a **new page is created**, also run `python3 lib/crossref.py` to rebuild the index, then check if any existing pages mention the new topic and should gain a blue link.
+
+## Step 7: Suggest Recursive Searches
 
 After analysis, identify works or subtopics that deserve their own deep dive. For example, if "The Moldau" comes up 10 times with varied clues, suggest searching for it as its own answerline. Present these as suggestions for user confirmation.
 
