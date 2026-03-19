@@ -1,96 +1,193 @@
+#!/usr/bin/env python3
+"""Single source of truth for all image URL operations.
+
+ALL image URLs must go through this module. Never construct or write
+Wikimedia URLs directly — always use find_image() which searches,
+verifies, and caches.
+
+Usage:
+    from lib.images import find_image, set_work_image
+
+    url = find_image("The Great Wave off Kanagawa", "Hokusai")
+    if url:
+        set_work_image(analysis_data, "The Great Wave off Kanagawa", url)
 """
-images.py — Wikimedia Commons image lookup for visual topics.
+import requests, json, time, re
+from pathlib import Path
 
-Searches for painting images on Wikimedia Commons and returns
-direct thumbnail URLs that can be embedded in HTML.
-"""
+ROOT = Path(__file__).parent.parent
+CACHE_FILE = ROOT / 'cache' / 'image_urls.json'
 
-import requests
+# Delay between API calls (seconds). 2s keeps us well under rate limits.
+API_DELAY = 2.0
 
-COMMONS_API = "https://commons.wikimedia.org/w/api.php"
-HEADERS = {"User-Agent": "StockQB/1.0 (quizbowl study tool)"}
-
-
-def search_commons(query: str, limit: int = 5) -> list[dict]:
-    """
-    Search Wikimedia Commons for image files matching a query.
-
-    Returns list of dicts with: title, url (full), thumb (500px thumbnail).
-    """
-    r = requests.get(COMMONS_API, params={
-        "action": "query",
-        "list": "search",
-        "srsearch": query,
-        "srnamespace": "6",  # File namespace
-        "srlimit": limit,
-        "format": "json",
-    }, headers=HEADERS)
-    results = r.json().get("query", {}).get("search", [])
-
-    images = []
-    for result in results:
-        title = result["title"]
-        # Skip PDFs and non-image files
-        if title.lower().endswith((".pdf", ".svg", ".ogv", ".webm")):
-            continue
-        info = _get_image_info(title)
-        if info:
-            images.append(info)
-    return images
+_session = None
+_cache = None
 
 
-def _get_image_info(file_title: str, thumb_width: int = 500) -> dict | None:
-    """Get URL info for a specific Wikimedia Commons file."""
-    r = requests.get(COMMONS_API, params={
-        "action": "query",
-        "titles": file_title,
-        "prop": "imageinfo",
-        "iiprop": "url",
-        "iiurlwidth": thumb_width,
-        "format": "json",
-    }, headers=HEADERS)
-    data = r.json()
-    for pid, page in data["query"]["pages"].items():
-        if "imageinfo" in page:
-            info = page["imageinfo"][0]
-            return {
-                "title": file_title,
-                "url": info.get("thumburl", info["url"]),
-                "full_url": info["url"],
-                "link": info.get("descriptionurl", ""),
-            }
+def _get_session():
+    global _session
+    if _session is None:
+        _session = requests.Session()
+        _session.headers['User-Agent'] = (
+            'StockQB/1.0 (quizbowl study tool; '
+            'contact: github.com/denisfliu/library-of-stock)'
+        )
+    return _session
+
+
+def _load_cache():
+    global _cache
+    if _cache is None:
+        if CACHE_FILE.exists():
+            with open(CACHE_FILE) as f:
+                _cache = json.load(f)
+        else:
+            _cache = {}
+    return _cache
+
+
+def _save_cache():
+    if _cache is not None:
+        CACHE_FILE.parent.mkdir(exist_ok=True)
+        with open(CACHE_FILE, 'w') as f:
+            json.dump(_cache, f, indent=2, ensure_ascii=False)
+
+
+def _api_get(base_url, params, retries=3):
+    """API call with retry and backoff. Returns parsed JSON or {}."""
+    session = _get_session()
+    for attempt in range(retries):
+        try:
+            time.sleep(API_DELAY)
+            r = session.get(base_url, params=params, timeout=15)
+            if r.status_code == 429:
+                wait = API_DELAY * (2 ** (attempt + 1))
+                print(f'    Rate limited, waiting {wait:.0f}s...', flush=True)
+                time.sleep(wait)
+                continue
+            return r.json()
+        except Exception:
+            if attempt < retries - 1:
+                time.sleep(API_DELAY * (attempt + 2))
+    return {}
+
+
+def verify_url(url):
+    """Confirm URL returns HTTP 200."""
+    session = _get_session()
+    try:
+        r = session.head(url, timeout=10, allow_redirects=True)
+        return r.status_code == 200
+    except Exception:
+        return False
+
+
+def _search_commons(query, limit=3):
+    """Search Wikimedia Commons for filenames matching query."""
+    data = _api_get('https://commons.wikimedia.org/w/api.php', {
+        'action': 'query', 'list': 'search',
+        'srsearch': f'{query} filetype:bitmap',
+        'srnamespace': 6, 'srlimit': limit, 'format': 'json',
+    })
+    return [item['title'].replace('File:', '')
+            for item in data.get('query', {}).get('search', [])]
+
+
+def _get_thumb(filename, width=500):
+    """Get thumbnail URL from a Commons filename."""
+    data = _api_get('https://commons.wikimedia.org/w/api.php', {
+        'action': 'query', 'titles': f'File:{filename}',
+        'prop': 'imageinfo', 'iiprop': 'url',
+        'iiurlwidth': width, 'format': 'json',
+    })
+    pages = data.get('query', {}).get('pages', {})
+    for page in pages.values():
+        return page.get('imageinfo', [{}])[0].get('thumburl')
     return None
 
 
-def find_painting(artist: str, painting: str) -> dict | None:
+def _clean_work_name(name):
+    """Strip parentheticals, slashes, dates for better search."""
+    name = re.sub(r'\(.*?\)', '', name).strip()
+    name = re.sub(r'\s*/\s*.*', '', name).strip()
+    name = re.sub(r',?\s*c\.\s*\d{4}.*', '', name).strip()
+    return name
+
+
+def find_image(work_name, artist_name):
+    """Find a verified Wikimedia Commons image URL for a painting.
+
+    Returns a verified URL string, or None if not found.
+    Results are cached — repeated calls for the same painting are free.
+
+    This is the ONLY function that should be used to get image URLs.
+    Never construct Wikimedia URLs manually.
     """
-    Try to find a specific painting on Wikimedia Commons.
+    cache = _load_cache()
+    cache_key = f'{artist_name} / {work_name}'
 
-    Returns dict with url/thumb/link or None if not found.
+    # Return cached result (empty string = previously not found)
+    if cache_key in cache:
+        return cache[cache_key] or None
+
+    clean = _clean_work_name(work_name)
+
+    # Strategy 1: painting name + artist
+    files = _search_commons(f'{clean} {artist_name}')
+    for fn in files:
+        url = _get_thumb(fn)
+        if url and verify_url(url):
+            cache[cache_key] = url
+            _save_cache()
+            return url
+
+    # Strategy 2: just painting name
+    files = _search_commons(clean)
+    for fn in files:
+        url = _get_thumb(fn)
+        if url and verify_url(url):
+            cache[cache_key] = url
+            _save_cache()
+            return url
+
+    # Not found — cache as empty so we don't re-search
+    cache[cache_key] = ''
+    _save_cache()
+    return None
+
+
+def set_work_image(data, work_name, url):
+    """Set the image URL for a work and sync to its cards.
+
+    Only call this with a URL returned by find_image() — never with
+    a manually constructed URL.
     """
-    results = search_commons(f"{artist} {painting}", limit=5)
-    # Try to find the best match
-    painting_lower = painting.lower()
-    artist_lower = artist.lower()
-    for r in results:
-        title_lower = r["title"].lower()
-        if painting_lower.replace(" ", "") in title_lower.replace(" ", ""):
-            return r
-    # If no exact match, return first result that mentions the artist
-    for r in results:
-        if artist_lower.split()[-1].lower() in r["title"].lower():
-            return r
-    return results[0] if results else None
+    for w in data.get('works', []):
+        if w['name'] == work_name:
+            if w.get('images'):
+                w['images'][0]['url'] = url
+            else:
+                w['images'] = [{'url': url, 'caption': work_name}]
+            break
+
+    # Sync to cards
+    for c in data.get('cards', []):
+        if c.get('work') == work_name:
+            for ci in c.get('images', []):
+                if not ci.get('url'):
+                    ci['url'] = url
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     import sys
-    artist = sys.argv[1] if len(sys.argv) > 1 else "Emily Carr"
-    painting = sys.argv[2] if len(sys.argv) > 2 else "Indian Church"
-    result = find_painting(artist, painting)
-    if result:
-        print(f"Found: {result['title']}")
-        print(f"  Thumbnail: {result['url']}")
-        print(f"  Full: {result['full_url']}")
+    if len(sys.argv) < 3:
+        print('Usage: python3 lib/images.py "Painting Name" "Artist Name"')
+        sys.exit(1)
+    painting = sys.argv[1]
+    artist = sys.argv[2]
+    url = find_image(painting, artist)
+    if url:
+        print(f'Found: {url}')
     else:
-        print("Not found")
+        print('Not found')

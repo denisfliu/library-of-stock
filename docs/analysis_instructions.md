@@ -146,12 +146,33 @@ For topics with embedded images, generate an extra card per image:
 
 ## Image Verification (Visual Arts)
 
-When adding images for paintings/sculptures/artworks, **never guess Wikimedia URLs**. Always use the API:
+### Image rules
 
-1. **Search** for the correct filename via `commons.wikimedia.org/w/api.php` with `action=query&list=search&srsearch=QUERY&srnamespace=6`
-2. **Get the thumbnail URL** via `en.wikipedia.org/w/api.php` with `action=query&titles=File:FILENAME&prop=imageinfo&iiprop=url&iiurlwidth=500`
-3. **Verify** the URL returns HTTP 200 before saving it
-4. For **copyrighted works** not on Commons (modern/contemporary art), use a link-only image: `{"url": "", "link": "https://museum-page...", "caption": "Work Name (Year)"}` — this renders as a "View" link instead of an embedded image
+**Never construct or guess Wikimedia URLs.** All image URLs must go through `lib/images.py`:
+
+```python
+from lib.images import find_image, set_work_image
+
+url = find_image("The Great Wave off Kanagawa", "Hokusai")  # returns verified URL or None
+if url:
+    set_work_image(analysis_data, work_name, url)  # sets on work + syncs cards
+```
+
+`find_image()` handles everything: searches Commons, gets thumbnails, verifies HTTP 200, and caches results. A URL that hasn't been verified will never be written.
+
+- Only search for **visual works** (Painting/Sculpture/Fresco/Print/Engraving). Never search for poems, novels, compositions, plays.
+- For **copyrighted works** not on Commons: `{"url": "", "link": "https://en.wikipedia.org/wiki/...", "caption": "Work Name"}`
+
+### Bulk image fixing
+
+After generating VFA analyses, run `python3 lib/fix_images.py`. It scans all analysis JSONs and calls `find_image()` for any visual work missing an embedded URL.
+
+### Avoiding Wikimedia rate limits
+
+1. **Never search for images inside parallel agents.** Image search is always a separate, sequential step run AFTER analysis is complete.
+2. **All image operations go through `lib/images.py`** which enforces 2s delays and has retry/backoff.
+3. **Persistent cache** (`cache/image_urls.json`) — repeated runs only hit the API for new/uncached paintings.
+4. **Agents must NOT use WebSearch, manual Commons lookups, or construct URLs.** Always use `find_image()` or `fix_images.py`.
 
 ## Constraints
 
