@@ -444,8 +444,9 @@ h1 {{
         <textarea id="m-front"></textarea>
         <label>Back</label>
         <input type="text" id="m-back">
-        <label>Images <span style="font-weight:normal;font-size:0.78rem;color:#808790;">&mdash; paste an image (Ctrl+V), or add by URL</span></label>
+        <label>Images <span style="font-weight:normal;font-size:0.78rem;color:#808790;">&mdash; click palette image, paste (Ctrl+V), or add by URL</span></label>
         <div id="m-images-list"></div>
+        <div id="m-palette-picker" style="margin-top:0.3rem;"></div>
         <div id="m-image-drop" style="border:1px dashed #3a3f47;border-radius:4px;padding:0.5rem;margin-top:0.3rem;text-align:center;background:#15191e;cursor:pointer;" tabindex="0">
             <div style="font-size:0.82rem;color:#808790;">Paste image here (Ctrl+V) or drag &amp; drop</div>
         </div>
@@ -586,6 +587,7 @@ function openEditModal(idx) {{
     document.getElementById('m-back').value = c.back || '';
     modalImages = getCardImages(c).map(img => ({{ ...img }}));
     renderImageList();
+    renderModalPalette();
     document.getElementById('m-tags').value = (c.tags || []).join(', ');
     document.getElementById('modal').classList.add('open');
 }}
@@ -660,10 +662,17 @@ function renderImageList() {{
         <div class="img-list-item">
             <img src="${{img.url}}" onerror="this.style.display='none'">
             <div class="img-info">${{img.url.startsWith('data:') ? '(pasted image)' : img.url.split('/').pop().substring(0, 40)}}</div>
-            <span class="img-side">${{img.side}}</span>
+            <span class="img-side" style="cursor:pointer;" onclick="toggleImgSide(${{i}})" title="Click to toggle front/back">${{img.side}}</span>
             <span class="img-remove" onclick="modalImages.splice(${{i}},1);renderImageList();">&times;</span>
         </div>
     `).join('');
+}}
+
+function toggleImgSide(idx) {{
+    if (modalImages[idx]) {{
+        modalImages[idx].side = modalImages[idx].side === 'front' ? 'back' : 'front';
+        renderImageList();
+    }}
 }}
 
 function addImageToList() {{
@@ -673,6 +682,33 @@ function addImageToList() {{
     modalImages.push({{ url, side }});
     document.getElementById('m-image-url').value = '';
     renderImageList();
+}}
+
+function renderModalPalette() {{
+    const picker = document.getElementById('m-palette-picker');
+    if (!picker || paletteImages.length === 0) {{
+        if (picker) picker.innerHTML = '';
+        return;
+    }}
+    const side = document.getElementById('m-image-side-new').value;
+    picker.innerHTML = '<div style="font-size:0.75rem;color:#808790;margin-bottom:0.25rem;">From palette (click to add):</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;">' +
+        paletteImages.map((img, i) => `
+            <div style="position:relative;cursor:pointer;border:1px solid #3a3f47;border-radius:3px;overflow:hidden;"
+                 onclick="addPaletteImgToModal(${{i}})" title="${{img.label}}">
+                <img src="${{img.url}}" style="max-height:50px;max-width:80px;display:block;" onerror="this.parentElement.style.display='none'">
+            </div>
+        `).join('') + '</div>';
+}}
+
+function addPaletteImgToModal(idx) {{
+    const img = paletteImages[idx];
+    if (!img) return;
+    const side = document.getElementById('m-image-side-new').value;
+    if (!modalImages.some(m => m.url === img.url)) {{
+        modalImages.push({{ url: img.url, side }});
+        renderImageList();
+    }}
 }}
 
 function appendTag(tag) {{
