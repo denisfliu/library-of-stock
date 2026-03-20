@@ -22,12 +22,14 @@ Then provide the list (inline or as a file path).
 
 Non-VFA categories (Literature, Philosophy, Science) don't need Phase 2.
 
-### Category-Specific Instructions
-Each agent must be told which category supplement to read:
-- Literature: `docs/analysis_literature.md`
-- Visual Fine Arts: `docs/analysis_vfa.md`
-- Philosophy: `docs/analysis_philosophy.md`
-- Science: `docs/analysis_science.md`
+### Required Reading for Agents
+Every agent must read these before starting:
+1. **`docs/analysis_instructions.md`** — core protocol (steps, JSON format, card rules, cross-refs)
+2. **Category supplement** — category-specific sectioning, indicators, and rules:
+   - Literature: `docs/analysis_literature.md`
+   - Visual Fine Arts: `docs/analysis_vfa.md`
+   - Philosophy: `docs/analysis_philosophy.md`
+   - Science: `docs/analysis_science.md`
 
 ## Agent Prompt Template
 
@@ -97,7 +99,12 @@ render_html(analysis, 'output/{slug}_stock.html')
 python3 render_cards.py
 python3 build_index.py
 
-### Step 5: Track
+### Step 5: Cross-references
+Add cross_refs to the JSON following `docs/analysis_instructions.md` Step 6.
+Use `output/topic_index.json` to check if targets exist.
+Priority: own page (type: "topic") > section in another page (type: "work") > red link (exists: false).
+
+### Step 6: Track
 echo "TOPIC NAME" >> csvs/completed.txt
 
 ## IMPORTANT RULES
@@ -120,18 +127,21 @@ echo "TOPIC NAME" >> csvs/completed.txt
 ## After All Agents Complete
 
 ```bash
-# 1. Final render
+# 1. Rebuild cross-ref index (new topics may create new blue links for existing pages)
+python3 lib/crossref.py
+
+# 2. Final render
 python3 rerender.py
 python3 render_cards.py
 python3 render_questions.py
 python3 build_index.py
 
-# 2. For VFA topics only — image pipeline
+# 3. For VFA topics only — image pipeline
 python3 lib/fix_images.py                    # sequential, respects rate limits
 # Then review cache/pending_images.json      # LLM approves/rejects ambiguous images
 python3 lib/verify_images.py                 # verify all URLs return 200
 
-# 3. Quality audit
+# 4. Quality audit
 python3 -c "
 import json
 from pathlib import Path
