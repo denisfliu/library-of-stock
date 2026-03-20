@@ -383,7 +383,25 @@ h1 {
 </style>
 </head>
 <body>
+<div style="display:flex;justify-content:space-between;align-items:baseline;">
 <h1>Stock Knowledge Guides</h1>
+<div style="display:flex;gap:0.5rem;">
+<a href="progress.html" style="background:#1a1f25;color:#9aa0a7;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.6rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;">Progress</a>
+<button style="background:#1a1f25;color:#9aa0a7;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.6rem;font-size:0.78rem;cursor:pointer;white-space:nowrap;" onclick="document.getElementById('queue-panel').style.display=document.getElementById('queue-panel').style.display==='none'?'block':'none'">Queue <span style="background:#2a3040;color:#6b9eff;border-radius:8px;padding:0.1rem 0.4rem;font-size:0.72rem;margin-left:0.3rem;">QUEUE_TOTAL</span></button>
+</div>
+</div>
+<div id="queue-panel" style="display:none;background:#15191e;border:1px solid #2a2f37;border-radius:4px;padding:0.8rem 1rem;margin-bottom:0.8rem;font-size:0.82rem;max-height:50vh;overflow-y:auto;">
+  <div style="display:flex;gap:1.5rem;">
+    <div style="flex:1;">
+      <h3 style="font-size:0.85rem;color:#e0e0e0;margin-bottom:0.4rem;">First Pass (FIRST_COUNT)</h3>
+      <ul style="list-style:none;max-height:30vh;overflow-y:auto;color:#9aa0a7;">FIRST_PASS_LIST</ul>
+    </div>
+    <div style="flex:1;">
+      <h3 style="font-size:0.85rem;color:#e0e0e0;margin-bottom:0.4rem;">Second Pass (SECOND_COUNT)</h3>
+      <ul style="list-style:none;max-height:30vh;overflow-y:auto;color:#9aa0a7;">SECOND_PASS_LIST</ul>
+    </div>
+  </div>
+</div>
 <div class="view-toggle">
     <button class="view-btn active" data-view="list">All</button>
     <button class="view-btn" data-view="location">Location</button>
@@ -898,7 +916,21 @@ def build():
             guide["year"] = year
         guides.append(guide)
 
+    # Queue data for index page
+    queue_first = json.loads(Path("queue/queue_first_pass.json").read_text()) if Path("queue/queue_first_pass.json").exists() else {"queue": []}
+    queue_second = json.loads(Path("queue/queue_second_pass.json").read_text()) if Path("queue/queue_second_pass.json").exists() else {"queue": []}
+    first_count = len(queue_first["queue"])
+    second_count = len(queue_second["queue"])
+    total_count = first_count + second_count
+    first_list = "".join(f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{item["topic"]}</li>' for item in queue_first["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
+    second_list = "".join(f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{item["topic"]}</li>' for item in queue_second["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
+
     html = INDEX_TEMPLATE.replace("GUIDE_DATA", json.dumps(guides))
+    html = html.replace("QUEUE_TOTAL", str(total_count))
+    html = html.replace("FIRST_COUNT", str(first_count))
+    html = html.replace("SECOND_COUNT", str(second_count))
+    html = html.replace("FIRST_PASS_LIST", first_list)
+    html = html.replace("SECOND_PASS_LIST", second_list)
 
     out_path = Path("index.html")
     with open(out_path, "w") as f:

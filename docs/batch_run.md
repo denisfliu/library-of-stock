@@ -4,11 +4,16 @@ How to launch agents to bulk-generate stock guides. Read this fully before start
 
 ## Quick Start
 
-Give Claude Code a topic list and say:
+Tell the controller (Claude Code conversation):
 
-> Launch batch agents for these topics following `docs/batch_run.md`. Category: [Literature/Fine Arts/Philosophy/Science]. Difficulties: 7,8,9,10.
+> Start a batch with N first pass agents and M second pass agents.
 
-Then provide the list (inline or as a file path).
+The controller will:
+1. Create `queue/current_batch.json` from the global queues
+2. Launch N+M agents that pull from the shared batch queue
+3. Monitor agents, relaunch when one finishes (if queue not empty)
+4. After all done, launch a Sonnet agent for cross-ref backfill
+5. Run final renders
 
 ## Batch Rules
 
@@ -31,20 +36,22 @@ Every agent must read these before starting:
    - Philosophy: `docs/analysis_philosophy.md`
    - Science: `docs/analysis_science.md`
 
-## Agent Prompt Template
+## First Pass Agent Prompt Template
 
-Copy and customize this for each agent:
+Each agent is assigned a category and only pops topics from that category. The controller specifies the category when launching the agent.
 
 ```
-You are a stock guide generation agent. Process each topic autonomously. Do NOT ask for confirmation.
-
-## YOUR BATCH
-[list topics here, with known works/notes]
+You are a stock guide generation agent for [CATEGORY] topics. Process topics from the shared batch queue. Do NOT ask for confirmation.
 
 ## INSTRUCTIONS
-Read `docs/analysis_instructions.md` (core protocol) and `docs/analysis_[category].md` (category supplement).
+Read `docs/analysis_instructions.md` (core protocol) and `docs/analysis_[CATEGORY].md` (category supplement).
 
-## PIPELINE FOR EACH TOPIC
+## LOOP: Pop and process topics (up to 10)
+
+### Step 0: Pop next topic
+Run: python3 lib/batch_worker.py pop first --category "[CATEGORY]"
+If output is "EMPTY", you are done — exit.
+Parse the JSON output to get the topic name and metadata.
 
 ### Step 1: Fetch clues
 Use the minimally identifiable search term (usually last name or common name):
@@ -53,36 +60,9 @@ Example: search "Falconet" not "Étienne Maurice Falconet"
 
 ### Step 2: Read clues and create analysis JSON
 Read output/{slug}_clues.txt. Create output/{slug}_analysis.json.
-IMPORTANT: Set "topic" to the FULL proper name (e.g., "Étienne Maurice Falconet"),
-not the search term. The answerline in the clue results usually shows the full name.
-
-Key JSON structure:
-{
-  "topic": "Name",
-  "summary": "...",
-  "works": [
-    {
-      "name": "Work or Concept Name",
-      "indicator": "Novel/Painting/Philosopher/Concept/Work",
-      "description": "Mini-paragraph explaining this section with context and connections.",
-      "clues": [
-        {"clue": "...", "frequency": N, "tendency": "power/mid/giveaway", "examples": ["..."]}
-      ]
-    }
-  ],
-  "comprehensive_summary": "Multi-paragraph prose summary of everything the clues tell us.",
-  "recursive_suggestions": [],
-  "links": [{"text": "...", "url": "https://en.wikipedia.org/..."}],
-  "category": "...", "subcategory": "...",
-  "year": BIRTH_YEAR, "continent": "...", "country": "...",
-  "tags": ["movement1"],
-  "cards": [
-    {"type": "basic", "indicator": "...", "front": "Indicator: clue", "back": "Answer", "work": "...", "frequency": N, "tags": []}
-  ]
-}
+IMPORTANT: Set "topic" to the FULL proper name (from the answerline), not the search term.
 
 ### Step 3: Self-check (MANDATORY)
-After writing each JSON, verify ALL of these:
 - [ ] More than 1 work section (if data mentions multiple works/ideas)
 - [ ] Cards array is non-empty
 - [ ] Every work/concept mentioned 3+ times has its own section
@@ -90,33 +70,25 @@ After writing each JSON, verify ALL of these:
 - [ ] Description is a mini-paragraph (not a terse phrase)
 - [ ] comprehensive_summary is real prose (multiple sentences)
 - [ ] Metadata present: category, subcategory, year, continent, country, tags
-If any check fails, fix before moving on.
+- [ ] Each card tests ONE fact
 
 ### Step 4: Render
-python3 -c "
-from render import render_html
-import json
-with open('output/{slug}_analysis.json') as f:
-    analysis = json.load(f)
-render_html(analysis, 'output/{slug}_stock.html')
-"
+python3 -c "from render import render_html; import json; f=open('output/{slug}_analysis.json'); a=json.load(f); render_html(a, 'output/{slug}_stock.html')"
 python3 render_cards.py
-python3 build_index.py
 
-### Step 5: Cross-references
-Add cross_refs to the JSON following `docs/analysis_instructions.md` Step 6.
-Use `output/topic_index.json` to check if targets exist.
-Priority: own page (type: "topic") > section in another page (type: "work") > red link (exists: false).
+### Step 5: Mark complete
+python3 lib/batch_worker.py complete "FULL TOPIC NAME"
+echo "FULL TOPIC NAME" >> csvs/completed.txt
+python3 lib/topic_queue.py remove-first "FULL TOPIC NAME"
 
-### Step 6: Track and remove from queue
-echo "TOPIC NAME" >> csvs/completed.txt
-python3 lib/topic_queue.py remove-first "TOPIC NAME"
+Then go back to Step 0 and pop the next topic. Stop after 10 topics or when queue is empty.
+```
 
-## IMPORTANT RULES
+## IMPORTANT RULES (include in all agent prompts)
 - Do NOT search for images. Images are handled separately after analysis.
 - Do NOT use WebSearch for images or construct Wikimedia URLs.
-- Process ALL steps for each topic before moving to the next.
-- If 0 results, log as "NAME (no results)" in completed.txt and move on.
+- Process ALL steps for each topic before popping the next.
+- If 0 results, mark complete with "(no results)" and move on.
 ```
 
 ## Card Rules (include in prompt or reference)
@@ -132,10 +104,15 @@ python3 lib/topic_queue.py remove-first "TOPIC NAME"
 ## After All Agents Complete
 
 ```bash
-# 1. Rebuild cross-ref index (new topics may create new blue links for existing pages)
+# 1. Rebuild cross-ref index
 python3 lib/crossref.py
 
-# 2. Final render
+# 2. Cross-reference backfill (use Sonnet agent — cheaper, equally effective)
+# Launch ONE Sonnet agent with all newly created + modified topics:
+# Agent(model="sonnet", prompt="Read docs/crossref_backfill.md. Add cross_refs to these topics: [list]")
+# This replaces per-topic cross-ref work that Opus agents used to do.
+
+# 3. Final render
 python3 rerender.py
 python3 render_cards.py
 python3 render_questions.py
@@ -161,42 +138,58 @@ for f in sorted(Path('output').glob('*_analysis.json')):
 "
 ```
 
-## Queue-Based Dispatch
+## Controller Workflow
 
-Before launching agents, check the queues:
+### 1. Check queues
 ```bash
-python3 lib/topic_queue.py list
+python3 lib/topic_queue.py summary
 ```
 
-First pass queue is always drained before second pass. Pop items for an agent:
+### 2. Initialize batch
 ```bash
-python3 lib/topic_queue.py pop-first 10   # for first-pass agents
-python3 lib/topic_queue.py pop-second 10  # for second-pass agents
+# Pull from global queues into the shared batch queue
+python3 lib/batch_worker.py init "batch-name" --first 40 --second 10 --category Literature
 ```
+This pops items from the global queues and creates `queue/current_batch.json`.
+Use `--category` to scope to one category, or omit for mixed batches.
 
-## Second Pass Agents
+### 3. Launch agents
+Launch N agents per category. Each agent pops from the shared batch queue filtered by its category and pass type. When an agent finishes (10 topics or queue empty), launch a replacement if the queue still has items.
 
-Second pass agents enrich existing pages with additional data. Read `docs/second_pass.md` for the full protocol.
+### 4. Monitor
+Open `progress.html` (via `./serve.sh`) — auto-refreshes every 5s showing queued/in-progress/completed.
 
-**Second Pass Agent Prompt Template:**
+### 5. After all agents complete
+Run Sonnet cross-ref backfill, then final renders (see "After All Agents Complete" section).
+
+## Second Pass Agent Prompt Template
+
+Each second pass agent is also assigned a category.
+
 ```
-You are a second-pass enrichment agent. Process each topic autonomously. Do NOT ask for confirmation.
-
-## YOUR BATCH
-[list topics here]
+You are a second-pass enrichment agent for [CATEGORY] topics. Do NOT ask for confirmation.
 
 ## INSTRUCTIONS
-Read `docs/second_pass.md` (enrichment protocol) and `docs/analysis_instructions.md` (core rules).
-Also read the relevant category supplement: `docs/analysis_[category].md`.
+Read `docs/second_pass.md` (enrichment protocol), `docs/analysis_instructions.md` (core rules),
+and `docs/analysis_[CATEGORY].md` (category supplement).
 
-## PIPELINE FOR EACH TOPIC
-Follow the steps in docs/second_pass.md:
+## LOOP: Pop and process topics (up to 10)
+
+### Step 0: Pop next topic
+Run: python3 lib/batch_worker.py pop second --category "[CATEGORY]"
+If output is "EMPTY", you are done — exit.
+Parse the JSON output to get the topic name and slug.
+
+### Step 1-6: Follow docs/second_pass.md
 1. Load existing analysis JSON
-2. If sparse, run: python3 lib/run.py "TOPIC" "7,8,9,10" --mentions
+2. If sparse, run: python3 lib/run.py "TOPIC" "5,6,7,8,9,10" --mentions
 3. For each major work, run: python3 lib/run.py "WORK NAME" "7,8,9,10"
 4. Merge new clues into existing analysis (preserve all existing data)
-5. Re-render all pages
-6. Track completion
+5. Mark complete: python3 lib/batch_worker.py complete "TOPIC"
+6. Remove from queue: python3 lib/topic_queue.py remove-second "TOPIC"
+7. Render
+
+Then go back to Step 0. Stop after 10 topics or when queue is empty.
 ```
 
 ## Pitfalls from Previous Runs
