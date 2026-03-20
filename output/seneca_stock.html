@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Seneca</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+.clue-row td {
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.clue-freq {
+    width: 2.5rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.45;
+}
+.clue-text {
+    font-weight: 600;
+    color: #d4d8dd;
+}
+.badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.examples {
+    margin-top: 0.15rem;
+}
+.examples summary {
+    font-size: 0.78rem;
+    color: #6b9eff;
+    cursor: pointer;
+    display: inline;
+}
+.examples summary:hover { text-decoration: underline; }
+.examples ul {
+    margin: 0.2rem 0 0.2rem 1.2rem;
+    padding: 0;
+    font-size: 0.82rem;
+    color: #808790;
+    font-style: italic;
+}
+.examples li {
+    margin-bottom: 0.1rem;
+}
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Seneca</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="seneca_questions.html">View source questions</a> · <a href="seneca_cards.html">Make cards</a></div>
+<div class="summary">Roman Stoic philosopher and tragedian who tutored the emperor Nero. Author of violent closet dramas (Thyestes, Hercules Furens, Medea, Phaedra, Oedipus) that influenced English revenge tragedy, as well as philosophical works including the Moral Letters to Lucilius, On Anger, On the Shortness of Life, On Mercy, Consolations, and the Menippean satire The Pumpkinification of Claudius. Forced to commit suicide during the Pisonian conspiracy.</div>
+
+        <details class="work" id="thyestes" open>
+            <summary class="work-title">Thyestes</summary>
+            <p class="work-desc">Seneca's best-known tragedy, in which Atreus tricks his brother Thyestes into feasting on his own sons. The play opens with a Fury convincing the ghost of Tantalus to cause disorder between his grandsons. In the fourth act, a table lifts from the trembling floor and wine falls down a man's jaw. The horrified gods reverse the rising of the sun after the banquet. Atreus ignores his guard's advice and chooses vengeance, and the guard says the best way to get vengeance is with a sword, to which Atreus responds about desiring the punishment itself. An unnatural grove serves as a locus horridus where Atreus kills the children.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Atreus reveals that Thyestes has feasted on his own sons</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>ends with Atreus revealing that his brother has feasted on his own sons</li><li>Atreus feeds the title character the bodies of his three sons</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with ghost of Tantalus and a Fury causing disorder</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>began another play with dialogue between a Fury and the ghost of Tantalus</li><li>a Fury convinces Tantalus to cause disorder between his grandsons</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicts an unnatural grove as a locus horridus where Atreus kills the children</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>depicts an unnatural grove as a locus horridus where Atreus kills the children of Thyestes</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Guard says best vengeance is with a sword; Atreus responds &#x27;I desire the punishment itself&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>After a guard in one play by this author says the best way to get vengeance is with a sword, another character states, &#x27;Thou speakest of the end of punishment. But I the punishment itself desire.&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Table lifts from trembling floor; wine falls down a man&#x27;s jaw; gods reverse the sun</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a table lifts up from the trembling floor and wine falls down a man&#x27;s jaw rather than pass through his lips</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="hercules-furens" open>
+            <summary class="work-title">Hercules Furens</summary>
+            <p class="work-desc">Seneca's adaptation of Euripides' Madness of Heracles, in which the title character kills Lycus for usurping the Theban throne, then goes insane and murders his wife Megara and their children. The horrified Amphitryon watches the slaughter. In the opening, a deity says 'now with himself let him war' of an enemy whose match 'None is there save himself.' The hero's stepfather declares he will either 'find a way or make one.' Seneca wrote 'Things that were hard to bear are sweet to remember' in this play. A messenger narrates violence including an arrow through a character's neck and a roof becoming wet with 'scattered brains.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title character kills Lycus, goes insane, and murders wife Megara and children; Amphitryon watches</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the protagonist is informed of his stepmother&#x27;s deed before he is dissuaded from committing suicide by Amphitryon and Theseus</li><li>the title character kills Lycus for usurping the Theban throne before he goes insane and murders his wife Megara and their children</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on Euripides&#x27; Madness of Heracles</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>An earlier work of Euripides inspired a play by this man</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opening: &#x27;now with himself let him war&#x27;; stepfather: &#x27;find a way or make one&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a deity says, &#x27;now with himself let him war&#x27; of an enemy whose match &#x27;None is there save himself&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arrow through neck, roof wet with &#x27;scattered brains&#x27; narrated by messenger</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a character narrates the violence that occurs offstage, such as an arrow that goes through one character&#x27;s neck</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="moral-letters-to-lucilius-epistulae-morales" open>
+            <summary class="work-title">Moral Letters to Lucilius (Epistulae Morales)</summary>
+            <p class="work-desc">A series of 124 letters addressed to Lucilius Junior advancing Stoic philosophy. They espouse the idea that 'we are dying every day' and take themes from On Leisure and On the Shortness of Life. Individual letters discuss topics including asthma and death (appreciating his asthma for making him feel on the verge of death), a visit to Scipio Africanus's villa, the praecepta and decreta of philosophy, and dissuading men from vices. One rejects Zeno's syllogism against alcohol use. Seneca quotes Terence's line 'I'm human: nothing human is not my concern' and a line by Naevius. He also rails against crowds and public baths, complaining about 'troops of catamites' and noise of armpit-hair-pluckers. He drew a distinction between things which are valuable and inherently good.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Series of moral letters addressed to Lucilius Junior</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>letters to Lucilius Junior</li><li>these works addressed to Lucilius written at the end of the life of a Stoic philosopher</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Advance the philosophy that &#x27;we are dying every day&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>these works, which advance the philosophy that we are &#x27;dying every day&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Appreciates his asthma for making him feel on the verge of death</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the author appreciates his asthma for making him feel on the verge of death</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Recounts a visit to Scipio Africanus&#x27;s villa</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>A visit to Scipio Africanus&#x27;s villa is recounted in one of these works</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rejects Zeno&#x27;s syllogism against alcohol use</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>One of these works rejects Zeno&#x27;s syllogism against alcohol use</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contrasts praecepta and decreta (precepts and principles) of philosophy</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>two of which contrast the praecepta and decreta, or precepts and principles of philosophy</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Complains about &#x27;troops of catamites&#x27; and noise of armpit-hair-pluckers near public baths</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>complains about &#x27;troops of catamites&#x27; where &#x27;no boy with straight locks may get among the curly-heads&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Several letters are in the consolatio genre; Robin Campbell translated the Penguin Classics selection</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Robin Campbell translated Penguin Classics&#x27; popular selection of these works</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-pumpkinification-of-claudius-apocolocyntosis" open>
+            <summary class="work-title">The Pumpkinification of Claudius (Apocolocyntosis)</summary>
+            <p class="work-desc">Seneca's only surviving comic work, a Menippean satire in which the recently deceased Emperor Claudius tries to enter Olympus. Hercules defends the stuttering Claudius in a trial before the gods. Clotho reveals the spindles of Augurinus, Baba, and Claudius to Mercury. Claudius is sentenced to play dice forever with a bottomless cup, until Caligula appears, claims him as a slave, and gives him as a gift to Aeacus. Our Lady of Malaria prevents Claudius from sweet-talking Hercules. The title parodies 'apotheosis' (deification).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Claudius sentenced to play dice forever with bottomless cup in underworld</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>whose protagonist is sentenced to attempt to throw dice with a bottomless cup for eternity</li><li>the title character is ultimately condemned to shoot dice forever in the Underworld using a box with no bottom</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Only surviving example of Menippean satire (genre attacking intellectual issues rather than individuals)</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the only surviving example of this genre of extended prose satire named for a Greek cynic</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hercules defends stuttering Claudius in a trial before the gods</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Heracles defends a stuttering man in a trial before the gods</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Clotho reveals spindles of Augurinus, Baba, and Claudius to Mercury</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Clotho reveals the spindles of Augurinus, Baba, and the title character to Mercury</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Caligula appears, claims Claudius as slave, gives him to Aeacus</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>until Caligula appears, claims him as a slave, and gives him as a gift to Aeacus</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title parodies &#x27;apotheosis&#x27; borrowed from Cassius Dio</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>The title process parodies the word &#x27;apotheosis&#x27; with a term borrowed from Cassio Dio</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="influence-on-revenge-tragedy-and-dramatic-legacy" open>
+            <summary class="work-title">Influence on Revenge Tragedy and Dramatic Legacy</summary>
+            <p class="work-desc">Seneca is considered the classical forerunner of English revenge tragedy. His tragedies are the only complete surviving fabulae crepidatae (Latin tragedies based on Greek originals). They feature five acts punctuated by choral interludes, ghosts delivering prologues, and extreme violence, and were likely closet dramas. English revenge tragedies (The Spanish Tragedy, Hamlet) imitated these features. T.S. Eliot discussed how every generation reinvents Shakespeare in a lecture on 'Shakespeare and the Stoicism of Seneca.' Quintilian criticized Seneca's educational influence.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Author of the only complete surviving fabulae crepidatae; considered forerunner of revenge tragedy</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this author of the only complete surviving fabulae crepidatae is considered the classical forerunner of revenge tragedy</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tragedies divided into five acts with choral interludes; likely closet dramas</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Choral interludes punctuate the five acts of this author&#x27;s tragedies, which were likely closet dramas</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">English revenge tragedies imitated five acts and included ghosts (The Spanish Tragedy, Hamlet)</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>English revenge tragedies imitated this author&#x27;s plays by being divided into five acts and including a ghost</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ghosts distinctively appear in Seneca&#x27;s tragedies (Tantalus&#x27;s ghost, ghost demanding sacrifice of Polyxena)</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Seneca&#x27;s tragedies often include this type of character. One of these characters delivers the opening monologue of Thyestes</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">T.S. Eliot&#x27;s lecture &#x27;Shakespeare and the Stoicism of Seneca&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>T. S. Eliot discussed how every generation reinvents this author in a lecture on this author &#x27;and the Stoicism of Seneca&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Quintilian criticized Seneca&#x27;s educational influence</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Quintilian criticized the educational influence of this Roman author</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-plays-medea-phaedra-oedipus-octavia" open>
+            <summary class="work-title">Other Plays (Medea, Phaedra, Oedipus, Octavia)</summary>
+            <p class="work-desc">Seneca's Medea, unlike Euripides' version, depicts the title character blaming herself for the deaths of her and Jason's children. His Phaedra ends with Theseus trying to reassemble the pieces of Hippolytus's corpse after a messenger describes how his chariot was attacked. His Oedipus features a lengthy augury scene where Tiresias performs a ritual sacrifice, and Jocasta rips open her own womb; Creon speaks with the ghost of King Laius. The play Octavia is often misattributed to Seneca and describes his death. One play contains a passage about a 'second Argo' sailing past the ocean's bounds, which Columbus interpreted as a prophecy.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Medea: unlike Euripides, Seneca depicts Medea blaming herself for the deaths of her and Jason&#x27;s children</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>unlike Euripides, depicts a title character blaming herself for the deaths of her and Jason&#x27;s children</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Phaedra: ends with Theseus trying to reassemble pieces of his son&#x27;s corpse</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this author&#x27;s version of Phaedra ends with Theseus trying to reassemble the pieces of his son&#x27;s corpse</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Oedipus: Tiresias performs lengthy augury; Jocasta rips open her womb; Creon speaks with ghost of Laius</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Tiresias performs a ritual sacrifice in a lengthy augury scene, and Jocasta rips open her own womb</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Octavia often misattributed to Seneca; actually describes Seneca&#x27;s death; title character exiled to Pandataria</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>The play Octavia is often misattributed to this author, but in fact describes this author&#x27;s death</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A passage about a &#x27;second Argo&#x27; was interpreted by Columbus as prophecy of New World discovery</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a passage about a second Argo sailing past the ocean&#x27;s known bounds, which Christopher Columbus interpreted as a prophecy</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="on-anger-de-ira-and-other-philosophical-works" open>
+            <summary class="work-title">On Anger (De Ira) and Other Philosophical Works</summary>
+            <p class="work-desc">Seneca's treatise On Anger gives advice on controlling the most dangerous emotion and recommends daily self-examination of conscience. His idea of first, second, and third motions is illustrated with a story of Plato freezing his arm while about to strike a slave. <a href="martha_nussbaum_stock.html" class="crossref-inline">Martha Nussbaum</a> studies Seneca in The Therapy of Desire. On Mercy (De Clementia) argues that clemency is essential to rule and is considered one of the first 'mirrors for princes.' On the Shortness of Life argues that 'it is not that we have a short space of time, but that we waste much of it' and criticizes the 'engrossed.' The Natural Questions was addressed to Lucilius Junior. Three Consolations include one written to his mother about being happy despite exile to Corsica.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">On Anger recommends daily self-examination of conscience; advises controlling the most dangerous emotion</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>recommended daily self-examinations of a person&#x27;s conscience in his treatise on anger, De Ira</li><li>this thinker gave advice on controlling the most dangerous emotion in his treatise On Anger</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Illustrated first, second, and third motions with Plato freezing his arm while about to strike a slave</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>illustrated his idea of the first, second, and third motions with a story in which Plato began to strike a slave but froze his arm in midair</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">On Mercy (De Clementia) argues clemency essential to rule; considered early &#x27;mirror for princes&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>argued that the title quality is essential to rule in his tract On Mercy</li><li>Seneca&#x27;s De Clementia is often considered one of the first &#x27;mirrors&#x27; for princes</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">On the Shortness of Life: &#x27;it is not that we have a short space of time, but that we waste much of it&#x27;; criticizes the &#x27;engrossed&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>&#x27;It is not that we have a short space of time, but that we waste much of it&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three Consolations include one to his mother about being happy despite exile to Corsica</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>wrote to his mother that he was happy despite being exiled to Corsica in one of three Consolations</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Natural Questions addressed to Lucilius Junior</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>This philosopher addressed his Natural Questions to Lucilius Junior</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Justus Lipsius&#x27;s De Constantia primarily inspired by Seneca (non-Christian inspiration)</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>This thinker was the primary non-Christian inspiration for De Constantia by Justus Lipsius</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Seneca the Younger was a Roman Stoic philosopher, tragedian, and tutor to the emperor Nero. He was forced to commit suicide during the Pisonian conspiracy when Nero ordered his death. The death scene is described by Tacitus: Seneca offered 'imago vitae suae' (the image of his life) and a libation to Jupiter the Liberator while being assisted into a bathtub; his wife Pompeia Paulina attempted to kill herself during the event. Cassius Dio mocked the scene by describing a failed attempt to kill his wife. Early Christians admired fake letters between Seneca and Saint Paul. Montaigne claimed never to have 'seriously settled' himself to reading any solid book but Plutarch and Seneca. Harry Sandbach dismissed him as a 'spare-time amateur philosopher'; Macaulay said reading him was 'like dining on nothing but anchovy sauce.' Seneca the Elder (his father) wrote the Controversiae and Suasoriae.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stoic philosopher who tutored Nero; forced to commit suicide during Pisonian conspiracy</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>what Stoic philosopher and tragedian was forced to commit suicide by Nero?</li><li>Nero eventually repaid this man by having him executed</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Death scene: offered &#x27;imago vitae suae&#x27; and libation to Jupiter the Liberator; assisted into bathtub; Pompeia Paulina tried to kill herself</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this event&#x27;s central figure offered &#x27;imago vitae suae&#x27; or &#x27;the image of his life&#x27; and eventually a libation to Jupiter the Liberator</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">According to Cassius Dio, Boudica&#x27;s revolt sparked by forced loans imposed by Seneca</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Boudica&#x27;s revolt was sparked by forced loans imposed by this Roman official</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Early Christians admired fake letters between Seneca and Paul</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Early Christians admired fake letters written between this man and Paul</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Montaigne: never seriously settled to reading any solid book but Plutarch and Seneca</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Montaigne claimed never to have &#x27;seriously settled [himself] to the reading any book of solid learning but Plutarch&#x27; and this Roman Stoic</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sandbach: &#x27;spare-time amateur philosopher&#x27;; Macaulay: &#x27;like dining on nothing but anchovy sauce&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Harry Sandbach dismissed this thinker as being a &#x27;spare-time amateur philosopher&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Admitted &#x27;the wise man does not love wealth, but prefers it&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>admitting that &#x27;the wise man does not love wealth, but prefers it&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Martin of Braga wrote On Anger and Formula for an Honest Life inspired by Seneca; addressed to King Miro</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the primary evidence of this philosopher&#x27;s impact on sixth century thought are two precises addressed to King Miro</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Killed himself same year as Petronius and Lucan</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>killed himself in the same year as Petronius and Lucan</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Seneca the Elder (father) wrote Controversiae and Suasoriae (rhetorical exercises)</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Exempla form the cornerstone of the Controversiae and the Suasoriae of the elder Roman with this name</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Seneca the Younger (Lucius Annaeus Seneca) was a Roman Stoic philosopher, tragedian, and political figure who served as tutor and advisor to the emperor Nero. He was ultimately forced to commit suicide during the Pisonian conspiracy on Nero&#x27;s orders.</p><p>Seneca&#x27;s dramatic works are among the most frequently clued topics about him. His best-known tragedy, Thyestes, opens with a Fury convincing the ghost of Tantalus to cause disorder between his grandsons, and ends with Atreus revealing that Thyestes has feasted on his own sons. Hercules Furens, based on Euripides&#x27; Madness of Heracles, depicts the title character killing Lycus and then going insane and murdering his wife Megara and their children while Amphitryon watches in horror. His tragedies are the only complete surviving fabulae crepidatae (Latin tragedies on Greek subjects), featuring five acts with choral interludes, ghosts delivering prologues, and extreme violence. They were likely closet dramas.</p><p>Seneca&#x27;s other plays include Medea (where, unlike Euripides, the title character blames herself for the children&#x27;s deaths), Phaedra (ending with Theseus reassembling his son&#x27;s corpse), and Oedipus (with Tiresias&#x27;s augury and Jocasta ripping open her womb). The play Octavia is often misattributed to him but actually describes his death. One play&#x27;s passage about a &#x27;second Argo&#x27; was interpreted by Columbus as a prophecy of the New World.</p><p>Seneca&#x27;s dramatic legacy profoundly influenced English revenge tragedy. Thomas Kyd&#x27;s The Spanish Tragedy and Shakespeare&#x27;s Hamlet imitated his five-act structure and use of ghosts. T.S. Eliot discussed this influence in his lecture &#x27;Shakespeare and the Stoicism of Seneca.&#x27;</p><p>On the philosophical side, Seneca wrote over 100 Moral Letters to Lucilius Junior, advancing the philosophy that &#x27;we are dying every day.&#x27; Individual letters discuss his asthma, a visit to Scipio Africanus&#x27;s villa, and reject Zeno&#x27;s syllogism against alcohol. His treatise On Anger recommends daily self-examination of conscience and illustrates the first, second, and third motions with a story of Plato freezing his arm while about to strike a slave. On Mercy (De Clementia) argues clemency is essential to rule and is considered one of the first &#x27;mirrors for princes.&#x27; On the Shortness of Life argues &#x27;it is not that we have a short space of time, but that we waste much of it.&#x27;</p><p>His sole comic work, The Pumpkinification of Claudius, is a Menippean satire in which the dead emperor is sentenced to play dice with a bottomless cup in the underworld, until Caligula claims him as a slave.</p><p>Seneca&#x27;s death scene, described by Tacitus, involved offering &#x27;imago vitae suae&#x27; and a libation to Jupiter the Liberator while being assisted into a bathtub. His wife Pompeia Paulina attempted suicide during the event. According to Cassius Dio, Boudica&#x27;s revolt in Britain was sparked by forced loans Seneca imposed. Early Christians admired fake letters between Seneca and Saint Paul. Montaigne ranked him alongside Plutarch as essential reading. Quintilian criticized his educational influence, while Harry Sandbach dismissed him as a &#x27;spare-time amateur philosopher.&#x27;</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Seneca_the_Younger" target="_blank">Seneca the Younger</a></li><li><a href="https://en.wikipedia.org/wiki/Thyestes_(Seneca)" target="_blank">Thyestes (Seneca)</a></li><li><a href="https://en.wikipedia.org/wiki/Hercules_Furens_(Seneca)" target="_blank">Hercules Furens (Seneca)</a></li><li><a href="https://en.wikipedia.org/wiki/Apocolocyntosis" target="_blank">Apocolocyntosis</a></li><li><a href="https://en.wikipedia.org/wiki/Epistulae_Morales_ad_Lucilium" target="_blank">Epistulae Morales ad Lucilium</a></li><li><a href="https://en.wikipedia.org/wiki/De_Ira" target="_blank">De Ira</a></li><li><a href="https://en.wikipedia.org/wiki/De_Clementia" target="_blank">De Clementia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Thyestes — Appears 7+ times with detailed plot clues; could support its own answerline search</li><li>Hercules Furens — Appears 5+ times with specific plot details</li><li>Apocolocyntosis — Appears 4+ times with detailed plot clues</li></ul>
+        
+        </section>
+        
+</body>
+</html>

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Pyrrho</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+.clue-row td {
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.clue-freq {
+    width: 2.5rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.45;
+}
+.clue-text {
+    font-weight: 600;
+    color: #d4d8dd;
+}
+.badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.examples {
+    margin-top: 0.15rem;
+}
+.examples summary {
+    font-size: 0.78rem;
+    color: #6b9eff;
+    cursor: pointer;
+    display: inline;
+}
+.examples summary:hover { text-decoration: underline; }
+.examples ul {
+    margin: 0.2rem 0 0.2rem 1.2rem;
+    padding: 0;
+    font-size: 0.82rem;
+    color: #808790;
+    font-style: italic;
+}
+.examples li {
+    margin-bottom: 0.1rem;
+}
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Pyrrho</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="pyrrho_questions.html">View source questions</a> · <a href="pyrrho_cards.html">Make cards</a></div>
+<div class="summary">Ancient Greek philosopher from Elis (c. 360-270 BCE) who founded Pyrrhonian skepticism, the more radical of the two main branches of ancient skepticism (the other being Academic skepticism). Traveled with Alexander the Great to India, where he may have encountered Buddhist gymnosophists. His school advocated epoche (suspension of judgment) to achieve ataraxia. Ideas preserved primarily through Sextus Empiricus&#x27;s Outlines of Pyrrhonism.</div>
+
+        <details class="work" id="pyrrhonian-skepticism-and-epoche" open>
+            <summary class="work-title">Pyrrhonian Skepticism and Epoche</summary>
+            <p class="work-desc">Pyrrhonian skepticism holds that certainty about truth or knowledge is unattainable. Its core practice is epoche (suspension of judgment), which leads to ataraxia (tranquility). The ten 'modes' for achieving epoche were given by Aenesidemus and later Agrippa formulated five modes (the Agrippan trilemma: circularity, infinite regress, or dogmatic axiom). The school rejected katalepsis (Stoic 'cognitive impression') in favor of acatalepsia ('incomprehensibility'). Sextus Empiricus's Outlines of Pyrrhonism is the main surviving text, criticizing both 'Academics' and 'Dogmatics.' The tradition also discussed the story of a frustrated artist flinging a sponge at a horse painting, discovering tranquility by accident.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Epoche (suspension of judgment) leads to ataraxia (tranquility)</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>advocated suspending judgment to achieve ataraxia</li><li>epoche, or bracketing, leads to ataraxia</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sextus Empiricus: Outlines of Pyrrhonism; ten modes; Against the Mathematicians</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Ten &#x27;modes&#x27; of this tradition were given in the Outlines of Pyrrhonism of Sextus Empiricus</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aenesidemus: ten modes for achieving epoche</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Aenesidemus identified ten modes for achieving epoche</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Agrippa&#x27;s five modes / Agrippan trilemma: circularity, infinite regress, dogmatic axiom</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Thinkers in this tradition often invoke the Agrippan trilemma</li><li>five named for Agrippa</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rejected katalepsis; advocated acatalepsia (&#x27;incomprehensibility&#x27;)</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>rejected the concept of katalepsis in favor of one based on &#x27;incomprehensibility,&#x27; or acatalepsia</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Story of artist flinging sponge at painting of horse, finding tranquility by accident</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>tells the story of a frustrated artist flinging a sponge at a painting of a horse</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Munchhausen trilemma (Fries&#x27;s trilemma): similar to Agrippa&#x27;s modes</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>This epistemological trilemma claims that any attempt to prove a truth must be either circular, regressive or dogmatic</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="pyrrho-s-journey-to-india-and-buddhism" open>
+            <summary class="work-title">Pyrrho&#x27;s Journey to India and Buddhism</summary>
+            <p class="work-desc">Pyrrho traveled with Alexander the Great's campaigns to India, where he may have encountered gymnosophists ('naked wise men'). Christopher Beckwith drew parallels between Pyrrhonian ideas and the Buddhist 'three marks of existence.' His concepts of adiaphora, astathmeta, and anepikrita may have been inspired by Buddhist thought. The Indian Ajnana school of radical skepticism may have been the source. Adrian Kuzminski's book examines 'How the Ancient Greeks Reinvented Buddhism.' Pyrrho's ideas are also compared to the Carvaka school.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Traveled with Alexander the Great to India; may have met gymnosophists</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Pyrrho of Elis spent time in India as part of Alexander&#x27;s army</li><li>may have adopted this view after meeting gymnosophists while in India</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Beckwith: parallels with Buddhist &#x27;three marks of existence&#x27; (impermanence, suffering, non-self)</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Christopher Beckwith drew parallels between ideas in this school and the &#x27;three marks of existence&#x27; found in Buddhism</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Concepts adiaphora, astathmeta, anepikrita may derive from Indian thought</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>versions of adiaphora, astathmeta, and anepikrita may have been inspired by those gymnosophists</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ajnana school: Indian radical skepticism promoting agnosticism</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the gymnosophists Pyrrho encountered belonged to this nastika school of radical Indian skepticism</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kuzminski: &#x27;How the Ancient Greeks Reinvented Buddhism&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Adrian Kuzminski&#x27;s book titled for this school examines &#x27;How the Ancient Greeks Reinvented Buddhism&#x27;</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="montaigne-and-renaissance-reception" open>
+            <summary class="work-title">Montaigne and Renaissance Reception</summary>
+            <p class="work-desc">Michel de Montaigne was deeply influenced by Pyrrhonism, reading Sextus Empiricus and inscribing Pyrrhonist quotations on the rafters of his tower study in Dordogne. His personal medal had 'epecho' (a verb form of epoche) inscribed on one side and 'que sais-je?' ('what do I know?') on the other. His essay 'Apology for Raymond Sebond' defends Pyrrhonism using the ten modes and a fideist interpretation of Natural Theology. Richard Popkin argued that the Renaissance rediscovery of Pyrrhonism provoked a 'crisis' that spurred both the Reformation and Counter-Reformation. Pierre Charron's On Wisdom reconciled Pyrrhonism with Socratic and Ciceronian views. Francisco Sanches also re-popularized skepticism.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Montaigne: inscribed Pyrrhonist quotes on tower study rafters; medal with &#x27;epecho&#x27; and &#x27;que sais-je?&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Quotations from this brand of philosophy were carved into the rafters of the study</li><li>Montaigne&#x27;s personal medal had the motto &#x27;what do I know?&#x27; on one side and this Greek word</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Apology for Raymond Sebond&#x27;: defends Pyrrhonism; ten modes; fideist interpretation</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>used to support a fideist interpretation of the book Natural Theology in an essay that outlines the &#x27;ten modes&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Richard Popkin: Renaissance Pyrrhonism caused a &#x27;crisis&#x27; sparking Reformation and Counter-Reformation</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>A renaissance in this brand of philosophy provoked a &#x27;crisis&#x27; and spurred both the Reformation and the Counter-Reformation</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pierre Charron&#x27;s On Wisdom reconciled Pyrrhonism with Socratic views</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>This brand of philosophy was reconciled with Socratic and Ciceronian views in the treatise On Wisdom by Pierre Charron</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Husserl borrowed &#x27;epoche&#x27; (bracketing) from Pyrrhonism for phenomenology</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Edmund Husserl borrowed a term for &#x27;bracketing off,&#x27; or epoche, from this tradition</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="academic-skepticism-vs-pyrrhonism" open>
+            <summary class="work-title">Academic Skepticism vs. Pyrrhonism</summary>
+            <p class="work-desc">Pyrrhonian skepticism is contrasted with Academic skepticism (from <a href="plato_stock.html" class="crossref-inline">Plato</a>'s Academy under <a href="arcesilaus_stock.html" class="crossref-inline">Arcesilaus</a> and <a href="carneades_stock.html" class="crossref-inline">Carneades</a>). Academic skeptics argued for the eulogon (reasonable) and pithanon (probable) as criteria, while Pyrrhonists insisted on complete suspension of judgment. Carneades advanced probabilism and gave contradictory lectures on justice in Rome. The 'Problem of the Criterion,' traced through Montaigne by Roderick Chisholm, involves a circular argument. Pyrrho's ideas were compared to the honey-sweetness example distinguishing 'what is apparent' from 'the apparent itself.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two branches: Pyrrhonian (more radical) vs. Academic (Arcesilaus, Carneades)</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Arcesilaus and Carneades advanced this view&#x27;s &#x27;academic&#x27; form</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Academic skeptics argued for eulogon/pithanon; Pyrrhonists insisted on complete epoche</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Two adherents of this view argued for the eulogon, or the reasonable, and pithanon, or the probable</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Honey-sweetness example: distinguishing what is apparent from the apparent itself</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>drew a distinction from what is apparent from the apparent itself using the example of honey&#x27;s sweetness</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Carneades: plank thought experiment for self-defense; probabilism</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Carneades argued that knowledge is still possible through probabilistic reasoning</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Problem of the Criterion (Chisholm traced through Montaigne): circular argument about knowledge</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Roderick Chisholm traced the &#x27;Problem of the Criterion&#x27; through Montaigne&#x27;s version</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Pyrrho of Elis (c. 360-270 BCE) founded Pyrrhonian skepticism, the more radical of the two main branches of ancient skepticism. The core practice is epoche (suspension of judgment), which leads to ataraxia (tranquility). The school&#x27;s ideas were primarily preserved through Sextus Empiricus&#x27;s Outlines of Pyrrhonism, which catalogs the ten modes of Aenesidemus and Agrippa&#x27;s five modes (the Agrippan trilemma of circularity, infinite regress, and dogmatic axiom). Pyrrhonists rejected the Stoic concept of katalepsis in favor of acatalepsia.</p><p>Pyrrho traveled with Alexander the Great to India, where he may have met gymnosophists. Christopher Beckwith drew parallels with Buddhist &#x27;three marks of existence,&#x27; and Adrian Kuzminski examined &#x27;How the Ancient Greeks Reinvented Buddhism.&#x27; His concepts of adiaphora, astathmeta, and anepikrita may derive from Indian philosophy, possibly the Ajnana school of radical skepticism.</p><p>Pyrrhonism profoundly influenced the Renaissance through Michel de Montaigne, who inscribed Pyrrhonist quotations on his tower study rafters and used the motto &#x27;que sais-je?&#x27; His &#x27;Apology for Raymond Sebond&#x27; defends Pyrrhonism using the ten modes. Richard Popkin argued the Renaissance rediscovery provoked a &#x27;crisis&#x27; spurring the Reformation. <a href="edmund_husserl_stock.html" class="crossref-inline">Edmund Husserl</a> borrowed &#x27;epoche&#x27; for phenomenological &#x27;bracketing.&#x27;</p><p>Pyrrhonian skepticism is contrasted with Academic skepticism (from <a href="plato_stock.html" class="crossref-inline">Plato</a>&#x27;s Academy under <a href="arcesilaus_stock.html" class="crossref-inline">Arcesilaus</a> and <a href="carneades_stock.html" class="crossref-inline">Carneades</a>). Academic skeptics promoted probabilism (pithanon), while Pyrrhonists insisted on complete suspension. An anecdote describes a frustrated artist accidentally discovering tranquility by flinging a sponge at a horse painting. The tradition discussed the &#x27;Problem of the Criterion,&#x27; a circularity challenge to all knowledge claims.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Pyrrho" target="_blank">Pyrrho</a></li><li><a href="https://en.wikipedia.org/wiki/Pyrrhonism" target="_blank">Pyrrhonism</a></li><li><a href="https://en.wikipedia.org/wiki/Sextus_Empiricus" target="_blank">Sextus Empiricus</a></li><li><a href="https://en.wikipedia.org/wiki/Outlines_of_Pyrrhonism" target="_blank">Outlines of Pyrrhonism</a></li><li><a href="https://en.wikipedia.org/wiki/Epoch%C3%A9" target="_blank">Epoché</a></li><li><a href="https://en.wikipedia.org/wiki/Michel_de_Montaigne" target="_blank">Michel de Montaigne</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Skepticism (broader topic encompassing both branches)</li><li>Sextus Empiricus (main preserver of Pyrrhonian thought)</li><li>Michel de Montaigne (major Renaissance receptor)</li></ul>
+        
+        </section>
+        
+</body>
+</html>

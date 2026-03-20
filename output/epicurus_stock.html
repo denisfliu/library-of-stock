@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Epicurus</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+.clue-row td {
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.clue-freq {
+    width: 2.5rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.45;
+}
+.clue-text {
+    font-weight: 600;
+    color: #d4d8dd;
+}
+.badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.examples {
+    margin-top: 0.15rem;
+}
+.examples summary {
+    font-size: 0.78rem;
+    color: #6b9eff;
+    cursor: pointer;
+    display: inline;
+}
+.examples summary:hover { text-decoration: underline; }
+.examples ul {
+    margin: 0.2rem 0 0.2rem 1.2rem;
+    padding: 0;
+    font-size: 0.82rem;
+    color: #808790;
+    font-style: italic;
+}
+.examples li {
+    margin-bottom: 0.1rem;
+}
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Epicurus</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="epicurus_questions.html">View source questions</a> · <a href="epicurus_cards.html">Make cards</a></div>
+<div class="summary">Ancient Greek philosopher (341-270 BCE) who founded Epicureanism, teaching at &#x27;the Garden&#x27; in Athens. Argued that pleasure (especially the absence of pain) is the highest good. Key doctrines: atomism with the clinamen (swerve), ataraxia and aponia, the tetrapharmakos, the problem of evil, and three criteria of truth. His follower Lucretius wrote De Rerum Natura. Pierre Gassendi revived his thought in the early modern period.</div>
+
+        <details class="work" id="atomism-the-swerve-and-physics" open>
+            <summary class="work-title">Atomism, the Swerve, and Physics</summary>
+            <p class="work-desc">Epicurus's physics derived mostly from Democritus but introduced key innovations. He formulated the concept of a necessary void making motion possible and argued for the material nature of the soul. His follower Lucretius proposed that atoms spontaneously undergo clinamen (swerve), creating randomness and free will. Epicurus conjectured that gods occupy areas devoid of atoms called metakosmia. He used the example of a square tower appearing round to argue all sense perception is true (though judgment can err). Unlike Democritus, Epicurus believed atoms possess weight. Stephen Greenblatt's The Swerve discusses the rediscovery of Lucretius's poem.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Clinamen/swerve: atoms deviate, creating free will; Lucretius expanded on this in De Rerum Natura</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Lucretius borrowed this philosopher&#x27;s concept of the &#x27;swerve&#x27; to explain the possibility of free will</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Physics derived from Democritus; believed atoms possess weight (unlike Democritus)</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this philosopher&#x27;s view of nature was mostly derived from Democritus of Abdera</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Necessary void makes motion possible; material nature of the soul</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>formulated the concept of a necessary void which makes motion possible, and argued for the material nature of the soul</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gods occupy metakosmia (atom-free spaces); no concern for mortals</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>conjectured that the gods occupied an area devoid of atoms called the metakosmia</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Square tower appearing round: all sense perception is true, judgment can err</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>introduced the common example of a round tower appearing square in his argument that all sense perception is true</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stephen Greenblatt&#x27;s The Swerve about rediscovery of Lucretius</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>A work inspired by the philosophy of this non-Roman thinker is the principal subject of Stephen Greenblatt&#x27;s book The Swerve</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hermann Usener published massive compilation of works from this philosopher&#x27;s school</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Hermann Usener published a massive compilation of works inspired by this philosopher&#x27;s school</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="ataraxia-aponia-and-ethics" open>
+            <summary class="work-title">Ataraxia, Aponia, and Ethics</summary>
+            <p class="work-desc">Epicurus argued that the goal of life is eudaimonia, achieved through ataraxia (freedom from distress) and aponia (freedom from pain). He differentiated happiness from mere pleasure. The tetrapharmakos ('fourfold remedy') argues against fearing gods and death, that what is good is easy to get, and what is terrible easy to endure. His argument against fearing death: 'when we are, death is not come, and when death is come, we are not.' He divided pleasure into 'static' and 'kinetic' types. He suggested eating simple foods because those accustomed to luxury are likely to lose it. His school dominated over that of Aristippus of Cyrene.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ataraxia (freedom from distress) and aponia (freedom from pain) as life&#x27;s goals</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>argued that the perfect life was characterized by freedom from distress and freedom from pain, known as ataraxia and aponia</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tetrapharmakos (fourfold remedy): don&#x27;t fear gods, death, what is good is easy, terrible is easy to endure</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>proposed a &#x27;four fold remedy&#x27; which argues that fearing death is irrational</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;When we are, death is not come; when death is come, we are not&#x27; (Letter to Menoeceus)</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>&#x27;when we are, death is not come, and when death is come, we are not&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Divided pleasure into &#x27;static&#x27; and &#x27;kinetic&#x27; types</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>divided one concept in his own philosophy into &#x27;static&#x27; and &#x27;kinetic&#x27; types</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">School dominated over Aristippus&#x27;s Cyrenaics</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>founded a philosophical school that ultimately dominated over one established by Aristippus of Cyrene</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pleasure is the highest good; but prudence is the most precious virtue</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the instruction that prudence is the most precious of all virtues</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Empty sounds&#x27; do not refer to real being; focusing on them is the main source of pain</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>claimed that the fear of death and the desire for immortality have this quality</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-garden-letters-and-community" open>
+            <summary class="work-title">The Garden, Letters, and Community</summary>
+            <p class="work-desc">Epicurus taught at 'the Garden,' his school in Athens whose gate inscription reportedly read 'Stranger, here you will do well to tarry.' He enjoyed a simple diet of barley bread and water. His surviving letters (to Herodotus, Menoeceus, and Pythocles) are preserved in Book X of Diogenes Laertius's Lives. The Letter to Herodotus summarizes physics including atomism and three criteria of truth (aisthesis, pathe, prolepseis). The Letter to Menoeceus contains ethical teachings. Followers celebrated Eikas on the twentieth of each month. Pierre Gassendi's commentaries led an early modern revival.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Garden: school in Athens; gate: &#x27;Stranger, here you will do well to tarry&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>taught at a school called &#x27;the Garden&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Letters to Herodotus, Menoeceus, Pythocles preserved in Diogenes Laertius Book X</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>expounded his beliefs about happiness and metaphysics in letters to Herodotus, Pythocles, and Menoeceus</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three criteria of truth: aisthesis (sense), pathe (feelings), prolepseis (preconceptions)</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>established feelings, preconceptions, and sense-perceptions as three criteria of truth</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Simple diet of barley bread and water</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>enjoyed a diet of barley bread and water</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pierre Gassendi: early modern revival; commentaries on Epicurus; rejected Aristotelian necessity</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>The aforementioned works by Gassendi were commentaries on the thoughts of this Greek thinker</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">On Nature: Epicurus&#x27;s major work; Lucretius titled De Rerum Natura after it</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>On Nature served as the foundation for Lucretius&#x27; poem On the Nature of Things</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Works preserved by Mt. Vesuvius eruption (Herculaneum)</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>many of whose works are very literally preserved thanks to Mount Vesuvius&#x27;s eruption</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="problem-of-evil-and-reception" open>
+            <summary class="work-title">Problem of Evil and Reception</summary>
+            <p class="work-desc">Epicurus is credited with the problem of evil (his 'namesake paradox'), asking why God allows suffering if omnipotent and benevolent. David Hume popularized this as a trilemma in Dialogues Concerning Natural Religion. Sextus Empiricus argued against Epicurus's idea that everything perceptible is true. <a href="epicureans_stock.html" class="crossref-inline">Epicureans</a> were compared to the Indian Carvaka school. Tolstoy discussed Epicureanism in A Confession.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Problem of evil / Epicurean paradox: popularized in Hume&#x27;s Dialogues Concerning Natural Religion</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>credited with introducing the problem of evil in David Hume&#x27;s Dialogues Concerning Natural Religion</li><li>often considered the first person to state the problem of evil, which is his namesake paradox</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sextus Empiricus argued against Epicurus&#x27;s &#x27;everything perceptible is true&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Sextus Empiricus&#x27; Against the Logicians contains an extended argument against this thinker&#x27;s idea</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Compared to Indian Carvaka school (hedonistic, atomistic)</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>The Carvakas have been compared to this Greek thinker&#x27;s lineage</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Epicurus was an ancient Greek philosopher (341-270 BCE) who founded one of the major Hellenistic philosophical schools. He taught at &#x27;the Garden&#x27; in Athens, living simply on barley bread and water. His physics derived from Democritus&#x27;s atomism but introduced the crucial concept of clinamen (swerve), in which atoms spontaneously deviate, creating randomness and free will. His follower Lucretius expanded on this in the six-book poem De Rerum Natura.</p><p>Epicurus&#x27;s ethical philosophy centered on achieving eudaimonia through ataraxia (freedom from distress) and aponia (freedom from pain). He argued that pleasure is the highest good but distinguished it from raw sensual pleasure, dividing pleasure into &#x27;static&#x27; and &#x27;kinetic&#x27; types. The tetrapharmakos, or fourfold remedy, instructed followers not to fear gods or death. His famous argument against fearing death was: &#x27;when we are, death is not come, and when death is come, we are not.&#x27; He taught that prudence is the most precious virtue, and that &#x27;empty sounds&#x27; not referring to real being are the main source of pain.</p><p>Epicurus established three criteria of truth: aisthesis (sense-perception), pathe (feelings), and prolepseis (preconceptions). He used the example of a square tower appearing round to argue that all sense perception is true, though judgment can err. He conjectured that gods occupy metakosmia (atom-free spaces) and have no concern for mortals.</p><p>His surviving letters to Herodotus, Menoeceus, and Pythocles are preserved in Book X of Diogenes Laertius. He is credited with the problem of evil, popularized by Hume. His school dominated over Aristippus&#x27;s Cyrenaics. Pierre Gassendi led an early modern revival. Stephen Greenblatt&#x27;s The Swerve discusses the rediscovery of Lucretius.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Epicurus" target="_blank">Epicurus</a></li><li><a href="https://en.wikipedia.org/wiki/Epicureanism" target="_blank">Epicureanism</a></li><li><a href="https://en.wikipedia.org/wiki/De_rerum_natura" target="_blank">De Rerum Natura</a></li><li><a href="https://en.wikipedia.org/wiki/Tetrapharmakos" target="_blank">Tetrapharmakos</a></li><li><a href="https://en.wikipedia.org/wiki/Problem_of_evil" target="_blank">Problem of evil</a></li><li><a href="https://en.wikipedia.org/wiki/Pierre_Gassendi" target="_blank">Pierre Gassendi</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>De Rerum Natura / Lucretius (heavily clued poem)</li><li>Epicureanism (school-level topic with 7 tossups)</li></ul>
+        
+        </section>
+        
+</body>
+</html>

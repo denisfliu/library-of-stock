@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Epicureans</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+.clue-row td {
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.clue-freq {
+    width: 2.5rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.45;
+}
+.clue-text {
+    font-weight: 600;
+    color: #d4d8dd;
+}
+.badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.examples {
+    margin-top: 0.15rem;
+}
+.examples summary {
+    font-size: 0.78rem;
+    color: #6b9eff;
+    cursor: pointer;
+    display: inline;
+}
+.examples summary:hover { text-decoration: underline; }
+.examples ul {
+    margin: 0.2rem 0 0.2rem 1.2rem;
+    padding: 0;
+    font-size: 0.82rem;
+    color: #808790;
+    font-style: italic;
+}
+.examples li {
+    margin-bottom: 0.1rem;
+}
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Epicureans</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="epicureans_questions.html">View source questions</a> · <a href="epicureans_cards.html">Make cards</a></div>
+<div class="summary">Hellenistic philosophical school founded by <a href="epicurus_stock.html" class="crossref-inline">Epicurus</a>, arguing that pleasure (especially the absence of pain) is the highest good. The Epicureans advocated atomism, the clinamen (swerve), ataraxia (freedom from distress), aponia (freedom from pain), and the tetrapharmakos (fourfold remedy). Lucretius popularized the school in De Rerum Natura. The school taught at &#x27;the Garden.&#x27;</div>
+
+        <details class="work" id="atomism-and-the-clinamen-swerve" open>
+            <summary class="work-title">Atomism and the Clinamen (Swerve)</summary>
+            <p class="work-desc">Epicurean physics is grounded in atomism inherited from Democritus. The key innovation is the clinamen or 'swerve' -- atoms falling through the void spontaneously deviate, creating randomness and explaining free will. Lucretius expounded this in the six-book poem De Rerum Natura, which Stephen Greenblatt titled his book The Swerve after. The Epicureans believed the gods occupied areas devoid of atoms called metakosmia. All sense perception is considered true, illustrated by the example of a square tower appearing round from a distance.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Clinamen/swerve: atoms spontaneously deviate, creating randomness and free will</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>free will exists because atoms falling through the cosmos experience clinamen, or swerve</li><li>the &#x27;swerve&#x27; to explain how randomness arises in an atomistic world</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lucretius: De Rerum Natura (On the Nature of Things); compared style to honey on bitter wormwood</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Lucretius, a proponent of this school, wrote the poem De Rerum Natura</li><li>compared his style to honey smeared on a cup of bitter wormwood medicine</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Square tower appearing round: argument that all sense perception is true, but judgment can be fallible</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the example of a square tower that appears round to explain how judgement of perception, but not perception itself, is fallible</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stephen Greenblatt&#x27;s The Swerve about rediscovery of Lucretius</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Stephen Greenblatt&#x27;s book The Swerve</li><li>A Stephen Greenblatt book about the birth of Renaissance culture</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gods occupy metakosmia (areas devoid of atoms); total lack of concern with mortals</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the gods occupied an area devoid of atoms called the metakosmia</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="ataraxia-aponia-and-the-tetrapharmakos" open>
+            <summary class="work-title">Ataraxia, Aponia, and the Tetrapharmakos</summary>
+            <p class="work-desc">The goal of Epicurean life is ataraxia (freedom from distress/disturbance) and aponia (absence of pain). The tetrapharmakos ('fourfold remedy') is a daily recitation from the 'principal doctrines' arguing: don't fear gods, don't fear death, what is good is easy to get, what is terrible is easy to endure. The founder's argument against fearing death: 'when we are, death is not come, and when death is come, we are not.' Gravestones bore 'Non fui, fui, non sum' ('I was not, I was, I am not'). Followers celebrated the holiday Eikas on the twentieth of every month.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ataraxia (freedom from distress) and aponia (absence of pain) as goals</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the highest good was ataraxia, the absence of pain</li><li>freedom from distress and freedom from pain, known as ataraxia and aponia</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tetrapharmakos: fourfold remedy; daily recitation from principal doctrines</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>followers of this belief system recited the tetrapharmakos, part of its &#x27;principal doctrines&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Death argument: &#x27;when we are, death is not come, and when death is come, we are not&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>fearing death is irrational</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gravestones: &#x27;Non fui, fui, non sum&#x27; (I was not, I was, I am not)</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Gravestones of many members of this movement include the inscription &#x27;Non fui, fui, non sum&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eikas holiday on the twentieth of every month</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>commemorated two founders on the holiday of Eikas on the twentieth day of every month</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Epicurus divided pleasure into &#x27;static&#x27; and &#x27;kinetic&#x27; types</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>divided one concept in his own philosophy into &#x27;static&#x27; and &#x27;kinetic&#x27; types</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-garden-and-epicurean-community" open>
+            <summary class="work-title">The Garden and Epicurean Community</summary>
+            <p class="work-desc"><a href="epicurus_stock.html" class="crossref-inline">Epicurus</a> taught at a school called 'the Garden,' whose gate inscription reportedly read 'Stranger, here you will do well to tarry.' He enjoyed a simple diet of barley bread and water. In Naples, Philodemus of Gadara led a circle of Epicureans as a client of Lucius Calpurnius Piso. Diogenes of Oenoanda carved Epicurean doctrines on a portico wall. The school was opposed to both Stoicism and Platonism; Plutarch wrote that it is impossible to live well according to Epicureanism. Pierre Gassendi led an early-modern revival.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Garden: Epicurus&#x27;s school; gate inscription &#x27;Stranger, here you will do well to tarry&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>taught at a school called &#x27;the Garden&#x27;</li><li>an inscription on its gate read &#x27;Stranger, here you will do well to tarry&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Philodemus of Gadara: led Naples circle; writings found in Villa of the Papyri at Herculaneum</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>In Naples, a circle of adherents to this belief system was led by Philodemus of Gadara</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Diogenes of Oenoanda carved doctrines on portico wall</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Diogenes of Oenoanda carved the doctrines of this philosophical school on to a portico wall</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opposed to Stoicism and Platonism; Plutarch wrote against it</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Plutarch&#x27;s essay claiming that it is impossible to live well in accordance with this philosophy</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pierre Gassendi led early-modern revival</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Pierre Gassendi led an early-modern revival of this philosophical system</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three criteria of truth: feelings, preconceptions, sense-perceptions</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>established feelings, preconceptions, and sense-perceptions as three criteria of truth</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="problem-of-evil-and-reception" open>
+            <summary class="work-title">Problem of Evil and Reception</summary>
+            <p class="work-desc"><a href="epicurus_stock.html" class="crossref-inline">Epicurus</a> is credited with introducing the problem of evil (his 'namesake paradox'), popularized in <span class="crossref-inline-red" title="No page yet: David Hume">David Hume</span>'s Dialogues Concerning Natural Religion as a trilemma. The school's materialist, atomist worldview was compared to the Indian Carvaka school. In modern reception, Tolstoy discussed adopting Epicureanism in A Confession, and Ninon de Lenclos is considered a key figure in the 17th-century revival. Santayana's Three Philosophical Poets begins with Lucretius as an Epicurean.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Problem of evil: Epicurus&#x27;s namesake paradox; popularized in Hume&#x27;s Dialogues</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>credited with introducing the problem of evil in David Hume&#x27;s Dialogues Concerning Natural Religion</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Compared to Indian Carvaka school (hedonistic, atomistic)</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>The Carvakas have been compared to this Greek thinker&#x27;s lineage</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tolstoy: one way of handling hopelessness in A Confession</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>In A Confession, one way Tolstoy sees of handling the hopelessness of life is to adopt this Ancient Greek school of thought</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Santayana&#x27;s Three Philosophical Poets begins with Lucretius</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>The first of Santayana&#x27;s Three Philosophical Poets is Lucretius</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Epicureanism is a Hellenistic philosophical school founded by <a href="epicurus_stock.html" class="crossref-inline">Epicurus</a>, centered on the pursuit of pleasure understood primarily as the absence of pain. The school&#x27;s physics derives from Democritus&#x27;s atomism, with the crucial innovation of the clinamen or &#x27;swerve&#x27; -- atoms spontaneously deviating from their path, which explains both randomness and free will. Lucretius&#x27;s six-book poem De Rerum Natura is the primary surviving text expounding Epicurean physics, and Stephen Greenblatt&#x27;s The Swerve discusses its rediscovery.</p><p>The ethical goal is achieving ataraxia (freedom from distress) and aponia (absence of pain). The tetrapharmakos (&#x27;fourfold remedy&#x27;), drawn from the &#x27;principal doctrines,&#x27; was recited daily. <a href="epicurus_stock.html" class="crossref-inline">Epicurus</a> argued that fearing death is irrational (&#x27;when we are, death is not come&#x27;). Followers&#x27; gravestones bore &#x27;Non fui, fui, non sum.&#x27; The school celebrated the holiday Eikas on the twentieth of each month.</p><p><a href="epicurus_stock.html" class="crossref-inline">Epicurus</a> taught at &#x27;the Garden&#x27; in Athens, living simply on barley bread and water. He argued that all sense perception is true, using the example of a square tower appearing round. He posited that gods occupy the metakosmia (spaces between atoms) and have no concern for mortals. The school established three criteria of truth: feelings, preconceptions, and sense-perceptions.</p><p>Philodemus of Gadara led a circle in Naples (writings found at Herculaneum). Diogenes of Oenoanda carved doctrines on a wall. The school opposed Stoicism and Platonism. <a href="epicurus_stock.html" class="crossref-inline">Epicurus</a> is credited with the problem of evil, popularized through Hume. Pierre Gassendi revived the school in the early modern period. The Epicureans were compared to India&#x27;s Carvaka school for shared hedonistic and atomistic doctrines.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Epicureanism" target="_blank">Epicureanism</a></li><li><a href="https://en.wikipedia.org/wiki/Epicurus" target="_blank">Epicurus</a></li><li><a href="https://en.wikipedia.org/wiki/Lucretius" target="_blank">Lucretius</a></li><li><a href="https://en.wikipedia.org/wiki/De_rerum_natura" target="_blank">De Rerum Natura</a></li><li><a href="https://en.wikipedia.org/wiki/Clinamen" target="_blank">Clinamen</a></li><li><a href="https://en.wikipedia.org/wiki/Ataraxia" target="_blank">Ataraxia</a></li><li><a href="https://en.wikipedia.org/wiki/Tetrapharmakos" target="_blank">Tetrapharmakos</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Epicurus (as his own answerline - 7 tossups)</li><li>Lucretius / De Rerum Natura (heavily clued poem)</li></ul>
+        
+        </section>
+        
+</body>
+</html>

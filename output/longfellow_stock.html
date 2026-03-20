@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Longfellow</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+.clue-row td {
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.clue-freq {
+    width: 2.5rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.45;
+}
+.clue-text {
+    font-weight: 600;
+    color: #d4d8dd;
+}
+.badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.examples {
+    margin-top: 0.15rem;
+}
+.examples summary {
+    font-size: 0.78rem;
+    color: #6b9eff;
+    cursor: pointer;
+    display: inline;
+}
+.examples summary:hover { text-decoration: underline; }
+.examples ul {
+    margin: 0.2rem 0 0.2rem 1.2rem;
+    padding: 0;
+    font-size: 0.82rem;
+    color: #808790;
+    font-style: italic;
+}
+.examples li {
+    margin-bottom: 0.1rem;
+}
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Longfellow</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="longfellow_questions.html">View source questions</a> · <a href="longfellow_cards.html">Make cards</a></div>
+<div class="summary">Henry Wadsworth Longfellow, 19th-century American poet. Best known for The Song of Hiawatha (Ojibwe epic in Kalevala meter with Minnehaha, Nokomis, &quot;By the shores of Gitche Gumee&quot;), Evangeline (&quot;This is the forest primeval&quot; in dactylic hexameter), &quot;Paul Revere&#x27;s Ride&quot; (&quot;one if by land, two if by sea&quot;), and Tales of a Wayside Inn. Also wrote &quot;A Psalm of Life,&quot; &quot;Excelsior,&quot; &quot;The Village Blacksmith,&quot; and &quot;The Courtship of Miles Standish.&quot;</div>
+
+        <details class="work" id="the-song-of-hiawatha" open>
+            <summary class="work-title">The Song of Hiawatha</summary>
+            <p class="work-desc">An epic poem based on Ojibwe legends, drawn from the ethnography of Henry Schoolcraft. Written in Kalevala-esque trochaic tetrameter. The title hero is the grandson of Nokomis, who lives "By the shores of Gitche Gumee" (Lake Superior). Hiawatha fasts for seven days and wrestles Mondamin, from whose grave grows the first corn. He kills the evil magician Pearl-Feather with the help of a woodpecker. He is swallowed by the great fish Mishe-Nahma and escapes by punching it in the heart, with seagulls helping him escape. He marries Minnehaha ("Laughing Water"), the Arrow-maker's daughter, who dies hearing a waterfall. Pau-Puk-Keewis is a trickster character. Longfellow consulted George Copway's autobiography. Inspired Samuel Coleridge-Taylor's cantata trilogy.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;By the shores of Gitche Gumee&quot; — Kalevala-esque trochaic tetrameter based on Ojibwe legends from Schoolcraft</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>used a Kalevala-esque trochaic tetrameter for a poem in which the grandson of Nokomis weds Minnehaha &#x27;By the shores of Gitche Gumee&#x27;</li><li>used the ethnography of Henry Schoolcraft as the basis for his epic poem</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hiawatha marries Minnehaha (&quot;Laughing Water&quot;), the Arrow-maker&#x27;s daughter, who dies hearing a waterfall</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>whose title character marries Minehaha</li><li>Longfellow eschewed Schoolcraft&#x27;s Ojibwe language research to name this character, Hiawatha&#x27;s Dakota wife</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hiawatha fasts seven days, wrestles Mondamin — first corn grows from his grave</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>While fasting for seven days and nights, this character wrestles Mondamin, from whose grave grows the first corn</li><li>one character fasts for seven days, during which he wrestles Mondamin</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hiawatha kills magician Pearl-Feather with woodpecker&#x27;s help</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a woodpecker helps a hero kill the evil magician Pearl-Feather</li><li>fights the magician Pearl-Feather and loves Minnehaha</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hiawatha swallowed by Mishe-Nahma (great fish); punches it in the heart, seagulls help escape</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Seagulls help Hiawatha escape the body of Mishe-Nahma, one of these animals, after he slays it by punching it in the heart</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nokomis is Hiawatha&#x27;s grandmother; West Wind is his father</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the wigwam of Nokomis, the eventual grandmother of Hiawatha</li><li>his father the West Wind bids him to &#x27;cleanse the earth&#x27;</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="evangeline" open>
+            <summary class="work-title">Evangeline</summary>
+            <p class="work-desc">An 1847 epic poem in dactylic hexameter beginning "This is the forest primeval." Set in Acadia (Grand-Pre), it tells of Evangeline's separation from her love Gabriel Lajeunesse during the Acadian expulsion. Father Felician buries Gabriel's father Benedict, who dies of a heart attack. Basil the blacksmith is revealed in Missouri wearing a "Spanish sombrero." Evangeline tends the sick in Philadelphia as a Sister of Mercy and reunites with Gabriel on his deathbed. The choice of dactylic hexameter was criticized by Whittier, who preferred prose. Longfellow's friend Jonathan Greenleaf Whittier questioned the meter.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens &quot;This is the forest primeval&quot; — written in dactylic hexameter</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>&#x27;This is the forest primeval&#x27; opens another poem by this author</li><li>begins &#x27;this is the forest primeval&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Evangeline separated from Gabriel Lajeunesse during Acadian expulsion; reunites on his deathbed in Philadelphia</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a woman who tends to the sick in Philadelphia, where she reunites with her love on his deathbed</li><li>Father Felician buries a man whose daughter is loved by Gabriel Lajeunesse</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set in Grand-Pre, Acadia; Father Felician is a key character</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the farmer of Grand-Pre, who dies of a heart attack after a mini-riot is quelled by Father Felician</li><li>helped by Father Felician and becomes a Sister of Mercy</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dactylic hexameter controversial — Whittier preferred prose</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Longfellow writing Evangeline in dactylic hexameter</li><li>Jonathan Greenleaf Whittier, who wrote that he would have preferred a prose romance</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="paul-revere-s-ride" open>
+            <summary class="work-title">Paul Revere&#x27;s Ride</summary>
+            <p class="work-desc">Narrative poem from Tales of a Wayside Inn, narrated by the Landlord. Contains the famous signal "one if by land, two if by sea" from the Old North Church. Highly inaccurate historically. One of Longfellow's most frequently identified poems as a giveaway.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;One if by land, two if by sea&quot; — signal from Old North Church</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>coined the phrase &#x27;one if by land, two if by sea&#x27; in &#x27;Paul Revere&#x27;s Ride&#x27;</li><li>one person &#x27;climb[s] the tower of the Old North Church&#x27; because the title character had instructed, &#x27;One, if by land, and two, if by sea&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrated by the Landlord in Tales of a Wayside Inn</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>The landlord of this book&#x27;s title structure in Sudbury narrates the poem &#x27;Paul Revere&#x27;s Ride&#x27;</li><li>tavern patrons tell stories such as &#x27;Paul Revere&#x27;s Ride&#x27; in the form of poems</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="tales-of-a-wayside-inn" open>
+            <summary class="work-title">Tales of a Wayside Inn</summary>
+            <p class="work-desc">An 1863 collection framed as stories told by tavern patrons in Sudbury, Massachusetts. Includes "Paul Revere's Ride" (told by the Landlord), "The Saga of King Olaf," "The Birds of Killingworth," and "The Falcon of Ser Federigo" (adapted from the Decameron, told by the Student). Introduced the phrase "ships that pass in the night" in a narrative about Elizabeth Haddon.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Framed as stories told by tavern patrons in Sudbury — includes Landlord, Student, Theologian</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>&#x27;in Sudbury town / across the meadows bare and brown&#x27; with characters like the Landlord and the Student telling tales</li><li>tavern patrons tell stories such as &#x27;Paul Revere&#x27;s Ride&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Introduced phrase &quot;ships that pass in the night&quot; — narrative of Elizabeth Haddon</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>introduced the phrase &#x27;ships that pass in the night&#x27; in a narrative poem about Elizabeth Haddon</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Includes &quot;The Saga of King Olaf,&quot; &quot;The Birds of Killingworth,&quot; &quot;The Falcon of Ser Federigo&quot;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>contains a poem about an apocalyptic avian civil war, titled &#x27;The Birds of Killingworth&#x27;</li><li>The Student recites this poem, a parable adapted from the Decameron</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-psalm-of-life" open>
+            <summary class="work-title">A Psalm of Life</summary>
+            <p class="work-desc">Inspirational poem spoken "from the Heart of the Young Man." Contains the lines "Life is real! Life is earnest! / And the grave is not its goal" and "Dust thou art, to dust returnest / Was not spoken of the soul." Concludes "Still achieving, still pursuing / Learn to labour and to wait" and urges the reader to "leave behind footprints on the sands of time."</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Life is real! Life is earnest! / And the grave is not its goal&quot; — &quot;footprints on the sands of time&quot;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>exclaimed &#x27;Life is real! Life is earnest! And the grave is not its goal&#x27;</li><li>a poem encouraging the reader to &#x27;leave behind footprints on the sands of time&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Still achieving, still pursuing / Learn to labour and to wait&quot;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>concludes &#x27;Still achieving, still pursuing / learn to labour and to wait&#x27;</li><li>closed by entreating &#x27;Learn to labor and to wait&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Dust thou art, to dust returnest / Was not spoken of the soul&quot;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>&#x27;Dust thou art, to dust returnest / Was not spoken of the soul&#x27;</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-courtship-of-miles-standish" open>
+            <summary class="work-title">The Courtship of Miles Standish</summary>
+            <p class="work-desc">Narrative poem about the love triangle between Miles Standish, John Alden, and Priscilla Mullins. Priscilla's famous retort is "Why don't you speak for yourself, John?" Set in the Plymouth Colony.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Love triangle: Miles Standish, John Alden, Priscilla Mullins — &quot;Why don&#x27;t you speak for yourself, John?&quot;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the retort &#x27;Why don&#x27;t you speak for yourself, John?&#x27; in his poem about the title character&#x27;s love triangle with Priscilla and John Alden</li><li>A love triangle involving John Alden and Priscilla Mullins forms the plot</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Other works include "Excelsior" (youth dies climbing Alps carrying banner with title Latin word for "ever higher"), "The Village Blacksmith" ("Under a spreading chestnut tree"), "Snow-flakes" ("the poem of the air"), "The Children's Hour," "Christmas Bells" (inspired "I Heard the Bells on Christmas Day"), "The Wreck of the Hesperus" (crashes on reef of Norman's Woe), "My Lost Youth" ("A boy's will is the wind's will"), and the novel Kavanagh (often cited for first lesbian relationship in American literature). His wife Fanny Appleton died in a house fire; he grew his beard after her death. "The Cross of Snow" was written 18 years later. First publication was a translation of Jorge Manrique; wrote travelogue Outre-Mer. Also translated Homer late in life. Robert Frost took the title A Boy's Will from "My Lost Youth." Emma Lazarus responded to his "The Jewish Cemetery at Newport."</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Excelsior&quot; — youth found frozen at St. Bernard Pass carrying a banner with &quot;strange device&quot; reading the title Latin word</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a youth who dies climbing the Alps while carrying a banner with a &#x27;strange device&#x27; emblazoned with the title Latin word</li><li>A youth is found frozen to death after charging up a snowy peak</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Village Blacksmith&quot; — &quot;Under a spreading chestnut tree&quot; — chair made from the tree given to Longfellow</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a description of a &#x27;spreading chestnut tree;&#x27; many years after it was published, the Cambridge tree that inspired the poem was chopped down</li><li>A smith works &#x27;under the spreading&#x27; chestnut tree</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wife Fanny Appleton died in house fire; grew beard afterward; wrote &quot;The Cross of Snow&quot; 18 years later</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>describes her death through a burning house, which gave him a &#x27;Cross of Snow&#x27;</li><li>Longfellow grew out his trademark beard</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Wreck of the Hesperus&quot; — ship crashes on reef of Norman&#x27;s Woe</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a ship crashes into a rock reef at this location</li><li>the skipper and his daughter perish on the title ship</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Novel Kavanagh — schoolteacher Mr. Churchill; cited for first lesbian relationship in American literature</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Dickinson was a fan of this author&#x27;s novel Kavanagh, which is often cited for including the first lesbian relationship in American literature</li><li>wrote a novel about the schoolteacher Mr. Churchill</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Emma Lazarus responded to &quot;The Jewish Cemetery at Newport&quot; with &quot;In the Jewish Synagogue at Newport&quot;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Lazarus responded to this author&#x27;s &#x27;The Jewish Cemetery at Newport&#x27;</li><li>discusses &#x27;The long, mysterious Exodus of Death&#x27;</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Henry Wadsworth Longfellow is one of the most commonly clued 19th-century American poets. His most distinctive work is The Song of Hiawatha, an epic poem in Kalevala-esque trochaic tetrameter based on Ojibwe legends drawn from Henry Schoolcraft&#x27;s ethnography. It opens &quot;By the shores of Gitche Gumee&quot; and follows Hiawatha, grandson of Nokomis, through his wrestling of Mondamin, killing of the magician Pearl-Feather, marriage to Minnehaha (&quot;Laughing Water&quot;), and other adventures.</p><p>Evangeline begins &quot;This is the forest primeval&quot; and is written in dactylic hexameter, a controversial choice that drew criticism from Whittier. It tells of Evangeline&#x27;s separation from Gabriel Lajeunesse during the Acadian expulsion from Grand-Pre, her journey guided by Basil the blacksmith and Father Felician, and her reunion with the dying Gabriel in Philadelphia.</p><p>&quot;Paul Revere&#x27;s Ride,&quot; narrated by the Landlord of the title inn in Tales of a Wayside Inn, contains the famous signal &quot;one if by land, two if by sea.&quot; Tales of a Wayside Inn also includes &quot;The Saga of King Olaf,&quot; &quot;The Birds of Killingworth,&quot; and &quot;The Falcon of Ser Federigo.&quot; It introduced the phrase &quot;ships that pass in the night.&quot;</p><p>&quot;A Psalm of Life&quot; contains &quot;Life is real! Life is earnest!&quot; and &quot;footprints on the sands of time.&quot; &quot;The Courtship of Miles Standish&quot; features the love triangle of Standish, John Alden, and Priscilla Mullins, with her retort &quot;Why don&#x27;t you speak for yourself, John?&quot; &quot;Excelsior&quot; describes a youth dying on the Alps with a banner reading the title Latin word. &quot;The Village Blacksmith&quot; is set &quot;under a spreading chestnut tree.&quot;</p><p>Longfellow&#x27;s wife Fanny Appleton died in a house fire, after which he grew his iconic beard and wrote &quot;The Cross of Snow&quot; eighteen years later. His novel Kavanagh is cited for possibly containing the first lesbian relationship in American literature. Emma Lazarus responded to his &quot;Jewish Cemetery at Newport&quot; with her own synagogue poem.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Henry_Wadsworth_Longfellow" target="_blank">Henry Wadsworth Longfellow</a></li><li><a href="https://en.wikipedia.org/wiki/The_Song_of_Hiawatha" target="_blank">The Song of Hiawatha</a></li><li><a href="https://en.wikipedia.org/wiki/Evangeline" target="_blank">Evangeline</a></li><li><a href="https://en.wikipedia.org/wiki/Paul_Revere%27s_Ride_(poem)" target="_blank">Paul Revere&#x27;s Ride</a></li></ul>
+            
+        </section>
+        
+</body>
+</html>

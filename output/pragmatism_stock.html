@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Pragmatism</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+.clue-row td {
+    padding: 0.25rem 0.5rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.clue-freq {
+    width: 2.5rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.45;
+}
+.clue-text {
+    font-weight: 600;
+    color: #d4d8dd;
+}
+.badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.examples {
+    margin-top: 0.15rem;
+}
+.examples summary {
+    font-size: 0.78rem;
+    color: #6b9eff;
+    cursor: pointer;
+    display: inline;
+}
+.examples summary:hover { text-decoration: underline; }
+.examples ul {
+    margin: 0.2rem 0 0.2rem 1.2rem;
+    padding: 0;
+    font-size: 0.82rem;
+    color: #808790;
+    font-style: italic;
+}
+.examples li {
+    margin-bottom: 0.1rem;
+}
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Pragmatism</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="pragmatism_questions.html">View source questions</a> · <a href="pragmatism_cards.html">Make cards</a></div>
+<div class="summary">An American philosophical tradition founded by C.S. Peirce and William James. Emphasizes practical consequences of ideas as the measure of their truth. Key works include James&#x27;s Pragmatism: A New Name for Some Old Ways of Thinking. Later figures include <a href="john_dewey_stock.html" class="crossref-inline">John Dewey</a> and Richard Rorty (neopragmatism).</div>
+
+        <details class="work" id="pragmatism-a-new-name-for-some-old-ways-of-thinking-william-james" open>
+            <summary class="work-title">Pragmatism: A New Name for Some Old Ways of Thinking (William James)</summary>
+            <p class="work-desc">William James's 1907 lecture series presenting pragmatism as a philosophical method. The book distinguishes between 'tender-minded' rationalists and 'tough-minded' empiricists, introduces the idea that truth has 'cash value in experiential terms,' and uses the famous squirrel-around-a-tree anecdote to show that the pragmatic method resolves metaphysical disputes by asking what 'practically means.' It also discusses Walt Whitman's 'To You' in monistic vs. pluralistic readings, offers 'melioristic theism' as a middle ground, and examines eight ways the world could be 'unified.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">squirrel-around-a-tree anecdote — resolves dispute by asking what &#x27;going round&#x27; practically means</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>quibbles with the definition of &#x27;going around&#x27; in a discussion of a man chasing a squirrel around a tree</li><li>relates an anecdote about a debate that deals with a man circling a squirrel</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">tender-minded rationalists vs. tough-minded empiricists — two columns of traits</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the first section features two columns contrasting &#x27;rationalistic&#x27; and &#x27;intellectualistic&#x27; people with &#x27;empiricist&#x27; and &#x27;sensationalistic&#x27; people</li><li>draws a broad distinction between &#x27;tender-minded&#x27; rationalists and &#x27;tough-minded&#x27; empiricists</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">truth as &#x27;cash value&#x27; — ideas &#x27;become true just in so far as they help us&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this book controversially maintains that ideas &#x27;become true just in so far as they help us&#x27;</li><li>any &#x27;meaningful conception&#x27; has a corresponding &#x27;cash value&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Walt Whitman&#x27;s &#x27;To You&#x27; — monistic vs. pluralistic readings; endorses pluralism</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this work reproduces the entirety of Whitman&#x27;s &#x27;To You,&#x27; posing &#x27;monistic&#x27; and &#x27;pluralistic&#x27; interpretations</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">carving constellations out of the flux of reality</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the stars might be surprised at which companions they&#x27;re given when humans form constellations</li><li>our process of &#x27;carv[ing] out constellations&#x27; is not the same as creating truths</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">experience &#x27;boiling over&#x27; — allows correction of past judgments</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the sixth section of this work states that experience has a way of &#x27;boiling over&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;melioristic theism&#x27; as middle ground between religious absolutism and pure naturalism</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>offers &#x27;melioristic theism&#x27; as a middle ground between religious &#x27;absolutism&#x27; and pure naturalism</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lessing quotation about &#x27;clever Hanschen&#x27; — mistake with money analogous to mistake with truth</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this work explicates a quotation of Lessing&#x27;s to explain how the mistake made by &#x27;clever Hanschen&#x27;</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="c-s-peirce-the-founding-of-pragmatism" open>
+            <summary class="work-title">C.S. Peirce &amp; the Founding of Pragmatism</summary>
+            <p class="work-desc"><a href="charles_sanders_peirce_stock.html" class="crossref-inline">Charles Sanders Peirce</a> is the 'father of pragmatism' who wrote the foundational essays 'How to Make Our Ideas Clear' and 'The Fixation of Belief' for Popular Science Monthly. He formulated the pragmatic maxim (consider the practical effects of your thinking), introduced the methods of tenacity and authority for settling opinion, advocated for the scientific method, and developed abductive reasoning and triadic semiotics. William James credited Peirce when first publishing the term 'pragmatism' in 1898.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Peirce founded pragmatism; &#x27;How to Make Our Ideas Clear&#x27; and &#x27;The Fixation of Belief&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this school of thought of John Dewey, Charles Sanders Peirce, and William James</li><li>Peirce is considered to have founded this American school of philosophy</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">pragmatic maxim — consider the &#x27;practical effects&#x27; of your thinking; three grades of clearness</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Peirce wrote this school&#x27;s maxim to always consider the &#x27;practical effects&#x27; of your thinking</li><li>discusses the example of adding accelerations together using a parallelogram</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">methods of tenacity and authority for settling opinion; favors scientific method</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this school&#x27;s founder distinguished methods of argumentation named for &#x27;tenacity&#x27; and &#x27;authority&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">abductive reasoning; triadic semiotics (icon, index, symbol)</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>the concepts of a &#x27;community of inquiry&#x27; and &#x27;abductive reasoning&#x27; were introduced by a logician from this movement</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">criticized transubstantiation as &#x27;senseless jargon&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>a thinker from this movement criticized the doctrine of transubstantiation as &#x27;senseless jargon&#x27;</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="richard-rorty-neopragmatism" open>
+            <summary class="work-title">Richard Rorty &amp; Neopragmatism</summary>
+            <p class="work-desc">Richard Rorty revived pragmatism in its 'neo' form, combining it with analytic philosophy's focus on language. His Philosophy and the Mirror of Nature (1979) promotes 'epistemological behaviorism' and attacks representational theories of knowledge. Contingency, Irony, and Solidarity defines 'ironists' who doubt their 'final vocabulary.' Achieving Our Country favorably contrasts the progressive Left with the 'spectatorial' academic Left. Susan Haack has argued Rorty did not truly belong to pragmatism.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Philosophy and the Mirror of Nature — promotes &#x27;epistemological behaviorism&#x27;; attacks representational theories</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this book advocating what he called &#x27;epistemological behaviorism&#x27;</li><li>this book promotes &#x27;epistemological behaviorism&#x27; in opposition to traditional accounts</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contingency, Irony, and Solidarity — &#x27;ironists&#x27; doubt their &#x27;final vocabulary&#x27;</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this thinker&#x27;s book Contingency, Irony, and Solidarity discusses &#x27;ironists,&#x27; who perpetually doubt their &#x27;final vocabulary&#x27;</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Achieving Our Country — praises progressive Left; criticizes spectatorial academic Left</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Achieving Our Country favorably contrasts the agency of the progressive Left prior to the Vietnam War with the new &#x27;spectatorial&#x27; Left</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">neopragmatism — combined pragmatism with analytic philosophy&#x27;s focus on language</span>
+                    <span class="badge badge-mid">mid</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this tradition was combined with analytic philosophy&#x27;s focus on language to create its &#x27;neo&#x27; form in Philosophy and the Mirror of Nature</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Susan Haack argued Rorty did not really belong to pragmatism</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Haack claims that Richard Rorty did not really belong to this philosophical school</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="john-dewey-democracy-and-education" open>
+            <summary class="work-title">John Dewey &amp; Democracy and Education <a href="john_dewey_stock.html" class="work-link-btn" title="Go to John Dewey">&rarr;</a></summary>
+            <p class="work-desc"><a href="john_dewey_stock.html" class="crossref-inline">John Dewey</a> is the third major pragmatist, known for his philosophy of education (Democracy and Education), his aesthetics (Art as Experience), and his political philosophy (The Public and Its Problems). Dewey called his philosophy 'instrumentalism.' Cheryl Misak's history of pragmatism includes Jane Addams as an influence on Dewey.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dewey — Democracy and Education, instrumentalism, third major pragmatist</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Cheryl Misak&#x27;s history of this philosophical school of thought includes Jane Addams, who influenced the author of Democracy and Education</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dewey influenced B.R. Ambedkar at Columbia</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this thinker who sought &#x27;a bridge between Dewey and Buddhism&#x27; as one of Dewey&#x27;s students at Columbia</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="louis-menand-the-metaphysical-club" open>
+            <summary class="work-title">Louis Menand &amp; The Metaphysical Club</summary>
+            <p class="work-desc">Louis Menand's book The Metaphysical Club traces the origins of pragmatism. The 'Metaphysical Club' was a discussion group at Harvard that included Peirce, James, and Oliver Wendell Holmes Jr. Susan Haack and the Pittsburgh School (Robert Brandom, Wilfrid Sellars, John McDowell) are modern pragmatists.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Louis Menand&#x27;s The Metaphysical Club traces origins of pragmatism</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Louis Menand traced the origins of this tradition in his book The Metaphysical Club</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pittsburgh School — Brandom, Sellars, McDowell; analytic pragmatism</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Robert Brandom and Wilfrid Sellars are considered a part of the neo- form of this philosophical tradition</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Susan Haack — foundherentism, defended Peirce against Rorty&#x27;s interpretation</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Susan Haack questioned whether one philosopher belonged to this school</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-identification" open>
+            <summary class="work-title">General / Identification</summary>
+            <p class="work-desc">Pragmatism is an American philosophical tradition that judges ideas by their practical consequences. Its three founders are Peirce, James, and Dewey. It is a 'new name for some old ways of thinking.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">American philosophical tradition of Peirce, James, and Dewey</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>what school of thought of John Dewey, Charles Sanders Peirce, and William James?</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">judges ideas by practical consequences / practical applications</span>
+                    <span class="badge badge-giveaway">giveaway</span>
+                    <details class="examples"><summary>examples</summary><ul><li>this school of philosophy attempted to judge ideas by looking at their practical consequences</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Habermas&#x27;s thought on truth inspired by pragmatism</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Habermas&#x27;s thought on truth was inspired by this school of U.S. thought</li></ul></details>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kyoto School&#x27;s Nishida adopted &#x27;pure experience&#x27; from William James</span>
+                    <span class="badge badge-power">power</span>
+                    <details class="examples"><summary>examples</summary><ul><li>Nishida adopted his idea of &#x27;pure experience&#x27; from this American philosopher</li></ul></details>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Pragmatism is the dominant American philosophical tradition, founded by <a href="charles_sanders_peirce_stock.html" class="crossref-inline">Charles Sanders Peirce</a> and developed by William James and <a href="john_dewey_stock.html" class="crossref-inline">John Dewey</a>. It holds that the meaning and truth of ideas should be judged by their practical consequences. Peirce formulated the pragmatic maxim in &#x27;How to Make Our Ideas Clear&#x27; and advocated the scientific method over the methods of tenacity and authority in &#x27;The Fixation of Belief.&#x27;</p><p>William James&#x27;s 1907 lecture series Pragmatism: A New Name for Some Old Ways of Thinking is the most heavily clued work on pragmatism. It distinguishes between &#x27;tender-minded&#x27; rationalists and &#x27;tough-minded&#x27; empiricists, introduces the idea that truth has &#x27;cash value,&#x27; and uses the famous squirrel-around-a-tree anecdote to show that the pragmatic method resolves metaphysical disputes. The book also discusses carving constellations from the flux of reality, Walt Whitman&#x27;s &#x27;To You&#x27; in pluralistic and monistic readings, and proposes &#x27;melioristic theism.&#x27;</p><p>Richard Rorty revived pragmatism in its &#x27;neo&#x27; form, combining it with analytic philosophy in Philosophy and the Mirror of Nature. His Achieving Our Country praises the progressive Left and criticizes the spectatorial academic Left. Susan Haack has argued Rorty did not truly belong to pragmatism. The Pittsburgh School (Robert Brandom, Wilfrid Sellars, John McDowell) represents modern analytic pragmatism. Louis Menand traced the origins of pragmatism in The Metaphysical Club. Pragmatism also influenced thinkers abroad: Nishida and the Kyoto School adopted James&#x27;s concept of &#x27;pure experience,&#x27; and B.R. Ambedkar studied under Dewey at Columbia.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Pragmatism" target="_blank">Pragmatism</a></li><li><a href="https://en.wikipedia.org/wiki/Pragmatism_(book)" target="_blank">Pragmatism (book)</a></li><li><a href="https://en.wikipedia.org/wiki/Richard_Rorty" target="_blank">Richard Rorty</a></li><li><a href="https://en.wikipedia.org/wiki/The_Metaphysical_Club_(book)" target="_blank">The Metaphysical Club (book)</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>William James</li><li>Richard Rorty</li></ul>
+        
+        </section>
+        
+</body>
+</html>
