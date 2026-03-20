@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Robert Burns</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Robert Burns</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="robert_burns_questions.html">View source questions</a> · <a href="robert_burns_cards.html">Make cards</a></div>
+<div class="summary">Scottish national poet known for poems in Scots dialect including &quot;To a Mouse,&quot; &quot;A Red, Red Rose,&quot; &quot;Tam o&#x27;Shanter,&quot; &quot;Auld Lang Syne,&quot; and &quot;To a Louse.&quot; Burns Suppers celebrate his work annually on January 25th.</div>
+
+        <details class="work" id="to-a-mouse" open>
+            <summary class="work-title">To a Mouse</summary>
+            <p class="work-desc">A poem addressed to a "Wee, sleeket, cowran, tim'rous beastie" whose home has been destroyed by a plough. The speaker regrets that "Man's dominion / Has broken Nature's social union." Contains the famous line "the best laid schemes o' Mice an' Men gang aft agley," which provided the title for John Steinbeck's Of Mice and Men. The creature is told it is "blessed, compared with me" because "the present only toucheth thee."</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The best laid schemes o&#x27; Mice an&#x27; Men gang aft agley&quot; — supplied the title for Steinbeck&#x27;s Of Mice and Men</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&quot;the best laid schemes o&#x27; Mice an&#x27; Men gang aft agley&quot; | supplied the title of John Steinbeck&#x27;s Of Mice and Men</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Addressed to a &quot;wee, sleeket, cowran, tim&#x27;rous beastie&quot; whose home is destroyed by a plough</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">about a &quot;Wee, sleeket, cowran, tim&#x27;rous beastie&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Man&#x27;s dominion / Has broken Nature&#x27;s social union&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&quot;Man&#x27;s dominion / Has broken Nature&#x27;s social union&quot;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-red-red-rose" open>
+            <summary class="work-title">A Red, Red Rose</summary>
+            <p class="work-desc">A love poem in which the speaker compares his love to "a red, red rose that's newly sprung in June" and pledges to love "while the sands of life shall run" and until "the rocks melt with the sun." He vows to "come again, tho' 'twere ten thousand mile."</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Speaker pledges love &quot;while the sands of life shall run&quot; and until &quot;the rocks melt with the sun&quot;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&quot;I will love thee still, my dear, / While the sands o&#x27; life shall run&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Compares love to &quot;a red, red rose that&#x27;s newly sprung in June&quot;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">his love is &quot;like a red, red rose&quot;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="tam-o-shanter" open>
+            <summary class="work-title">Tam o&#x27; Shanter</summary>
+            <p class="work-desc">A narrative poem about a farmer who rides home on his grey mare Meg after getting drunk, encountering "warlocks and witches in a dance." He hails "inspiring bold John Barleycorn." The poem warns "Pleasures are like poppies spread / you seize the flower, its bloom is shed." At the end, the witch Nannie rips off Meg's tail as they escape by crossing the River Doon. Tam shouts "Weel done, Cutty Sark!"</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Protagonist encounters &quot;warlocks and witches in a dance&quot; while riding home drunk on his grey mare Meg</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&quot;warlocks and witches in a dance&quot; on his horse ride home after getting incredibly drunk</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Meg loses her tail to the witch Nannie as they escape across the River Doon; Tam shouts &quot;Weel done, Cutty Sark!&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">who loses her tail after that character shouts &quot;Weel done, Cutty Sark!&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Pleasures are like poppies spread / you seize the flower, its bloom is shed&quot;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&quot;Pleasures are like poppies spread / you seize the flower, its bloom is shed&quot;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="auld-lang-syne" open>
+            <summary class="work-title">Auld Lang Syne</summary>
+            <p class="work-desc">Burns's best-known lyric, often sung at New Year's celebrations. Opens "should auld acquaintance be forgot / and never brought to mind." The speaker invokes a "cup o' kindness" and describes picking "gowans" (daisies) with a friend.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens &quot;should auld acquaintance be forgot / and never brought to mind&quot;; sung at New Year&#x27;s</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&quot;should auld acquaintance be forgot / and never brought to mind&quot; | often sung at New Year&#x27;s celebrations</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-poems-and-general" open>
+            <summary class="work-title">Other Poems and General</summary>
+            <p class="work-desc">Burns wrote "To a Louse" ("Address to a Louse"), about a creature on a lady's bonnet at church, containing "O would some Power the gift give us / To see ourselves as others see us!" "To a Mountain Daisy" describes a flower "crush'd beneath the furrow's weight" with "Stern Ruin's ploughshare drives elate." "Comin Thro' the Rye" features Jenny carrying her petticoat through a field, with "gin a body meet a body" — misquoted by Holden Caulfield in The Catcher in the Rye. "Address to a Haggis" calls haggis the "chieftain o' the puddin' race" and is recited at Burns Suppers on January 25th. "A Man's a Man for A' That" praises the dignity of the honest man. "Scots Wha Hae" was a longtime unofficial anthem of Scotland. "Afton Water" asks the river to "flow gently" so as not to disturb sleeping Mary. Burns commonly names a six-line stanza with AAABAB rhyme ("Burns stanza" or "standard Habbie"). He influenced Ulster's weaver poets and wrote "To the Weavers Gin Ye Go." "Bonnie Lesley" says "To see her is to love her." "Ae Fond Kiss" shares a "fond kiss" with a woman named Nancy.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;To a Louse&quot;: &quot;O would some Power the gift give us / To see ourselves as others see us!&quot; — creature on a lady&#x27;s bonnet at church</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&quot;O would some Power the gift give us / To see ourselves as others see us!&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Address to a Haggis&quot; calls it &quot;chieftain o&#x27; the puddin&#x27; race&quot;; recited at Burns Suppers on January 25th</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">called a certain food &quot;chieftain o&#x27; the puddin&#x27; race&quot; | recited at celebrations of this poet&#x27;s birthday</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Comin Thro&#x27; the Rye&quot; with &quot;gin a body meet a body&quot; is misquoted by Holden Caulfield, providing the title of The Catcher in the Rye</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&quot;gin a body meet a body,&quot; which Holden Caulfield misquotes</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Names a six-line stanza (AAABAB) called Burns stanza or standard Habbie</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this poet commonly names a six-line stanza with AAABAB rhyme scheme</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;To a Mountain Daisy&quot;: flower &quot;crush&#x27;d beneath the furrow&#x27;s weight&quot;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">described the title object &quot;crush&#x27;d beneath the furrow&#x27;s weight&quot;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Robert Burns is the national poet of Scotland, celebrated annually on January 25th at Burns Suppers where his &quot;Address to a Haggis&quot; (calling it the &quot;chieftain o&#x27; the puddin&#x27; race&quot;) is recited. His poems, written largely in Scots dialect, are staples of quizbowl literature.</p><p>&quot;To a Mouse&quot; is his most frequently clued poem, addressed to a &quot;wee, sleeket, cowran, tim&#x27;rous beastie&quot; whose home is destroyed by a plough. The speaker regrets that &quot;Man&#x27;s dominion / Has broken Nature&#x27;s social union&quot; and delivers the famous line &quot;the best laid schemes o&#x27; Mice an&#x27; Men gang aft agley,&quot; which provided the title for Steinbeck&#x27;s Of Mice and Men.</p><p>&quot;A Red, Red Rose&quot; compares love to &quot;a red, red rose that&#x27;s newly sprung in June&quot; and pledges love &quot;while the sands of life shall run&quot; and until &quot;the rocks melt with the sun.&quot; &quot;Tam o&#x27; Shanter&quot; is a narrative poem about a farmer who rides home drunk on his mare Meg, encounters witches dancing, and barely escapes as Meg loses her tail to the witch Nannie at the River Doon. &quot;Auld Lang Syne,&quot; opening &quot;should auld acquaintance be forgot,&quot; is traditionally sung at New Year.</p><p>Other notable poems include &quot;To a Louse&quot; (&quot;O would some Power the gift give us / To see ourselves as others see us!&quot;), &quot;Comin Thro&#x27; the Rye&quot; (whose line &quot;gin a body meet a body&quot; is misquoted by Holden Caulfield, providing the title of The Catcher in the Rye), &quot;To a Mountain Daisy,&quot; &quot;Afton Water,&quot; &quot;Bonnie Lesley,&quot; and &quot;A Man&#x27;s a Man for A&#x27; That.&quot; Burns names a six-line AAABAB stanza form (the standard Habbie) and influenced Ulster&#x27;s weaver poets.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Robert_Burns" target="_blank">Robert Burns</a></li><li><a href="https://en.wikipedia.org/wiki/To_a_Mouse" target="_blank">To a Mouse</a></li></ul>
+            
+        </section>
+        
+</body>
+</html>

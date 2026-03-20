@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batch Progress</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-weight: normal;
+    font-size: 1.6rem;
+    color: #e0e0e0;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.3rem;
+    margin-bottom: 1rem;
+}
+.back { font-size: 0.82rem; margin-bottom: 1rem; }
+.back a { color: #6b9eff; text-decoration: none; }
+.status-bar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.stat-card {
+    background: #1a1f25;
+    border: 1px solid #2a2f37;
+    border-radius: 6px;
+    padding: 0.8rem 1.2rem;
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+}
+.stat-card .number { font-size: 2rem; font-weight: 600; color: #e0e0e0; }
+.stat-card .label { font-size: 0.78rem; color: #808790; margin-top: 0.2rem; }
+.stat-card.done .number { color: #4caf50; }
+.stat-card.queued .number { color: #6b9eff; }
+.stat-card.second .number { color: #ffb74d; }
+.progress-bar-wrap {
+    background: #1a1f25;
+    border: 1px solid #2a2f37;
+    border-radius: 4px;
+    height: 24px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    display: flex;
+}
+.progress-bar-wrap .done { background: #4caf50; transition: width 0.5s; }
+.progress-bar-wrap .first { background: #6b9eff; transition: width 0.5s; }
+.progress-bar-wrap .second { background: #ffb74d; transition: width 0.5s; }
+.progress-label {
+    font-size: 0.78rem; color: #808790; margin-bottom: 0.4rem;
+    display: flex; justify-content: space-between;
+}
+h2 { font-size: 1rem; color: #e0e0e0; margin: 1.5rem 0 0.5rem; border-bottom: 1px solid #2a2f37; padding-bottom: 0.2rem; }
+.category-breakdown { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.cat-pill { background: #1a1f25; border: 1px solid #2a2f37; border-radius: 12px; padding: 0.2rem 0.7rem; font-size: 0.78rem; }
+.cat-pill .cat-count { color: #6b9eff; font-weight: 600; }
+.log {
+    background: #15191e; border: 1px solid #2a2f37; border-radius: 4px;
+    padding: 0.5rem 0.8rem; max-height: 300px; overflow-y: auto;
+    font-family: 'SF Mono', Consolas, monospace; font-size: 0.78rem; line-height: 1.6;
+}
+.log .entry { border-bottom: 1px solid #1a1f25; padding: 0.1rem 0; }
+.log .entry:last-child { border-bottom: none; }
+.log .new { color: #4caf50; }
+.log .time { color: #555; margin-right: 0.5rem; }
+.refresh-info { font-size: 0.72rem; color: #555; margin-top: 1rem; text-align: center; }
+.pulse { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+</style>
+</head>
+<body>
+<div class="back"><a href="index.html">&larr; Home</a></div>
+<h1>Batch Progress <span id="live-dot" class="pulse" style="color:#4caf50;">●</span></h1>
+
+<div class="status-bar">
+    <div class="stat-card done"><div class="number" id="done-count">—</div><div class="label">Completed</div></div>
+    <div class="stat-card queued"><div class="number" id="first-count">—</div><div class="label">First Pass Queue</div></div>
+    <div class="stat-card second"><div class="number" id="second-count">—</div><div class="label">Second Pass Queue</div></div>
+</div>
+
+<div class="progress-label"><span>Overall Progress</span><span id="progress-pct">—</span></div>
+<div class="progress-bar-wrap">
+    <div class="done" id="bar-done" style="width:0%"></div>
+    <div class="first" id="bar-first" style="width:0%"></div>
+    <div class="second" id="bar-second" style="width:0%"></div>
+</div>
+
+<h2>Queue by Category</h2>
+<div id="cat-breakdown" class="category-breakdown"></div>
+
+<h2>Recent Activity</h2>
+<div id="activity-log" class="log"><div style="color:#555">Loading...</div></div>
+
+<div class="refresh-info">Auto-refreshes every 5s &middot; <span id="last-update">—</span></div>
+
+<script>
+let prevCompleted = null;
+let activityEntries = [];
+
+async function fetchJSON(url) {
+    try { const r = await fetch(url + '?t=' + Date.now()); return r.ok ? await r.json() : null; } catch { return null; }
+}
+async function fetchText(url) {
+    try { const r = await fetch(url + '?t=' + Date.now()); return r.ok ? await r.text() : null; } catch { return null; }
+}
+
+async function update() {
+    const [firstData, secondData, completedRaw] = await Promise.all([
+        fetchJSON('queue/queue_first_pass.json'),
+        fetchJSON('queue/queue_second_pass.json'),
+        fetchText('csvs/completed.txt'),
+    ]);
+
+    const firstQueue = firstData?.queue || [];
+    const secondQueue = secondData?.queue || [];
+    const completed = completedRaw ? completedRaw.trim().split('\n').filter(l => l.trim()) : [];
+    const total = completed.length + firstQueue.length + secondQueue.length;
+
+    document.getElementById('done-count').textContent = completed.length;
+    document.getElementById('first-count').textContent = firstQueue.length;
+    document.getElementById('second-count').textContent = secondQueue.length;
+
+    if (total > 0) {
+        const donePct = (completed.length / total * 100).toFixed(1);
+        document.getElementById('bar-done').style.width = (completed.length / total * 100) + '%';
+        document.getElementById('bar-first').style.width = (firstQueue.length / total * 100) + '%';
+        document.getElementById('bar-second').style.width = (secondQueue.length / total * 100) + '%';
+        document.getElementById('progress-pct').textContent = completed.length + ' / ' + total + ' (' + donePct + '%)';
+    }
+
+    const cats = {};
+    firstQueue.forEach(i => { const c = i.category||'?'; cats[c] = cats[c]||{first:0,second:0}; cats[c].first++; });
+    secondQueue.forEach(i => { const c = i.category||'?'; cats[c] = cats[c]||{first:0,second:0}; cats[c].second++; });
+    document.getElementById('cat-breakdown').innerHTML = Object.entries(cats)
+        .sort((a,b) => (b[1].first+b[1].second) - (a[1].first+a[1].second))
+        .map(([cat, c]) => {
+            const p = [];
+            if (c.first) p.push(`<span class="cat-count">${c.first}</span> 1st`);
+            if (c.second) p.push(`<span style="color:#ffb74d;font-weight:600">${c.second}</span> 2nd`);
+            return `<span class="cat-pill">${cat}: ${p.join(' · ')}</span>`;
+        }).join('');
+
+    if (prevCompleted !== null) {
+        const prevSet = new Set(prevCompleted);
+        completed.filter(c => !prevSet.has(c)).forEach(item => {
+            activityEntries.unshift({time: new Date().toLocaleTimeString(), text: item, isNew: true});
+        });
+    } else {
+        completed.slice(-30).reverse().forEach(item => {
+            activityEntries.push({time: '—', text: item, isNew: false});
+        });
+    }
+    prevCompleted = completed;
+
+    const logDiv = document.getElementById('activity-log');
+    logDiv.innerHTML = activityEntries.length === 0
+        ? '<div style="color:#555">No activity yet</div>'
+        : activityEntries.slice(0, 50).map(e =>
+            `<div class="entry${e.isNew ? ' new' : ''}"><span class="time">${e.time}</span>${e.text}</div>`
+        ).join('');
+
+    document.getElementById('last-update').textContent = 'Last: ' + new Date().toLocaleTimeString();
+}
+
+update();
+setInterval(update, 5000);
+</script>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Geoffrey Chaucer</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Geoffrey Chaucer</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="geoffrey_chaucer_questions.html">View source questions</a> · <a href="geoffrey_chaucer_cards.html">Make cards</a></div>
+<div class="summary">14th-century Middle English author of The Canterbury Tales and Troilus and Criseyde. Called &#x27;the first founder of our fair language&#x27; by Thomas Hoccleve. Son of a vintner, diplomat, controller of wool trade.</div>
+
+        <details class="work" id="the-canterbury-tales" open>
+            <summary class="work-title">The Canterbury Tales</summary>
+            <p class="work-desc">Chaucer's magnum opus, a collection of stories told by pilgrims traveling from the Tabard Inn to the tomb of Thomas Becket. The General Prologue describes the 'condition, array, and degree' of the group. Key tales include: the Knight's Tale (Palamon and Arcite fight for Emily's love, adapted from Boccaccio's Teseida); the Wife of Bath's Prologue and Tale (she tears pages from husband Jankin's 'book of wicked wives,' becoming deaf; tells of a knight given a year to learn what women most desire; an old hag turns young after marriage; coined 'belle chose'; Zadie Smith adapted it as The Wife of Willesden); the Pardoner's Tale (three men seek Death, find gold under an oak tree); the Clerk's Tale (Patient Griselda from Boccaccio); the Prioress (Madame Eglantine, pendant saying 'Amor Vincit Omnia,' antisemitic tale of a murdered pious child); the Nun's Priest's Tale (rooster Chauntecleer escapes a fox, references the Peasants' Revolt); the Squire's Tale (magical gifts for Genghis Khan, brass horse, Canace's falcon); the Parson's Tale (sermon on seven deadly sins); Chaucer himself tells the Tale of Sir Thopas (interrupted by Host Harry Bailey for bad doggerel rhyme) and then the prose tale of Melibee. Chaucer's 'retraction' at the end admits his works 'tended toward sin.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pilgrims travel from Tabard Inn to tomb of Thomas Becket; General Prologue</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A group meets at the Tabard Inn to travel to the tomb of Thomas Becket</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Knight&#x27;s Tale: Palamon and Arcite fight for Emily; adapted from Boccaccio&#x27;s Teseida</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">adapted Boccaccio&#x27;s Teseida to write a story in which Emily&#x27;s love is battled for by Palamon and Arcite</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wife of Bath: tears pages from Jankin&#x27;s book, goes deaf; knight must learn what women want most; old hag turns young; &#x27;belle chose&#x27;; Zadie Smith adaptation</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">When a woman tears pages from her husband&#x27;s &#x27;book of wicked wives,&#x27; he hits her on the head, leaving her deaf in one ear | Zadie Smith adapted the Wife of Bath&#x27;s Prologue for the stage in The Wife of Willesden</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pardoner&#x27;s Tale: three men find gold under an oak tree while trying to kill Death</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">three men discover some gold coins beneath an oak tree while attempting to kill death</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Prioress Madame Eglantine wears pendant &#x27;Amor Vincit Omnia&#x27;; antisemitic tale</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a nun has a pendant that says &#x27;Amor Vincit Omnia&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nun&#x27;s Priest: rooster Chauntecleer escapes fox</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man narrates a section in which the rooster Chauntecleer escapes from the jaws of a fox</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chaucer the character tells Tale of Sir Thopas, interrupted by Host for &#x27;doggerel&#x27; verse</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Host interrupts him to tell him that his rhymes suck</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Squire&#x27;s Tale: magical gifts for Genghis Khan, brass horse, Canace&#x27;s falcon</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote about magical gifts brought to Genghis Khan, including a brass horse with flight and super speed</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Clerk&#x27;s Tale: Patient Griselda from Boccaccio</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">adapted this author&#x27;s story of Patient Griselda for his &#x27;Clerk&#x27;s&#x27; Tale</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="troilus-and-criseyde" open>
+            <summary class="work-title">Troilus and Criseyde</summary>
+            <p class="work-desc">A rime royale epic poem set during the siege of Troy. Troilus falls in love with Criseyde, who betrays him for Diomedes. After death, Troilus ascends to the eighth sphere of heaven. Contains the first known use of 'all good things must come to an end.' Dedicated to John Gower. Chaucer invented rime royale for it. Robert Henryson wrote a continuation, The Testament of Cresseid. Chaucer imitated one of Petrarch's sonnets in it. In The Legend of Good Women, Cupid denounces the narrator for writing about Criseyde's infidelity.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rime royale epic set during siege of Troy; Troilus and Criseyde; Criseyde betrays Troilus for Diomedes</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Chaucer wrote an epic poem about these two Trojan lovers | a verse romance set in Troy centers on a warrior who falls in love with a widow, dies, and then reaches the eighth sphere</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First known use of &#x27;all good things must come to an end&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poem&#x27;s third section includes the first known use of the phrase &#x27;all good things must come to an end&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dedicated to John Gower</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Troilus and Criseyde was dedicated to this other Middle English poet</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chaucer invented rime royale; Troilus reaches the eighth sphere</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Chaucer invented rime royale | Critics often debate the religious meaning of Troilus&#x27;s ascension to this sphere of heaven</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-parliament-of-fowls" open>
+            <summary class="work-title">The Parliament of Fowls</summary>
+            <p class="work-desc">A dream vision in which Nature convenes birds to pick their mates. Three tercels plead for the hand of a formel eagle, and a woman asks Nature for a year to decide. The narrator falls asleep reading Cicero's Somnium Scipionis and is guided by Scipio Africanus through the gate of the Temple of Venus. Broken bows of former huntresses hang on walls painted with stories of Callisto and Atalanta. The 'Envoy' paraphrases Hippocrates: 'the life so short, the craft so long to learn.' Birds sing a roundel beginning 'Now welcom somer.' Credited with spreading St. Valentine's Day as a lovers' holiday.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator falls asleep reading Somnium Scipionis; guided by Scipio Africanus to Temple of Venus; three eagles compete for a mate</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the narrator falls asleep after reading the Dream of Scipio, and is led by Scipio Africanus through the gate of the Temple of Venus</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;the life so short, the craft so long to learn&#x27; — Envoy paraphrasing Hippocrates</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The &#x27;Envoy&#x27; paraphrases Hippocrates in lamenting &#x27;the life so short, the craft so long to learn&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Credited with spreading notion of St. Valentine&#x27;s Day as lovers&#x27; day</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">credited with spreading the notion of St. Valentine&#x27;s Day as one for lovers</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-house-of-fame" open>
+            <summary class="work-title">The House of Fame</summary>
+            <p class="work-desc">A poem in which the narrator dreams that an eagle carries him to a temple dedicated to illustrious people. The word 'galaxy' is first attested in this poem. Characters explain that words break the air and cause it to ripple, explaining why Fame's house is found between the heavens, earth, and sea. The narrator visits a constantly-moving wicker house and a golden palace. Some scholars believe the last judgment concerns the burning of the Temple of Artemis at Ephesus.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator dreams an eagle carries him to a temple of illustrious people; word &#x27;galaxy&#x27; first attested</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this poet dreams that an eagle carries him to a temple dedicated to illustrious people | The word &#x27;galaxy&#x27; is first attested in a poem</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Words break the air and ripple; house found between heavens, earth, and sea</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character explains that words break the air and cause it to ripple</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Constantly-moving wicker house and golden palace</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">visits a constantly-moving wicker house and a golden palace</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-book-of-the-duchess" open>
+            <summary class="work-title">The Book of the Duchess</summary>
+            <p class="work-desc">Chaucer's first long poem, dedicated to John of Gaunt's deceased wife, the duchess Blanche of Lancaster. A knight relates how he lost a game of chess to Fortuna. The narrator encounters Octavian's hunt and consoles the grieving knight.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dedicated to John of Gaunt&#x27;s deceased wife Blanche of Lancaster; Chaucer&#x27;s first long poem</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">he dedicated his first long poem to John&#x27;s deceased wife, the duchess Blanche of Lancaster</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A knight lost a game of chess to Fortuna</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a knight who lost a game of chess to Fortuna</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-legend-of-good-women" open>
+            <summary class="work-title">The Legend of Good Women</summary>
+            <p class="work-desc">Written as penance for depicting Criseyde's infidelity. Queen Alceste chastises Chaucer for his misogyny. Drew material from Boccaccio's On Famous Women.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written as penance for Criseyde&#x27;s infidelity; Alceste chastises Chaucer; drew from Boccaccio&#x27;s On Famous Women</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Chaucer is chastised for his misogyny by Queen Alceste | drew much of the material for his Legend of Good Women from this author&#x27;s On Famous Women</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Chaucer was a son of a vintner who worked in the house of Elizabeth de Burgh. He served as a diplomat and controller of the wool trade, going on a mission to Genoa. His rise was helped by John of Gaunt. Through his wife Philippa Roet, he was brother-in-law to John of Gaunt. He paid a fine to beat a charge of 'raptus' against Cecily Chaumpaigne (2022 research disputes the rape interpretation). Thomas Hoccleve called him 'the first founder of our fair language.' His assistant Adam Pinkhurst was cursed for negligence. He wore a fashionable paltok showing off his legs. He may have met Boccaccio and Petrarch at Violante Visconti's wedding. He wrote an alphabetical acrostic (his 'ABC') and A Treatise on the Astrolabe. First makar lamented by William Dunbar. His son Thomas became Chief Butler and Speaker of the House of Commons. Granddaughter Alice became Duchess of Suffolk.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Son of a vintner; diplomat; controller of wool trade; helped by John of Gaunt</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This son of a vinter once worked in the house of Elizabeth de Burgh | This onetime controller of the wool trade</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Paid fine for &#x27;raptus&#x27; charge against Cecily Chaumpaigne; 2022 research disputes rape interpretation</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">paid a hefty fine to beat a charge of &#x27;raptus&#x27; against Cecily Champaigne</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Thomas Hoccleve called him &#x27;the first founder of our fair language&#x27;</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Thomas Hoccleve called him &#x27;the first founder of our fair language&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">May have met Boccaccio and Petrarch at Violante Visconti&#x27;s wedding</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Some scholars believe this author was present at the wedding of the Duke of Clarence and Violante Visconti</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First makar lamented by William Dunbar</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first makar mentioned in &#x27;Lament for the Makaris&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Assistant Adam Pinkhurst cursed for negligence</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Linne Mooney discovered that this author&#x27;s assistant Adam Pinkhurst</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Complaint Unto His Purse&#x27;: &#x27;I am so sorry now that you are light&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">bemoaned &#x27;I am so sorry now that you&#x27;ve been light!&#x27; in his final poem</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alphabetical acrostic structures his ABC (Marian poem)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">first known poetical work consists of twenty six stanzas, each starting with the next letter</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Geoffrey Chaucer is the 14th-century Middle English author universally identified in quizbowl by The Canterbury Tales. This collection follows pilgrims from the Tabard Inn to the tomb of Thomas Becket in Canterbury. The major tales clued include the Knight&#x27;s Tale (Palamon and Arcite competing for Emily, adapted from Boccaccio&#x27;s Teseida), the Wife of Bath (tears pages from her husband Jankin&#x27;s misogynistic book, goes deaf; a knight must discover what women most desire; coined &#x27;belle chose&#x27;; adapted by Zadie Smith as The Wife of Willesden), the Pardoner&#x27;s Tale (three men find gold under an oak tree while seeking Death), the Prioress Madame Eglantine (pendant inscribed &#x27;Amor Vincit Omnia&#x27;), the Nun&#x27;s Priest&#x27;s Tale (Chauntecleer the rooster escapes a fox), the Clerk&#x27;s Tale (Patient Griselda from Boccaccio), and the Squire&#x27;s Tale (magical gifts for Genghis Khan). Chaucer himself appears as a character who tells the doggerel Tale of Sir Thopas before being interrupted by the Host Harry Bailey.</p><p>Troilus and Criseyde is a rime royale epic set during the siege of Troy in which Criseyde betrays Troilus for Diomedes. It contains the first known use of &#x27;all good things must come to an end&#x27; and was dedicated to John Gower. The Parliament of Fowls is a dream vision where Nature convenes birds to choose mates; the narrator reads Cicero&#x27;s Somnium Scipionis and is guided by Scipio Africanus. The House of Fame features the word &#x27;galaxy&#x27; for the first time and has an eagle carrying the narrator to a temple. The Book of the Duchess commemorates Blanche of Lancaster. The Legend of Good Women was penance for depicting Criseyde&#x27;s infidelity.</p><p>Biographically, Chaucer was a vintner&#x27;s son, diplomat, and controller of the wool trade. His rise was aided by John of Gaunt. He paid a fine for a &#x27;raptus&#x27; charge against Cecily Chaumpaigne (disputed by modern research). Thomas Hoccleve called him &#x27;the first founder of our fair language.&#x27; He is the first makar lamented by William Dunbar.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Geoffrey_Chaucer" target="_blank">Geoffrey Chaucer</a></li><li><a href="https://en.wikipedia.org/wiki/The_Canterbury_Tales" target="_blank">The Canterbury Tales</a></li><li><a href="https://en.wikipedia.org/wiki/Troilus_and_Criseyde" target="_blank">Troilus and Criseyde</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>The Canterbury Tales</li><li>Troilus and Criseyde</li></ul>
+        
+        </section>
+        
+</body>
+</html>

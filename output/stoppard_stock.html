@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Tom Stoppard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Tom Stoppard</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="stoppard_questions.html">View source questions</a> · <a href="stoppard_cards.html">Make cards</a></div>
+<div class="summary">Czech-born British playwright known for Rosencrantz and Guildenstern Are Dead, Arcadia, Travesties, Leopoldstadt, and The Real Thing. Also a prolific screenwriter (Shakespeare in Love, Brazil).</div>
+
+        <details class="work" id="rosencrantz-and-guildenstern-are-dead" open>
+            <summary class="work-title">Rosencrantz and Guildenstern Are Dead</summary>
+            <p class="work-desc">Follows two minor Hamlet characters. Opens with a coin landing on heads repeatedly (92 times). The Player and his troupe perform The Murder of Gonzago. The title characters discuss death as 'the absence of presence.' One stabs The Player with a retractable knife; all the Tragedians clap. Characters hide in barrels on a ship in Act 3. Tim Roth and Gary Oldman star in the film adaptation playing a tennis game of questions.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coin lands on heads repeatedly — 92 times in a row</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">an event with a 50% probability occurring 92 times in a row</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Follows two minor Hamlet characters</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">used minor Hamlet characters</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One character stabs The Player with a retractable knife; Tragedians clap</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">stabs The Player with a retractable knife</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Film with Tim Roth and Gary Oldman — tennis game of questions</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Tim Roth and Gary Oldman play a tennis game of questions</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="arcadia" open>
+            <summary class="work-title">Arcadia</summary>
+            <p class="work-desc">Set at Sidley Park, alternating between 1809 and the present. Septimus Hodge tutors the 13-year-old Thomasina Coverly, challenging her to prove Fermat's Last Theorem. Thomasina says 'Mountains are not pyramids and trees are not cones' and 'pooh to Hobbes.' She devises an equation describing a rabbit eating its own babies. She dies in a fire on her 17th birthday. Hannah Jarvis discovers the 'hermit of Sidley Park' was Septimus. Lord Byron is mentioned but never appears. A tortoise named Plautus/Lightning is on the table. Ezra Chater is a terrible poet who died of a monkey bite. The play ends with two characters waltzing.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Septimus Hodge tutors Thomasina at Sidley Park; Fermat&#x27;s Last Theorem</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Septimus Hodge tutors Thomasina Coverly</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Thomasina says &#x27;Mountains are not pyramids&#x27; / &#x27;pooh to Hobbes&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Mountains are not pyramids and trees are not cones&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hannah Jarvis discovers the hermit of Sidley Park was Septimus</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Hannah Jarvis discovers that the &#x27;hermit of Sidley Park&#x27; was actually Septimus Hodge</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ezra Chater — terrible poet who died of a monkey bite; not killed by Byron</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ezra Chater... died of a monkey bite</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tortoise named Plautus or Lightning</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a tortoise named either Plautus or Lightning</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with two characters waltzing; contemplating entropy</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">ends with two characters waltzing</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="travesties" open>
+            <summary class="work-title">Travesties</summary>
+            <p class="work-desc">Set in 1917 Zurich. Elderly Henry Carr reminisces about encounters with James Joyce, Vladimir Lenin, and Tristan Tzara. Twists the plot of The Importance of Being Earnest (Tzara and Carr take roles of Jack and Algernon). Carr's wife reveals Bennett was actually English Consul General. Tzara cuts up Shakespeare's Sonnet 18 and pulls words from a hat to impress Gwendolen. Joyce and Carr's real attempt to stage Earnest is fictionalized.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set in 1917 Zurich with Joyce, Lenin, and Tzara; twists Importance of Being Earnest</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">twists the plot of The Importance of Being Earnest to be about Tristan Tzara, Lenin, and James Joyce</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Elderly Henry Carr reminisces about his encounters</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the elderly protagonist Henry Carr</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tzara cuts up Sonnet 18 and pulls words from a hat</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">cutting up the words of Shakespeare&#x27;s Sonnet 18 and pulling them out of a hat</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="leopoldstadt" open>
+            <summary class="work-title">Leopoldstadt</summary>
+            <p class="work-desc">Stoppard's 2020 play spanning five acts from 1899 to 1955, depicting the Merz family in Vienna's Jewish quarter. Ludwig Jakobovicz plays cat's cradle with Leo Rosenbaum and Nathan Fischbein. Rosa responds 'Auschwitz' to a list of names at the end. Based on Stoppard's own grandparents, who were Holocaust victims. Leo changes his name to Leo Chamberlain and forgets his Jewish past.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Five acts spanning 1899-1955; Merz family in Vienna&#x27;s Jewish quarter</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">depicts the lives of the Merz family in the Jewish quarter of Vienna</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rosa responds &#x27;Auschwitz&#x27; to a list of names at the end</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Rosa responding &#x27;Auschwitz&#x27; to the names</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on Stoppard&#x27;s Holocaust-victim grandparents</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">drew on the stories of his grandparents, who were Holocaust victims</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Czech-born British playwright (born Tomas Straussler). Prolific screenwriter: Shakespeare in Love, Brazil (co-written with Monty Python members, creating 'Form 27B/6'), Indiana Jones and the Last Crusade ('almost every dialogue'), Empire of the Sun, adapted Nabokov's Despair for Fassbinder. Admired Thatcher, unusual among contemporaries. Also wrote The Real Thing (Annie has affair with Billy; Henry writes House of Cards play-within-a-play), The Invention of Love (A. E. Housman reflects on love for Moses Jackson), Jumpers (logical positivist gymnasts), The Real Inspector Hound (critics Moon and Birdboot), Every Good Boy Deserves Favour (Soviet dissident), The Coast of Utopia trilogy, and Dogg's Hamlet/Cahoot's Macbeth.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Screenwriter — Shakespeare in Love, Brazil, Indiana Jones, Empire of the Sun</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote &#x27;almost every dialogue&#x27; of Indiana Jones and the Last Crusade</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Real Thing — Annie, Henry, Billy; House of Cards play-within-a-play</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Annie begins an affair with Billy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Invention of Love — Housman reflects on Moses Jackson</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this poet reflects on his lifelong love for Moses Jackson</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Admired Thatcher — unusual among contemporaries</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this playwright admired Thatcher&#x27;s policies, causing controversy</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Tom Stoppard (born 1937 as Tomas Straussler) is a Czech-born British playwright and screenwriter known for intellectually playful, structurally inventive drama.</p><p>Rosencrantz and Guildenstern Are Dead follows two minor Hamlet characters who open the play observing a coin land on heads 92 times consecutively. They encounter The Player and his troupe and discuss death as &#x27;the absence of presence.&#x27; The film adaptation stars Tim Roth and Gary Oldman.</p><p>Arcadia alternates between 1809 and the present at Sidley Park. Septimus Hodge tutors the precocious Thomasina Coverly, who says &#x27;pooh to Hobbes&#x27; and devises equations about entropy. Hannah Jarvis discovers the &#x27;hermit of Sidley Park&#x27; was Septimus. Ezra Chater is a terrible poet who died of a monkey bite. A tortoise named Plautus or Lightning sits on the table.</p><p>Travesties is set in 1917 Zurich where Henry Carr encounters James Joyce, Vladimir Lenin, and Tristan Tzara, twisting the plot of The Importance of Being Earnest. Leopoldstadt spans 1899-1955 depicting a Viennese Jewish family, ending with Rosa responding &#x27;Auschwitz&#x27; to a list of names.</p><p>Stoppard is also a prolific screenwriter of Shakespeare in Love, Brazil, Indiana Jones and the Last Crusade, and Empire of the Sun. His other plays include The Real Thing, The Invention of Love, Jumpers, The Real Inspector Hound, and The Coast of Utopia trilogy.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Tom_Stoppard" target="_blank">Tom Stoppard</a></li><li><a href="https://en.wikipedia.org/wiki/Arcadia_(play)" target="_blank">Arcadia</a></li></ul>
+            
+        </section>
+        
+</body>
+</html>
