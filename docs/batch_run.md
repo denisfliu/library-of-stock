@@ -6,7 +6,7 @@ How to launch agents to bulk-generate stock guides. Read this fully before start
 
 Give Claude Code a topic list and say:
 
-> Launch batch agents for these topics following `docs/AUTOMATIC_POPULATION.md`. Category: [Literature/Fine Arts/Philosophy/Science]. Difficulties: 7,8,9,10.
+> Launch batch agents for these topics following `docs/batch_run.md`. Category: [Literature/Fine Arts/Philosophy/Science]. Difficulties: 7,8,9,10.
 
 Then provide the list (inline or as a file path).
 
