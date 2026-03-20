@@ -780,6 +780,10 @@ function buildLocationView() {
     });
     grid.appendChild(topBar);
 
+    // Auto-select All
+    allBtn.classList.add('active');
+    showTimeline('All', filtered);
+
     // Per-continent sections with country bubbles
     sortedContinents.forEach(cont => {
         const section = document.createElement('div');
