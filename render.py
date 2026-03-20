@@ -124,17 +124,18 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                 "mid": "badge-mid",
             }.get(tendency, "badge-mid")
 
-            examples_items = ""
-            for ex in clue.get("examples", []):
-                examples_items += f'<li>{escape(ex)}</li>'
+            examples = clue.get("examples", [])
+            ex_html = ""
+            if examples:
+                tooltip_text = " | ".join(escape(ex) for ex in examples[:3])
+                ex_html = f'<span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">{tooltip_text}</span></span>'
 
             clues_html += f"""
             <tr class="clue-row">
                 <td class="clue-freq">{freq}x</td>
                 <td class="clue-body">
                     <span class="clue-text">{escape(clue.get("clue", ""))}</span>
-                    <span class="badge {badge_class}">{tendency}</span>
-                    <details class="examples"><summary>examples</summary><ul>{examples_items}</ul></details>
+                    <span class="badge {badge_class}">{tendency}</span>{ex_html}
                 </td>
             </tr>
             """
@@ -370,60 +371,75 @@ h1 {{
 .clue-table {{
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.88rem;
+    font-size: 0.82rem;
 }}
 .clue-row td {{
-    padding: 0.25rem 0.5rem;
+    padding: 0.15rem 0.4rem;
     border-top: 1px solid #2a2f37;
-    vertical-align: top;
+    vertical-align: middle;
 }}
 .clue-freq {{
-    width: 2.5rem;
+    width: 2rem;
     text-align: center;
     color: #9aa0a7;
+    font-size: 0.75rem;
     font-weight: bold;
     white-space: nowrap;
 }}
 .clue-body {{
-    line-height: 1.45;
+    line-height: 1.35;
 }}
 .clue-text {{
-    font-weight: 600;
-    color: #d4d8dd;
+    color: #c8ccd1;
 }}
 .badge {{
-    font-size: 0.65rem;
-    padding: 0.1rem 0.35rem;
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
     border-radius: 3px;
     text-transform: uppercase;
     font-weight: bold;
     white-space: nowrap;
-    margin-left: 0.3rem;
+    margin-left: 0.25rem;
     vertical-align: middle;
 }}
 .badge-power {{ background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }}
 .badge-giveaway {{ background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }}
 .badge-mid {{ background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }}
-.examples {{
-    margin-top: 0.15rem;
-}}
-.examples summary {{
-    font-size: 0.78rem;
-    color: #6b9eff;
+.ex-icon {{
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
     cursor: pointer;
-    display: inline;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
 }}
-.examples summary:hover {{ text-decoration: underline; }}
-.examples ul {{
-    margin: 0.2rem 0 0.2rem 1.2rem;
-    padding: 0;
-    font-size: 0.82rem;
-    color: #808790;
+.ex-icon:hover {{ color: #6b9eff; }}
+.ex-icon .ex-tooltip {{
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
     font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
 }}
-.examples li {{
-    margin-bottom: 0.1rem;
-}}
+.ex-icon:hover .ex-tooltip {{ display: block; }}
 .suggestions, .links {{
     margin-top: 1.2rem;
 }}
