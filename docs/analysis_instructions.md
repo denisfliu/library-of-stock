@@ -67,21 +67,38 @@ Each cross-ref is:
   "name": "Schopenhauer",           // the name as it appears in this page's text
   "target_topic": "Arthur Schopenhauer",  // full topic name (or null if no page)
   "target_slug": "arthur_schopenhauer",   // slug for linking (or null)
+  "target_work": null,              // if linking to a section within a page, the work name
   "type": "topic",                  // "topic" or "work"
   "exists": false                   // true = blue link, false = red link (future page)
 }
 ```
 
-**Blue links**: the target has a page → renders as a clickable link to that page.
+### Linking priority
+
+**Always prefer linking to a dedicated page over a section within another page.**
+
+- If "Robert Henri" has his own page → `type: "topic"`, `target_work: null` → links to `robert_henri_stock.html`
+- If "John Sloan" does NOT have his own page but is a section within Ashcan School → `type: "work"`, `target_work: "John Sloan"` → links to `ashcan_school_stock.html#john-sloan`
+- If "David Hume" has no page and no section anywhere → `exists: false` → red link
+
+The renderer uses `target_work` to add a `#section-anchor` to the URL. If `target_work` is null, it links to the page root.
+
+### Link types
+
+**Blue links**: the target has a page (or section within a page) → renders as a clickable link.
 **Red links** (Wikipedia-style): the target doesn't have a page yet but is notable enough that it might in the future → renders as a red link indicating a gap.
 
-Examples for Kant:
-- Schopenhauer (red — no page yet, but frequently mentioned interlocutor)
-- David Hume (red — no page yet)
-- Thomas Cole / The Oxbow (blue — page exists)
-- Ashcan School (blue — page exists)
+### Section headers
 
-When a **new page is created**, also run `python3 lib/crossref.py` to rebuild the index, then check if any existing pages mention the new topic and should gain a blue link.
+If a work section name matches a cross-ref that has a page (e.g., Ashcan School's "Robert Henri (leader)" section), a → button appears on the section header linking to that page.
+
+### Examples for Kant:
+- Robert Henri → blue, `type: "topic"` (has own page)
+- John Sloan → blue, `type: "work"`, `target_work: "John Sloan"` (section in Ashcan School)
+- Schopenhauer → red (no page yet)
+- David Hume → red (no page yet)
+
+When a **new page is created**, also run `python3 lib/crossref.py` to rebuild the index, then check if any existing pages mention the new topic — their red links may need to become blue links.
 
 ## Step 7: Suggest Recursive Searches
 
