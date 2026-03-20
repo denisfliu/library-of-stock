@@ -385,8 +385,8 @@ h1 {
 <body>
 <h1>Stock Knowledge Guides</h1>
 <div class="view-toggle">
-    <button class="view-btn active" data-view="list">List</button>
-    <button class="view-btn" data-view="map">Map</button>
+    <button class="view-btn active" data-view="list">All</button>
+    <button class="view-btn" data-view="location">Location</button>
 </div>
 <input class="search" type="text" placeholder="Search guides..." autofocus>
 <div class="control-bar">
@@ -426,7 +426,7 @@ h1 {
 <div class="count"></div>
 <ul class="guide-list"></ul>
 </div>
-<div id="map-view" style="display:none;">
+<div id="continent-view" style="display:none;">
     <div class="map-container">
         <div class="map-grid" id="map-grid"></div>
     </div>
@@ -690,12 +690,13 @@ document.querySelectorAll('.filter-btn[data-sort]').forEach(btn => {
     });
 });
 
-function isMapActive() {
-    return document.getElementById('map-view').style.display !== 'none';
+let currentView = 'list';
+function isLocationActive() {
+    return currentView === 'location';
 }
 function update() {
     render();
-    if (isMapActive()) buildMap();
+    if (isLocationActive()) buildLocationView();
 }
 search.addEventListener('input', () => update());
 render();
@@ -705,10 +706,10 @@ document.querySelectorAll('.view-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const view = btn.dataset.view;
-        document.getElementById('list-view').style.display = view === 'list' ? '' : 'none';
-        document.getElementById('map-view').style.display = view === 'map' ? '' : 'none';
-        if (view === 'map') buildMap();
+        currentView = btn.dataset.view;
+        document.getElementById('list-view').style.display = currentView === 'list' ? '' : 'none';
+        document.getElementById('continent-view').style.display = currentView === 'location' ? '' : 'none';
+        if (currentView === 'location') buildLocationView();
     });
 });
 
@@ -723,7 +724,7 @@ function getFilteredGuides() {
     });
 }
 
-function buildMap() {
+function buildLocationView() {
     const grid = document.getElementById('map-grid');
     grid.innerHTML = '';
     closeTimeline();
@@ -749,6 +750,37 @@ function buildMap() {
         return;
     }
 
+    // Top-level buttons: All + each continent
+    const topBar = document.createElement('div');
+    topBar.className = 'country-bubbles';
+    topBar.style.marginBottom = '1rem';
+
+    const allBtn = document.createElement('button');
+    allBtn.className = 'country-bubble';
+    allBtn.innerHTML = 'All <span class="bubble-count">' + filtered.length + '</span>';
+    allBtn.onclick = () => {
+        document.querySelectorAll('.country-bubble.active').forEach(b => b.classList.remove('active'));
+        allBtn.classList.add('active');
+        showTimeline('All', filtered);
+    };
+    topBar.appendChild(allBtn);
+
+    sortedContinents.forEach(cont => {
+        const total = Object.values(byContinent[cont]).reduce((s, arr) => s + arr.length, 0);
+        const btn = document.createElement('button');
+        btn.className = 'country-bubble';
+        btn.innerHTML = cont + ' <span class="bubble-count">' + total + '</span>';
+        btn.onclick = () => {
+            document.querySelectorAll('.country-bubble.active').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const allInContinent = Object.values(byContinent[cont]).flat();
+            showTimeline(cont, allInContinent);
+        };
+        topBar.appendChild(btn);
+    });
+    grid.appendChild(topBar);
+
+    // Per-continent sections with country bubbles
     sortedContinents.forEach(cont => {
         const section = document.createElement('div');
         section.className = 'continent-section';
@@ -776,25 +808,26 @@ function buildMap() {
     });
 }
 
-function showTimeline(country, countryGuides) {
+function showTimeline(label, guideList) {
     const panel = document.getElementById('map-timeline');
     const title = document.getElementById('timeline-title');
     const entries = document.getElementById('timeline-entries');
 
-    title.textContent = country;
+    title.textContent = label;
     panel.style.display = '';
 
     // Sort by year
-    const sorted = [...countryGuides].sort((a, b) => (a.year || 9999) - (b.year || 9999));
+    const sorted = [...guideList].sort((a, b) => (a.year || 9999) - (b.year || 9999));
 
     entries.innerHTML = sorted.map(g => {
         const yearStr = g.year ? (g.year < 0 ? Math.abs(g.year) + ' BCE' : g.year) : '?';
         const catLabel = g.subcategory || g.category || '';
+        const countryLabel = g.country ? ' &middot; ' + g.country : '';
         return `<div class="timeline-entry">
             <span class="timeline-year">${yearStr}</span>
             <span class="timeline-dot"></span>
             <a href="${g.path}" class="timeline-link">${g.name}</a>
-            <span class="timeline-cat">${catLabel}</span>
+            <span class="timeline-cat">${catLabel}${countryLabel}</span>
         </div>`;
     }).join('');
 }
