@@ -380,10 +380,67 @@ h1 {
     white-space: nowrap;
     flex-shrink: 0;
 }
+.queue-btn {
+    background: #1a1f25;
+    color: #9aa0a7;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.78rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.queue-btn:hover { border-color: #6b9eff; color: #c8ccd1; }
+.queue-badge {
+    background: #2a3040;
+    color: #6b9eff;
+    border-radius: 8px;
+    padding: 0.1rem 0.4rem;
+    font-size: 0.72rem;
+    margin-left: 0.3rem;
+}
+.queue-panel {
+    background: #15191e;
+    border: 1px solid #2a2f37;
+    border-radius: 4px;
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.8rem;
+    font-size: 0.82rem;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+.queue-list {
+    list-style: none;
+    color: #9aa0a7;
+    max-height: 30vh;
+    overflow-y: auto;
+}
+.queue-list li {
+    padding: 0.2rem 0.3rem;
+    border-bottom: 1px solid #1a1f25;
+}
+.queue-list li:last-child { border-bottom: none; }
+.queue-list li:hover { background: #1a1f25; }
+.queue-empty { color: #555; font-style: italic; }
 </style>
 </head>
 <body>
+<div style="display:flex;justify-content:space-between;align-items:baseline;">
 <h1>Stock Knowledge Guides</h1>
+<button class="queue-btn" onclick="document.getElementById('queue-panel').style.display=document.getElementById('queue-panel').style.display==='none'?'block':'none'">Queue <span class="queue-badge">QUEUE_TOTAL</span></button>
+</div>
+<div id="queue-panel" class="queue-panel" style="display:none;">
+  <div style="display:flex;gap:1.5rem;">
+    <div style="flex:1;">
+      <h3 style="font-size:0.85rem;color:#e0e0e0;margin-bottom:0.4rem;">First Pass (FIRST_COUNT)</h3>
+      <ul class="queue-list">FIRST_PASS_LIST</ul>
+    </div>
+    <div style="flex:1;">
+      <h3 style="font-size:0.85rem;color:#e0e0e0;margin-bottom:0.4rem;">Second Pass (SECOND_COUNT)</h3>
+      <ul class="queue-list">SECOND_PASS_LIST</ul>
+    </div>
+  </div>
+</div>
 <div class="view-toggle">
     <button class="view-btn active" data-view="list">All</button>
     <button class="view-btn" data-view="location">Location</button>
@@ -651,7 +708,7 @@ function render() {
     }
     list.innerHTML = filtered.map(g => {
         const subLabel = g.subcategory || g.category || '?';
-        let meta = g.works + ' works';
+        let meta = g.works + ' topics';
         if (g.year) meta += ' &middot; ' + (g.year < 0 ? Math.abs(g.year) + ' BCE' : g.year);
         if (g.country && g.continent) meta += ' &middot; ' + g.continent + ' &middot; ' + g.country;
         else if (g.continent) meta += ' &middot; ' + g.continent;
@@ -849,10 +906,12 @@ def build():
     guides = []
     for f in sorted(OUTPUT_DIR.glob("*_stock.html")):
         # Default name from filename, but prefer topic from analysis JSON
-        name = f.stem.replace("_stock", "").replace("_", " ").title()
+        # Use removesuffix to only strip the trailing _stock, not _stock inside names like Stockton
+        slug = f.stem.removesuffix("_stock") if f.stem.endswith("_stock") else f.stem
+        name = slug.replace("_", " ").title()
 
         # Load metadata from analysis JSON
-        analysis_json = f.with_name(f.stem.replace("_stock", "_analysis") + ".json")
+        analysis_json = f.with_name(slug + "_analysis.json")
         works_count = "?"
         category = ""
         subcategory = ""
@@ -864,7 +923,9 @@ def build():
             try:
                 with open(analysis_json) as af:
                     data = json.load(af)
-                    works_count = str(len(data.get("works", [])))
+                    works_count = str(sum(1 for w in data.get("works", [])
+                        if not any(x in w.get("name", "") for x in
+                        ["General", "Biographical", "Other Works", "Other "])))
                     category = data.get("category", "")
                     subcategory = data.get("subcategory", "")
                     year = data.get("year")
@@ -892,7 +953,23 @@ def build():
             guide["year"] = year
         guides.append(guide)
 
+    # Queue data
+    queue_first = json.loads(Path("queue/queue_first_pass.json").read_text()) if Path("queue/queue_first_pass.json").exists() else {"queue": []}
+    queue_second = json.loads(Path("queue/queue_second_pass.json").read_text()) if Path("queue/queue_second_pass.json").exists() else {"queue": []}
+    first_count = len(queue_first["queue"])
+    second_count = len(queue_second["queue"])
+    total_count = first_count + second_count
+
+    first_list = "".join(f'<li>{item["topic"]}</li>' for item in queue_first["queue"]) or '<li class="queue-empty">Empty</li>'
+    second_list = "".join(f'<li>{item["topic"]}</li>' for item in queue_second["queue"]) or '<li class="queue-empty">Empty</li>'
+
     html = INDEX_TEMPLATE.replace("GUIDE_DATA", json.dumps(guides))
+    html = html.replace("QUEUE_TOTAL", str(total_count))
+    html = html.replace("FIRST_COUNT", str(first_count))
+    html = html.replace("SECOND_COUNT", str(second_count))
+    html = html.replace("FIRST_PASS_LIST", first_list)
+    html = html.replace("SECOND_PASS_LIST", second_list)
+
     out_path = Path("index.html")
     with open(out_path, "w") as f:
         f.write(html)

@@ -19,8 +19,8 @@ from pathlib import Path
 # Ensure project root is on sys.path so imports work from any cwd
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from lib.fetch import fetch_topic
-from lib.parse import parse_answer_clues
+from lib.fetch import fetch_topic, fetch_text_mentions
+from lib.parse import parse_answer_clues, parse_text_mention_clues
 
 
 def format_clues_for_analysis(parsed: dict) -> str:
@@ -99,38 +99,116 @@ def format_clues_for_analysis(parsed: dict) -> str:
     return "\n".join(lines)
 
 
+def format_text_mentions_for_analysis(parsed: dict) -> str:
+    """
+    Format text mention clues into a readable text block.
+    Similar to format_clues_for_analysis but indicates these are
+    text mentions (topic appears in text but is NOT the answer).
+    """
+    lines = []
+    query = parsed['query_string']
+    stats = parsed['stats']
+
+    lines.append(f"=== TEXT MENTION CLUES: {query} ===")
+    lines.append(f"(Questions where '{query}' appears in the text but is NOT the answer)")
+    lines.append(f"Tossup questions: {stats['tossup_questions']} found, "
+                 f"{stats['tossup_clue_sentences']} clue sentences")
+    lines.append(f"Bonus questions: {stats['bonus_questions']} found, "
+                 f"{stats['bonus_clue_parts']} bonus parts")
+    lines.append("")
+
+    # Group tossup clues by source question
+    lines.append("--- TEXT MENTION TOSSUPS ---")
+    lines.append("")
+
+    tossup_groups = {}
+    for clue in parsed['tossup_clues']:
+        qid = clue['source']['id']
+        if qid not in tossup_groups:
+            tossup_groups[qid] = {'source': clue['source'], 'clues': []}
+        tossup_groups[qid]['clues'].append(clue)
+
+    for i, (qid, group) in enumerate(tossup_groups.items(), 1):
+        src = group['source']
+        lines.append(f"[TM{i}] {src['set']} ({src['year']}) | "
+                     f"Diff: {src['difficulty']} | {src['category']}")
+        lines.append(f"     Answer: {src['answer']}")
+        for clue in group['clues']:
+            lines.append(f"  - {clue['text'][:300]}")
+        lines.append("")
+
+    # Bonus mentions
+    lines.append("--- TEXT MENTION BONUSES ---")
+    lines.append("")
+
+    bonus_groups = {}
+    for clue in parsed['bonus_clues']:
+        qid = clue['source']['id']
+        if qid not in bonus_groups:
+            bonus_groups[qid] = {
+                'source': clue['source'],
+                'leadin': clue.get('leadin', ''),
+                'parts': [],
+            }
+        bonus_groups[qid]['parts'].append(clue)
+
+    for i, (qid, group) in enumerate(bonus_groups.items(), 1):
+        src = group['source']
+        lines.append(f"[BM{i}] {src['set']} ({src['year']}) | "
+                     f"Diff: {src['difficulty']} | {src['category']}")
+        lines.append(f"     Leadin: {group['leadin']}")
+        for part in group['parts']:
+            lines.append(f"  Part {part['part_index']+1} "
+                         f"(ans: {part['part_answer']}):")
+            lines.append(f"    {part['text'][:300]}")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python run.py <topic> [difficulties] [min_year] [category]")
+        print("Usage: python run.py <topic> [difficulties] [min_year] [category] [--mentions]")
         print('Example: python run.py "Smetana" "7,8,9,10"')
+        print('Example: python run.py "Smetana" "7,8,9,10" --mentions')
         print('Example: python run.py "Indiana" "7,8,9,10" 2012 "Literature"')
         sys.exit(1)
 
-    topic = sys.argv[1]
+    # Parse flags
+    mentions_mode = '--mentions' in sys.argv
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+
+    topic = args[0]
     diffs = None
     min_year = 2012
     categories = None
 
-    if len(sys.argv) > 2:
-        diffs = [int(d) for d in sys.argv[2].split(",")]
-    if len(sys.argv) > 3:
-        min_year = int(sys.argv[3])
-    if len(sys.argv) > 4:
-        categories = [c.strip() for c in sys.argv[4].split(",")]
+    if len(args) > 1:
+        diffs = [int(d) for d in args[1].split(",")]
+    if len(args) > 2:
+        min_year = int(args[2])
+    if len(args) > 3:
+        categories = [c.strip() for c in args[3].split(",")]
 
-    # Fetch and parse
-    data = fetch_topic(topic, difficulties=diffs, categories=categories,
-                       min_year=min_year)
-    parsed = parse_answer_clues(data)
-
-    # Format for analysis
-    output = format_clues_for_analysis(parsed)
-
-    # Save to output file for easy reading
     out_dir = Path("output")
     out_dir.mkdir(exist_ok=True)
     safe_name = topic.strip().lower().replace(" ", "_")
-    out_path = out_dir / f"{safe_name}_clues.txt"
+
+    if mentions_mode:
+        # Text mention search
+        data = fetch_text_mentions(topic, difficulties=diffs, categories=categories,
+                                   min_year=min_year)
+        parsed = parse_text_mention_clues(data)
+        output = format_text_mentions_for_analysis(parsed)
+        out_path = out_dir / f"{safe_name}_mentions_clues.txt"
+    else:
+        # Standard answerline search
+        data = fetch_topic(topic, difficulties=diffs, categories=categories,
+                           min_year=min_year)
+        parsed = parse_answer_clues(data)
+        output = format_clues_for_analysis(parsed)
+        out_path = out_dir / f"{safe_name}_clues.txt"
+
     with open(out_path, "w") as f:
         f.write(output)
 

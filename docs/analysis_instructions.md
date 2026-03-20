@@ -2,6 +2,19 @@
 
 When analyzing clues for a quizbowl topic, follow this protocol. **Only use information from the clues themselves** — do not inject outside knowledge except for hyperlinks.
 
+## Search Query vs. Page Title
+
+When fetching clues, use the **minimally identifiable name** — the shortest form that qbreader indexes on. But set the `topic` field in the analysis JSON to the **full proper name**.
+
+Examples:
+- Search: `"Falconet"` → topic: `"Étienne Maurice Falconet"`
+- Search: `"Schelling"` → topic: `"Friedrich Wilhelm Joseph Schelling"`
+- Search: `"Smetana"` → topic: `"Bedřich Smetana"`
+- Search: `"Hokusai"` → topic: `"Hokusai"` (already minimal)
+- Search: `"The Oxbow"` → topic stays as work title
+
+The answerline in the clue results usually tells you the full name (e.g., "Arthur **Schopenhauer**"). Use that for the topic field. When in doubt, match Wikipedia's article title.
+
 ## Step 0: Filter Out Irrelevant Results
 
 Some topic names are ambiguous — "Indiana" could be the George Sand novel or the US state; "Sand" could be the material or the author. Even with category filtering at fetch time, the results may contain questions about the wrong topic.

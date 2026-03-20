@@ -47,10 +47,14 @@ Read `docs/analysis_instructions.md` (core protocol) and `docs/analysis_[categor
 ## PIPELINE FOR EACH TOPIC
 
 ### Step 1: Fetch clues
-python3 lib/run.py "TOPIC NAME" "7,8,9,10"
+Use the minimally identifiable search term (usually last name or common name):
+python3 lib/run.py "SEARCH TERM" "7,8,9,10"
+Example: search "Falconet" not "Étienne Maurice Falconet"
 
 ### Step 2: Read clues and create analysis JSON
 Read output/{slug}_clues.txt. Create output/{slug}_analysis.json.
+IMPORTANT: Set "topic" to the FULL proper name (e.g., "Étienne Maurice Falconet"),
+not the search term. The answerline in the clue results usually shows the full name.
 
 Key JSON structure:
 {
@@ -104,8 +108,9 @@ Add cross_refs to the JSON following `docs/analysis_instructions.md` Step 6.
 Use `output/topic_index.json` to check if targets exist.
 Priority: own page (type: "topic") > section in another page (type: "work") > red link (exists: false).
 
-### Step 6: Track
+### Step 6: Track and remove from queue
 echo "TOPIC NAME" >> csvs/completed.txt
+python3 lib/topic_queue.py remove-first "TOPIC NAME"
 
 ## IMPORTANT RULES
 - Do NOT search for images. Images are handled separately after analysis.
@@ -154,6 +159,44 @@ for f in sorted(Path('output').glob('*_analysis.json')):
     if works <= 1 or cards == 0 or not desc_ok:
         print(f'NEEDS REVIEW: {data.get(\"topic\",\"?\")} ({works}w, {cards}c, desc={desc_ok})')
 "
+```
+
+## Queue-Based Dispatch
+
+Before launching agents, check the queues:
+```bash
+python3 lib/topic_queue.py list
+```
+
+First pass queue is always drained before second pass. Pop items for an agent:
+```bash
+python3 lib/topic_queue.py pop-first 10   # for first-pass agents
+python3 lib/topic_queue.py pop-second 10  # for second-pass agents
+```
+
+## Second Pass Agents
+
+Second pass agents enrich existing pages with additional data. Read `docs/second_pass.md` for the full protocol.
+
+**Second Pass Agent Prompt Template:**
+```
+You are a second-pass enrichment agent. Process each topic autonomously. Do NOT ask for confirmation.
+
+## YOUR BATCH
+[list topics here]
+
+## INSTRUCTIONS
+Read `docs/second_pass.md` (enrichment protocol) and `docs/analysis_instructions.md` (core rules).
+Also read the relevant category supplement: `docs/analysis_[category].md`.
+
+## PIPELINE FOR EACH TOPIC
+Follow the steps in docs/second_pass.md:
+1. Load existing analysis JSON
+2. If sparse, run: python3 lib/run.py "TOPIC" "7,8,9,10" --mentions
+3. For each major work, run: python3 lib/run.py "WORK NAME" "7,8,9,10"
+4. Merge new clues into existing analysis (preserve all existing data)
+5. Re-render all pages
+6. Track completion
 ```
 
 ## Pitfalls from Previous Runs
