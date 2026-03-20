@@ -465,6 +465,7 @@ h1 {{
         </div>
         <div class="modal-actions">
             <button onclick="closeModal()">Cancel</button>
+            <button onclick="saveModal(true)" class="primary">Save &amp; New</button>
             <button onclick="saveModal()" class="primary">Save</button>
         </div>
     </div>
@@ -599,7 +600,7 @@ function closeModal() {{
 
 function addCard() {{ openEditModal(-1); }}
 
-function saveModal() {{
+function saveModal(andNew) {{
     const indicator = document.getElementById('m-indicator').value.trim();
     let frontText = document.getElementById('m-front').value.trim();
     // Auto-prepend indicator if not already present
@@ -622,8 +623,12 @@ function saveModal() {{
     }} else {{
         cards.push(card);
     }}
-    closeModal();
     renderTable();
+    if (andNew) {{
+        openEditModal(-1);
+    }} else {{
+        closeModal();
+    }}
 }}
 
 // Export
