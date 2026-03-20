@@ -143,6 +143,55 @@ def parse_answer_clues(data: dict) -> dict:
     }
 
 
+def parse_text_mention_clues(data: dict) -> dict:
+    """
+    Parse text mention data into structured clues.
+
+    Text mentions are questions where the topic appears in the clue text
+    but is NOT the answer. These provide contextual information.
+
+    Parameters
+    ----------
+    data : dict
+        Output from fetch.fetch_text_mentions().
+
+    Returns dict with:
+        - query_string
+        - tossup_clues: list of clue dicts (includes the actual answer)
+        - bonus_clues: list of clue dicts (includes the actual answer)
+        - stats: summary counts
+    """
+    mentions = data.get('text_mentions', {})
+
+    tossup_clues = []
+    for t in mentions.get('tossups', []):
+        clues = extract_tossup_clues(t)
+        # Add the actual answer since the topic is NOT the answer
+        for clue in clues:
+            clue['source']['answer'] = t.get('answer_sanitized', '')
+            clue['source']['search_type'] = 'text_mention'
+        tossup_clues.extend(clues)
+
+    bonus_clues = []
+    for b in mentions.get('bonuses', []):
+        clues = extract_bonus_clues(b)
+        for clue in clues:
+            clue['source']['search_type'] = 'text_mention'
+        bonus_clues.extend(clues)
+
+    return {
+        'query_string': data.get('query_string', ''),
+        'tossup_clues': tossup_clues,
+        'bonus_clues': bonus_clues,
+        'stats': {
+            'tossup_questions': mentions.get('tossups_found', len(mentions.get('tossups', []))),
+            'bonus_questions': mentions.get('bonuses_found', len(mentions.get('bonuses', []))),
+            'tossup_clue_sentences': len(tossup_clues),
+            'bonus_clue_parts': len(bonus_clues),
+        },
+    }
+
+
 if __name__ == "__main__":
     import sys
     from fetch import fetch_topic
