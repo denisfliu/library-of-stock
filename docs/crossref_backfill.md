@@ -58,12 +58,26 @@ Scan all text fields (summary, comprehensive_summary, work descriptions, clue te
 
 To check: look up the name in `output/topic_index.json`. If found with `type: "topic"` → rule 1. If found with `type: "work"` → rule 2. If not found but clearly a notable person/work → rule 3.
 
+## How the Renderer Uses Cross-Refs
+
+**Inline links**: The renderer scans summary, comprehensive_summary, and work descriptions for the `name` field of each cross-ref. The first occurrence of each name gets turned into a link:
+- Blue link (exists: true) → clickable `<a>` tag pointing to the target page
+- Red link (exists: false) → red `<span>` with tooltip "No page yet: ..."
+
+**Section anchors**: When `target_work` is set, the renderer appends `#section-anchor` to the URL (e.g., `ashcan_school_stock.html#john-sloan`), scrolling to that section within the target page.
+
+**Section header buttons**: If a work section name matches a cross-ref that has a page (e.g., Ashcan School has a "Robert Henri (leader)" section and Robert Henri has his own page), a → button appears on the section header linking to that page.
+
+**Only first occurrence**: Each name is only linked once per page to avoid visual clutter.
+
 ## What NOT to Do
 
 - Don't modify any field except `cross_refs`
 - Don't add refs for generic terms ("painting", "novel", "philosophy")
 - Don't add refs for the topic itself
 - Don't add duplicate refs (same target_topic + target_work)
+- Don't set `target_topic` to `null` — use the name string instead if no page exists
+- Don't set `target_slug` to `null` — use empty string `""` if no page exists
 
 ## Pipeline
 

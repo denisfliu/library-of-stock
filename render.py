@@ -55,7 +55,7 @@ def _linkify(text, cross_refs, self_topic, escaped=True):
                 href += f"#{anchor}"
             replacement = f'<a href="{href}" class="crossref-inline">{name_escaped}</a>'
         else:
-            target = escape(ref.get('target_topic', name))
+            target = escape(ref.get('target_topic') or name)
             replacement = f'<span class="crossref-inline-red" title="No page yet: {target}">{name_escaped}</span>'
 
         new_text, count = re.subn(pattern, replacement, text, count=1, flags=re.IGNORECASE)

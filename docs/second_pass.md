@@ -56,6 +56,11 @@ Read the existing analysis JSON and ALL new clue files. Merge following these ru
 - Generate cards for new clues (append to cards array)
 - Rewrite `comprehensive_summary` to incorporate all information
 
+**Fix the summary blurb:**
+- Check the `"summary"` field (the blurb at the top of the page)
+- If it is empty or missing, write one. It should be a concise paragraph covering key identifiers: nationality, role, most famous works, notable associations, and distinguishing facts. See Emily Carr, Kobo Abe, or Francisco de Zurbarán pages for examples of good summaries.
+- If it exists but is low quality (too vague, factually wrong, or doesn't match the clue data), rewrite it
+
 **Track the enrichment:**
 Add a `second_pass` field to the JSON:
 ```json

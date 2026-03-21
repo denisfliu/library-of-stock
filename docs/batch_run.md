@@ -62,7 +62,18 @@ Example: search "Falconet" not "Étienne Maurice Falconet"
 Read output/{slug}_clues.txt. Create output/{slug}_analysis.json.
 IMPORTANT: Set "topic" to the FULL proper name (from the answerline), not the search term.
 
+Required top-level fields:
+- "topic": full proper name
+- "summary": concise paragraph identification (appears as blurb at top of page). DO NOT LEAVE EMPTY.
+- "works": array of work sections (see analysis_instructions.md)
+- "comprehensive_summary": multi-paragraph prose
+- "cards": array of flashcards
+- "category", "subcategory", "year", "continent", "country", "tags"
+- "links": Wikipedia links
+- "recursive_suggestions": topics worth deeper investigation
+
 ### Step 3: Self-check (MANDATORY)
+- [ ] "summary" field is filled (concise paragraph blurb — NOT empty)
 - [ ] More than 1 work section (if data mentions multiple works/ideas)
 - [ ] Cards array is non-empty
 - [ ] Every work/concept mentioned 3+ times has its own section
@@ -203,6 +214,8 @@ These mistakes were made before — do NOT repeat them:
 5. **Multi-clue cards**: Cards with 3+ semicolons packing multiple facts. **Fix**: Self-check — each card should test one fact.
 6. **Missing question pages**: Agents forgot to run `render_questions.py`. **Fix**: Included in post-run checklist.
 7. **Wrong category for VFA**: Some agents tagged subcategory as "Visual Arts" instead of "Visual Fine Arts". **Fix**: Reference `docs/categories.md`.
+8. **Empty summary field**: Agents wrote comprehensive_summary but left the "summary" field empty, causing blank blurbs on the page. **Fix**: "summary" is now in the required fields list and self-check.
+9. **Forgot cross-ref backfill**: Controller skipped the Sonnet cross-ref step after agents finished. **Fix**: Always run the full post-batch checklist — don't report "done" until every step is complete.
 
 ## Permissions
 
