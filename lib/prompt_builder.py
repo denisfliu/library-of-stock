@@ -2,7 +2,7 @@
 """
 prompt_builder.py — Assemble agent prompts from building blocks.
 
-Reads markdown blocks from docs/prompts/, concatenates them in the correct order,
+Reads markdown blocks from docs/, concatenates them in the correct order,
 renumbers steps sequentially, and wraps in the agent loop template.
 
 Usage:
@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
-PROMPTS_DIR = ROOT / 'docs' / 'prompts'
 DOCS_DIR = ROOT / 'docs'
 
 CATEGORY_SUPPLEMENTS = {
@@ -58,13 +57,13 @@ def build_protocol(pass_type: str, category: str) -> str:
     blocks = []
 
     # 1. Core protocol
-    blocks.append(read_block(PROMPTS_DIR / 'analysis_core.md'))
+    blocks.append(read_block(DOCS_DIR / 'analysis_core.md'))
 
     # 2. Pass-specific block
     if pass_type == 'first':
-        blocks.append(read_block(PROMPTS_DIR / 'analysis_first_pass.md'))
+        blocks.append(read_block(DOCS_DIR / 'analysis_first_pass.md'))
     else:
-        blocks.append(read_block(PROMPTS_DIR / 'analysis_second_pass.md'))
+        blocks.append(read_block(DOCS_DIR / 'analysis_second_pass.md'))
 
     # 3. Category supplement (if one exists)
     cat_key = category.lower()
@@ -74,7 +73,7 @@ def build_protocol(pass_type: str, category: str) -> str:
             blocks.append(read_block(sup_path))
 
     # 4. Card generation rules
-    blocks.append(read_block(PROMPTS_DIR / 'analysis_cards.md'))
+    blocks.append(read_block(DOCS_DIR / 'analysis_cards.md'))
 
     # Concatenate with dividers and renumber all steps sequentially
     combined = '\n\n---\n\n'.join(b for b in blocks if b)
@@ -96,6 +95,12 @@ Parse the JSON output to get the topic name and metadata.
 Use the minimally identifiable search term (usually last name or common name):
 `python3 lib/run.py "SEARCH TERM" "7,8,9,10"`
 Example: search "Falconet" not "Étienne Maurice Falconet"
+
+### Expand search if sparse
+If the initial fetch returned fewer than **10 total tossups + bonuses**, run two additional queries:
+1. Expanded difficulty: `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10"`
+2. Text mentions: `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions`
+Read all output files and incorporate into your analysis. Text mention clues should be labeled as contextual.
 
 ### Read clues and create analysis JSON
 Read `output/{{slug}}_clues.txt`. Create `output/{{slug}}_analysis.json` following the analysis protocol above.
