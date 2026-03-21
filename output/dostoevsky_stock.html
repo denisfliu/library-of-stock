@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Fyodor Dostoevsky</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Fyodor Dostoevsky</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="dostoevsky_questions.html">View source questions</a> · <a href="dostoevsky_cards.html">Make cards</a></div>
+<div class="summary">Fyodor Dostoevsky (Fyodor Mikhailovich Dostoevsky) was a Russian novelist and proto-existentialist author.</div>
+
+        <details class="work" id="the-brothers-karamazov" open>
+            <summary class="work-title">The Brothers Karamazov</summary>
+            <p class="work-desc">Dostoevsky's final novel about the Karamazov brothers. Ivan tells the parable of the Grand Inquisitor. Dmitri is tried for patricide but Smerdyakov is the true killer. Alyosha is guided by Father Zosima.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ivan tells the parable of the Grand Inquisitor to Alyosha; Christ returns to 16th-century Seville and is imprisoned</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author envisioned a sixteenth-century jail cell containing the returned Jesus in the poema of the Grand Inquisitor. | A nihilist character argues that the church follows the Devil&#x27;s principles in Christ&#x27;s name.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ivan declares &quot;if God is dead, everything is permitted&quot; / &quot;I most respectfully return him the ticket&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Simone de Beauvoir aimed to disprove this author&#x27;s statement, &#x27;if God is dead, everything is permitted.&#x27; | One character tells his brother, &#x27;It&#x27;s not God that I don&#x27;t accept... only I most respectfully return him the ticket.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dmitri tried for patricide; actual killer is Smerdyakov; evidence includes 3,000 rubles, a letter, a brass pestle</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Evidence for this crime, including a letter scrawled on a tavern bill and the theft of 3,000 rubles. | The Adam&#x27;s apple and hooked nose of his &#x27;tormentor&#x27; prompt a man to consider this crime.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Rebellion&quot; chapter: Ivan describes a baby ripped apart by hunting dogs; Le Guin&#x27;s Omelas inspired by a society dependent on a &quot;little victim&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character describes a baby ripped apart by hunting dogs in a chapter titled &#x27;Rebellion.&#x27; | Le Guin quipped that &#x27;forgetting&#x27; this author inspired Omelas.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Grushenka tells the parable of the onion to Alyosha; inspired Akutagawa&#x27;s &quot;The Spider&#x27;s Thread&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Grushenka analogizes her one &#x27;good deed&#x27; to an onion. | Ryunosuke Akutagawa&#x27;s &#x27;The Spider&#x27;s Thread&#x27; was inspired by a parable about this food.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alyosha&#x27;s mentor is Father Zosima; Alyosha dreams of him during the Wedding at Cana</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Several scenes set in the hermitage of Elder Zosima. | While listening to a passage about the Wedding at Cana, Alyosha has a dream of Father Zosima.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Freud&#x27;s &quot;Dostoevsky and Parricide&quot; blamed a desire to commit patricide for his epilepsy</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Freud blamed a desire to commit this crime for Dostoevsky&#x27;s epilepsy. | Joseph Frank refuted a 1928 essay partly titled for this crime.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="crime-and-punishment" open>
+            <summary class="work-title">Crime and Punishment</summary>
+            <p class="work-desc">Raskolnikov murders a pawnbroker and her sister with an axe. Foreshadowed by dreams and overheard conversations. Inspector Porfiry investigates. Sonia follows Raskolnikov to Siberian exile.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Raskolnikov murders a pawnbroker (and her sister) with an axe; exiled to Siberia; Sonia follows him</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Raskolnikov murders a pawnbroker in Crime and Punishment. | This Dostoevsky novel ends with Sonya following Raskolnikov to Siberia.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Porfiry questions Raskolnikov about his article &quot;On Crime&quot;: &quot;extraordinary&quot; people can &quot;transgress the law&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The inspector Porfiry quizzes the protagonist on an article suggesting that some men have a right to commit murder. | Porfiry Petrovich questions the protagonist because it suggests that &#x27;extraordinary&#x27; people have the right to &#x27;transgress the law.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Raskolnikov forces Sonia to read the story of Lazarus; later reminded of it before confessing</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A crazed Raskolnikov commands Sonia to read him this story. | Crime and Punishment&#x27;s final paragraphs refer to this story.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Foreshadowing dream: Mikolka beats a mare to death; a student denounces the pawnbroker as a parasite</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A flashback dream in which Raskolnikov witnesses a group led by Mikolka perform this violent action. | The main character overhears a student denouncing an old woman as a parasite.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Svidrigailov shoots himself with Dunya&#x27;s revolver; tells a soldier he&#x27;s headed for &quot;America&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Svidrigailov kills himself with Dunya&#x27;s revolver. | Svidrigailov informs a soldier dressed in an Achilles helmet that he&#x27;s headed for &#x27;America.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marmeladov (Sonia&#x27;s father) killed by a carriage; Raskolnikov gives money to the family</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Raskolnikov gives money to the family of the prostitute Sonya after he witnesses her drunkard father Marmeladov being killed.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="notes-from-underground" open>
+            <summary class="work-title">Notes from Underground</summary>
+            <p class="work-desc">Opens "I am a sick man... I am a spiteful man." The unnamed narrator ridicules Chernyshevsky's Crystal Palace, describes the pleasure of a toothache, and behaves poorly at Zverkov's party before ridiculing the prostitute Liza.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens &quot;I am a sick man... I am a spiteful man&quot;; narrator laments not being able to become an insect</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this author&#x27;s narrators describes the pleasure of a toothache after opening, &#x27;I am a sick man... I am a spiteful man.&#x27; | A novella beginning &#x27;I am a sick man... I am a spiteful man.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Apropos of the Wet Snow&quot;: narrator behaves poorly at Zverkov&#x27;s party; ridicules prostitute Liza</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That character created by this author ridicules the prostitute Liza. | He deliberately bumps into an officer on the street in the section &#x27;Apropos of the Wet Snow.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ridicules Chernyshevsky&#x27;s utopian Crystal Palace</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this author&#x27;s characters ridicules Chernyshevsky&#x27;s utopian symbol of the Crystal Palace. | This author critiqued another author&#x27;s description of the utopian Crystal Palace.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes the pleasure of a toothache; fantasizes about moving Lake Como to Rome</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This character equates the laws of nature with impossibilities and declares that the moaning of a man with a toothache is evidence of pleasure. | This character has fantasies of transferring Lake Como to Rome.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-idiot" open>
+            <summary class="work-title">The Idiot</summary>
+            <p class="work-desc">The epileptic Prince Myshkin may have experienced Stendhal syndrome viewing Holbein's Dead Christ. Nastasya Filippovna throws 100,000 rubles into a fireplace. Rogozhin murders Nastasya. Myshkin returns to Switzerland.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Prince Myshkin may have experienced Stendhal syndrome viewing Holbein&#x27;s Dead Christ; launches anti-Catholic tirade and destroys a Chinese vase</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author may have experienced Stendhal syndrome when viewing Holbein&#x27;s Dead Christ. | During an anti-Catholic tirade, another protagonist gesticulates wildly and destroys a Chinese vase.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nastasya Filippovna throws 100,000 rubles into her fireplace to mock Ganya&#x27;s avarice</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A woman perpetrates burning money at her own dinner party to mock the avarice of her suitor Ganya.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rogozhin murders Nastasya; Myshkin returns to a sanatorium in Switzerland</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Rogozhin murders a woman he loves, Nastasya Filippovna. | Myshkin is sent back to a sanatorium in Switzerland.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="demons-the-possessed" open>
+            <summary class="work-title">Demons (The Possessed)</summary>
+            <p class="work-desc">An allegory about nihilists led by Stavrogin, inspired by Nechayev. A censored chapter has Stavrogin confessing to a monk. Kirillov wants to kill himself as an act of self-determination. Stavrogin hangs himself.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Allegory about nihilists led by Stavrogin; inspired by Nechayev; Pyotr Verkhovensky manipulates radicals</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An allegory about a circle of nihilists led by Stavrogin. | Stepan Verkhovensky is dismayed to find his son Pyotr turning into a nihilistic would-be revolutionary.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Censored chapter &quot;At Tikhon&#x27;s&quot;: Stavrogin confesses to raping an 11-year-old girl; Virginia Woolf helped translate it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Virginia Woolf helped translate a sexually explicit chapter that was cut. | Nikolai Stavrogin gives a monk a lengthy document in which he admits to raping an 11-year-old girl.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kirillov wants to kill himself to prove conquest of fear; falsely accepts blame for Shatov&#x27;s murder</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Kirillov wants to kill himself as an apocalyptic act of self-determination proving his conquest of fear.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stavrogin hangs himself at the end; Liza Tushin killed by a mob during a fire</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After he learns of Liza&#x27;s death, Nikolai Stavrogin hangs himself. | During a fire, Liza Tushin is killed by a mob.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Poor Folk, The Double, White Nights, The House of the Dead, "The Dream of a Ridiculous Man," "Bobok," "A Gentle Creature," "An Honest Thief," and others.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The House of the Dead: fictionalized prison memoir with a Dantesque Christmas bath scene</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He based his novel The House of the Dead on his prison experience. | A famously-Dantesque scene in which steam turns red off the backs of men taking a Christmas bath.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;White Nights&quot;: lonely narrator develops feelings for Nastenka in St. Petersburg</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A lonely man who wanders the streets of St. Petersburg and develops an affection for Nastenka.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Bobok&quot;: dead people in a cemetery discuss philosophy; Baron Kilnevich exposes Tarasevich&#x27;s embezzlement</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Characters with this trait discuss the philosopher Platon Nikolaevich and one of them repeatedly says &#x27;Bobok.&#x27; | Baron Kilnevich tells other characters to cast aside all shame.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poor Folk: pauper Makar writes letters to his second-cousin before she marries a rich widower</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author created the pauper Makar, who writes letters to his second-cousin.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Double: Golyadkin is thrown out of Klara&#x27;s party and carted to an asylum</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A novella about the titular counselor Golyadkin, who is thrown out of Klara&#x27;s birthday party.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Dream of a Ridiculous Man&quot;: pulled from grave and shown an Earth-like planet</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A shadowy figure pulls the narrator up from his grave and hurtles through space with him.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Russian proto-existentialist author. Imprisoned after mock execution for the Petrashevsky Circle. Suffered from epilepsy (Geschwind syndrome). Bakhtin's Problems of Dostoevsky's Poetics introduced polyphony and unfinalizability.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Imprisoned after mock execution for membership in Fourierist Petrashevsky Circle; spent four years in Siberian prison camp</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author was imprisoned for his membership in a Fourierist discussion group. | This author was subjected to a mock execution and arrested after reading a critic&#x27;s letter.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bakhtin&#x27;s Problems of Dostoevsky&#x27;s Poetics: polyphony of voices, unfinalizability, dialogized self-consciousness</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A book on the problems of this author&#x27;s poetics is by Mikhail Bakhtin. | Bakhtin introduced &#x27;polyphony&#x27; and &#x27;unfinalizability&#x27; through his study of this author.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Suffered from epilepsy; Geschwind syndrome sometimes named for him; paradigmatic sufferer of TLE</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author, the paradigmatic sufferer of Geschwind syndrome. | This hypergraphic author whom Nabokov disliked.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nabokov disliked him; parodied as Hermann Karlovich in Despair</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nabokov disliked him so much that he parodied him in Despair as Hermann Karlovich.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">J.M. Coetzee&#x27;s The Master of Petersburg fictionalizes him; Tsypkin&#x27;s Summer in Baden-Baden about his wife</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">J M Coetzee&#x27;s The Master of Petersburg fictionalizes him. | Leonid Tsypkin&#x27;s Summer in Baden-Baden recounts his wife Anna copying out a novel.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Walter Kaufmann&#x27;s Existentialism from Dostoevsky to Sartre; Camus called him an &quot;absurd creator&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first author in the title of a Walter Kaufmann anthology. | The Myth of Sisyphus&#x27; third chapter argues that this author was an absurd creator.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ironic process theory / &quot;white bear problem&quot; comes from his travel notes</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ironic process theory is often named for a problem drawn from this author&#x27;s travel notes about trying not to think of a white bear.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Fyodor Dostoevsky (Fyodor Mikhailovich Dostoevsky) was a Russian novelist and proto-existentialist author. He was imprisoned after a mock execution for membership in the Fourierist Petrashevsky Circle and spent four years in a Siberian prison camp, which he fictionalized in The House of the Dead.</p><p>The Brothers Karamazov is Dostoevsky&#x27;s final and most philosophically dense novel. The title brothers are Dmitri, Ivan, Alyosha (Alexei), and the illegitimate Smerdyakov. Ivan tells the parable of the Grand Inquisitor to Alyosha, in which Christ returns to 16th-century Seville and is imprisoned by the Inquisitor, who argues the <a href="frederic_edwin_church_stock.html" class="crossref-inline">Church</a> follows the Devil&#x27;s principles. Ivan declares &quot;if God is dead, everything is permitted&quot; and tells his brother &quot;it&#x27;s not God that I don&#x27;t accept... only I most respectfully return him the ticket.&quot; In the chapter &quot;Rebellion,&quot; Ivan describes a baby ripped apart by hunting dogs. Dmitri is tried for the murder of their father Fyodor Pavlovich, but the actual perpetrator is Smerdyakov. Evidence includes a letter on a tavern bill and 3,000 rubles from an envelope addressed to Grushenka. <a href="strindberg_stock.html#the-father" class="crossref-inline">The Father</a>&#x27;s Adam&#x27;s apple and hooked nose provoke Dmitri as he stares through a garden window clutching a brass pestle. Alyosha&#x27;s mentor is the <a href="lucas_cranach_stock.html" class="crossref-inline">Elder</a> Father Zosima. Grushenka tells the parable of the onion to Alyosha (a woman&#x27;s one good deed of giving an onion). Alyosha dreams of Zosima in heaven during a passage about the Wedding at Cana. Father Paissy reads over Zosima&#x27;s coffin. <a href="lucian_freud_stock.html" class="crossref-inline">Freud</a>&#x27;s essay &quot;Dostoevsky and Parricide&quot; blamed a desire to commit patricide for Dostoevsky&#x27;s epilepsy. Mikhail Bakhtin used Menippean satire to analyze the Grand Inquisitor in Problems of Dostoevsky&#x27;s Poetics. The father compares an atheist to von Sohn and ponders &quot;iron hooks&quot; in hell.</p><p>Crime and Punishment follows Raskolnikov, who murders a pawnbroker and her sister with an axe. Foreshadowed by: a student in a bar denouncing the old woman as a parasite; Raskolnikov&#x27;s dream of a mare being beaten to death by Mikolka. The inspector Porfiry questions him about his article &quot;On Crime,&quot; which argues &quot;extraordinary&quot; people have the right to &quot;transgress the law.&quot; Porfiry asks if he believes in the raising of Lazarus. Raskolnikov forces the prostitute Sonia to read him the Lazarus story. Sonia&#x27;s father Marmeladov is killed by a carriage. Svidrigailov shoots himself with Dunya&#x27;s revolver after telling a soldier he&#x27;s headed for &quot;America.&quot; Raskolnikov is exiled to Siberia; Sonia follows him. Dostoevsky&#x27;s extensive reading of Dickens during his Siberian imprisonment inspired the character Nellie.</p><p>Notes from Underground opens &quot;I am a sick man... I am a spiteful man.&quot; The unnamed narrator laments not being able to become an insect and describes the pleasure of a toothache. He ridicules Chernyshevsky&#x27;s utopian Crystal Palace. In &quot;Apropos of the Wet Snow,&quot; he behaves poorly at Zverkov&#x27;s party, challenges Ferfichkin to a duel, and ridicules the prostitute Liza. He fantasizes about transferring Lake Como to Rome and hosting parties at the Villa Borghese after forcing the <a href="alexander_pope_stock.html" class="crossref-inline">Pope</a> to retire to Brazil. Bakhtin analyzed the &quot;dialogized self-consciousness&quot; of this novella. Rene Girard&#x27;s study examines the irony of &quot;I am alone and they are everyone.&quot;</p><p>The Idiot features the epileptic Prince Myshkin, who may have experienced Stendhal syndrome viewing Holbein&#x27;s Dead Christ. During an anti-Catholic tirade at the Yepanchin estate, he gesticulates wildly and destroys a Chinese vase. Nastasya Filippovna throws 100,000 rubles into her fireplace to mock Ganya&#x27;s avarice. Rogozhin murders Nastasya. Myshkin returns to a sanatorium in Switzerland. Aglaya is a love interest.</p><p>Demons (also translated as The Possessed or The Devils) is an allegory about nihilists led by Stavrogin, inspired by Sergey Nechayev. A censored chapter (&quot;At Tikhon&#x27;s&quot;) has Stavrogin confessing to a monk about raping an 11-year-old girl. Kirillov wants to kill himself as an act of self-determination. Pyotr Verkhovensky manipulates the radicals. Stavrogin hangs himself. Liza Tushin is killed by a mob during a fire. <a href="virginia_woolf_stock.html" class="crossref-inline">Virginia Woolf</a> helped translate the censored chapter.</p><p>Other works include: Poor Folk (pauper Makar writes letters to his second-cousin), The Double (Golyadkin is thrown out of a party and carted to an asylum), White Nights (a lonely narrator develops feelings for Nastenka in St. Petersburg), &quot;The Dream of a Ridiculous Man&quot; (pulled from his grave and shown an Earth-like planet), &quot;A Gentle Creature&quot; (a husband drives his 16-year-old wife to suicide), &quot;An Honest Thief&quot; (riding breeches stolen by the drunken Yemelyan), &quot;Bobok&quot; (dead people in a cemetery discuss philosophy), &quot;The Beggar Boy at Christ&#x27;s Christmas Tree,&quot; and the unfinished Netochka Nezvanova.</p><p>Dostoevsky suffered from epilepsy (Geschwind syndrome is sometimes named for him). Nabokov disliked him, parodying him as Hermann Karlovich in Despair. Walter Kaufmann&#x27;s anthology <a href="existentialism_stock.html" class="crossref-inline">Existentialism</a> from Dostoevsky to <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a> uses him as the starting point. <a href="albert_camus_stock.html" class="crossref-inline">Camus</a> called him an &quot;absurd creator&quot; in <a href="albert_camus_stock.html#the-myth-of-sisyphus" class="crossref-inline">The Myth of Sisyphus</a>. Simone de Beauvoir aimed to disprove his statement about God. Bakhtin introduced &quot;polyphony&quot; and &quot;unfinalizability&quot; through his study of Dostoevsky. J.M. Coetzee&#x27;s The Master of Petersburg fictionalizes him. Leonid Tsypkin&#x27;s Summer in Baden-Baden recounts his wife Anna copying a novel about his roulette addiction. He called the concept &quot;the man in man&quot; (what social sciences cannot explain). Ironic process theory (the white bear problem) comes from his travel notes. <a href="raymond_carver_stock.html" class="crossref-inline">Raymond Carver</a> wrote a screenplay about him. Ursula K. Le Guin said &quot;forgetting&quot; him inspired Omelas.</p>
+        </section>
+        
+
+</body>
+</html>

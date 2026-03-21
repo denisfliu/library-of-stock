@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Eugene Ionesco</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Eugene Ionesco</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="eugene_ionesco_questions.html">View source questions</a> · <a href="eugene_ionesco_cards.html">Make cards</a></div>
+<div class="summary">Eugene Ionesco (Eugen Ionescu) is a Romanian-<a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> absurdist playwright best known for The Bald Soprano, Rhinoceros, The Chairs, The Lesson, and Exit the King.</div>
+
+        <details class="work" id="rhinoceros" open>
+            <summary class="work-title">Rhinoceros</summary>
+            <p class="work-desc">Rhinoceros follows Berenger as the only character who refuses to transform into the title animal. Jean's skin turns green. Daisy leaves Berenger. A logician proves a dog is a cat. Berenger shouts 'I'm not capitulating!' The play satirizes <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> collaboration under occupation.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Berenger is the only character who refuses to transform into the title animal; shouts &#x27;I&#x27;m not capitulating!&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jean&#x27;s skin turns green during his transformation; the typist Daisy leaves Berenger</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A logician uses a syllogism to prove a dog is a cat; a cat is trampled</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Satirizes French behavior under German occupation; green skin represents Iron Guard and Orpo uniforms</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-bald-soprano" open>
+            <summary class="work-title">The Bald Soprano</summary>
+            <p class="work-desc">The Bald Soprano is Ionesco's first play, an 'anti-play' set in an 'English interior' where everything is described as 'English' 17 times. The Smiths and Martins engage in surreal conversation. The Fire Chief mentions the title character, who 'always wears her hair the same way.' The maid Mary claims to be Sherlock Holmes. Inspired by an English primer (Assimil).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Anti-play set in &#x27;English interior, with English armchairs&#x27;; the Smiths and Martins engage in surreal conversation</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fire Chief mentions the title character; Mrs. Smith says she &#x27;always wears her hair the same way&#x27;; settles the &#x27;doorbell debate&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Maid Mary claims her real name is Sherlock Holmes; recites poem about objects catching fire</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bobby Watson&#x27;s death discussed; every family member named Bobby Watson</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by English language primer (Assimil); originally directed by Nicholas Bataille; Theatre de la Huchette permanently stages it</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opening uses the adjective &#x27;English&#x27; 17 times; characters repeat &#x27;How curious, how bizarre, what a coincidence!&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-chairs" open>
+            <summary class="work-title">The Chairs</summary>
+            <p class="work-desc">The Chairs is a 'tragic farce' in which the Old Man and Old Woman arrange chairs for invisible guests. The deaf-mute Orator writes 'ANGELFOOD' on a chalkboard. An invisible Emperor arrives. The couple throws themselves out of a window. The Old Man imitates February.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Old Man and Old Woman arrange chairs for invisible guests on their island; throw themselves out of a window at the end</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Deaf-mute Orator writes &#x27;ANGELFOOD&#x27; on a chalkboard; invisible Emperor arrives</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Old Man introduces wife as Semiramis; imitates the month of February; addresses &#x27;leftovers&#x27; that &#x27;can make a very good soup&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-lesson" open>
+            <summary class="work-title">The Lesson</summary>
+            <p class="work-desc">The Lesson is a one-act in which 'the Pupil' names all four seasons, can add and multiply but not subtract. The maid warns 'Philology leads to calamity!' The Professor stabs the Pupil, restarting the cycle.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Pupil names all four seasons, can add and multiply but not subtract; the Professor stabs her, restarting the cycle</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Maid warns &#x27;Philology leads to calamity!&#x27;; Professor ignores the Pupil&#x27;s toothache</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="exit-the-king" open>
+            <summary class="work-title">Exit the King</summary>
+            <p class="work-desc">Exit the King features Berenger as a 400-year-old king confronting death. His wives Marie and Marguerite react differently. He is credited with inventing the tractor and writing all of Shakespeare's plays.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Berenger as a 400-year-old king confronting death; wives Marie and Marguerite; told &#x27;You&#x27;re going to die at the end of the show&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Credited with inventing the tractor, setting the Thames on fire, and writing all of Shakespeare&#x27;s plays</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">The Killer features Berenger in a 'radiant city' where a murderer lures victims with a 'picture of a colonel.' Amedee features an ever-growing corpse. The New Tenant has proliferating furniture. A Stroll in the Air has Berenger flying. Jack, or Obedience features Roberta with two noses.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Killer: Berenger in the &#x27;radiant city&#x27;; murderer uses &#x27;picture of a colonel&#x27; to lure Dany; the killer just chuckles and shrugs</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Amedee: an ever-growing corpse in the living room; based on short story &#x27;Oriflamme&#x27;; feet burst through a door</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A Stroll in the Air: Berenger shows off his ability to fly; inspired by Ionesco&#x27;s childhood floating experience in a whitewashed village</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jack, or Obedience / The Future is in Eggs: Jack rejects girl with two noses; marries Roberta; ends with egg-hatching</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Ionesco is a Romanian-<a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> absurdist playwright. His recurring character Berenger appears in Rhinoceros, The Killer, Exit the King, and A Stroll in the Air. Kenneth Tynan's negative review sparked the 'London Controversy' in 1958. Ionesco was a member of the <a href="black_mountain_college_stock.html" class="crossref-inline">College</a> de Pataphysique. He wrote critical essays in Nu.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Romanian-French absurdist playwright of The Bald Soprano and Rhinoceros</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Recurring character Berenger appears in Rhinoceros, The Killer, Exit the King, A Stroll in the Air</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kenneth Tynan&#x27;s 1958 negative review sparked the &#x27;London Controversy&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Member of the College de Pataphysique alongside Duchamp and the Marx Brothers</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Eugene Ionesco (Eugen Ionescu) is a Romanian-<a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> absurdist playwright best known for The Bald Soprano, Rhinoceros, The Chairs, The Lesson, and Exit the King. He is a central figure in the Theatre of the Absurd and created the recurring character Berenger, who appears across multiple plays.</p><p>Rhinoceros is his most famous play. In it, Berenger is the only character who refuses to transform into the title animal. His friend Jean&#x27;s skin turns green as he transforms. The typist Daisy and Dudard also transform, and Daisy leaves Berenger. A logician uses a syllogism to prove a dog is a cat. A cat is trampled. Berenger shouts &#x27;I&#x27;m not capitulating!&#x27; at the end. The play satirizes <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> behavior under German occupation; the green skin represents the green uniforms of the Iron Guard and Orpo. The Israeli word for getting swayed by nationalistic fervor was coined from the play&#x27;s title.</p><p>The Bald Soprano is Ionesco&#x27;s first play, an &#x27;anti-play&#x27; set in an &#x27;English interior, with English armchairs.&#x27; Everything in the opening is described as &#x27;English&#x27; seventeen times. The Smiths and the Martins engage in surreal conversation after the Fire Chief mentions the title character. Mrs. Smith responds that the bald soprano &#x27;always wears her hair the same way.&#x27; The maid Mary claims her real name is Sherlock Holmes and recites a poem about objects catching fire. Bobby Watson&#x27;s death is discussed -- every member of his family is named Bobby Watson. The Fire Chief settles the &#x27;doorbell debate&#x27; and tells an experimental fable. Ionesco was inspired to write it after reading an English language primer (Assimil), whose textbook opens with &#x27;My tailor is rich.&#x27; Originally directed by Nicholas Bataille. The Theatre de la Huchette has permanently staged it and The Lesson for 70 years.</p><p>The Chairs is a &#x27;tragic farce&#x27; in which the Old Man and Old Woman arrange chairs for invisible guests on their island. The Old Man introduces his wife as Semiramis and greets the Lady, the Photo-engraver, and the Belle. The deaf-mute Orator writes &#x27;ANGELFOOD&#x27; on a chalkboard. An invisible Emperor arrives. The Old Man and Old Woman throw themselves out of a window. The Old Man imitates the month of February and addresses &#x27;all that is left from humanity&#x27; as &#x27;leftovers.&#x27;</p><p>The Lesson is a one-act play in which &#x27;the Pupil&#x27; impresses her teacher by naming all four seasons and can add and multiply but not subtract. The maid warns &#x27;Philology leads to calamity!&#x27; The Professor ignores her toothache and stabs her to death, restarting the cycle with the next pupil. The Professor wears an armband with a swastika.</p><p>Exit the King features Berenger as a 400-year-old king who confronts his impending death. His two wives, Marie and Marguerite, react differently -- Marguerite tells him &#x27;You&#x27;re going to die at the end of the show&#x27; while Marie tries to prevent him from learning. He is credited with inventing the tractor, setting the Thames on fire, and writing all of Shakespeare&#x27;s plays.</p><p>The Killer features Berenger in a &#x27;radiant city&#x27; where a murderer drowns his victims. The killer uses a &#x27;picture of a colonel&#x27; to lure Dany to her death. The killer does almost nothing except chuckle and shrug.</p><p>Other works include Amedee, or How to Get Rid of It (about an ever-growing corpse), The New Tenant (a man trapped under ever-increasing furniture), A Stroll in the Air (Berenger can fly; inspired by Ionesco&#x27;s childhood <a href="ralph_waldo_emerson_stock.html#experience" class="crossref-inline">Experience</a> of floating in a whitewashed village), Jack, or Obedience and The Future is in Eggs (Jack rejects a girl for having two noses but marries Roberta; ends with egg-hatching), Macbett (inspired by Macbeth, featuring a lemonade seller and butterfly catcher), Improvisation, or The Shepherd&#x27;s Chameleon (playwright Ionesco is bullied by three versions of Bartholomeus), and the critical essays Nu. In 1958, Kenneth Tynan touched off the &#x27;London Controversy&#x27; with a negative review. Ionesco was a member of the <a href="black_mountain_college_stock.html" class="crossref-inline">College</a> de Pataphysique alongside Duchamp and the <a href="karl_marx_stock.html" class="crossref-inline">Marx</a> Brothers.</p>
+        </section>
+        
+
+</body>
+</html>

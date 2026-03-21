@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Thomas Mann</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Thomas Mann</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="thomas_mann_questions.html">View source questions</a> · <a href="thomas_mann_cards.html">Make cards</a></div>
+<div class="summary">Thomas Mann is a German Nobel Prize-winning novelist and short story writer best known for Death in Venice, Buddenbrooks, The Magic Mountain, and Doctor Faustus.</div>
+
+        <details class="work" id="death-in-venice" open>
+            <summary class="work-title">Death in Venice</summary>
+            <p class="work-desc">Death in Venice follows the writer Gustav von Aschenbach, who becomes obsessed with the Polish boy Tadzio while vacationing in Venice. Aschenbach contracts cholera after eating overripe strawberries and dies. Key clues include the barber scene, the 'Stranger God' dream, <a href="socrates_stock.html" class="crossref-inline">Socrates</a>-Phaedrus imagery, street musicians, and Tadzio's inspiration Baron Wladyslaw Moes.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gustav von Aschenbach becomes obsessed with the Polish boy Tadzio while vacationing in Venice</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aschenbach contracts cholera after eating overripe strawberries; collapses attempting to rise to meet Tadzio</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A barber helps Aschenbach dye his hair and paint his face; he imagines himself as Socrates lecturing Phaedrus on beauty</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dreams of a bacchanalia-like ritual dedicated to the &#x27;Stranger God&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A band of street musicians performs a song with rhythmic mocking laughter</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aschenbach encounters a foppish man with hideous false teeth; stays at the Hotel des Bains</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tadzio inspired by Baron Wladyslaw Moes (Gilbert Adair&#x27;s The Real Tadzio); first appears in sailor costume; fights with Jasiu</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gustav Mahler partly inspired Aschenbach</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aschenbach dreams of a character with red hair in straw hats on a swamp dotted with islands</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="buddenbrooks" open>
+            <summary class="work-title">Buddenbrooks</summary>
+            <p class="work-desc">Buddenbrooks depicts four generations of a declining Lubeck grain merchant family. Tony marries the bankrupt Grunlich and the alcoholic Permaneder. The last male member Hanno dies of typhoid. Thomas Buddenbrook dies from a botched tooth extraction after reading <a href="schopenhauer_stock.html" class="crossref-inline">Schopenhauer</a>.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Decline of a Lubeck grain merchant family over four generations; based on Mann&#x27;s own family</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tony (Antonie) marries the bankrupt Grunlich and the alcoholic Alois Permaneder; goes to Baltic resort to escape Grunlich</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hanno (last male member) dies of typhoid; Christian ends up in an insane asylum</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Thomas Buddenbrook dies from a botched tooth extraction after an emotional reaction to Schopenhauer&#x27;s The World as Will and Representation</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tony&#x27;s teacher is hunchbacked crone &#x27;Sesemi&#x27; Weichbrodt; opening scene has grandfather helping Tony recite Lutheran catechism</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hanno&#x27;s breakfast cup of hot chocolate symbolizes decadence</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Helen Tracy Lowe-Porter&#x27;s translation introduced Mann to English audiences</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-magic-mountain" open>
+            <summary class="work-title">The Magic Mountain</summary>
+            <p class="work-desc">The Magic Mountain follows Hans Castorp's seven-year stay at the Berghof sanatorium in the Swiss Alps. The humanist Settembrini spars with the Jesuit Naphta (fictionalized from Lukacs), who commits suicide during their duel. Clavdia Chauchat (with 'Kirghiz eyes') is Castorp's romantic interest. Castorp flirts with her in <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> on Walpurgis Night.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hans Castorp&#x27;s seven-year stay at a Swiss sanatorium; visits tubercular cousin Joachim Ziemssen</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Settembrini (humanist Italian) and Naphta (terror-loving Jesuit) hold philosophical debates; Naphta commits suicide during their duel</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Clavdia Chauchat, Russian patient with &#x27;Kirghiz eyes&#x27;, is Castorp&#x27;s romantic interest; flirts with her in French on Walpurgis Night</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Castorp hallucinates while skiing in a blizzard; sees two witches</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Characters begin saying &#x27;we up here&#x27; rather than &#x27;those up here&#x27;; Settembrini adopts &#x27;sine pecunia&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Recurring leitmotif of Castorp borrowing a pencil (from schoolmate and from Chauchat)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Naphta fictionalized from Gyorgy Lukacs; Settembrini a student of Carducci</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mynheer Peeperkorn also attracted to Chauchat; Castorp operates a gramophone</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="doctor-faustus" open>
+            <summary class="work-title">Doctor Faustus</summary>
+            <p class="work-desc">Doctor Faustus follows the composer Adrian Leverkuhn, narrated by Serenus Zeitblom. Leverkuhn contracts syphilis to boost his art and composes Apocalypsis cum Figuris. Theodor Adorno's twelve-tone explanations aided the novel, causing a feud with Schoenberg. Based partly on <a href="nietzsche_stock.html" class="crossref-inline">Nietzsche</a>'s life.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Composer Adrian Leverkuhn voluntarily contracts syphilis to increase artistic output; narrated by Serenus Zeitblom</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Theodor Adorno&#x27;s twelve-tone explanations aided the novel; caused feud with Schoenberg; Adorno convinced Mann not to redeem Leverkuhn</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Uses &#x27;H, E, A, E, E-flat&#x27; motif to represent &#x27;Hetaera Esmeralda&#x27;; doomed child Echo Nepomuk</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Leverkuhn sings &#x27;Weisengrund&#x27; as hidden thank-you to Adorno; Wendell Kretzchmar delivers music lectures</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based partly on the life of Nietzsche; sets Faust legend amid rise of Nazism</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="tonio-kroger" open>
+            <summary class="work-title">Tonio Kroger</summary>
+            <p class="work-desc">Tonio Kroger is a semi-autobiographical novella about an artist with half-Brazilian parentage. Tonio is embarrassed by being called 'Fraulein' after a dance mistake. He admires Ingeborg Holm and Hans Hansen. Lisaveta calls him a 'lost burgher.' He is arrested in Denmark. The novella ends praising 'bourgeois love.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Semi-autobiographical; tormented artist with half-Brazilian parentage tries to reconcile Northern and Southern European sides</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Embarrassed when called &#x27;Fraulein&#x27; after incorrect dance move; infatuated with Ingeborg Holm and Hans Hansen</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lisaveta calls him a &#x27;lost burgher&#x27;; ends with &#x27;a very chaste bliss&#x27; in a letter to Lizaveta; praises &#x27;bourgeois love&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arrested while walking through Denmark to his hometown</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="mario-and-the-magician" open>
+            <summary class="work-title">Mario and the Magician</summary>
+            <p class="work-desc">'Mario and the Magician' is an allegory of fascism about the hypnotist Cipolla. He cracks a whip to make a heckler stick out his tongue. He gifts a lady a pin saying 'Pensez tres fort' and signals Mario to kiss his cheek. Mario shoots Cipolla twice. A tourist is reported for letting his daughter bathe naked.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Allegory of fascism; the hypnotist Cipolla is shot by Mario after being hypnotized into kissing Cipolla&#x27;s cheek</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cipolla cracks a whip to make a heckler stick out his tongue; gifts a lady a pin saying &#x27;Pensez tres fort&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set in Torre di Venere; a tourist&#x27;s daughter reported for bathing naked</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Mann's other clued works include The Transposed Heads (Sita's dilemma after two men decapitate themselves before Kali), Tristan (Spinell and Gabriele bond playing Wagner at a sanatorium), Felix Krull (a confidence man), Joseph and His Brothers (a 16-year tetralogy set in Egypt), Holy Sinner (incest), Lotte in Weimar (<a href="goethe_stock.html" class="crossref-inline">Goethe</a> and Charlotte), 'Tobias Mindernickel' (stabs dog Esau), 'Little Lizzy' (cuckolded husband in drag), and 'Blood of the Walsungs' (incestuous twins).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Transposed Heads: Sita faces dilemma after two men decapitate themselves before a statue of Kali and have wrong heads placed on bodies</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tristan: Detlev Spinell and Gabriele Kloterjahn bond playing Wagner&#x27;s second act on piano at a sanatorium; Gabriele relapses with tuberculosis</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Joseph and His Brothers: sixteen-year tetralogy about Joseph in Egypt; dwarf Dudu; Joseph the Provider parallels FDR; Erika drove overnight to rescue the manuscript</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Felix Krull: assumes name &#x27;Armand&#x27;; seduces Madame Houpfle and the Kuckuck family</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Tobias Mindernickel&#x27;: stabs his dog Esau so he can comfort it while dying</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Blood of the Walsungs&#x27;: incestuous relationship between twins Siegmund and Sieglinde; have sex on a bearskin after the opera</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lotte in Weimar: about Goethe&#x27;s fictionalization of his romance with Charlotte</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Mann is a German Nobel laureate. His brother Heinrich wrote Man of Straw/Professor Unrat; his daughter Erika married W.H. <a href="wh_auden_stock.html" class="crossref-inline">Auden</a> for a passport; his son Klaus wrote Mephisto. Helen Tracy Lowe-<a href="katherine_anne_porter_stock.html" class="crossref-inline">Porter</a> translated almost all his works. Mann prompted a debate over 'inner emigration.' He cited J.P. Jacobsen as his greatest stylistic influence. Colm Toibin fictionalized his life in The Magician. Mann acknowledged Wagnerian influences including leitmotifs.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">German author of Death in Venice, Buddenbrooks, The Magic Mountain</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mann family: brother Heinrich (Man of Straw), daughter Erika (married W.H. Auden, wrote School for Barbarians), son Klaus (Mephisto)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Helen Tracy Lowe-Porter translated almost all his works; chose &#x27;magic&#x27; though Mann preferred &#x27;enchanted&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Colm Toibin fictionalized his life in The Magician</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cited J.P. Jacobsen as greatest stylistic influence</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Prompted debate over &#x27;inner emigration&#x27; with radio speeches; claimed to be a &#x27;nonpolitical man&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Thomas Mann is a German Nobel Prize-winning novelist and short story writer best known for Death in Venice, Buddenbrooks, The Magic Mountain, and Doctor Faustus. He is a member of the famous Mann literary family, which includes his brother Heinrich Mann (author of Man of Straw/Professor Unrat), his daughter Erika Mann (who married W.H. <a href="wh_auden_stock.html" class="crossref-inline">Auden</a> for a British passport and wrote <a href="ashcan_school_stock.html" class="crossref-inline">School</a> for Barbarians), and his son Klaus Mann (author of Mephisto).</p><p>Death in Venice is Mann&#x27;s most frequently clued work. The writer Gustav von Aschenbach becomes obsessed with the classical beauty of the Polish boy Tadzio while vacationing in Venice, staying at the Hotel des Bains. A barber helps Aschenbach dye his hair and paint his face to look more youthful, and he imagines himself as <a href="socrates_stock.html" class="crossref-inline">Socrates</a> lecturing Phaedrus on beauty. He dreams of a bacchanalia-like ritual dedicated to the &#x27;Stranger God.&#x27; He contracts cholera after eating overripe strawberries and collapses after attempting to rise to meet Tadzio. A band of street musicians performs a song with rhythmic mocking <a href="henri_bergson_stock.html#laughter" class="crossref-inline">Laughter</a>. Aschenbach encounters a foppish man with hideous false teeth. Gustav Mahler partly inspired Aschenbach. The real-life inspiration for Tadzio was Baron Wladyslaw Moes, identified in Gilbert Adair&#x27;s book The Real Tadzio. Tadzio first appears in a sailor costume and fights with an older boy named Jasiu. Patrick Suskind discussed Mann&#x27;s obsession with a teenage waiter named Franzl.</p><p>Buddenbrooks depicts four generations of a declining Lubeck grain merchant family, based on Mann&#x27;s own family. Tony (Antonie) has brief, loveless marriages to the bankrupt Grunlich and the alcoholic hops merchant Alois Permaneder. Tony <a href="hugo_van_der_goes_stock.html" class="crossref-inline">Goes</a> to a Baltic resort to escape Grunlich. Christian quarrels with Tom and ends up in an insane asylum. The last male member, Hanno, dies of typhoid. Tony&#x27;s teacher is the hunchbacked crone &#x27;Sesemi&#x27; (Sesame Weichbrodt). The opening scene has a grandfather helping granddaughter Tony recite the Lutheran catechism. Thomas Buddenbrook dies from a botched tooth extraction shortly after having an emotional reaction to a chapter of <a href="schopenhauer_stock.html" class="crossref-inline">Schopenhauer</a>&#x27;s The World as Will and Representation. Hanno&#x27;s breakfast cup of hot chocolate symbolizes decadence. Helen Tracy Lowe-<a href="katherine_anne_porter_stock.html" class="crossref-inline">Porter</a>&#x27;s translation was critical in introducing Mann to English-speaking audiences.</p><p>The Magic Mountain follows Hans Castorp&#x27;s seven-year stay at the Berghof sanatorium in the Swiss Alps, where he visits his tubercular cousin Joachim Ziemssen. The humanist Italian Settembrini (a student of Carducci) spars intellectually with the terror-loving Jesuit Naphta (fictionalized from Gyorgy Lukacs). Naphta commits suicide during a duel with Settembrini. The Russian patient Clavdia Chauchat (with &#x27;Kirghiz eyes&#x27;) is Castorp&#x27;s romantic interest, and he flirts with her in <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> on Walpurgis Night. A recurring leitmotif is Castorp borrowing a pencil. Characters begin saying &#x27;we up here&#x27; rather than &#x27;those up here.&#x27; Settembrini finds music &#x27;politically suspect&#x27; and uses the phrase &#x27;sine pecunia.&#x27; Mynheer Peeperkorn is another character attracted to Chauchat. Castorp hallucinates seeing two witches while skiing in a blizzard. He operates a gramophone playing La Traviata and The Tales of Hoffmann. Seven tables are used at meals. The second chapter, about a christening basin, recounts Hans visiting his grandfather. Mann acknowledged Wagnerian influences including leitmotifs. Lowe-<a href="katherine_anne_porter_stock.html" class="crossref-inline">Porter</a> chose the word &#x27;magic&#x27; though Mann preferred &#x27;enchanted.&#x27;</p><p>Doctor Faustus follows the composer Adrian Leverkuhn, narrated by his friend Serenus Zeitblom. Leverkuhn voluntarily contracts syphilis to increase his artistic output and composes the Apocalypsis cum Figuris. He uses an &#x27;H, E, A, E, E-flat&#x27; motif representing &#x27;Hetaera Esmeralda.&#x27; Wendell Kretzchmar delivers music lectures. The doomed child Echo Nepomuk appears. Theodor Adorno&#x27;s explanations of Schoenberg&#x27;s twelve-tone technique aided conception of the novel, causing a feud with Schoenberg. The novel was partly based on the life of <a href="nietzsche_stock.html" class="crossref-inline">Nietzsche</a>. Leverkuhn sings &#x27;Weisengrund&#x27; as a hidden thank-you to Adorno. Adorno convinced Mann not to redeem Leverkuhn at the end.</p><p>Tonio Kroger is a semi-autobiographical novella about a tormented artist with half-Brazilian parentage (inspired by Mann&#x27;s own) who tries to reconcile his Northern and Southern European sides. Tonio is embarrassed when called &#x27;Fraulein&#x27; after making an incorrect dance move. He is infatuated with Ingeborg Holm and admires Hans Hansen. Lisaveta calls him a &#x27;lost burgher.&#x27; He is arrested walking through Denmark to his hometown. The novella ends praising &#x27;bourgeois love&#x27; for &#x27;the happy, lovely, and commonplace.&#x27; Garcia Marquez referenced Tonio Kroger in his Nobel speech.</p><p>Mario and the Magician is an allegory of fascism about the hypnotist Cipolla. A tourist&#x27;s daughter is reported for bathing naked. Cipolla cracks a whip to make a heckler stick out his tongue and gifts a lady a pin saying &#x27;Pensez tres fort.&#x27; Cipolla points to his cheek to signal Mario to kiss it. Mario shoots Cipolla twice after being hypnotized. A crowd mobs a vendor after the shooting. The story &#x27;Blood of the Walsungs&#x27; scandalized society with its depiction of incest between twins Siegmund and Sieglinde.</p><p>Other works include The Transposed Heads (Sita faces a dilemma after two men decapitate themselves before a statue of Kali and have their heads swapped), Tristan (Detlev Spinell and Gabriele Kloterjahn bond playing Wagner&#x27;s second act on piano at a sanatorium; Gabriele relapses), The <a href="saint_augustine_stock.html#confessions-autobiography" class="crossref-inline">Confessions</a> of Felix Krull (a confidence man who assumes the name &#x27;Armand&#x27; and seduces Madame Houpfle and the Kuckuck family), Holy Sinner (about abandoned child Gregory who marries his mother Sibylla), Joseph and His Brothers (a four-part novel taking sixteen years, set in Egypt; the malicious dwarf Dudu; Joseph the Provider parallels FDR&#x27;s policies), Lotte in Weimar (about <a href="goethe_stock.html" class="crossref-inline">Goethe</a>&#x27;s fictionalization of his romance with Charlotte), &#x27;Tobias Mindernickel&#x27; (stabs his dog Esau to comfort it while dying), &#x27;Little Lizzy&#x27; (a cuckolded husband performs in drag), and &#x27;The Clown.&#x27; Mann cited J.P. Jacobsen as having the greatest influence on his style. He prompted a debate over &#x27;inner emigration&#x27; with radio speeches.</p>
+        </section>
+        
+
+</body>
+</html>

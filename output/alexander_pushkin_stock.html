@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Alexander Pushkin</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Alexander Pushkin</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="alexander_pushkin_questions.html">View source questions</a> · <a href="alexander_pushkin_cards.html">Make cards</a></div>
+<div class="summary">Alexander Pushkin (Alexander Sergeyevich Pushkin) is considered the founder of modern Russian literature and is its most canonical poet.</div>
+
+        <details class="work" id="eugene-onegin" open>
+            <summary class="work-title">Eugene Onegin</summary>
+            <p class="work-desc">Eugene Onegin is Pushkin's verse novel and magnum opus. It uses the distinctive 'Onegin stanza' (14-line iambic tetrameter with alternating masculine/feminine rhymes). Onegin kills Lensky in a duel after flirting with Olga at Tatyana's name-day. Tatyana writes a love letter and is rejected, but later rejects Onegin at a ball.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">15x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Onegin kills Lensky in a duel after flirting with Olga at Tatyana&#x27;s name-day celebration</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tatyana writes a love letter; Onegin gives a condescending &#x27;sermon&#x27; saying marriage would bore him; later Tatyana rejects Onegin at a ball, married to General Gremin</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Uses 14-line stanzas of iambic tetrameter with alternating masculine and feminine rhymes (&#x27;Onegin stanza&#x27;)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nabokov&#x27;s controversial literal translation; falling-out with Edmund Wilson; Notes on Prosody</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Charles Johnston&#x27;s form-preserving translation inspired Vikram Seth&#x27;s The Golden Gate</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tatyana reads fortune in hot wax; dreams of dining with monsters after a bear chases her through snow</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tatyana realizes Onegin is &#x27;a lexicon of words in vogue... mere parody and just a rogue&#x27; from his marginal notes</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Onegin is the first literary &#x27;superfluous man&#x27;; Dostoevsky&#x27;s &#x27;Pushkin Speech&#x27; praised Tatyana as apotheosis of Russian womanhood</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-bronze-horseman" open>
+            <summary class="work-title">The Bronze Horseman</summary>
+            <p class="work-desc">The Bronze Horseman is a narrative poem about the 1824 St. Petersburg flood. Yevgeny survives by sitting atop a marble lion. His beloved Parasha's house is destroyed. He <a href="hugo_van_der_goes_stock.html" class="crossref-inline">Goes</a> mad and is chased by the title statue of Peter the Great.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Yevgeny survives a flood by sitting on a marble lion; Parasha&#x27;s house destroyed; chased by the statue of Peter the Great</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contrasts Peter&#x27;s &#x27;eternal sleep&#x27; as nature-conqueror with the destructive river; set during 1824 Neva flood</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-queen-of-spades" open>
+            <summary class="work-title">The Queen of Spades</summary>
+            <p class="work-desc">'The Queen of Spades' follows the German engineer Hermann, who schemes to learn a gambling secret. He threatens an elderly countess (the 'Muscovy Venus') with a pistol, causing her death. Her ghost forces him to gamble. He <a href="hugo_van_der_goes_stock.html" class="crossref-inline">Goes</a> insane repeating 'three, seven, ace.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hermann goes insane repeating &#x27;three, seven, ace&#x27; after the title card appears; German engineer loses fortune to Chekalinsky</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The soldier Tomski tells of grandmother, the &#x27;Muscovy Venus,&#x27; who won a million francs on advice of Count St. Germain</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hermann writes fake love letters to Lizaveta Ivanovna to access the countess&#x27;s house; threatens countess with pistol, causing her death</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-belkin-tales" open>
+            <summary class="work-title">The Belkin Tales</summary>
+            <p class="work-desc">The Belkin Tales are a collection framed as stories by the dead landowner Ivan Belkin. 'The Shot' features marksman Silvio finishing a deferred duel by shooting a painting. 'The Blizzard' features Burmin recognizing his jokingly-married wife. Other stories include 'The Coffin-Maker,' 'The Station Master,' and 'The Squire's Daughter.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Shot&#x27;: Silvio finishes a deferred duel with the Count by shooting a Swiss landscape painting; two bullet holes</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Blizzard&#x27;: Burmin recognizes Maria as the woman he jokingly married years prior during the title weather event</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Collection framed as stories of dead landowner Ivan Belkin; inspired by Irving and Scott</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Coffin-Maker&#x27;: insulted at shoemaker&#x27;s dinner; haunted by skeletons of those he buried</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Station Master&#x27;: house decorated with Parable of the Prodigal Son; girl kidnapped by man pretending to be ill</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Pushkin's other major works include the 'little tragedies' (The Stone Guest, Mozart and Salieri, Feast in the Time of Plague), Boris Godunov, Ruslan and Lyudmila, The Captain's Daughter, The Transposed Heads, and various lyric poems including 'I Loved You,' the poem for Anna Kern, 'Ode to Liberty,' 'The Prophet,' and 'Winter Morning.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;I Loved You&#x27;: &#x27;I loved you; and perhaps I love you still&#x27; -- most famous lyric poem</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;I Remember a Wonderful Moment&#x27;: love poem written for Anna Kern; &#x27;like a spirit of the purest beauty&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Ode to Liberty&#x27;: led to exile at age 18; tells monarchs &#x27;neither flattery nor halters make sturdy barricades for you&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Prophet&#x27;: a snake deposits &#x27;a blazing shard of coal&#x27; in the speaker&#x27;s chest; told to &#x27;burn Man&#x27;s heart&#x27; with God&#x27;s word</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mozart and Salieri: Salieri pours poison, confirming &#x27;villainy and genius can never go together&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ruslan and Lyudmila: prologue describes a &#x27;learned cat&#x27; on a &#x27;golden chain&#x27; to a &#x27;green oak&#x27;; a hill is the head of Chernomor&#x27;s brother</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Captain&#x27;s Daughter: Peter Grinev at Bailogorsk fortress; quarrels with Shvabrin; pursues Maria Mironova; rescued from blizzard by Pugachev</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Boris Godunov: a monk (Grigory/False Dmitri) disregards Father Pimen&#x27;s advice and woos the Polish noble Maryna while leading a rebellion</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Pushkin is the founder of modern Russian literature. He branded himself 'The African' due to great-grandfather Abram Gannibal. He died in a duel with Georges-Charles d'Anthes after anonymous letters about his wife Natalia's flirtation. Lermontov's 'Death of <a href="ralph_waldo_emerson_stock.html#the-poet" class="crossref-inline">The Poet</a>' commemorates him. He started the journal The Contemporary.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Russian poet; founder of modern Russian literature; author of Eugene Onegin</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Died in a duel with Georges-Charles d&#x27;Anthes after anonymous letters naming him &#x27;Deputy Grand Master of the Order of Cuckolds&#x27;; wife Natalia flirted with d&#x27;Anthes</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lermontov&#x27;s &#x27;Death of the Poet&#x27; commemorates Pushkin; &#x27;The Bard is dead!&#x27; and &#x27;Fell, slandered by a gossip&#x27;s dread&#x27;; &#x27;black blood won&#x27;t wash away the poet&#x27;s sacred blood&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Branded himself &#x27;The African&#x27; due to great-grandfather Abram Gannibal; half-Brazilian parentage in fiction</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Started the journal The Contemporary with Gogol as editor</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Alexander Pushkin (Alexander Sergeyevich Pushkin) is considered the founder of modern Russian literature and is its most canonical poet. He is most frequently clued through his verse novel Eugene Onegin, his narrative poem The Bronze Horseman, his short story &#x27;The Queen of Spades,&#x27; and his Belkin Tales.</p><p>Eugene Onegin is by far Pushkin&#x27;s most clued work, appearing in nearly every tossup. It uses a distinctive fourteen-line stanza of iambic tetrameter with alternating masculine and feminine rhymes (known as the &#x27;Onegin stanza&#x27; or &#x27;Pushkin sonnet&#x27;). The title character, the first literary &#x27;superfluous man,&#x27; is a Byronic dandy who attends Tatyana&#x27;s name-day celebration, where he flirts with Olga (Lensky&#x27;s fiancee), provoking Lensky to challenge him to a duel. Onegin kills Lensky. Tatyana writes a love letter to Onegin, who gives her a condescending &#x27;sermon&#x27; telling her marriage would bore him. Tatyana later realizes Onegin is &#x27;a lexicon of words in vogue... mere parody and just a rogue&#x27; while reading his marginal notes. She reappears at a ball married to an old general named Gremin and rejects Onegin. <a href="max_beckmann_stock.html#the-night-1918-1919" class="crossref-inline">The Night</a> before the duel, Lensky rehearses a poem &#x27;like drunken Delvik at a feast&#x27; after reading <a href="schiller_stock.html" class="crossref-inline">Schiller</a>. Tatyana reads her fortune in hot wax and dreams of dining with monsters after a bear chases her through snow. Vladimir Nabokov produced a controversial literal translation that led to a falling-out with Edmund <a href="august_wilson_stock.html" class="crossref-inline">Wilson</a>. Charles Johnston&#x27;s form-preserving translation inspired Vikram Seth&#x27;s The Golden Gate. <a href="dostoevsky_stock.html" class="crossref-inline">Dostoevsky</a>&#x27;s &#x27;Pushkin Speech&#x27; praised Tatyana as the apotheosis of Russian womanhood and claimed she &#x27;stood solidly on her own native soil.&#x27;</p><p>The Bronze Horseman is a narrative poem about the 1824 flood of the Neva in St. Petersburg. The protagonist Yevgeny (Evgeni) falls in love with Parasha, whose house is destroyed by the flood. Yevgeny survives by sitting atop a marble lion. He later <a href="hugo_van_der_goes_stock.html" class="crossref-inline">Goes</a> mad and is chased through the streets by the title statue of Peter the Great. The poem contrasts Peter&#x27;s &#x27;eternal sleep&#x27; as nature-conqueror with the river&#x27;s destructive power.</p><p>The Queen of Spades is Pushkin&#x27;s best-known short story. The German engineer Hermann schemes to learn a secret gambling trick. The soldier Tomski tells of his grandmother, the &#x27;Muscovy Venus,&#x27; who won a million francs on the advice of Count St. Germain. Hermann writes fake love letters to Lizaveta Ivanovna to gain access to the countess&#x27;s house. He threatens the elderly countess with a pistol, causing her to die of fright. Her ghost forces Hermann to gamble his savings, and he <a href="hugo_van_der_goes_stock.html" class="crossref-inline">Goes</a> insane repeating &#x27;three, seven, ace&#x27; after losing to Chekalinsky when the title card appears.</p><p>The Belkin Tales (Tales of Ivan Belkin) are a collection framed as stories of the mysterious recently-dead landowner Ivan Belkin, inspired by Irving and <a href="sir_walter_scott_stock.html" class="crossref-inline">Scott</a>. &#x27;The Shot&#x27; features the expert marksman Silvio, who rushes to finish a long-deferred duel with the Count but calls it off when the Count&#x27;s wife stumbles in, shooting a Swiss landscape painting instead (the painting has two bullet holes). &#x27;The Blizzard&#x27; features Burmin falling to his knees before Maria after realizing she is the woman he jokingly married during the title event. &#x27;The Coffin-Maker&#x27; features a coffin-maker insulted at a shoemaker&#x27;s dinner, haunted by skeletons. &#x27;The Station Master&#x27; has a house decorated with the Parable of the Prodigal Son. &#x27;The Squire&#x27;s Daughter&#x27; ends with a student realizing his peasant love is Liza in disguise. Prosper Merimee translated and plagiarized &#x27;The Shot.&#x27;</p><p>Pushkin&#x27;s lyric poetry is also heavily clued. &#x27;I Loved You&#x27; (&#x27;I loved you; and perhaps I love you still&#x27;) is his most famous lyric. &#x27;I <a href="christina_rossetti_stock.html#remember" class="crossref-inline">Remember</a> a Wonderful Moment&#x27; was written for Anna Kern. &#x27;Ode to Liberty&#x27; led to his exile at age 18. &#x27;The Prophet&#x27; describes a snake depositing a &#x27;blazing shard of coal&#x27; in the speaker&#x27;s chest before being told to &#x27;burn Man&#x27;s heart&#x27; with God&#x27;s word. &#x27;Winter Morning&#x27; (&#x27;Frost and sun - the day is wondrous!&#x27;) is memorized by Russian schoolchildren. &#x27;The Devils&#x27; features a coachman saying &#x27;we&#x27;ve lost the way.&#x27; His &#x27;little tragedies&#x27; include The Stone Guest (based on the Don Juan legend/Mozart opera), Mozart and Salieri (Salieri poisons Mozart&#x27;s drink, confirming &#x27;villainy and genius can never go together&#x27;), Feast in the Time of Plague, and Boris Godunov (a monk woos the Polish noble Maryna while leading a rebellion). Ruslan and Lyudmila features a &#x27;learned cat&#x27; on a &#x27;golden chain&#x27; to a &#x27;green oak&#x27; and a hill that turns out to be the massive head of the wizard Chernomor&#x27;s brother.</p><p>The Captain&#x27;s Daughter is a novel about Peter Grinev stationed at Bailogorsk fortress, who quarrels with Shvabrin and pursues Maria Mironova. He is rescued from a blizzard by Pugachev, the historical rebel leader.</p><p>Biographically, Pushkin branded himself &#x27;The African&#x27; due to his great-grandfather Abram Gannibal. He died in a duel with the <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> officer Georges-Charles d&#x27;Anthes, precipitated by anonymous letters naming Pushkin &#x27;Deputy Grand Master of the Order of Cuckolds&#x27; after d&#x27;Anthes flirted with Pushkin&#x27;s wife Natalia. Lermontov&#x27;s &#x27;Death of <a href="ralph_waldo_emerson_stock.html#the-poet" class="crossref-inline">The Poet</a>&#x27; commemorates his death, decrying &#x27;haughty ones, descendants of forebears known for shallowness&#x27; and saying his &#x27;blood of blackness will not obliterate true and righteous blood.&#x27; Pushkin started the journal The Contemporary with <a href="nikolai_gogol_stock.html" class="crossref-inline">Gogol</a> as editor.</p>
+        </section>
+        
+
+</body>
+</html>

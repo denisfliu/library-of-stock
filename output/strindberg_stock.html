@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: August Strindberg</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>August Strindberg</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="strindberg_questions.html">View source questions</a> · <a href="strindberg_cards.html">Make cards</a></div>
+<div class="summary">August Strindberg is a Swedish playwright and novelist, best known for the plays Miss Julie, The Father, A Dream Play, and The Ghost Sonata.</div>
+
+        <details class="work" id="miss-julie" open>
+            <summary class="work-title">Miss Julie</summary>
+            <p class="work-desc">Set on Midsummer's Eve, the Count's daughter Julie flirts with the valet Jean. After Jean decapitates her pet canary, Julie commits suicide with a razor. The play's preface is a naturalist manifesto.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with valet Jean giving Julie a razor; she commits suicide offstage</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jean decapitates Julie&#x27;s pet canary (or greenfinch) with a razor</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Julie and Jean plan to open a hotel on Lake Como</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Julie breaks off engagement when fiance refuses to jump over a riding whip</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Count&#x27;s boots present on stage; Jean&#x27;s &#x27;slave mentality&#x27;; the preface calls Julie a &#x27;man-hating half-woman&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jean cheats on the cook Christine/Kristine; Julie orders abortifacient for her dog Diana</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Julie&#x27;s recurring dream of sitting on a pillar but finding no rest</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A character makes up a story about a &#x27;Turkish pavilion&#x27; and attempting suicide in an oat bin</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Strindberg intended the role for his wife Siri von Essen; may have been inspired by Victoria Benedictsson&#x27;s suicide</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-father" open>
+            <summary class="work-title">The Father</summary>
+            <p class="work-desc">Laura tricks her Captain husband into throwing a burning lamp at her to have him declared insane. She lies about his using a microscope instead of a spectroscope. Written as response to Ibsen's <a href="ibsen_stock.html#a-doll-s-house" class="crossref-inline">A Doll's House</a>.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laura goads the Captain into throwing a burning lamp at her; he is declared insane and put in a straitjacket</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laura lies about the Captain using a microscope (really a spectroscope) to discover extraterrestrial life</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laura fights to control daughter Bertha&#x27;s career; Captain dies from stroke after straitjacket</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written as response to Ibsen&#x27;s A Doll&#x27;s House; argues Nora is the true villain</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with debate over who is the father of a kitchen maid&#x27;s illegitimate child; &#x27;too many women running this house&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-dream-play" open>
+            <summary class="work-title">A Dream Play</summary>
+            <p class="work-desc">Agnes, daughter of the god Indra, descends to Earth. Features Foulstrand, Fairhaven, and Fingal's Cave. Repeats 'men are to be pitied.' Ends with a castle burning and a chrysanthemum blooming.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Agnes, daughter of Indra, descends to Earth; &#x27;men are to be pitied&#x27; repeated throughout</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Settings include Foulstrand, Fairhaven, and Fingal&#x27;s Cave</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Castle burning; flower bud bursts into giant chrysanthemum on the roof</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four university deans argue about whether a door should be opened; scene changes from lawyer&#x27;s office to commencement</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Officer is asked &#x27;Do you think that time and space exist?&#x27; on a quarantine island</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-ghost-sonata" open>
+            <summary class="work-title">The Ghost Sonata</summary>
+            <p class="work-desc">A chamber play featuring the wheelchair-bound Hummel, the 'Sunday child' student Arkenholtz, and the Mummy. Set in a boarding house. One of five chamber plays for the Intima Theater.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wheelchair-bound Jacob Hummel and student Arkenholtz in a boarding house; Arkenholtz is a &#x27;Sunday child&#x27; who sees apparitions</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Amalia (the Mummy) convinces Hummel to hang himself; ogre-like cook sucks nourishment from food</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arkenholtz sees the apparition of a milkmaid; the Girl/Hyacinth Girl dies behind a &#x27;death screen&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One of five &#x27;chamber plays&#x27; for the Intima Theater</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ingmar Bergman controversially depicted Hummel as Jewish</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-red-room" open>
+            <summary class="work-title">The Red Room</summary>
+            <p class="work-desc">Novel about journalist Arvid Falk who meets bohemian <a href="young_british_artists_stock.html" class="crossref-inline">Artists</a> and intellectuals at the titular location. Features the fraudulent Triton marine insurance company.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Journalist Arvid Falk meets bohemian artists at the title location</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Triton marine insurance company turns out to be fraudulent</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Various other works including The Stronger, The Pelican, The Dance of Death, The Great Highway, Inferno, and Married.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Stronger: monologue by Frau X while Mademoiselle Y (Amelia) remains silent</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Dance of Death: Alice hopes to be murdered during husband Edgar&#x27;s saber dance</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Great Highway: final play; Hunter through seven &#x27;stations&#x27; of life</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inferno: autobiographical novel about practicing alchemy at Hotel Orfila; believes he is in hell</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Married: short story collection that led to a blasphemy trial</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Swedish playwright with a bitter rivalry with Ibsen. Called a misogynist by <a href="chekhov_stock.html" class="crossref-inline">Chekhov</a>. Founded the Intima Theater. Called himself 'the <a href="émile_zola_stock.html" class="crossref-inline">Zola</a> of the Occult.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bitter rivalry with Ibsen: kept portrait of Ibsen called &#x27;Madness Incipient&#x27;; wrote &#x27;Psychic Murder (Apropos Rosmersholm)&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chekhov called him a misogynist &#x27;who would like to see women enslaved&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Founded the small Intima Theater for chamber plays</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Virulently antisemitic; critic Edvard Brandes stopped writing to him</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Praised Weininger&#x27;s Sex and Character for &#x27;solving the woman problem&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote passionate letters to Nietzsche (&#x27;Read Nietzsche! That is my Carthago est delenda!&#x27;)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called himself &#x27;the Zola of the Occult&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Karl Jaspers wrote a &#x27;pathographic analysis&#x27; of Strindberg and Van Gogh</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Had a series of psychotic attacks known as his &#x27;Inferno Crisis&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>August Strindberg is a Swedish playwright and novelist, best known for the plays Miss Julie, The Father, A Dream Play, and The Ghost Sonata. He is one of the most frequently clued dramatists in quizbowl.</p><p>Miss Julie is by far Strindberg&#x27;s most clued work. Set on Midsummer&#x27;s Eve, it follows the Count&#x27;s daughter Miss Julie and the valet Jean. Julie breaks off her engagement when her fiance refuses to jump over a riding whip. She flirts with Jean, who cheats on the cook Christine/Kristine. Julie and Jean plot to open a hotel on Lake Como, but Jean decapitates Julie&#x27;s pet canary (or greenfinch) with a razor. Julie&#x27;s father the Count returns, and Jean gives Julie the razor with which she presumably commits suicide offstage. Julie tells Jean about a recurring dream of sitting on a pillar but finding no rest. The preface to Miss Julie is a naturalist manifesto: it calls the title character a &#x27;man-hating half-woman,&#x27; discusses Jean&#x27;s &#x27;slave mentality&#x27; expressed through worship of the Count (symbolized by the Count&#x27;s boots present on stage), and criticizes canvas stage doors for not being capable of expressing the &#x27;anger of an irate pater familias.&#x27; Strindberg intended the title role for his wife Siri von Essen. Julie orders the cook to prepare an abortifacient for her dog Diana. A character makes up a story about a &#x27;Turkish pavilion&#x27; and attempting suicide in an oat bin.</p><p>The Father features Laura goading her military officer husband (the Captain) into throwing a burning lamp at her, so she can have him declared insane and control the career of their daughter Bertha. Laura tells a lie about the Captain using a microscope (rather than a spectroscope) to discover extraterrestrial life. The Captain dies from a stroke after being put in a straitjacket. Strindberg wrote The Father as a response to Ibsen&#x27;s <a href="ibsen_stock.html#a-doll-s-house" class="crossref-inline">A Doll&#x27;s House</a>, arguing that Nora is the true villain.</p><p>A Dream Play features Agnes, the daughter of the god Indra, descending to Earth to <a href="ralph_waldo_emerson_stock.html#experience" class="crossref-inline">Experience</a> human hardships. The phrase &#x27;men are to be pitied&#x27; is frequently repeated. Settings include Foulstrand, Fairhaven, and Fingal&#x27;s Cave. A rapidly aging Officer pines for the opera singer Victoria. The deans of four university faculties argue about whether a door should be opened. A scene changes from a lawyer&#x27;s office to a commencement ceremony. The play ends with a castle burning and a flower bud on its roof bursting into a giant chrysanthemum. A character describes stealing apples and entering a building that turns out to be an outhouse.</p><p>The Ghost Sonata is a chamber play set in a boarding house home to the wheelchair-bound Jacob Hummel and the student Arkenholtz (&#x27;Sunday child&#x27; who can see apparitions, including a milkmaid). An ogre-like cook sucks nourishment from food. Amalia (a parrot-like madwoman/mummy) convinces Hummel to hang himself. Arkenholtz&#x27;s love interest (the Girl/Hyacinth Girl) dies behind a &#x27;death screen&#x27; as Arkenholtz sings. Ingmar Bergman controversially depicted Hummel as Jewish. It is one of five three-scene &#x27;chamber plays&#x27; premiered at the Intima Theater.</p><p>The Red Room is Strindberg&#x27;s novel about the journalist Arvid Falk, who meets with bohemian <a href="young_british_artists_stock.html" class="crossref-inline">Artists</a> and intellectuals at the titular location. The Triton marine insurance company turns out to be fraudulent. Falk&#x27;s friend the painter Sellen loses his idealism.</p><p>Other works: The Stronger consists of a monologue by Frau X as Mademoiselle Y (revealed as Amelia) remains silent. The Pelican: Frederik commits arson. The Dance of Death: Alice hopes to be murdered during husband Edgar&#x27;s saber dance. The Great Highway is Strindberg&#x27;s final play, following a Hunter through seven &#x27;stations&#x27; of life. Inferno is an autobiographical novel about practicing alchemy at the Hotel Orfila and believing oneself in hell. Married led to a blasphemy trial.</p><p>Biographically, Strindberg had a bitter rivalry with <a href="ibsen_stock.html" class="crossref-inline">Henrik Ibsen</a> -- he kept a portrait of Ibsen in his study and called it &#x27;Madness Incipient.&#x27; He wrote &#x27;Psychic Murder (Apropos Rosmersholm),&#x27; calling Rebecca West an &#x27;unconscious cannibal.&#x27; <a href="chekhov_stock.html" class="crossref-inline">Chekhov</a> called him a misogynist &#x27;who would like to see women enslaved.&#x27; He was virulently antisemitic, causing <a href="richard_sheridan_stock.html#the-critic" class="crossref-inline">The Critic</a> Edvard Brandes to stop corresponding with him. He praised Otto Weininger&#x27;s Sex and Character for &#x27;solving the woman problem.&#x27; He wrote passionate letters to <a href="nietzsche_stock.html" class="crossref-inline">Nietzsche</a>. Karl Jaspers wrote a &#x27;pathographic analysis&#x27; of Strindberg and Van Gogh. He called himself &#x27;the <a href="émile_zola_stock.html" class="crossref-inline">Zola</a> of the Occult.&#x27; He founded the Intima Theater. Mauriac&#x27;s Nobel lecture imagines the &#x27;world of a novelist without hope&#x27; led by Strindberg.</p>
+        </section>
+        
+
+</body>
+</html>

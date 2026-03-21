@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Charles Baudelaire</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Charles Baudelaire</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="baudelaire_questions.html">View source questions</a> · <a href="baudelaire_cards.html">Make cards</a></div>
+<div class="summary">Charles Baudelaire (Charles Pierre Baudelaire) was a <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> Symbolist poet, essayist, and art critic, overwhelmingly identified through his poetry collection Les Fleurs du Mal (The Flowers of Evil).</div>
+
+        <details class="work" id="les-fleurs-du-mal-general" open>
+            <summary class="work-title">Les Fleurs du Mal (general)</summary>
+            <p class="work-desc">Baudelaire's masterwork, dedicated to Theophile Gautier. Opens with "To the Reader," which addresses the "hypocrite reader" as "my double, my brother." Sections include "Spleen and Ideal," "Wine," "Revolt," "Death," and the later-added "Tableaux Parisiens."</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;To the Reader&quot; addresses the &quot;hypocrite reader&quot; as &quot;my double, my brother&quot; (or &quot;my likeness, my twin&quot;)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the opening to that collection, this poet calls the subject a hypocrite before addressing the reader as &#x27;My twin! My brother!&#x27; | This poet included &#x27;To the Reader&#x27; and &#x27;The Albatross&#x27; in his collection Les Fleurs du mal.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with &quot;Folly, error, sin, avarice&quot;; describes Ennui as a &quot;refined monster&quot; who &quot;dreams of scaffolds and smokes his hookah pipe&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That most famous collection begins &#x27;Folly, error, sin, avarice&#x27; in the opening section &#x27;To the Reader,&#x27; which extols &#x27;he is Ennui!&#x27; | A poem from Les Fleurs du Mal warns this person of Ennui, who &#x27;dreams of scaffolds as he smokes his hookah pipe.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sections include &quot;Spleen and Ideal,&quot; &quot;Wine,&quot; &quot;Revolt,&quot; &quot;Death&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Revolt,&#x27; &#x27;Wine,&#x27; &#x27;Death,&#x27; and &#x27;Spleen and Ideal&#x27; are sections from which French Symbolist&#x27;s collection Flowers of Evil?</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dedicated to Theophile Gautier, &quot;perfect magician of French letters&quot; / &quot;impeccable poet&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Baudelaire dedicated Les Fleurs du mal to this &#x27;perfect magician of French letters.&#x27; | The &#x27;Dedication&#x27; is made out to the author&#x27;s friend Theophile Gautier, whom it calls a &#x27;magician of letters.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Added &quot;Tableaux Parisiens&quot; (Parisian Scenes) during Paris&#x27;s Haussmann renovation</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man appended his most famous collection with Tableaux Parisiens during Paris&#x27; renovation. | 18 &#x27;scenes&#x27; by this poet that inspired the essay &#x27;The Translator&#x27;s Task&#x27; comprise a 24-hour cycle critiquing a renovated city.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Six poems were censored from the first edition, later republished in Les Epaves (&quot;scraps&quot; or &quot;wrecks&quot;)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet added six suppressed poems and a &#x27;tableaux&#x27; to a collection. | The poem &#x27;Lesbos,&#x27; along with &#x27;The Jewels&#x27; and &#x27;To She Who Is Too Gay,&#x27; is part of a group of six censored poems.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">T.S. Eliot alluded to Baudelaire with &quot;Unreal city&quot; and quoted him in the final line of The Waste Land&#x27;s first section</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">T.S. Eliot alludes to this poet with the phrase &#x27;Unreal city,&#x27; and he quotes this poet in the final line of The Waste Land&#x27;s first section.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-albatross" open>
+            <summary class="work-title">The Albatross</summary>
+            <p class="work-desc">Compares <a href="ralph_waldo_emerson_stock.html#the-poet" class="crossref-inline">The Poet</a> to the title bird, a "prince of the skies" whose large wings drag like oars when captured by crewmen. The bird is described as "comic" and "ugly."</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Compares the Poet to the title &quot;prince of the skies&quot; whose wings drag like oars; the bird is &quot;comic&quot; and &quot;ugly&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He compared the Poet to the title &#x27;prince of the skies&#x27; whose wings drag like oars. | A collection that includes a description of a &#x27;comic&#x27; and &#x27;ugly&#x27; bird with large wings.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aime Cesaire quoted &quot;COMICAL AND UGLY&quot; from this poem in Notebook of a Return to My Native Land</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The narrator recalls passengers on a tram mocking a black man described as &#x27;COMICAL AND UGLY,&#x27; a quote taken from &#x27;The Albatross.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-swan" open>
+            <summary class="work-title">The Swan</summary>
+            <p class="work-desc">Opens with "Andromache, I think of you!" Dedicated to Victor Hugo, it laments that a city's face "changes faster than a human heart" and depicts a bird escaped from its cage, homesick for its lake. Part of the "Parisian Scenes" section.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with &quot;Andromache, I think of you!&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author exclaimed &#x27;Andromache, I think of you!&#x27; at the beginning of a poem. | This poem opens &#x27;Andromache, I think of you!&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laments that a city&#x27;s face &quot;changes faster than a human heart&quot; / &quot;the shape of a city changes... quickly, alas!&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A poem which laments that a city&#x27;s face changes faster than a human heart. | This poet wrote about how &#x27;the shape of a city changes... quickly, alas!&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The bird escapes its cage and cries &quot;homesick for his fair native lake: Rain, when will you fall?&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A creature cried &#x27;homesick for his fair native lake: Rain, when will you fall? Thunder, when will you roll?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dedicated to Victor Hugo; laments the Haussmannization of Paris</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this poem dedicated to Victor Hugo about a bird &#x27;escaped from his cage.&#x27; | This author lamented the Haussmannization of Paris in a poem named for a bird which escapes its cage.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-painter-of-modern-life-the-flaneur" open>
+            <summary class="work-title">The Painter of Modern Life / The Flaneur</summary>
+            <p class="work-desc">Baudelaire's most important critical essay, examining illustrator Constantin Guys as a "passionate spectator" and "eternal convalescent." It originated the archetype of the flaneur and coined the term "modernity." Walter Benjamin extensively discussed Baudelaire's flaneur in the Arcades Project.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Examines Constantin Guys (&quot;Monsieur G&quot;) as a &quot;passionate spectator&quot; for whom &quot;the crowd is his element&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author discussed the illustrator Constantin Guys as a &#x27;passionate spectator&#x27; for whom &#x27;it is an immense joy to set up house in the heart of the multitude.&#x27; | His essay praises watercolor artist Constantin Guys as an &#x27;eternal convalescent.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Originated the archetype of the flaneur; coined the term &quot;modernity&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">What poet&#x27;s essay &#x27;The Painter of Modern Life&#x27; originated the archetype of the flaneur? | This author is said to have coined the term &#x27;modernity.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Walter Benjamin expanded the flaneur concept in the Arcades Project; called Baudelaire a &quot;secret agent&quot; of bourgeois discontent</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Walter Benjamin&#x27;s essays on this author expound on his idea of the flaneur. | An essay about this author theorizes a &#x27;commodity-soul&#x27; and calls this author a &#x27;secret agent.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Baudelaire&#x27;s idea of &quot;botanizing on the asphalt&quot; is cited by Rebecca Solnit and Lauren Elkin</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet&#x27;s idea of &#x27;botanizing on the asphalt&#x27; is cited in &#x27;histories&#x27; by Rebecca Solnit and Lauren Elkin.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Examines Poe&#x27;s &quot;The Man in the Crowd&quot;; describes the flaneur as &quot;a prince who is everywhere in possession of his incognito&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author examined Poe&#x27;s &#x27;The Man of the Crowd&#x27; in an essay about &#x27;Monsieur G.&#x27; | This author described one figure as &#x27;a prince who is everywhere in possession of his incognito.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Distinguishes &quot;ladies&quot; from &quot;fallen women&quot; in the &quot;Women and Prostitutes&quot; section; expanded by Griselda Pollock</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author&#x27;s distinction of &#x27;ladies&#x27; and &#x27;fallen women&#x27; in the &#x27;Women and Prostitutes&#x27; section is expanded into a grid by Griselda Pollock.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Distinguishes positivist from imaginist artists; the imagination is the &quot;queen of the faculties&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A review by this critic distinguishes positivist from imaginist artists, siding with the latter because the imagination is the &#x27;queen of the faculties.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First appeared in feuilleton form; T.J. Clark titled a book after this essay</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author&#x27;s essay &#x27;The Painter of Modern Life&#x27; first appeared in feuilleton form. | Letters between this critic and Manet are quoted in T.J. Clark&#x27;s &#x27;Olympia&#x27;s Choice,&#x27; which appears in a book titled after an essay by this man.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-litanies-of-satan" open>
+            <summary class="work-title">The Litanies of Satan</summary>
+            <p class="work-desc">A poem that beseeches Satan as the "Wisest of Angels" to "take pity on my long despair" after every couplet. Satan is addressed as one who teaches "the taste for Heaven / To the cursed pariah, even to the leper."</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Beseeches the &quot;Wisest of Angels&quot; to &quot;take pity on my long despair&quot; / &quot;misery&quot; after every couplet</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another poem by this author tells its addressee to &#x27;take pity on my long misery&#x27; after every couplet. | The entry &#x27;The Litanies of Satan&#x27; repeatedly implores the title figure to &#x27;take pity on my long misery!&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Concludes with a six-line prayer to rest between the title figure&#x27;s brows by the Tree of Knowledge</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another poem concludes with a six-line prayer that the speaker shall rest between the title figure&#x27;s brows by the Tree of Knowledge.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="correspondences" open>
+            <summary class="work-title">Correspondences</summary>
+            <p class="work-desc">Describes nature as a "temple" with "living pillars" and a "forest of symbols." Perfumes are described as "cool as the flesh of children / Sweet as oboes, green as meadows." The Symbolist movement took its name from this poem.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes nature as a &quot;temple&quot; with &quot;living pillars&quot; and a &quot;forest of symbols&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author described nature as a &#x27;forest of symbols,&#x27; from which the Symbolist movement he was head of took its name. | One poem describes perfumes that seem &#x27;as cool as the flesh of children&#x27; after describing Nature as a temple with &#x27;living pillars&#x27;.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Perfumes are &quot;cool as the flesh of children / Sweet as oboes, green as meadows&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author described perfumes that seem &#x27;as cool as the flesh of children / Sweet as oboes, green as meadows.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="invitation-to-the-voyage" open>
+            <summary class="work-title">Invitation to the Voyage</summary>
+            <p class="work-desc">Begins "My child, my sister, think of the rapture of living together there!" Envisions "ornate ceilings" and "limpid mirrors." Each stanza ends with the refrain about "order" and "beauty," concluding with "volupte."</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Begins &quot;My child, my sister, think of the rapture of living together there!&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of his speakers tells &#x27;my child, my sister, think of the rapture of living together there!&#x27; | This poem begins by asking a &#x27;sister&#x27; &#x27;child,&#x27; &#x27;think how sweet to go out there and live together.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Envisions &quot;ornate ceilings&quot; and &quot;limpid mirrors&quot;; ends with the word &quot;volupte&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poem envisions a room where &#x27;ornate ceilings&#x27; and &#x27;limpid mirrors&#x27; will give an aura of &#x27;oriental splendor.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="paris-spleen-prose-poems" open>
+            <summary class="work-title">Paris Spleen (Prose Poems)</summary>
+            <p class="work-desc">A collection of prose poems inspired by Aloysius Bertrand's Gaspard de la Nuit. Includes "Be Drunk" (don't be "the martyred slave of time"), "Let's Beat Up the Poor!" (fighting a beggar), and a poem about dropping a flowerpot on a glazier.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Be Drunk&quot; tells the addressee not to be &quot;the martyred slave of time&quot; and to reach drunkenness via &quot;poetry or virtue&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a prose poem, the addressee is told not to be &#x27;the martyred slave of time&#x27; and to reach this state via &#x27;poetry or virtue.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Let&#x27;s Beat Up the Poor!&quot;: the narrator fights a beggar to determine if he is worthy of charity</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A prose poem in which a man has a fistfight with a beggar outside a bar to determine if the beggar is worthy of receiving his charity.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The narrator drops a flowerpot on a &quot;Shoddy&quot; glazier</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a poem from Paris Spleen, the narrator drops a flowerpot on a &#x27;Shoddy&#x27; man with this profession.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by obsessive reading of Aloysius Bertrand&#x27;s Gaspard de la Nuit</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author included &#x27;Let us Beat up the Poor!&#x27; in a poetry collection inspired by his obsessive reading of Bertrand&#x27;s Gaspard de la Nuit.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A prose poem asserts &quot;To enjoy the crowd is an art&quot; and &quot;multitude and solitude are the same&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A prose poem by this author asserts &#x27;To enjoy the crowd is an art&#x27; and states &#x27;multitude and solitude are the same.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-poems" open>
+            <summary class="work-title">Other Poems</summary>
+            <p class="work-desc">Several other poems appear in clues, including "The Seven Old Men," "The Beacons," "The Fountain of Blood," "The Soul of Wine," "<a href="leonora_carrington_stock.html#the-giantess-the-guardian-of-the-egg" class="crossref-inline">The Giantess</a>," "The Voyage," "A Carcass," "The Little Old Ladies," "The Mendicant Redhead," "The Sick Muse," "Les Chats," "Lesbos," "The Damned Women," and "Don Juan in Hell."</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Seven Old Men&quot;: a sickly old man with &quot;tattered yellow clothes&quot;; the speaker&#x27;s soul is &quot;a ship without a mast&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet depicted a sickly &#x27;old man with tattered yellow clothes&#x27; in &#x27;The Seven Old Men.&#x27; | The speaker compares his soul to &#x27;a ship without a mast on a monstrous, borderless sea&#x27; after encountering identical hobbled men.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Beacons&quot;: eight quatrains (&quot;medallions&quot;) about Rubens, Da Vinci, Rembrandt, Michelangelo and others</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One poem consists of eight &#x27;medallions,&#x27; or quatrains, that speak about the art of Rubens, Da Vinci, Rembrandt, Michelangelo.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Fountain of Blood&quot;: the speaker&#x27;s blood &quot;gushing out in rhythmical sobs&quot; floods the city into &quot;islands of paving stones&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He wrote another poem in which the speaker imagines his blood &#x27;gushing out in rhythmical sobs&#x27; from his body so that the city is turned into &#x27;islands of paving stones.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Giantess&quot;: the speaker imagines living &quot;like a voluptuous cat at the feet of a queen&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The speaker imagines himself living near a young giantess, like a cat at the feet of a queen.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Voyage&quot;: travelers discover &quot;an oasis of horror in a desert of boredom&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author wrote about travellers who discover &#x27;an oasis of horror in a desert of boredom&#x27; in his poem &#x27;The Voyage.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;A Carcass&quot;: sexualizes a corpse &quot;blossoming like a flower&quot; with &quot;black battalions&quot; of creatures</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A disturbing poem from The Flowers of Evil that sexualizes one of these objects describes watching it &#x27;blossom like a flower&#x27; in the summer.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Lesbos&quot; and &quot;The Damned Women&quot; among six censored poems; Sappho dies on the day of her &quot;blasphemy&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author&#x27;s poems &#x27;The Damned Women&#x27; and &#x27;Lesbos&#x27; were among the six censored from the first edition. | In &#x27;Lesbos,&#x27; having heterosexual relations caused &#x27;the virile Sappho, paramour and poet&#x27; to die on the day of her &#x27;blasphemy.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Little Old Ladies&quot;: asks if you &quot;observed how frequently coffins for old women are almost as small as a child&#x27;s&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author asked if you &#x27;observed how frequently coffins For old women are almost as small as a child&#x27;s.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;A une passante&quot;: the speaker makes fleeting eye contact; concludes &quot;O you that I had loved, O you who knew it!&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The speaker makes fleeting eye contact with one of these women in a poem that concludes, &#x27;O you that I had loved, O you who knew it!&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc"><a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> Symbolist poet and art critic. He spent twenty years translating <a href="edgar_allan_poe_stock.html" class="crossref-inline">Edgar Allan Poe</a> into French, popularizing Poe in Europe. Close friend of Edouard Manet, posed for Courbet's The Artist's Studio. His mistress was the half-Haitian Jeanne Duval. Called "the king of <a href="confessional_poets_stock.html" class="crossref-inline">Poets</a>, a true God" by Rimbaud.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Translated Edgar Allan Poe into French for twenty years; supposedly learned English for that purpose; popularized Poe in Europe</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author produced early French translations of Poe. | Baudelaire spent the last twenty years of his life translating this English-language author into French.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arthur Rimbaud called him &quot;the king of poets, a true God&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Arthur Rimbaud called this author &#x27;the king of poets, a true God.&#x27; | Baudelaire was called &#x27;the king of poets&#x27; by Arthur Rimbaud.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Algernon Swinburne wrote the elegy &quot;Ave Atque Vale&quot; for him, titled after Catullus</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet eulogized in Algernon Swinburne&#x27;s Catullus-inspired poem &#x27;Ave Atque Vale.&#x27; | Swinburne asks Baudelaire to &#x27;take at my hands this garland, and farewell&#x27; in the elegy &#x27;Ave Atque Vale.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Close friend of Edouard Manet; posed for Courbet&#x27;s The Artist&#x27;s Studio</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">While not posing for his friend Courbet&#x27;s The Artist&#x27;s Studio, this poet and art critic savaged the mechanical nature of photography. | The only primary account that survives of Edouard Manet&#x27;s reaction to the reception of Olympia are epistles addressed to this art critic and poet.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jeanne Duval was his half-Haitian mistress; fictionalized in Nalo Hopkinson&#x27;s The Salt Roads</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Jeanne Duval was the Haitian-born lover of this author. | Nalo Hopkinson&#x27;s The Salt Roads fictionalizes the life of the half-Haitian Jeanne Duval, the mistress of this poet.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mallarme wrote a tomb sonnet for him</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mallarme wrote of &#x27;the buried temple through the sewer&#x27;s dark&#x27; in a poem about the death of this fellow French poet. | Mallarme&#x27;s &#x27;sonnets of homage&#x27; include poems titled for the &#x27;tomb&#x27; of these two writers.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote &quot;Richard Wagner and Tannhauser in Paris&quot; despite little musical training</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This essayist noted that he had little musical training, besides having heard a bit of Beethoven and Weber, but nonetheless glowingly reviewed the title composer&#x27;s work.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote &quot;On Photography&quot;: &quot;It is useless and tedious to represent what exists, because nothing that exists satisfies me&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man wrote &#x27;It is useless and tedious to represent what exists, because nothing that exists satisfies me&#x27; in his tract On Photography.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Georges Bataille discussed him in Literature and Evil</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This writer&#x27;s letter to his legal advisor is weighed by Georges Bataille in the second chapter of a book that opens, &#x27;Literature is not innocent.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lemony Snicket&#x27;s orphans took their surname (Baudelaire) from him</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">What French poet inspired Lemony Snicket&#x27;s choice of the surname for the orphans in A Series of Unfortunate Events?</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Richard Brautigan imagined him as the &quot;Galilee Hitch-Hiker&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet is imagined as the &#x27;Galilee Hitch-Hiker&#x27; in a sequence of poems from Richard Brautigan&#x27;s The Pill vs The Springhill Mine Disaster.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Charles Baudelaire (Charles Pierre Baudelaire) was a <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> Symbolist poet, essayist, and art critic, overwhelmingly identified through his poetry collection Les Fleurs du Mal (The Flowers of Evil). That collection is dedicated to Theophile Gautier, whom Baudelaire called a &quot;perfect magician of French letters&quot; and &quot;impeccable poet.&quot; It opens with the poem &quot;To the Reader,&quot; which begins with &quot;Folly, error, sin, avarice&quot; and addresses the &quot;hypocrite reader&quot; as &quot;my double, my brother&quot; (or &quot;my likeness, my twin&quot;). The poem describes Ennui as a &quot;refined monster&quot; who &quot;dreams of scaffolds and smokes his hookah pipe.&quot; T.S. <a href="ts_eliot_stock.html" class="crossref-inline">Eliot</a> alluded to Baudelaire with the phrase &quot;Unreal City&quot; and quoted him in the final line of <a href="ts_eliot_stock.html#the-waste-land" class="crossref-inline">The Waste Land</a>&#x27;s first section. The collection&#x27;s sections include &quot;Spleen and Ideal,&quot; &quot;Wine,&quot; &quot;Revolt,&quot; &quot;Death,&quot; and the later-added &quot;Tableaux Parisiens&quot; (&quot;Parisian Scenes&quot;), appended during Paris&#x27;s Haussmann renovation.</p><p>&quot;The Albatross&quot; compares <a href="ralph_waldo_emerson_stock.html#the-poet" class="crossref-inline">The Poet</a> to the title &quot;prince of the skies&quot; whose wings drag like oars; the men of the crew &quot;lay hold&quot; of the &quot;comic&quot; and &quot;ugly&quot; bird with large wings. It is dedicated to Victor Hugo. Aime Cesaire quoted the word &quot;COMICAL AND UGLY&quot; from it in Notebook of a Return to My Native Land.</p><p>&quot;The Swan&quot; opens with &quot;Andromache, I think of you!&quot; and laments that a city&#x27;s face &quot;changes faster than a human heart.&quot; The bird escapes its cage and cries &quot;homesick for his fair native lake: Rain, when will you fall? Thunder, when will you roll?&quot; The poem is dedicated to Victor Hugo and appears in the &quot;Parisian Scenes&quot; section.</p><p>&quot;Correspondences&quot; describes nature as a &quot;temple&quot; with &quot;living pillars&quot; and a &quot;forest of symbols.&quot; Perfumes are described as &quot;cool as the flesh of children / Sweet as oboes, green as meadows.&quot; The Symbolist movement took its name from this poem.</p><p>&quot;The Litanies of Satan&quot; beseeches the &quot;Wisest of Angels&quot; to &quot;take pity on my long despair&quot; (or &quot;misery&quot;), with a repeating prayer after every couplet. Satan is addressed as one who teaches &quot;the taste for Heaven / To the cursed pariah, even to the leper.&quot;</p><p>&quot;Invitation to the Voyage&quot; begins &quot;My child, my sister, think of the rapture of living together there!&quot; and envisions &quot;ornate ceilings&quot; and &quot;limpid mirrors&quot; with &quot;oriental splendor.&quot; Each stanza imagines a place where all is &quot;order&quot; and &quot;beauty,&quot; ending with the word &quot;volupte.&quot;</p><p>&quot;The Seven Old Men&quot; depicts a sickly &quot;old man with tattered yellow clothes&quot; and leaves the speaker comparing his soul to &quot;a ship without a mast on a monstrous, borderless sea&quot; after encountering identical hobbled men. Baudelaire called yellow the &quot;color of death.&quot;</p><p>Six poems were censored from the first edition, including &quot;The Damned Women,&quot; &quot;Lesbos,&quot; &quot;The Jewels,&quot; &quot;Lethe,&quot; &quot;The Vampire&#x27;s <a href="ovid_stock.html#metamorphoses" class="crossref-inline">Metamorphoses</a>,&quot; and &quot;To She Who Is Too Gay.&quot; These were later republished in a collection titled Les Epaves (&quot;scraps&quot; or &quot;wrecks&quot;). In &quot;Lesbos,&quot; the &quot;virile <a href="sappho_stock.html" class="crossref-inline">Sappho</a>, paramour and poet&quot; is said to have died on the day of her &quot;blasphemy&quot; of having heterosexual relations. In &quot;The Damned Women,&quot; a prophetess curses Hippolyta.</p><p>Other notable poems include &quot;The Beacons&quot; (eight quatrains about Rubens, Da <a href="leonardo_da_vinci_stock.html" class="crossref-inline">Vinci</a>, Rembrandt, Michelangelo), &quot;The Fountain of Blood&quot; (the speaker&#x27;s blood &quot;gushing out in rhythmical sobs&quot;), &quot;The Soul of Wine&quot; (a bottle sings a &quot;song full of brotherhood and light&quot;), &quot;<a href="leonora_carrington_stock.html#the-giantess-the-guardian-of-the-egg" class="crossref-inline">The Giantess</a>&quot; (the speaker imagines living like &quot;a voluptuous cat at the feet of a queen&quot;), &quot;The Voyage&quot; (travelers discover &quot;an oasis of horror in a desert of boredom&quot;), &quot;The Mendicant Redhead,&quot; &quot;A Carcass&quot; (sexualizes a corpse &quot;blossoming like a flower&quot;), &quot;The Joyous Corpse,&quot; &quot;The Little Old Ladies,&quot; and &quot;Les Chats.&quot;</p><p>Paris Spleen collects prose poems including &quot;Be Drunk&quot; (telling the addressee not to be &quot;the martyred slave of time&quot; and to reach drunkenness via &quot;poetry or virtue&quot;), &quot;Let&#x27;s Beat Up the Poor!&quot; (the narrator fights a beggar to test his worthiness), &quot;The Desire to Paint,&quot; and a poem about a &quot;Shoddy&quot; glazier on whom the narrator drops a flowerpot. Baudelaire was inspired to write prose poems by his obsessive reading of Aloysius Bertrand&#x27;s Gaspard de la Nuit.</p><p>&quot;The Painter of Modern Life&quot; is Baudelaire&#x27;s most important critical essay, examining illustrator Constantin Guys (&quot;Monsieur G&quot;) as an &quot;eternal convalescent&quot; and &quot;passionate spectator&quot; for whom &quot;the crowd is his element&quot; and who is &quot;everywhere in possession of his incognito.&quot; The essay examines Poe&#x27;s &quot;The Man in the Crowd&quot; and distinguishes &quot;ladies&quot; from &quot;fallen women&quot; in a section on &quot;Women and Prostitutes.&quot; Baudelaire coined the term &quot;modernity&quot; and originated the archetype of the flaneur. Walter Benjamin extensively discussed Baudelaire&#x27;s flaneur in the Arcades Project, calling Baudelaire a &quot;secret agent&quot; of bourgeois discontent and theorizing a &quot;commodity-soul.&quot; Benjamin&#x27;s study Charles Baudelaire: A Lyric Poet in the Era of High Capitalism took Baudelaire&#x27;s line &quot;Everything for me becomes allegory&quot; as its starting point. Baudelaire&#x27;s idea of &quot;botanizing on the asphalt&quot; is cited in books by Rebecca Solnit and Lauren Elkin. Griselda Pollock expanded Baudelaire&#x27;s distinctions in &quot;Modernity and the Spaces of Femininity.&quot; T.J. <a href="lygia_clark_stock.html" class="crossref-inline">Clark</a>&#x27;s book on Manet is titled after a Baudelaire essay.</p><p>Baudelaire also wrote &quot;Richard Wagner and Tannhauser in Paris&quot; (a review despite having little musical training), &quot;On the Essence of <a href="henri_bergson_stock.html#laughter" class="crossref-inline">Laughter</a>&quot; (about a Pierrot robbing a cleaning woman in pantomime), and &quot;On Photography&quot; (&quot;It is useless and tedious to represent what exists, because nothing that exists satisfies me&quot;). He spent the last twenty years of his life translating <a href="edgar_allan_poe_stock.html" class="crossref-inline">Edgar Allan Poe</a> into <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a>, and supposedly learned English for that express purpose, popularizing Poe throughout Europe. He was a close friend of Edouard Manet and posed for Courbet&#x27;s The Artist&#x27;s Studio. His half-Haitian mistress was Jeanne Duval, fictionalized in Nalo Hopkinson&#x27;s The Salt Roads. <a href="rimbaud_stock.html" class="crossref-inline">Arthur Rimbaud</a> called him &quot;the king of <a href="confessional_poets_stock.html" class="crossref-inline">Poets</a>, a true God.&quot; Algernon Swinburne eulogized him in &quot;Ave Atque Vale&quot; (titled in reference to <a href="catullus_stock.html" class="crossref-inline">Catullus</a>). Mallarme wrote a tomb sonnet for him. Georges Bataille discussed him in Literature and Evil. Richard Brautigan imagined him as the &quot;Galilee Hitch-Hiker.&quot; Lemony Snicket&#x27;s orphans took their surname from him. Alejandra Pizarnik drew inspiration from his &quot;suffering.&quot; Pablo Neruda mentioned seeing a &quot;surviving&quot; copy of his works.</p>
+        </section>
+        
+
+</body>
+</html>

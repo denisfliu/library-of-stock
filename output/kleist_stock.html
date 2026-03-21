@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Heinrich von Kleist</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Heinrich von Kleist</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="kleist_questions.html">View source questions</a> · <a href="kleist_cards.html">Make cards</a></div>
+<div class="summary">Heinrich von Kleist (Bernd Heinrich Wilhelm von Kleist) was a German Romantic playwright and author of novellas and short stories.</div>
+
+        <details class="work" id="the-marquise-of-o" open>
+            <summary class="work-title">The Marquise of O</summary>
+            <p class="work-desc">Kleist's most frequently clued work. A pregnant noblewoman places a newspaper advertisement seeking <a href="strindberg_stock.html#the-father" class="crossref-inline">The Father</a> of her child. A Russian Count had rescued her from soldiers but assaulted her himself -- the rape is represented only with a dash in the text.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The title noblewoman places a newspaper advertisement seeking the father of her unborn child to marry her</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character places an ad in the newspaper to determine the identity of the father of her unborn child. | That story opens with the title noblewoman putting in a newspaper a request for the father of her child to reveal himself.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A Russian Count rescues her from soldiers but assaults her himself after she faints; the rape is represented with a dash</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a story by this author, a Russian Count rescues a woman from some soldiers, only to assault her himself after she faints. | In one of this author&#x27;s stories, a rape is omitted and merely represented with a dash in the text.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">She marries Count F. who answers the advertisement</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In another story by this author, Count F. marries the title woman after she posts an announcement looking for the father of her child.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Marquise declares she was &quot;ready for some villain of a fellow... but not the devil&quot; when the Count confesses</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this author&#x27;s characters claims she was &#x27;ready for some villain of a fellow... but not the devil.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Commandant father &quot;hung over her as if she were his first love and held her mouth and kissed it&quot; in an incestuous reconciliation</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A Commandant created by this author &#x27;hung over [his daughter] as if she were his first love and held her mouth and kissed it.&#x27; | In that story, the title character&#x27;s father passionately kisses her mouth when they reconcile.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The groom Leopardo the chasseur is put up to feigning responsibility</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After a man who is not Leopardo the chasseur confesses to a crime. | It is realized that the groom Leopardo had been put up to feigning responsibility.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set during the Napoleonic Wars</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The innocent Marquise of O is violated during the Napoleonic Wars.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-broken-jug" open>
+            <summary class="work-title">The Broken Jug</summary>
+            <p class="work-desc">A comedy in which the club-footed Judge Adam tries to hide his guilt for destroying the title object while attempting to seduce Eve. His secretary Licht uncovers the truth. Adam's missing wig and various injuries serve as evidence against him.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Judge Adam tries to hide from Eve the fact that he smashed the title object; the secretary Licht discovers his guilt</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a play by this author, Adam tries to hide from Eve the fact that he smashed the title object. | A secretary named Licht discovers that the judge he works for is behind the central crime.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adam claims his cat had a litter of kittens in his wig to explain his baldness; also claims it caught fire</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character lies that his cat had a litter of kittens in his wig, in order to explain his baldness. | A man explains that he does not have one of these things because his cat had given birth in it.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Brigitte testifies that a wig got caught on a grapevine as Adam fled; footprints of a club-footed person found</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Brigitte testifies that one of them got caught on a grapevine as its owner, a judge, fled. | The discovery of a wig and the footprints of a club-footed person in Marthe&#x27;s garden.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ruprecht&#x27;s conscription papers are fabricated as part of Adam&#x27;s seduction attempt; Lebrecht and Ruprecht initially blamed</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ruprecht&#x27;s conscription papers are fabricated as part of an attempt to seduce Eve by Judge Adam. | Lebrecht and Ruprecht are blamed for the central crime until Eve testifies against Judge Adam.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspector General Walter arrives from Utrecht</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The protagonist complains that a cat littered in his missing periwig shortly before the arrival of Inspector General Walter from Utrecht.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adam explains a gash on his cheek by claiming he fell onto a sharp stove corner</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author created a character who explains away the gash in his cheek by claiming that he fell onto the sharp corner of a stove.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The title object is a &quot;heavy-handed metaphor for Eve&#x27;s lost virginity&quot;; inspired by French engraving La Cruche Cassee</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title object is a heavy-handed metaphor for Eve&#x27;s lost virginity. | Heinrich Zschokke stated this work was inspired by a French copper engraving called La Cruche Cassee.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marthe gives a monologue about the jug&#x27;s previous owners, including a Spanish invader killed by Childerich</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A woman describes the deaths of this object&#x27;s previous owners, such as a Spanish invader killed by a kettle-mender named Childerich.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adam blabbers about a noodle dumpling he plans to feed his guinea hen</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this author&#x27;s characters blabbers about a noodle dumpling he plans to feed his guinea hen.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-earthquake-in-chile" open>
+            <summary class="work-title">The Earthquake in Chile</summary>
+            <p class="work-desc">Josefa <a href="hugo_van_der_goes_stock.html" class="crossref-inline">Goes</a> into labor during a Corpus Christi procession and is sentenced to death. Her imprisoned lover Jeronimo prepares to hang himself but is saved by the title earthquake. A priest blames the destruction on the adulterers, and Don Fernando is killed by a religious mob.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Josefa/Josephe goes into labor during a procession; sentenced to death; Jeronimo Rugera prepares to hang himself but is saved by the earthquake</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Josefa is sentenced to death after giving birth during a procession before her execution is interrupted by the title event. | Jeronimo Rugera prepares to hang himself in prison, but is interrupted by the title event.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The child Philip is adopted after Don Fernando is killed by a religious mob</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The child Philip is adopted after Don Fernando is killed by a religious mob.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A priest compares the city to Sodom and blames its destruction on the two adulterers</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A priest compares it to Sodom and blames its destruction on two adulterers who are each saved from executions by an earthquake.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">They wander in a &quot;shady grove of pomegranate trees&quot; witnessing heroic deeds</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two characters wander in a shady grove of pomegranate trees after witnessing how &#x27;men and women of every social station&#x27; were discussing &#x27;accounts of extraordinary heroic deeds.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="michael-kohlhaas" open>
+            <summary class="work-title">Michael Kohlhaas</summary>
+            <p class="work-desc">A novella about a horse-dealer who seeks justice after Junker Wenzel von Tronka mistreats his horses. He leads a rebellion and is beheaded, but before dying swallows a scroll predicting the fate of the Elector of Saxony.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title horse-dealer seeks justice after Junker Wenzel von Tronka mistreats his horses; leads a criminal army; is beheaded</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He also wrote about a man who unrelentingly seeks justice after Junker Tronka mistreats his horses. | The title horse-dealer learns that his lawsuit against the Junker Wenzel von Tronka over a fraudulent toll has succeeded, shortly before he is beheaded.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Before dying, he swallows a scroll/paper predicting the downfall/fate of the Elector of Saxony</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A paper listing three secrets about the future of Saxony is swallowed by the title character before he is beheaded. | At the end of this novella, the title character swallows a scroll predicting the downfall of the Elector of Saxony before being executed.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coalhouse Walker in Doctorow&#x27;s Ragtime is named in homage; Coetzee&#x27;s Michael K also inspired by it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This novel&#x27;s protagonist, Coalhouse Walker, is named in homage to Kohlhaas. | This South African author was also inspired by Michael Kohlhaas to write The Life and Times of Michael K.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="on-the-marionette-theatre" open>
+            <summary class="work-title">On the Marionette Theatre</summary>
+            <p class="work-desc">An essay framed as a dialogue in which a dancer argues marionettes can dance without being hampered by gravity. Features a story about fencing with a bear. Concludes that grace appears most in objects with no consciousness (marionettes) or infinite consciousness (God).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A dancer argues marionettes dance without gravity; their &quot;soul&quot; appears at a different point than the center of gravity</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That man also says that the title figures can dance without being hampered by gravity. | A dancer says these things are better than people because their &#x27;soul&#x27; can appear at &#x27;some point other than the center of gravity.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A man tells a story about fencing with a bear owned by a Baltic noble family that could parry every attack</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A man recalls a story of how he was given a rapier and led to a chained bear, which he proceeds to fence with. | A friend tells the narrator a story about fencing with a bear owned by a Baltic noble family.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Grace appears most purely in objects with no consciousness (marionettes) or infinite consciousness (God)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Grace appears most purely in objects that have no consciousness or infinite consciousness. | &#x27;Grace appears most purely&#x27; in these objects and &#x27;in God.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A graceful boy loses his grace because he cannot replicate a movement; essay ends: must eat from the tree of knowledge again</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author recounted seeing a graceful young boy lose his grace because of his inability to exactly replicate a movement. | The essay ends with the observation that we would have to eat of the fruit of the tree of knowledge again to return to a state of innocence.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contrasts the conflict between self-consciousness and grace; contrasts marionettes&#x27; movement with dancers&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A writer from this country described the conflict between self-consciousness and grace in his essay On the Marionette Theatre. | That essay by Heinrich von Kleist contrasts the movement of these objects with that of dancers.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="prince-friedrich-of-homburg" open>
+            <summary class="work-title">Prince Friedrich of Homburg</summary>
+            <p class="work-desc">Kleist's final play, not performed during his lifetime. The title character sleepwalks, putting on a laurel wreath and receiving a glove from Princess Natalie. He is sentenced to death for disobeying orders at the Battle of Fehrbellin but ultimately avoids execution.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The title character puts on a laurel wreath and receives a glove from Princess Natalie while sleepwalking</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in one of this author&#x27;s plays put on a laurel wreath and receives a glove from Natalie while sleepwalking. | Princess Natalie crowns the title character with a laurel wreath.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sentenced to death for disobeying orders at the Battle of Fehrbellin; sees his open grave and desperately begs for his life</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author&#x27;s final play was not performed during his lifetime because of a scene where the main character sees his open grave and desperately begs for his life. | The title character is sentenced to death by the Great Elector for disobeying his orders and leading a successful attack at the Battle of Fehrbellin.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Not performed during Kleist&#x27;s lifetime; the title officer of the Great Elector ultimately avoids execution</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That play ends with the title officer of the Great Elector avoiding execution.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="penthesilea" open>
+            <summary class="work-title">Penthesilea</summary>
+            <p class="work-desc">A tragedy in which the title character gnaws on the corpse of Achilles along with her dogs. She laments her inability to distinguish "Bisse" (bites) from "Kusse" (kisses) before stabbing herself.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The title character gnaws on the corpse of Achilles along with her dogs</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Along with her dogs, the title character of one of his plays gnaws on the corpse of Achilles.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">She laments her inability to tell apart &quot;Bisse&quot; (bites) and &quot;Kusse&quot; (kisses) before stabbing herself</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character laments her inability to tell apart the words &#x27;Bisse&#x27; and &#x27;Kusse&#x27; before stabbing herself with a dagger.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The play&#x27;s failure contributed to Kleist&#x27;s decision to commit suicide</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That play&#x27;s failure contributed to his decision to commit suicide alongside Henriette Vogel.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">"St. Cecilia, or the Power of Music" describes four brothers who go mad after hearing the Gloria in Excelsis. "The Beggarwoman of Locarno" is about a nobleman who <a href="robert_burns_stock.html" class="crossref-inline">Burns</a> his castle haunted by a beggar woman's ghost. "The Betrothal in Santo Domingo" features Gustav shooting Toni.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;St. Cecilia&quot;: four brothers go mad and intone Gloria in Excelsis every midnight after attempting to ransack a cloister in Aachen</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Four brothers go insane after listening to a rendition of Gloria in Excelsis that&#x27;s supposedly directed by Saint Cecilia. | In a story by this author, a mother finds her four sons in a madhouse, years after their planned attack on a convent.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Beggarwoman of Locarno&quot;: a nobleman burns his castle haunted by a beggar woman&#x27;s ghost he caused to die</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A nobleman burns himself after his castle is haunted by the ghost of a beggar woman he had earlier caused the death of. | In one of his shortest stories, a marquis is driven mad and burns his own castle down because it is haunted.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;The Betrothal in Santo Domingo&quot;: Gustav shoots his betrothed Toni thinking she is a traitor when she ties him up to protect him from Congo Hoango</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gustav shoots his betrothed Toni after thinking she is a traitor when she ties him up to protect him from Congo Hoango.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also adapted Amphitryon from Moliere; wrote unfinished Robert Guiscard; wrote a play about the Battle of the Teutoburg Forest</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Kleist also adapted Amphitryon, a work of unusual seriousness by this French playwright of The Misanthrope. | He wrote a play based on the Battle of the Teutoburg Forest.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">German Romantic playwright who committed murder-suicide with Henriette Vogel. A major predecessor to Kafka. Robert Walser wrote "Kleist in Thun" about him; Susan Sontag called Walser the "missing link" between Kleist and Kafka.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Committed suicide (murder-suicide) with Henriette Vogel</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This writer, who died in a murder suicide with Henriette Vogel. | This author wrote &#x27;The Earthquake in Chile&#x27; and committed suicide with Henriette Vogel.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kafka loved Kleist; reading him &quot;fills me as if I were an old pig&#x27;s bladder&quot;; Max Brod compared Kafka to Kleist</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A letter from Franz Kafka declares that reading him &#x27;fills me as if I were an old pig&#x27;s bladder.&#x27; | The diaries describe Kafka&#x27;s fervent reading of this other German-language author, to whom Max Brod often compared Kafka.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Robert Walser wrote &quot;Kleist in Thun&quot;; Susan Sontag called Walser the &quot;missing link&quot; between Kleist and Kafka</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author surrenders to the &#x27;catastrophe of being a poet&#x27; in a Robert Walser story titled for this author &#x27;at Thun.&#x27; | Susan Sontag billed Walser as the &#x27;missing link&#x27; between this author and Franz Kafka.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kafka&#x27;s &quot;The Country Doctor&quot; adapts Kleist&#x27;s image of emaciated horses in a pigsty</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Kafka&#x27;s story &#x27;The Country Doctor&#x27; adapts this author&#x27;s image of emaciated horses housed in a pigsty.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Heinrich von Kleist (Bernd Heinrich Wilhelm von Kleist) was a German Romantic playwright and author of novellas and short stories. He died in a murder-suicide with Henriette Vogel in 1811 (some clues incorrectly say 1815). He is a contemporary of <a href="goethe_stock.html" class="crossref-inline">Goethe</a>.</p><p>&quot;The Marquise of O&quot; is Kleist&#x27;s most frequently referenced work. In it, the title pregnant widow/noblewoman places a newspaper advertisement seeking <a href="strindberg_stock.html#the-father" class="crossref-inline">The Father</a> of her child to come marry her. A Russian Count had earlier rescued her from soldiers during the Napoleonic Wars, only to assault her himself after she faints -- the rape is omitted from the text and represented with a dash. The groom Leopardo the chasseur is initially put up to feigning responsibility for the central action. When the Count confesses, the Marquise declares she was &quot;ready for some villain of a fellow... but not the devil.&quot; In an incestuous moment of reconciliation, her Commandant father &quot;hung over her as if she were his first love and held her mouth and kissed it.&quot; The Emperor appends to one law the clause &quot;if it should be the will of God.&quot; At the end, she marries Count F.</p><p>The Broken Jug is Kleist&#x27;s best-known comedy. Judge Adam, who is club-footed, tries to hide from Eve the fact that he smashed the title object (a heavy-handed metaphor for Eve&#x27;s lost virginity). He claims his wig was destroyed because his cat had a litter of kittens in it, and later claims it caught fire while reading cases by candlelight. His baldness and gash on his cheek (which he explains by claiming he fell onto a sharp stove corner) become evidence against him. The secretary Licht discovers Adam&#x27;s guilt. Brigitte testifies that a wig got caught on a grapevine as Adam fled. Ruprecht&#x27;s conscription papers are fabricated as part of Adam&#x27;s seduction attempt. Lebrecht and Ruprecht are initially blamed. Eve testifies against Adam. Inspector General Walter arrives from Utrecht. The play was inspired by a <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> copper engraving called La Cruche Cassee, according to Heinrich Zschokke. A woman (Marthe) gives a monologue describing the deaths of the jug&#x27;s previous owners, including a Spanish invader killed by a kettle-mender named Childerich. Adam also blabbers about a noodle dumpling he plans to feed his guinea hen. Kleist also adapted <a href="plautus_stock.html#amphitryon" class="crossref-inline">Amphitryon</a> from Moliere.</p><p>&quot;The Earthquake in Chile&quot; describes how Josefa <a href="hugo_van_der_goes_stock.html" class="crossref-inline">Goes</a> into labor during a Corpus Christi procession and is sentenced to death. Her imprisoned lover Jeronimo Rugera prepares to hang himself but is saved by the title earthquake. They wander in a shady grove of pomegranate trees and witness &quot;men and women of every social station&quot; discussing &quot;accounts of extraordinary heroic deeds.&quot; A priest compares the city to Sodom and blames its destruction on the two adulterers. The child Philip is adopted after Don Fernando is killed by a religious mob. The story is set in 1647 in Concepcion/Santiago.</p><p>Michael Kohlhaas is a novella about a horse-dealer who unrelentingly seeks justice after Junker Wenzel von Tronka mistreats his horses through a fraudulent toll. He leads a criminal army/rebellion and is eventually beheaded. Before dying, he swallows a scroll (paper listing three secrets about the future of Saxony) that predicts the fate of the Elector of Saxony. Coalhouse Walker in E.L. Doctorow&#x27;s Ragtime is named in homage to Kohlhaas. J.M. Coetzee was inspired by Michael Kohlhaas to write The Life and Times of Michael K.</p><p>&quot;On the Marionette Theatre&quot; is an essay framed as a dialogue in which a dancer argues that marionettes can dance without being hampered by gravity. A man tells a story of fencing with a bear owned by a Baltic noble family, which could parry every attack. The essay concludes that grace appears most purely in objects with no consciousness or infinite consciousness (marionettes and God). A graceful young boy loses his grace because of his inability to exactly replicate a movement he had made with his foot. The essay ends by observing that &quot;we would have to eat of the fruit of the tree of knowledge again to return to a state of innocence.&quot; It contrasts marionettes&#x27; movement with that of dancers.</p><p>Prince Friedrich of Homburg is Kleist&#x27;s final play, not performed during his lifetime. The title character puts on a laurel wreath and receives a glove from Princess Natalie while sleepwalking. He expects to be executed for disobeying orders at the Battle of Fehrbellin but is crowned with a laurel wreath by Natalie. In the play&#x27;s most controversial scene, the title character sees his open grave and desperately begs for his life. The play ends with the title officer of the Great Elector avoiding execution.</p><p>Penthesilea is a tragedy whose title character gnaws on the corpse of Achilles along with her dogs. The title character laments her inability to tell apart the words &quot;Bisse&quot; and &quot;Kusse&quot; before stabbing herself with a dagger. The play&#x27;s failure contributed to Kleist&#x27;s decision to commit suicide.</p><p>&quot;St. Cecilia, or the Power of Music&quot; describes four brothers who go mad and intone the Gloria in Excelsis every midnight after attempting to ransack a cloister in Aachen, where they were moved by a rendition supposedly directed by Saint Cecilia. &quot;The Beggarwoman of Locarno&quot; describes a nobleman who <a href="robert_burns_stock.html" class="crossref-inline">Burns</a> his castle after it is haunted by the ghost of a beggar woman whose death he caused. &quot;The Betrothal in Santo Domingo&quot; describes Gustav shooting his betrothed Toni after thinking she is a traitor when she ties him up to protect him from Congo Hoango.</p><p>Kleist is considered a major predecessor to Kafka. <a href="franz_kafka_stock.html" class="crossref-inline">Franz Kafka</a> loved Kleist and wrote that reading him &quot;fills me as if I were an old pig&#x27;s bladder.&quot; Max Brod often compared Kafka to Kleist. Susan Sontag described Robert Walser as the &quot;missing link&quot; between Kleist and Kafka. Walser wrote a story called &quot;Kleist in Thun&quot; in which Kleist &quot;surrenders to the catastrophe of being a poet&quot; and is unnerved by Swiss countryside beauty. Kleist also wrote the unfinished Robert Guiscard and a play based on the Battle of the Teutoburg Forest (Die Hermannsschlacht).</p>
+        </section>
+        
+
+</body>
+</html>

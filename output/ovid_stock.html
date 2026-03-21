@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Ovid</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Ovid</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="ovid_questions.html">View source questions</a> · <a href="ovid_cards.html">Make cards</a></div>
+<div class="summary">Ovid (Publius Ovidius Naso) is a Roman poet most frequently clued through his epic poem the Metamorphoses, his elegiac love poetry collection Amores, and his didactic poem Ars Amatoria.</div>
+
+        <details class="work" id="metamorphoses" open>
+            <summary class="work-title">Metamorphoses</summary>
+            <p class="work-desc">The Metamorphoses is Ovid's fifteen-book epic narrative poem recounting mythological <a href="anne_sexton_stock.html#transformations" class="crossref-inline">Transformations</a>, from the creation of the universe through the apotheosis of Julius Caesar. It is the most frequently clued work by Ovid, appearing in multiple tossups and bonus parts. The poem opens with the creation of the world and the ages of man, and its final book discusses Pythagoras, metempsychosis, and Julius Caesar's soul becoming a comet. Key stories include Pyramus and Thisbe, Pomona and Vertumnus, Arachne's tapestry, and Iphis. The poem has been translated by Arthur Golding (in fourteeners), retold by <a href="ted_hughes_stock.html" class="crossref-inline">Ted <a href="langston_hughes_stock.html" class="crossref-inline">Hughes</a></a> in Tales from Ovid, and adapted in the medieval Ovide Moralise.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A fifteen-book poem recounting mythological transformations, written by Ovid</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The story of Pyramus and Thisbe: a man stabs himself after thinking a lion ate his beloved, turning mulberries purple; they communicated through a crack in their wall</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The final book (Book 15) discusses Pythagoras, metempsychosis, and ends with the apotheosis of Julius Caesar (his soul becomes a comet/star)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with creation of the universe, followed by the four (or five) ages of man (paralleling Hesiod)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arthur Golding produced the first complete English translation using &#x27;fourteeners&#x27; rather than the original hexameters</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ted Hughes wrote Tales from Ovid, retelling twenty-four stories from the poem</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The story of Pomona and Vertumnus, including Vertumnus disguised as an old lady telling the story of Iphis hanging himself</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains the ekphrastic tapestry of Arachne (in Book 6)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Personification of Fame (fama) lives in a mountain-top brass house with a thousand doorless entrances (Book 13); &#x27;free&#x27; fame prefers Augustus to Julius Caesar</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Influenced by an earlier work by Nicander of Colophon; epilogue claims &#x27;the best part of me will be born, immortal, beyond the distant stars&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Parodies epic tradition by describing the death of Hercules, then having Alcmena narrate his birth and describe the intercession of Galanthis</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Tristia comments that Ovid&#x27;s exile resulted in the Metamorphoses being &#x27;cut short by its author&#x27;s sad flight&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The medieval Ovide Moralise is a 70,000-line Old French verse adaptation with ethical commentary; William Caxton published a prose version in 1480</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Referenced in modern novels: Cal in Eugenides&#x27; Middlesex translates &#x27;ex ovo omnia&#x27; and works as Hermaphroditus; Ali Smith&#x27;s Girl Meets Boy reinterprets the myth of Iphis; Patricia Westerford in The Overstory receives a copy</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Theorists of its &#x27;anti-Augustanism&#x27; analyze unflattering mentions of Atreus/Agamemnon and Saturn/Jove father-son pairs</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="amores" open>
+            <summary class="work-title">Amores</summary>
+            <p class="work-desc">The Amores is Ovid's collection of elegiac love poetry. Its key clue is the conceit in which Cupid steals a metrical foot from <a href="ralph_waldo_emerson_stock.html#the-poet" class="crossref-inline">The Poet</a>, forcing him to write in elegiac couplets rather than epic hexameters. The collection is also associated with <a href="christopher_marlowe_stock.html" class="crossref-inline">Christopher Marlowe</a>'s translation and Donna Zuckerberg's analysis of 'The Ovid Method' in her book Not All Dead White Men. Geoffrey Hill's 'Ovid in the Third Reich' juxtaposes the Amores' immorality with Nazi atrocities.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cupid steals a metrical foot, forcing Ovid to write elegiac couplets (from Amores 1.1)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Christopher Marlowe translated an elegy from the Amores, changing lament of impotence into insults toward his partner</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Donna Zuckerberg&#x27;s &#x27;The Ovid Method&#x27; chapter demands an ironic reading of his poem calling a mistress&#x27; birthday &#x27;one of great terror&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Geoffrey Hill&#x27;s &#x27;Ovid in the Third Reich&#x27; examines Nazi atrocities by juxtaposition with the immorality Ovid advocated in the Amores</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="ars-amatoria" open>
+            <summary class="work-title">Ars Amatoria</summary>
+            <p class="work-desc">The Ars Amatoria (Art of Love) is Ovid's didactic poem written unconventionally in elegiac couplets. It consists of three sections, with the first two giving male readers advice on picking up women. The poem humorously likens love to military service and imagines the Rape of the Sabine Women as a theatrical production. It is identified as the 'carmen' in Ovid's 'carmen et error' explanation for his exile, and it inspired Andreas Capellanus's medieval work on courtly love.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A didactic work in elegiac couplets whose first two of three sections advise men on picking up women</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Imagines the Rape of the Sabine Women as a theatrical production</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired Andreas Capellanus&#x27;s 12th-century work on courtly love</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Followed by the Remedia Amoris</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Identified as the &#x27;carmen&#x27; in Ovid&#x27;s &#x27;carmen et error&#x27; explanation for his exile</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="exile-and-later-works" open>
+            <summary class="work-title">Exile and Later Works</summary>
+            <p class="work-desc">Ovid's exile is a major biographical topic in quizbowl. He was exiled (likely by <a href="john_williams_stock.html#augustus" class="crossref-inline">Augustus</a>) and spent his banishment in Tomis near the Black Sea. He attributed his exile to 'carmen et error' ('a poem and a mistake') in the Tristia, with the 'carmen' referring to the Ars Amatoria and the 'error' remaining the subject of speculation (theories include a scandal involving Augustus's daughters). His exile works include the Tristia, Letters from the Black Sea (Epistulae ex Ponto), and the curse poem Ibis. David Malouf fictionalized the exile in An Imaginary Life.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Exiled to Tomis near the Black Sea; attributed exile to &#x27;carmen et error&#x27; (&#x27;a poem and a mistake&#x27;) in the Tristia</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Tristia: a poetry collection written during exile that tells a &#x27;little book&#x27; to &#x27;go, but without ornament&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The &#x27;error&#x27; in &#x27;carmen et error&#x27; fuels speculation, including theories about a scandal involving Augustus&#x27;s daughters</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">David Malouf fictionalized the exile in his novella An Imaginary Life</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote the curse poem Ibis (which may target Augustus), inspired by Callimachus</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">All writings banned from Roman libraries after exile</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="heroides" open>
+            <summary class="work-title">Heroides</summary>
+            <p class="work-desc">The Heroides is a collection of verse epistles written by Ovid from the perspectives of mythological heroines. The most notable clue involves Dido's letter to Aeneas, in which she asks 'What crime have I committed except to have loved?' before her suicide.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dido writes a letter asking &#x27;Who will give over their fields to be controlled by nobodies?&#x27; and &#x27;What crime have I committed except to have loved?&#x27; before her suicide</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Ovid is identified as a Roman poet of the Amores and Ars Amatoria, and is the author of the Metamorphoses. He wrote in elegiac couplets and is associated with the Augustan age of Latin poetry. A Quevedo poem about Gongora's nose also compares it to Ovid's nose, 'but nosier,' suggesting Ovid was known for having a large nose.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Roman poet of Amores and Ars Amatoria / author of the Metamorphoses</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Known for having a large nose (referenced in Quevedo&#x27;s poem about Gongora)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Ovid (Publius Ovidius Naso) is a Roman poet most frequently clued through his epic poem the Metamorphoses, his elegiac love poetry collection Amores, and his didactic poem Ars Amatoria. The Metamorphoses, a fifteen-book narrative poem recounting mythological <a href="anne_sexton_stock.html#transformations" class="crossref-inline">Transformations</a>, is by far his most clued work. It opens with the creation of the universe and the four (or five) ages of man, paralleling Hesiod&#x27;s account. Key stories within the Metamorphoses include the tragedy of Pyramus and Thisbe (a man stabs himself after falsely believing a lion ate his beloved, causing mulberries to turn purple; the lovers communicated through a crack in their wall), the tale of Pomona and Vertumnus (including the disguised old lady telling the story of Iphis hanging himself), the ekphrastic tapestry of Arachne, and the myth of Iphis transformed into a man. The poem&#x27;s fifteenth and final book centers on apotheosis, discussing Pythagoras and his doctrine of metempsychosis, the soul of Julius Caesar becoming a comet, and the famous closing line &#x27;vivam&#x27; (&#x27;I will live&#x27;). The poem ends with a claim that <a href="ralph_waldo_emerson_stock.html#the-poet" class="crossref-inline">The Poet</a>&#x27;s fame will live eternally beyond the stars. The Metamorphoses was influenced by an earlier work by Nicander of Colophon. Arthur Golding produced the first complete English translation using &#x27;fourteeners&#x27; rather than the original hexameters, a translation Ezra Pound called the most beautiful book in the English language. <a href="ted_hughes_stock.html" class="crossref-inline">Ted <a href="langston_hughes_stock.html" class="crossref-inline">Hughes</a></a> wrote Tales from Ovid, a retelling of twenty-four stories from the poem. The medieval Ovide Moralise is a vast verse adaptation with ethical commentary in Old <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a>. Jeffrey Eugenides references the Metamorphoses in Middlesex, where Cal translates &#x27;ex ovo omnia&#x27; and markets himself as Hermaphroditus. Ali Smith&#x27;s Girl Meets Boy reinterprets the myth of Iphis. Patricia Westerford in Richard Powers&#x27; The Overstory receives a copy and muses on its opening line.</p><p>Ovid&#x27;s Amores is an elegiac poetry collection in which Cupid steals a metrical foot to force <a href="ralph_waldo_emerson_stock.html#the-poet" class="crossref-inline">The Poet</a> to write elegiac couplets. A poem from the Amores has the speaker succumb to being a &#x27;fresh prize&#x27; for a god who &#x27;stole a foot away&#x27; and shot him through the heart with an arrow. Donna Zuckerberg&#x27;s book Not All Dead White Men includes a chapter titled &#x27;The Ovid Method&#x27; demanding an ironic reading of his poem calling a mistress&#x27; birthday &#x27;one of great terror.&#x27; <a href="christopher_marlowe_stock.html" class="crossref-inline">Christopher Marlowe</a> translated an elegy by Ovid, changing the speaker&#x27;s lament of impotence into insults toward his partner. Geoffrey Hill&#x27;s poem &#x27;Ovid in the Third Reich&#x27; examines Nazi atrocities by juxtaposition with the immorality Ovid advocated in the Amores.</p><p>Ovid&#x27;s Ars Amatoria is a didactic work written in elegiac couplets (unconventionally for didactic poetry) that gives advice on love and seduction. Its first two of three sections give male readers advice on how to pick up women. It humorously likens love to military service and imagines the Rape of the Sabine Women as a theatrical production. The Ars Amatoria inspired Andreas Capellanus&#x27;s influential 12th-century work on courtly love. It was followed by the Remedia Amoris.</p><p>Ovid&#x27;s exile is a major biographical topic. He was exiled (likely by <a href="john_williams_stock.html#augustus" class="crossref-inline">Augustus</a>) and spent his years of banishment in Tomis near the Black Sea. He attributed his exile to &#x27;carmen et error&#x27; (&#x27;a poem and a mistake&#x27;) in his Tristia, with the &#x27;carmen&#x27; referring to the Ars Amatoria and the &#x27;error&#x27; still fueling speculation, including theories about a scandal involving Augustus&#x27;s daughters. The Tristia also comments that the exile resulted in the Metamorphoses being &#x27;cut short by its author&#x27;s sad flight.&#x27; His Letters from the Black Sea (Epistulae ex Ponto) were also written in Tomis. David Malouf fictionalized the exile in his novella An Imaginary Life. Ovid also wrote the curse poem Ibis, which may target Augustus, inspired by a poem by Callimachus. Ovid is also noted for having had a large nose, referenced humorously in a Quevedo poem about Gongora.</p>
+        </section>
+        
+
+</body>
+</html>
