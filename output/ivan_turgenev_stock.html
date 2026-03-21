@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Ivan Turgenev</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Ivan Turgenev</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="ivan_turgenev_questions.html">View source questions</a> · <a href="ivan_turgenev_cards.html">Make cards</a></div>
+<div class="summary">Russian novelist, playwright, and short story writer of the 19th century. Best known for the novel Fathers and Sons, which features the nihilist medical student Bazarov. Also wrote the short story collection A Sportsman&#x27;s Sketches (which contributed to the abolition of serfdom), the novellas First Love and Spring Torrents, the novels Smoke and Home of the Gentry (A Nest of Gentlefolk), and the play A Month in the Country. Popularized the term &#x27;superfluous man&#x27; with Diary of a Superfluous Man. Gave the speech &#x27;Hamlet and <a href="cervantes_stock.html#don-quixote" class="crossref-inline">Don Quixote</a>.&#x27; Lived in Paris with the mezzo-soprano Pauline Viardot. Had a longstanding feud with <a href="dostoevsky_stock.html" class="crossref-inline">Dostoevsky</a>, who caricatured him as the poet Karmazinov in <a href="dostoevsky_stock.html#demons-the-possessed" class="crossref-inline">Demons</a>.</div>
+
+        <details class="work" id="fathers-and-sons" open>
+            <summary class="work-title">Fathers and Sons</summary>
+            <p class="work-desc">Turgenev's most famous novel, in which Arkady Kirsanov brings his nihilist friend, the medical student Yevgeny Bazarov, home to his father's estate Marino. Bazarov duels with Arkady's uncle Pavel (shooting him in the leg) after being caught kissing the servant Fenichka (who has borne a child by Nikolai Kirsanov). Bazarov dies after cutting himself on his own scalpel while treating a typhus patient and failing to cauterize the wound. The novel inspired public debates over nihilism and is by far the most frequently clued Turgenev work. <a href="https://en.wikipedia.org/wiki/Fathers_and_Sons_(novel)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features the nihilist medical student Bazarov (often the giveaway clue for Turgenev)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Russian author who created the nihilist Bazarov in Fathers and Sons | this Russian author who depicted the conflict between the Kirsanovs and the nihilist Bazarov in Fathers and Sons</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arkady Kirsanov brings Bazarov home / stays at his father&#x27;s estate Marino</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Arkady Kirsanov stays at his father&#x27;s estate Marino with his friend, the nihilist Bazarov | Arkady brings home the radical medical student Bazarov</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bazarov duels with Pavel (shoots him in the leg) after kissing the student/servant Fenichka</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the foppish Pavel, who is shot in a duel by a youth he sees kissing the student Fenichka | the protagonist shoots Pavel in the leg in a duel arising from a kiss he gave to Fenechka | One of this author&#x27;s characters immediately begins binding and cleaning an older man&#x27;s leg after shooting him in a duel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bazarov dies from a scalpel cut / blood poisoning while treating a typhus patient</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a young doctor cuts himself on his own scalpel soon after hearing of the marriage plans of Arkady Kirsanov | the nihilist Bazarov dies from blood poisoning after a duel with Pavel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fenichka bears a child for her master Nikolai Kirsanov</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the servant Fenichka bears a child for her master, Nikolai</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired public debates over nihilism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author inspired public debates over nihilism with a novel in which Arkady brings home the radical medical student Bazarov</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A son dismantles arguments of a romantic rival who praises Britain, France, Germany while trashing his home country</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">that son dismantles the arguments of a romantic rival who praises the manufacturing prowess of the British, the art of the French, and the philosophy of the Germans all while trashing his home country</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A father trains his kilt-wearing son based on Rousseau&#x27;s physical theories and Voltaire&#x27;s mental indoctrination</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a father disappointed by failing to receive an inheritance from his rich aunt compensates by training his kilt-wearing son based on Rousseau&#x27;s physical theories and mentally indoctrinating him with Voltaire</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-sportsman-s-sketches" open>
+            <summary class="work-title">A Sportsman&#x27;s Sketches</summary>
+            <p class="work-desc">A short story collection depicting the lives of Russian serfs and peasants, based on Turgenev's experiences at his mother's estate. It contributed to the movement to abolish serfdom and got Turgenev arrested. Published with the help of the editor Nikolay Nekrasov in the journal The Contemporary. Contains notable stories including 'Khor and Kalinych,' 'Hamlet of the Shchigrovsky District,' 'Singers,' 'Bezhin Lea,' 'Kasyan from the Beautiful Lands,' 'A Living Relic,' and others. The narrator meets the landowner Polutikin while hunting birds. <a href="https://en.wikipedia.org/wiki/A_Sportsman%27s_Sketches" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Collection of stories about serfdom / contributed to the abolition of serfdom</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">what Russian author wrote the collection A Sportsman&#x27;s Sketches | anti-serfdom impressions of the countryside in A Sportsman&#x27;s Sketches | whose treatment of the lives of serfs got Turgenev arrested</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Hamlet of the Shchigrovsky District&#x27; — a man at a party tells narrator to call him Hamlet; Vasily Vasilyevich sticks his tongue out at his reflection; rants about material greed of the upper class; his wife Sofya died after an affair with Orbassanov</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author of &#x27;Hamlet and Don Quixote&#x27; depicted a party held by Alexander G. in the story &#x27;Hamlet of the Shchigrovsky District&#x27; | Vasily Vasilych sticks his tongue out at his reflection before comparing himself to a Shakespeare character</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Singers&#x27; — Yakov/Yasha wins a singing contest; the Gabbler and Blinkard become emotional; the Turk wins the contest; narrator hears a boy calling for &#x27;Antropka&#x27; after leaving</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Gabbler and Blinkard become emotional while a man nicknamed &#x27;the Turk&#x27; wins a singing contest | ends with the narrator hearing a boy repeatedly calling for &#x27;Antropka&#x27; after leaving a bar where he heard the beautiful singing of Yakov and Yasha</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Khor and Kalinych&#x27; — first story; the landowner Polutikin controls two contrasting peasants</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the landowner Polutikin controlling two contrasting peasants in the first story of one collection | One collection by this writer contains Hor and Kalinitch and sees the narrator meet Polutikin while hunting birds</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Bezhin Lea&#x27; — Pavlusha drives away wolves but later dies falling off a horse</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Pavlusha drives away what may be a pack of wolves, but it&#x27;s later revealed that he has died after falling off a horse</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator visits Arina (housemaid for Alexandr Zvyerkoff) while visiting Yermolai</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the narrator meets Arina, who had been a housemaid for Alexandr Zvyerkoff, while visiting Yermolai</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Story about peasants upset that masters bought them scythes (they missed bantering with salesmen)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">peasants who were upset that their masters bought them scythes since they did not get to banter with the salesmen</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Story about Radilov who wept for his wife only when a fly landed on her eye</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man named Radilov who only began to weep for the death of his wife when he saw a fly land on her eye</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Kasyan from the Beautiful Lands&#x27; — a dwarf who catches nightingales</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Kasyan from the Beautiful Lands is one of these people who spends his days catching nightingales</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;A Living Relic&#x27; — a beautiful serf named Lukerya is immobilized by disease but enjoys nature and teaches an orphan girl to sing</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the title character, a beautiful serf named Lukerya, is completely immobilized and on the verge of death due to a digestive disease</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nekrasov published it in The Contemporary, aiding abolition of serfdom</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the earlier peasant poet Nikolay Nekrasov aided in the abolition of serfdom as editor of The Contemporary by publishing this author&#x27;s collection A Sportsman&#x27;s Sketches</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Recurring character Yermolay</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This creator of the recurring character Yermolay</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="first-love" open>
+            <summary class="work-title">First Love</summary>
+            <p class="work-desc">An autobiographical novella in which the teenager Vladimir falls for his neighbor Princess Zinaida, only to discover that his own father is Zinaida's secret lover. Inspired by Turgenev's affair with his father's mistress. The narrator's father is seen striking Zinaida with a riding crop in a sadomasochistic relationship. Framed as Vladimir Petrovich and two other gentlemen recounting their earliest romantic memories. Zinaida hits the narrator on the head with flowers. <a href="https://en.wikipedia.org/wiki/First_Love_(novel)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The teenager Vladimir falls for Princess Zinaida, then discovers his father is Zinaida&#x27;s secret lover/rival</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the teenager Vladimir falls for Princess Zinaida | the narrator&#x27;s father is the secret lover of Zinaida | the jealous narrator of that novella by this author takes a knife to a garden, only to discover his father is his rival</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Autobiographical — fictionalized Turgenev&#x27;s affair with / knowledge of his father&#x27;s mistress (Princess Catherine Shakhovskoy fictionalized as Zinaida)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author fictionalized Princess Catherine Shakhovskoy as Zinaida in his novella First Love | This author fictionalized his affair with his father&#x27;s mistress in the novella First Love</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Father seen striking Zinaida with a riding crop (sadomasochistic relationship)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist is shocked to find his father striking the widow Zinaida with a riding crop as part of a weird sadomasochistic relationship</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Zinaida hits the narrator on the head with flowers</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the narrator becomes infatuated with his neighbor, a girl who hits him on the head with flowers</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Framed by Vladimir Petrovich and two other gentlemen recounting earliest romantic memories</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">framed by Vladimir Petrovich and two other gentlemen recounting their earliest romantic memories</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Zinaida calls narrator &#x27;Woldemar&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a woman who calls him &#x27;Woldemar&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="diary-of-a-superfluous-man" open>
+            <summary class="work-title">Diary of a Superfluous Man</summary>
+            <p class="work-desc">A novella presented as the diary of the dying aristocrat Tchulkaturin, which popularized the term 'superfluous man' in Russian literature. The protagonist confronts a Prince during a dancing game of La Confidente, leading to a duel. <a href="machiavelli_stock.html#the-prince" class="crossref-inline">The Prince</a> leaves Liza, who ignores the advances of Tchulkaturin. <a href="https://en.wikipedia.org/wiki/The_Diary_of_a_Superfluous_Man" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Popularized the term &#x27;superfluous man&#x27; — the diary of the dying aristocrat Tchulkaturin</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">presented as the diary of the dying aristocrat Tchulkaturin, popularized the term &#x27;superfluous man&#x27; | The term for cynical, existentially bored characters was popularized by this man&#x27;s Diary of a Superfluous Man</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Protagonist confronts a Prince during a dancing game of La Confidente, leading to a duel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist confronts a Prince during a dancing game of La Confidente, leading to a duel in which he shot the Prince non-fatally in the head</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Prince leaves Liza, who ignores the advances of Tchulkaturin</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That work ends with the Prince leaving Liza, who then ignores the advances of Tchulkaturin</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="hamlet-and-don-quixote-essay-speech" open>
+            <summary class="work-title">Hamlet and Don Quixote (essay/speech) <a href="cervantes_stock.html#don-quixote" class="work-link-btn" title="Go to Miguel de Cervantes">&rarr;</a></summary>
+            <p class="work-desc">A famous speech/essay by Turgenev comparing the archetypes of Hamlet and <a href="cervantes_stock.html#don-quixote" class="crossref-inline">Don Quixote</a>, arguing they form 'poles of the human axis.' Hamlet represents egocentrism and solipsism ('cannot love anyone'), while Don Quixote represents foolish altruism and self-sacrifice. Both characters were created in the first decade of the 17th century. Turgenev's interest in Don Quixote was partly inspired by his love for Pauline Viardot. <a href="https://en.wikipedia.org/wiki/Hamlet_and_Don_Quixote" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contrasts Hamlet (self-centered skeptic) with Don Quixote (archetype of self-sacrifice); they form &#x27;poles of the human axis&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">contrasts an &#x27;archetype of self-sacrifice&#x27; with a &#x27;skeptic&#x27; who &#x27;cannot love anyone&#x27; while arguing that two characters form &#x27;poles of the human axis&#x27; | uses the analogy of a midge sucking Alexander the Great&#x27;s blood to illustrate beings that believe they are the center of creation | one &#x27;invents&#x27; and the other &#x27;exploits what has been invented&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Both characters were created in the first decade of the 17th century</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">comments on how they were both created in the first decade of the 17th century</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="spring-torrents" open>
+            <summary class="work-title">Spring Torrents</summary>
+            <p class="work-desc">A novella in which the confectioner's daughter Gemma Roselli enthralls the Russian Sanin in Frankfurt. Sanin comes across a cross, which prompts his memories of Gemma. Partly inspired by Turgenev's love for Pauline Viardot. Hemingway's novel mocking Sherwood Anderson (The Torrents of Spring) takes its title from this work. <a href="https://en.wikipedia.org/wiki/Spring_Torrents" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The confectioner&#x27;s/sweetmaker&#x27;s daughter Gemma Roselli enthralls Sanin in Frankfurt</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the confectioner&#x27;s daughter Gemma enthralls Sanin in Frankfurt | Sanin recollects his love for the Italian sweetmaker Gemma Roselli</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Begins as Sanin comes across a cross/crucifix, prompting his memories of Gemma</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Torrents of Spring begins as Sanin comes across one of these objects, prompting his memories of Gemma</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hemingway&#x27;s novel mocking Sherwood Anderson takes its title from this work</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ernest Hemingway&#x27;s novel mocking Sherwood Anderson takes its title from a novel by this author</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-month-in-the-country-play" open>
+            <summary class="work-title">A Month in the Country (play)</summary>
+            <p class="work-desc">A play about the handsome tutor Aleksei Belyaev and the unhappily married provincial woman Natalya Petrovna. An aging bachelor delivers a lengthy rant about the emptiness and despair awaiting the philandering tutor. Konstantin Stanislavski first deployed his acting system for a revival of this play starring Olga Knipper. <a href="https://en.wikipedia.org/wiki/A_Month_in_the_Country_(play)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A play about the handsome tutor Aleksei Belyaev and the unhappily married Natalya Petrovna</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this author&#x27;s play A Month in the Country, which is about the handsome tutor Aleksei Belyaev | Natalya Petrovna... unhappily married provincial woman</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stanislavski first deployed his acting system for a revival starring Olga Knipper</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Konstantin Stanislavski first deployed his acting system for a revival of a play by this author that starred Anton Chekhov&#x27;s wife, Olga Knipper</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">An aging bachelor rants about the emptiness and despair awaiting the philandering tutor</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">an aging bachelor delivers a lengthy rant about the emptiness and despair that awaits a philandering tutor</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="smoke" open>
+            <summary class="work-title">Smoke</summary>
+            <p class="work-desc">A novel set in Baden-Baden, in which Grigory Litvinov finds a glass of heliotropes on his windowsill and tries to remember who gave them to him. Satirizes Alexander Herzen's thought via the liberal character Gubaryov, encountered among intellectuals at the spa. <a href="https://en.wikipedia.org/wiki/Smoke_(novel)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set in Baden-Baden; Litvinov finds heliotropes on his windowsill</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Grigory Litvinov tries to remember what woman could have given him a glass of heliotropes he discovers on his windowsill | this author of Fathers and Sons set the present-day action of his novel Smoke</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Satirizes Alexander Herzen via the liberal character Gubaryov among intellectuals at Baden-Baden</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the thought of Alexander Herzen is satirized via the liberal character Gubaryov, who is encountered among a group of intellectuals at a spa in Baden-Baden</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="home-of-the-gentry-a-nest-of-gentlefolk" open>
+            <summary class="work-title">Home of the Gentry / A Nest of Gentlefolk</summary>
+            <p class="work-desc">A novel focused on Lavretsky, in which the unfaithful urban wife Varvara is contrasted with the title provincial group. The widow Marya tries to impress the Moscow official and poet Panshin with the piano playing of her daughter Liza, whose name sometimes titles translations. <a href="https://en.wikipedia.org/wiki/Home_of_the_Gentry" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Focused on Lavretsky; unfaithful wife Varvara contrasted with the title provincial group</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The unfaithful urban wife Varvara is contrasted with the title provincial group in a novel by this author focused on Lavretsky</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The widow Marya tries to impress Panshin with her daughter Liza&#x27;s piano playing; Liza sometimes titles translations</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the widow Marya tries to impress the Moscow official and poet Panshin with the piano playing of her daughter, whose name, Liza, sometimes titles translations</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ivan Goncharov accused Turgenev of plagiarizing The Precipice for this novel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ivan Goncharov, the writer of Oblomov, accused this man of plagiarizing his novel The Precipice for the novel A Nest of Gentlefolk</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works-mumu-the-dog-asya-rudin-king-lear-of-the-steppes-on-the-eve" open>
+            <summary class="work-title">Other Works (Mumu, The Dog, Asya, Rudin, King Lear of the Steppes, On the Eve)</summary>
+            <p class="work-desc">Various shorter works and novels by Turgenev that appear less frequently. 'Mumu' is about a deaf-mute porter who drowns his dog. 'The Dog' features a ghostly apparition that inspires the narrator to buy 'Little Tresor,' who saves him from a rabid animal. 'A King Lear of the Steppes' is about the muscular Harlov mistreated by his daughters (inspired by Shakespeare). 'Asya' features Alexandra declaring love for her doctor Trifon rather than die without loving anyone. Rudin was written soon after A Month in the Country when Turgenev switched to long fiction.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Mumu&#x27; — a deaf-mute porter drowns his dog in the river where he rescued her</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a deaf-mute porter is obliged to drown his dog in the same river where he originally rescued her</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Dog&#x27; — ghostly apparition inspires narrator to buy &#x27;Little Tresor,&#x27; who saves him from a rabid animal</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a ghostly apparition inspires the narrator to buy &#x27;Little Tresor,&#x27; who later saves him from a rabid animal</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;A King Lear of the Steppes&#x27; — muscular Harlov mistreated by his daughters, inspired by Shakespeare</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the muscular Harlov, who is mistreated by his daughters, in a story inspired by Shakespeare</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Asya&#x27; — Alexandra declares love for doctor Trifon rather than die without loving anyone</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alexandra feverishly declares love for her doctor, Trifon, rather than die without loving anyone</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rudin — written soon after A Month in the Country when Turgenev switched to long fiction</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Soon after writing that play, this author switched to long fiction and wrote the novel Rudin</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Biographical clues about Turgenev: his relationship with Pauline Viardot, feud with <a href="dostoevsky_stock.html" class="crossref-inline">Dostoevsky</a>, his role in Russian literary history, and how Isaiah Berlin wrote about him.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lived in Paris with mezzo-soprano Pauline Viardot; wrote three libretti for her; menage a trois</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">he lived in Paris with mezzo-soprano Pauline Viardot | wrote three libretti for the singer Pauline Viardot, with whom he spent several years in Paris living in a menage a trois | this author&#x27;s love for Pauline Viardot</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Caricatured by Dostoevsky as the out-of-touch liberal poet Semyon Karmazinov in Demons; longstanding feud with Dostoevsky</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man is caricatured as the out-of-touch liberal poet Semyon Karmazinov in Demons by Dostoevsky, with whom he had a longstanding feud | a heckler claims that a caricature of this man aimed for a crow and hit a cow</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Isaiah Berlin wrote about his &#x27;complacent ambivalence&#x27; contrasting with contemporaries&#x27; &#x27;primary colors&#x27;; Berlin&#x27;s essay &#x27;Turgenev and the Liberal Predicament&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author&#x27;s &#x27;complacent ambivalence&#x27; contrasts with his contemporaries&#x27; &#x27;primary colors&#x27; in an Isaiah Berlin essay | This author&#x27;s essay &#x27;Turgenev and the Liberal Predicament&#x27; clarifies the role of social consciousness in Turgenev&#x27;s writings</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dostoevsky mocked Turgenev as needing a telescope to see Russia (because he lived in Paris)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A contemporary of this man mocked him as needing a telescope to see Russia, because he lived in Paris</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jailed for writing an obituary of Gogol</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Russian author, who was jailed for writing an obituary of Gogol</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shchedrin received a supportive letter from Turgenev saying he was &#x27;destined to make a deep mark on our literature&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this author sent him a letter telling him he was &#x27;destined to make a deep mark on our literature&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Karmazinov reads aloud a pretentious farewell poem titled &#x27;Merci&#x27; at a gala (in Dostoevsky&#x27;s Demons)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a caricature of this man reads aloud a pretentious farewell poem titled &#x27;Merci&#x27; at a gala</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One character states &#x27;The gods ought not to have to bake pots&#x27; — showing vanity; idiots are necessary to him</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this author&#x27;s characters realizes the extent of his friend&#x27;s vanity when that friend states that idiots are necessary to him because &#x27;The gods ought not to have to bake pots&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Ivan Turgenev is a major figure in 19th-century Russian literature, clued primarily as the author of Fathers and Sons, which features the nihilist medical student Yevgeny Bazarov. That novel is by far his most frequently referenced work: virtually every tossup on Turgenev ends with Bazarov and Fathers and Sons as the giveaway. Key plot points from Fathers and Sons include Arkady Kirsanov bringing Bazarov to his father&#x27;s estate Marino, Bazarov&#x27;s duel with the foppish uncle Pavel (whom he shoots in the leg after being caught kissing the servant Fenichka), and Bazarov&#x27;s death from a scalpel cut sustained while treating a typhus patient.</p><p>Turgenev&#x27;s second most important work in quizbowl is A Sportsman&#x27;s Sketches, a short story collection depicting the lives of serfs that contributed to the abolition of serfdom and got Turgenev arrested. Individual stories from this collection appear frequently as power clues: &#x27;Hamlet of the Shchigrovsky District&#x27; (a man at a party who identifies as Hamlet, with Vasily Vasilyevich sticking his tongue out at his reflection), &#x27;Singers&#x27; (Yakov wins a singing contest while the Gabbler and Blinkard become emotional; the narrator hears a boy calling for &#x27;Antropka&#x27;), and &#x27;Khor and Kalinych&#x27; (the first story, featuring the landowner Polutikin and two contrasting peasants). Other stories include &#x27;Bezhin Lea&#x27; (Pavlusha drives away wolves but later dies falling off a horse), &#x27;Kasyan from the Beautiful Lands&#x27; (a dwarf who catches nightingales), and &#x27;A Living Relic&#x27; (the immobilized serf Lukerya).</p><p>First Love is a frequently clued novella in which the teenager Vladimir falls for Princess Zinaida, only to discover his own father is her secret lover. It is autobiographical, fictionalizing Princess Catherine Shakhovskoy as Zinaida. The father is seen striking Zinaida with a riding crop. Spring Torrents features the confectioner&#x27;s daughter Gemma Roselli enthralling Sanin in Frankfurt; Hemingway&#x27;s parody novel took its title from this work.</p><p>Turgenev&#x27;s essay/speech &#x27;Hamlet and <a href="cervantes_stock.html#don-quixote" class="crossref-inline">Don Quixote</a>&#x27; compares the two archetypes as &#x27;poles of the human axis,&#x27; contrasting Hamlet&#x27;s egocentrism with Don Quixote&#x27;s self-sacrifice. Diary of a Superfluous Man popularized the term &#x27;superfluous man&#x27; through the dying aristocrat Tchulkaturin. A Month in the Country is a play about the tutor Aleksei Belyaev and the unhappily married Natalya Petrovna; Stanislavski first deployed his acting system for a revival of it.</p><p>The novel Smoke is set in Baden-Baden, where Litvinov finds heliotropes on his windowsill, and satirizes Alexander Herzen via the character Gubaryov. Home of the Gentry (A Nest of Gentlefolk) focuses on Lavretsky and the unfaithful wife Varvara; Goncharov accused Turgenev of plagiarizing The Precipice for it.</p><p>Biographically, Turgenev is strongly associated with his relationship with the mezzo-soprano Pauline Viardot, for whom he wrote libretti and with whom he lived in a menage a trois in Paris. His feud with <a href="dostoevsky_stock.html" class="crossref-inline">Dostoevsky</a> is notable: Dostoevsky caricatured him as the poet Karmazinov in <a href="dostoevsky_stock.html#demons-the-possessed" class="crossref-inline">Demons</a>. Isaiah Berlin wrote about Turgenev&#x27;s &#x27;complacent ambivalence&#x27; and &#x27;the liberal predicament.&#x27; He was also jailed for writing an obituary of Gogol.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Ivan_Turgenev" target="_blank">Ivan Turgenev — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Fathers_and_Sons_(novel)" target="_blank">Fathers and Sons — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/A_Sportsman%27s_Sketches" target="_blank">A Sportsman&#x27;s Sketches — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/First_Love_(novel)" target="_blank">First Love — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/A_Month_in_the_Country_(play)" target="_blank">A Month in the Country — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Fathers and Sons (novel) — extremely high frequency; may have its own answerline</li><li>A Sportsman&#x27;s Sketches — may have its own answerline as a collection</li><li>First Love (Turgenev) — appears frequently enough to possibly have its own answerline</li><li>Pauline Viardot — appears frequently in Turgenev clues and may appear elsewhere</li><li>Hamlet and Don Quixote (essay) — might appear as its own answerline</li></ul>
+        
+        </section>
+        
+</body>
+</html>

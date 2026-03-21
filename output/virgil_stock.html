@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Virgil</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Virgil</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="virgil_questions.html">View source questions</a> · <a href="virgil_cards.html">Make cards</a></div>
+<div class="summary">Roman poet (Publius Vergilius Maro), author of the Aeneid, the Eclogues, and the Georgics. The Aeneid is Rome&#x27;s national epic, opening with &#x27;I sing of arms and the man.&#x27; The Eclogues are pastoral poems modeled on Theocritus, including the famous Fourth Eclogue with its &#x27;messianic&#x27; child prophecy. The Georgics are four books of agricultural poetry. In medieval tradition, Virgil served as Dante&#x27;s guide through Inferno and Purgatorio as a &#x27;virtuous pagan,&#x27; and was also revered as a sorcerer in Neapolitan legends. He wished his manuscript burned after his death, but Augustus had it published. Patron was Maecenas.</div>
+
+        <details class="work" id="aeneid" open>
+            <summary class="work-title">Aeneid</summary>
+            <p class="work-desc">Rome's national epic in twelve books of hexameter, beginning 'I sing of arms and the man' (Arma virumque cano). Follows the Trojan prince Aeneas from the fall of Troy to his founding of a new civilization in Italy. Ends with Aeneas killing Turnus in anger at the sight of Pallas's belt. Augustus had it published posthumously against Virgil's wishes. <a href="https://en.wikipedia.org/wiki/Aeneid" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with &#x27;I sing of arms and the man&#x27; (Arma virumque cano)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this author who wrote &#x27;I sing of arms and the man&#x27; to open the Aeneid | Another poem by this author begins &#x27;I sing of arms and the man&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aeneas kills Turnus at the end, in anger at seeing the belt of Pallas on Turnus — possibly violating his piety</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author may have purposely suggested that one of his characters violated his piety with an act committed in anger at the sight of a belt | After noticing a belt taken from the corpse of Pallas, the protagonist of a poem by this author slays Turnus</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Rutulian Turnus goes to war for the hand of Lavinia</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An epic in which the Rutulian Turnus goes to war for the hand of Lavinia</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aeneas sees a procession of future great men in the underworld; told not to look at Marcellus for long</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this author&#x27;s protagonists is told not to look at Marcellus for long as he sees a procession of future great men</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Augustus had Lucius Varius Rufus and Plotius Tucca edit and publish it posthumously, ignoring Virgil&#x27;s wish to burn the manuscript</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Lucius Varius Rufus and Plotius Tucca edited and published this author&#x27;s final work after being pressured by Augustus to ignore this author&#x27;s posthumous wishes to have the manuscript burned | this figure is fictionalized in a Hermann Broch novel in which he wants his work burned after his death</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Allegedly caused Augustus&#x27;s sister Octavia to faint by reading from it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this man allegedly caused a ruler&#x27;s sister Octavia to faint by reading from his best-known work</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Maffeo Vegio wrote a Supplementum (Book 13) to &#x27;finish&#x27; the Aeneid, including an apotheosis scene</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The most important work of Maffeo Vegio was a Supplementum that &#x27;finished&#x27; a work by this author | Renaissance poet Maffeo Vegio wrote an apotheosis scene to extend one of this man&#x27;s works</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Uses apiary/bee similes to describe city construction — bees &#x27;undergo labour, storing their gains for all&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in another work uses apiary similes to describe the construction of a city &#x27;whose walls already rise&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">An object from the Aeneid titles James Frazer&#x27;s The Golden Bough</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An object from a poem by this author titles a book that discusses the priesthood at Nemi, James Frazer&#x27;s The Golden Bough</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sortes Vergilianae — medieval fortune-telling by picking random lines from the Aeneid</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a method of divination based on the Sortes Homericae that involved selecting random passages from his work | people would attempt to determine their future by flipping to a random page of a certain Roman author&#x27;s work</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gavin Douglas made a full vernacular translation; John Dryden made a landmark English translation; Earl of Surrey&#x27;s partial translation is earliest blank verse in English</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gavin Douglas&#x27;s full vernacular translation praised by Robert Fitzgerald in an essay centering on John Dryden&#x27;s landmark translation | The Earl of Surrey&#x27;s partial translation of the Aeneid is the earliest-attested usage of blank verse in English</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hysteron proteron: &#x27;Let us die, and charge into the thick of the fight&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This device is famously exemplified in the line, &#x27;Let us die, and charge into the thick of the fight&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lines rearranged into centos praising Christ (e.g., by Faltonia Betitia Proba); obscene Cento Nuptialis by Ausonius</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Lines by this poet were rearranged to praise Christ in an epic by the early Christian poet Faltonia Betitia Proba</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gijsbrecht van Aemstel by Vondel mirrors the Aeneid&#x27;s plot</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gijsbrecht quotes frequently from and mirrors the plot of this author&#x27;s best-known work</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dares boxes using the cesti in Book 5</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Dares engages in this activity while using the cesti in Book 5 of The Aeneid</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="eclogues" open>
+            <summary class="work-title">Eclogues</summary>
+            <p class="work-desc">A collection of ten pastoral poems modeled on Theocritus's Idylls. Contains the famous phrase 'omnia vincit amor' (love conquers all) and the Fourth Eclogue's prophecy of a messianic child. First step on the 'Virgilian progression' (Eclogues -> Georgics -> Aeneid). <a href="https://en.wikipedia.org/wiki/Eclogues" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Omnia vincit amor&#x27; / &#x27;Love conquers all; let us, too, yield to love&#x27; — coined in the tenth Eclogue</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This figure coined a phrase translated as &#x27;love conquers all&#x27; | The line &#x27;love conquers all; let us, too, yield to love&#x27; appears in the last poem</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Modeled on Theocritus&#x27;s Idylls / bucolic poetry</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a work modeled on the poetry of Theocritus | Theocritus&#x27;s pastoral poetry was a major influence on this Roman poet who wrote the Eclogues</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fourth Eclogue: a child (&#x27;great progeny of Jove&#x27;) will end the &#x27;iron race&#x27; and begin a golden age — interpreted by Christians as a prophecy of Jesus&#x27;s birth / &#x27;messianic&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This figure&#x27;s statement that the &#x27;iron race&#x27; will be ended by the birth of a child beginning a golden age was interpreted by Christians as a prophecy of Jesus&#x27;s birth | whose fourth entry was interpreted by medieval readers as a Christian prophecy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fourth Eclogue addresses Asinius Pollio; invokes a &#x27;Sicilian Muse&#x27;; instructs a child to &#x27;begin to greet [their] mother with a smile&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This writer instructs a child to &#x27;begin to greet [their] mother with a smile&#x27; in a poem addressing Asinius Pollio, which begins by invoking a &#x27;Sicilian Muse&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tenth Eclogue features Gallus dying of unrequited love for Lycoris; given the line &#x27;omnia vincit amor&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This other poet is the primary speaker of the tenth Eclogue, in which he is given the line &#x27;Omnia vincit amor.&#x27; The Eclogue depicts him dying due to his unrequited love for Lycoris</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A character declares &#x27;Time bears away all things, even our minds&#x27; to explain forgetting songs; punned on a rival comparing a bad poet to &#x27;a cackling goose among melodious swans&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet punned on the surname of a hated rival with a line comparing a bad poet to &#x27;a cackling goose among melodious swans&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eighth Eclogue: Alphesiboeus uses magic to attract the fickle Daphnis</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alphesiboeus uses magic to attract the attention of the fickle Daphnis</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Milton&#x27;s &#x27;Lycidas&#x27; closely imitates a poem from the Eclogues</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">John Milton&#x27;s &#x27;Lycidas&#x27; closely imitates a Latin poem by this writer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First step on the &#x27;Virgilian progression&#x27; — career path Eclogues -&gt; Georgics -&gt; Aeneid, imitated by Spenser</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Eclogues are the first step on the &#x27;Virgilian progression,&#x27; a career path towards epics that authors like Edmund Spencer tried to follow</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stock character Corydon appears in Eclogue 2 as a lover of the boy Alexis</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This stock character from pastoral poetry crops up in Eclogue 2 as a lover of the boy Alexis</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="georgics" open>
+            <summary class="work-title">Georgics</summary>
+            <p class="work-desc">Four books of hexameter pastoral/agricultural poetry, dedicated to Maecenas. Discusses horse breeding, beekeeping (including the bugonia — bees born from a dead ox), and includes the Noric cattle plague. Coined the phrase 'time flies' (fugit irreparabile tempus). Second step on the 'Virgilian progression.' <a href="https://en.wikipedia.org/wiki/Georgics" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four books of hexameter poetry about agriculture / horse breeding and beekeeping</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">four books of hexameter pastoral poetry | a four-book poem about agriculture</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Discusses bees / analogizes societies at war with colonies of bees; mentions the theory that bees are born from the carcass of an ox (bugonia)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author analogized societies at war with the harmony of a colony of bees in a work that also mentions the theory that bees are born from the carcass of an ox | this poet writes in a pastoral poem that bees &#x27;undergo labour, storing their gains for all&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coined the phrase &#x27;time flies&#x27; (fugit irreparabile tempus); third book contains the Noric cattle plague</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This person coined the phrase &#x27;time flies&#x27; in a work whose third book contains an account of the Noric cattle plague</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dedicated to Maecenas</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet of the Aeneid dedicated the Georgics, a four-book poem about agriculture, to Maecenas</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="virgil-as-dante-s-guide-divine-comedy" open>
+            <summary class="work-title">Virgil as Dante&#x27;s Guide (Divine Comedy)</summary>
+            <p class="work-desc">In Dante's Divine Comedy, Virgil serves as Dante's guide through Inferno and Purgatorio. He is a 'virtuous pagan' residing in Limbo. He rescues Dante from a leopard, lion, and she-wolf in a dark wood. He cannot enter Paradise and is replaced by Beatrice. <a href="https://en.wikipedia.org/wiki/Virgil#In_Dante" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Guides Dante through the circles of Hell (Inferno) and Purgatorio as a &#x27;virtuous pagan&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this &#x27;virtuous pagan&#x27; guides Dante through the nine circles of Hell | this character who guides Dante through Inferno and Purgatorio</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Meets Dante after he encounters a leopard, a lion, and a she-wolf in a dark wood</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">saves the protagonist from a leopard, a lion, and a she-wolf | The speaker of a long poem meets this man after fleeing from a panther, a lion, and a she-wolf</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Resides in Limbo, the first circle of Hell</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this character who resides in Limbo, the first circle of a realm through which he guides Dante</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cannot enter Paradise; replaced by Beatrice / vanishes when Dante meets Matilda, leaving him with Statius</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Since this character is not allowed to enter Paradise, he is replaced by Beatrice | This character vanishes shortly after the protagonist meets the flower-collecting woman Matilda, leaving the protagonist with Statius</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Explains to Dante the warning &#x27;Abandon hope, all ye who enter here&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this character explains to the protagonist the meaning of the warning, &#x27;Abandon hope, all ye who enter here&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Discusses the nature of Fortune to spendthrifts and hoarders; summons Geryon to reach Malebolge</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man discourses on the nature of Fortune to explain the futility in addressing groups of spendthrifts and hoarders locked in perpetual combat</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Negotiates with the giant Antaeus for passage; convinces Antaeus to carry him</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this character negotiates with the giant Antaeus | this character convinces a giant to carry him to his destination</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gates of Dis slam shut when Virgil tries to enter</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The gates of Dis slam shut when this character tries to enter | After traveling through the first five circles, Virgil and Dante reach the walls of this city, where they are refused entry at the gates</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Throws dirt into Cerberus&#x27;s &#x27;rapacious gullets&#x27;; carries Dante down a hill past Big Pig and Ruby Face</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this character throws dirt into the creature&#x27;s &#x27;rapacious gullets.&#x27; This character picks up a companion and carries him down a hill to avoid the pursuit of characters like Big Pig and Ruby Face</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pronounces Dante &#x27;Lord of yourself&#x27; and &#x27;crowns and mitres&#x27; him in his final words</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This character pronounces the narrator &#x27;Lord of yourself&#x27; and tells him &#x27;I crown and mitre you&#x27; in his final words</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes himself as a Lombard born to two Mantuans</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This person describes himself as a Lombard, born to two Mantuans, to a man who encounters him in a desert</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Delacroix painted Dante and Virgil sharing a boat (The Barque of Dante); William Blake made wood engravings for Thornton&#x27;s translation of Virgil</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet shares a boat with a more modern poet in Delacroix&#x27;s earliest major painting | William Blake made a series of seventeen wood engravings for Robert Thornton&#x27;s translations of this poet</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="medieval-virgil-legends-and-sorcery" open>
+            <summary class="work-title">Medieval Virgil (Legends and Sorcery)</summary>
+            <p class="work-desc">In medieval tradition, Virgil was revered as a sorcerer and magician. Legends include: building the Colosseum using demons, placing an egg under the Castel dell'Ovo in Naples, being trapped in a basket by an emperor's daughter (the 'Power of Woman' genre), and conjuring the Mergellina Tunnel.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Placed an egg under the Castel dell&#x27;Ovo in Naples / supported the castle&#x27;s foundation with a golden griffin egg</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This person put a small egg on the ground where the Castel dell&#x27;Ovo was built | this sorcerer, who protected the city of Naples by placing an egg in the Castel dell&#x27;Ovo</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Trapped in a large basket by an emperor&#x27;s daughter (Power of Woman genre)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a story from the Power of Woman genre, this man is trapped in a large basket by an emperor&#x27;s daughter | this person is humiliated after the emperor&#x27;s daughter leaves him hanging in a basket</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Performed necromancy in the Colosseum after building it using demons (medieval text)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this figure performs necromancy in the Colosseum after building it using demons</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Conjured the Mergellina Tunnel into existence (Neapolitan legend)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">conjured the Mergellina Tunnel into existence according to two popular Neapolitan legends</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Name spelling changed due to folk etymology from a word for &#x27;wand&#x27; (virga)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The spelling of this figure&#x27;s name was changed because of a folk etymology deriving his name from a word for &#x27;wand&#x27; | This orthographic choice may acknowledge the legend that Virgil&#x27;s mother planted a poplar-tree</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gervase of Tilbury collected legends about Virgil the sorcerer; claimed an English scholar and Roger II of Sicily tried to steal his bones</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gervase of Tilbury claimed that an English scholar and Roger II of Sicily conspired to steal this man&#x27;s bones | Gervase of Tilbury also collected a number of legends about this sorcerer</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works-and-general" open>
+            <summary class="work-title">Other Works and General</summary>
+            <p class="work-desc">General biographical/literary clues. Virgil was born in Mantua ('the most famous Mantuan ever'), died at Brundisium. Patron was Maecenas. Minor poem 'Culex' (The Gnat) about a shepherd saved by a gnat's sting. Hermann Broch wrote The Death of Virgil (novel structured as a string quartet, four sections named after classical elements). The first incunable printed in Florence was a commentary by Servius. Des Esseintes in Huysmans's A rebours considers him 'one of the most terrible pedants.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Born in Mantua; died at Brundisium</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this most famous Mantuan ever | This person describes himself as a Lombard, born to two Mantuans</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Culex&#x27; (The Gnat) — a minor poem about a shepherd saved from a snakebite by a gnat&#x27;s sting; the gnat then haunts the shepherd</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A poem attributed to this author describes a shepherd who is haunted by a gnat after killing it saves his life | A minor poem by this author depicts a sleeping shepherd who is saved from an impending snakebite by the sting of a gnat</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hermann Broch wrote The Death of Virgil — structured as a string quartet; four sections named after classical elements (Water, Fire, Earth, Air); set in Brundisium; protagonist wants his work burned</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Hermann Broch wrote about the &#x27;death&#x27; of this character | George Steiner argued that a novel about this character is structured as a string quartet</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Patron was Maecenas</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Roman statesman Gaius Maecenas patronized many authors</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First incunable printed in Florence was a commentary about Virgil by Servius</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first incunable printed in Florence was a commentary about this person by Servius</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Des Esseintes in Huysmans&#x27;s A rebours calls him &#x27;one of the most terrible pedants&#x27; and Aeneas &#x27;weak-willed, irresolute&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist Des Esseintes considers this author to be &#x27;one of the most terrible pedants ever produced by antiquity&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Simone Martini painted the frontispiece for Petrarch&#x27;s &#x27;Ambrosian&#x27; edition; Giovanni Pontano re-assembled the &#x27;Vatican&#x27; edition</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Giovanni Pontano re-assembled the folios of the &#x27;Vatican&#x27; edition of this person&#x27;s works, while Simone Martini painted the frontispiece for Petrarch&#x27;s &#x27;Ambrosian&#x27; edition</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tomb in Naples (grotta vecchia) — tree supposedly died the year of Dante&#x27;s death and was replanted by Petrarch</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A site in this city lies in the grotta vecchia and featured a tree that supposedly died the year of Dante&#x27;s death and was replanted by Petrarch</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Virgil (Publius Vergilius Maro, 70–19 BCE) is the preeminent Roman poet, author of the Aeneid, the Eclogues, and the Georgics. Born in Mantua, he died at Brundisium. His patron was the Roman statesman Maecenas.</p><p>The Aeneid, Rome&#x27;s national epic, is twelve books of hexameter verse opening with the famous line &#x27;I sing of arms and the man&#x27; (Arma virumque cano). It follows the Trojan prince Aeneas and ends with his killing of the Rutulian Turnus in anger at seeing the belt of his fallen ally Pallas — an act that may violate Aeneas&#x27;s own piety. In Book VI, Aeneas sees a procession of future great Romans but is told not to look too long at Marcellus. Virgil allegedly caused Augustus&#x27;s sister Octavia to faint by reading from the Aeneid. He wished the manuscript burned after his death, but Augustus had Lucius Varius Rufus and Plotius Tucca edit and publish it. Renaissance poet Maffeo Vegio wrote a thirteenth book (Supplementum) including an apotheosis scene. The Aeneid gave rise to the sortes Vergilianae, a medieval fortune-telling practice of picking random lines from the text. The golden bough from Book VI titles James Frazer&#x27;s anthropological classic. Notable translations include the Earl of Surrey&#x27;s (the earliest blank verse in English), <a href="john_dryden_stock.html" class="crossref-inline">John Dryden</a>&#x27;s landmark version, and Gavin Douglas&#x27;s full Scots vernacular translation. The Aeneid contains a famous example of hysteron proteron: &#x27;Let us die, and charge into the thick of the fight.&#x27; Lines were rearranged into centos praising Christ (e.g., by Faltonia Betitia Proba). Vondel&#x27;s Dutch play Gijsbrecht van Aemstel mirrors the Aeneid&#x27;s plot.</p><p>The Eclogues are ten pastoral poems modeled on Theocritus&#x27;s Idylls. The collection contains the famous phrase &#x27;omnia vincit amor&#x27; (love conquers all) in the tenth Eclogue, spoken by the poet Gallus who is dying of unrequited love for Lycoris. The Fourth Eclogue, addressed to Asinius Pollio, prophesies that a child (&#x27;great progeny of Jove&#x27;) will end the &#x27;iron race&#x27; and begin a golden age — a passage interpreted by early Christians as a prophecy of Jesus&#x27;s birth. It invokes a &#x27;Sicilian Muse&#x27; and instructs the child to &#x27;begin to greet thy mother with a smile.&#x27; Other eclogue details include Corydon&#x27;s love for the boy Alexis (Eclogue 2), Alphesiboeus using magic to attract Daphnis (Eclogue 8), and the amoebaean singing contest between Damoetas and Menalcas (Eclogue 3). Milton&#x27;s &#x27;Lycidas&#x27; closely imitates a poem from the Eclogues. The Eclogues are the first step on the &#x27;Virgilian progression&#x27; — the career path from pastoral to agricultural to epic poetry that poets like <a href="edmund_spenser_stock.html" class="crossref-inline">Spenser</a> tried to follow.</p><p>The Georgics are four books of hexameter agricultural poetry dedicated to Maecenas. They discuss horse breeding and beekeeping, including the bugonia theory that bees are born from the carcass of an ox. The phrase &#x27;time flies&#x27; (fugit irreparabile tempus) comes from this work. The third book contains the Noric cattle plague. Virgil analogizes societies at war with colonies of bees.</p><p>In Dante&#x27;s Divine Comedy, Virgil serves as Dante&#x27;s guide through the Inferno and Purgatorio. He is a &#x27;virtuous pagan&#x27; residing in Limbo (the first circle of Hell). He meets Dante after the poet encounters a leopard, a lion, and a she-wolf in a dark wood on Maundy Thursday night. Virgil explains &#x27;Abandon hope, all ye who enter here&#x27; at the gates of Hell. He discusses the nature of Fortune with spendthrifts and hoarders, summons Geryon to reach Malebolge, throws dirt into Cerberus&#x27;s &#x27;rapacious gullets,&#x27; carries Dante past Big Pig and Ruby Face, negotiates with the giant Antaeus for passage, and is refused entry at the gates of Dis. He vanishes when Dante meets the flower-collecting Matilda, leaving him with <a href="statius_stock.html" class="crossref-inline">Statius</a>. In his final words, Virgil pronounces Dante &#x27;Lord of yourself&#x27; and crowns and mitres him. Since Virgil cannot enter Paradise, he is replaced by Beatrice. Delacroix painted Dante and Virgil sharing a boat in The Barque of Dante. <a href="william_blake_stock.html" class="crossref-inline">William Blake</a> made seventeen wood engravings for Thornton&#x27;s translation of Virgil.</p><p>In medieval legend, Virgil was revered as a sorcerer. He placed an egg under the Castel dell&#x27;Ovo in Naples to protect the city, conjured the Mergellina Tunnel, performed necromancy in the Colosseum after building it with demons, and was humiliated when an emperor&#x27;s daughter left him hanging in a basket (the &#x27;Power of Woman&#x27; genre). His name spelling changed from Vergilius to Virgilius due to a folk etymology connecting it to virga (&#x27;wand&#x27;). Gervase of Tilbury collected legends about Virgil as a sorcerer and claimed an English scholar and Roger II of Sicily tried to steal his bones.</p><p>Hermann Broch wrote The Death of Virgil, a novel structured as a string quartet with four sections named after the classical elements (Water, Fire, Earth, Air), set during Virgil&#x27;s last days in Brundisium. The first incunable printed in Florence was a commentary on Virgil by Servius. Des Esseintes in Huysmans&#x27;s A rebours calls Virgil &#x27;one of the most terrible pedants ever produced by antiquity.&#x27; Virgil&#x27;s tomb in Naples (in the grotta vecchia) featured a tree that supposedly died the year of Dante&#x27;s death and was replanted by <a href="petrarch_stock.html" class="crossref-inline">Petrarch</a>.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Virgil" target="_blank">Virgil — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Aeneid" target="_blank">Aeneid — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Eclogues" target="_blank">Eclogues — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Georgics" target="_blank">Georgics — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Aeneid — The most heavily clued individual work with many specific plot and reception details</li><li>Dante Alighieri — Virgil&#x27;s role as Dante&#x27;s guide generates many cross-referenced clues</li></ul>
+        
+        </section>
+        
+</body>
+</html>

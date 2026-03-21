@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Marcel Proust</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Marcel Proust</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="marcel_proust_questions.html">View source questions</a> · <a href="marcel_proust_cards.html">Make cards</a></div>
+<div class="summary">French modernist author of the seven-volume novel In Search of Lost Time (also known as Remembrance of Things Past). The novel&#x27;s most iconic scene involves involuntary memories triggered by eating a tea-soaked madeleine. Key characters include Charles Swann, Odette de Crecy, Albertine Simonet, the Baron de Charlus, and the fictional composer Vinteuil. C.K. Scott Moncrieff&#x27;s English translation took its title from Shakespeare&#x27;s Sonnet 30. Proust wrote the critical essay Against Sainte-Beuve. He had a relationship with composer Reynaldo Hahn and lived in a cork-lined room.</div>
+
+        <details class="work" id="in-search-of-lost-time-general-cross-volume" open>
+            <summary class="work-title">In Search of Lost Time (general / cross-volume)</summary>
+            <p class="work-desc">Proust's seven-volume masterpiece, also known as Remembrance of Things Past. The narrator's involuntary memories are triggered by a tea-soaked madeleine at Combray. C.K. Scott Moncrieff's English translation was named after a line from Shakespeare's Sonnet 30. Features fictional artists: the composer Vinteuil, the painter Elstir, and the writer Bergotte (based on Anatole France). Andre Gide rejected the manuscript at the NRF. Won the 1919 Goncourt Prize for Within a Budding Grove. The early unfinished novel Jean Santeuil was later expanded into this work. <a href="https://en.wikipedia.org/wiki/In_Search_of_Lost_Time" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Involuntary memories triggered by eating a tea-soaked madeleine at Combray</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The narrator remembers his childhood at Combray after biting into a tea-soaked madeleine | memories of Combray are brought back by the taste of a tea-soaked madeleine in Swann&#x27;s Way</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">C.K. Scott Moncrieff&#x27;s English translation titled &#x27;Remembrance of Things Past&#x27; from Shakespeare&#x27;s Sonnet 30</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first English translation of this author&#x27;s major work was named for a line in Shakespeare&#x27;s Sonnet 30, and was by C.K. Scott Moncrieff | This Scotsman chose a quote from Shakespeare&#x27;s Sonnet 30, &#x27;remembrance of things past&#x27;, to title his famed translation</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Vinteuil&#x27;s &#x27;little phrase&#x27; in a violin sonata symbolizes Swann&#x27;s love / becomes the &#x27;national anthem&#x27; of his love for Odette</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A phrase from a violin sonata by Vinteuil symbolizes Charles Swann&#x27;s love | the narrator becomes obsessed with the pink hawthorn blossoms that line the path to the house of a man who associates his relationship with a &#x27;little phrase&#x27; in a sonata | Vinteuil&#x27;s violin sonata becomes the &#x27;national anthem&#x27; of the title character&#x27;s love for Odette de Crecy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Baron de Charlus has a homosexual encounter with the tailor Jupien (narrator watches while trying to see a bee fertilize an orchid)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A book by this author opens with the narrator trying to watch a bee fertilizing an orchid, only to catch sight of a sexual encounter in a tailor&#x27;s shop | this author wrote about a homosexual encounter between a tailor and the Baron de Charlus in the book Sodom and Gomorrah</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with an &#x27;overture&#x27; beginning &#x27;for a long time I went to bed early&#x27;; narrator struggles to sleep without mother&#x27;s goodnight kiss</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">begins &#x27;for a long time I went to bed early&#x27; | the narrator is unable to go to sleep because he has not received a kiss from his mother | The narrator receives habitual goodnight kisses from his mother</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Seven-volume novel / French author of In Search of Lost Time (giveaway identifier)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this French author of In Search of Lost Time | this French modernist who wrote In Search of Lost Time</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Swann pursues / is obsessed with Odette de Crecy; &#x27;to do a cattleya&#x27; as euphemism for sex</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">two lovers use the phrase &#x27;to do a cattleya&#x27; as a euphemism for sex after one rearranges the other&#x27;s corsage | the disastrous marriage between Odette de Crecy and Charles Swann | Swann&#x27;s love in a novel in which involuntary memories are triggered by eating a tea-soaked madeleine</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Competing theories that Vinteuil&#x27;s sonata is modeled on Franck, Brahms, or Saint-Saens; Milstein sisters theorize Gabriel Perne D Minor Sonata</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Competing theories hold that this author&#x27;s description of a piece in F-sharp was modeled on Franck, Brahms, or Saint-Saens | The sisters Maria and Nathalia Milstein theorize that a musical theme in one of this author&#x27;s novels came from a Gabriel Perne D Minor Sonata</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bergotte (the writer) dies in front of Vermeer&#x27;s View of Delft, realizing he should have written like the &#x27;patch of yellow wall&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bergotte&#x27;s desire to see &#x27;View of Delft&#x27; before he dies | Bergotte dies from an illness in front of this painting. Just before dying, Bergotte realizes that he should have written in a style befitting a &#x27;patch of yellow wall&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bergotte based on Anatole France; narrator meets Bergotte at a party held by the Swanns</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">At a party held by the Swanns in this novel, the Narrator first meets the famous writer Bergotte, based on Anatole France</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator&#x27;s grandmother admires the letters of Madame de Sevigne</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The narrator&#x27;s grandmother admires the letters of Madame de Sevigne in this author&#x27;s novel In Search of Lost Time</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator receives a magic lantern projecting images of children&#x27;s books, distorting his bedroom</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this author&#x27;s characters receives a magic lantern that projects images of children&#x27;s books and seems to distort his bedroom</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator compares a &#x27;neurasthenic&#x27; relative to a &#x27;miserable&#x27; water lily floating back and forth across a river</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">compares the habits of a &#x27;neurasthenic&#x27; relative to a &#x27;miserable&#x27; water lily that perpetually floats back and forth across a river</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kitchen-maid nicknamed &#x27;Giotto&#x27;s Charity&#x27;; a woman resembles Botticelli&#x27;s Zipporah</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the nickname &#x27;Giotto&#x27;s Charity&#x27; that is given to a kitchen-maid or the description of a woman resembling Botticelli&#x27;s Zipporah</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Robert de Montesquiou was the basis for Baron de Charlus</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Montesquiou was the basis for this aristocratic character from In Search of Lost Time</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Vinteuil&#x27;s daughter&#x27;s lesbian love incorporated into his violin and piano sonata</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a composer that creates a violin and piano sonata whose theme incorporates his daughter&#x27;s lesbian love</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator pursues both Albertine and Gilberte</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author wrote about a man who pursues Albertine and Gilberte</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Robert de Saint-Loup is a friend of the narrator; army officer</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">whose narrator is friends with the army officer Robert de Saint-Loup</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The actress Berma — narrator is obsessed with her Racine performances; let down by her acting in Volume 2</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the narrator of Remembrance of Things Past is obsessed with this actress who often appears in Jean Racine&#x27;s plays</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with a party thrown by the Prince of Guermantes in Time Regained</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">His only novel ends with a party thrown by the Prince of Guermantes in the section Time Regained</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bloch attends a dinner and attempts to badger Madame de Norpois about the Dreyfus Affair</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bloch attends a dinner party where he attempts to badger Madame de Norpois into a debate about the Dreyfus Affair</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator tramples a possibly homosexual character&#x27;s new silk hat after being accused of spreading lies</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the narrator is accused of spreading lies, he angrily tramples upon a possibly homosexual character&#x27;s new silk hat</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A character misinterprets &#x27;You really have a fairy&#x27;s touch&#x27; as directed at him after toppling a vase of apple blossoms</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character created by this author misinterprets a historian&#x27;s remark, &#x27;You really have a fairy&#x27;s touch,&#x27; as directed towards him after he accidentally topples over a vase of apple blossoms</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A character in a tirade imagines forcing a Jewish character&#x27;s family to reenact David and Goliath at a salon</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author created a character who, in a tirade, imagines forcing a Jewish character&#x27;s family to reenact David and Goliath&#x27;s battle at a salon</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator leaves a sanatorium, finds invitations to a supper and an afternoon reception</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After leaving a sanatorium, one character created by this author finds invitations to a supper given by an actress he had seen perform several times as well as to an afternoon reception hosted by an aristocratic family</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Infidelity between Forcheville and Odette de Crecy</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author wrote about the infidelity in between Forcheville and Odette de Crecy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator obsessed with pink hawthorn blossoms lining a path</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The narrator of a novel by this author becomes obsessed with the pink hawthorn blossoms that line the path to the house of a man</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="albertine-simonet" open>
+            <summary class="work-title">Albertine Simonet</summary>
+            <p class="work-desc">A major character in In Search of Lost Time. The narrator meets Albertine among a group of girls on a beach at Balbec in Within a Budding Grove. The narrator jealously imprisons her in his house over her lesbian affairs in The Prisoner. She dies in a horse-riding accident in The Fugitive (also called Albertine Disparue). A theory (Andre Gide's 'transposition theory') holds that Albertine is actually male and based on Proust's chauffeur (or secretary Albert Nahmias). Anne Carson wrote a poem about her called 'The Albertine Workout.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dies in a horse-riding accident; The Fugitive is named for her disappearance</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">her &#x27;disappearance&#x27; in a horse racing accident titles a long novel&#x27;s sixth volume | After she dies in a horse-riding accident, Marcel learns of her lesbian affairs</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator suspects Albertine of lesbian affairs; imprisons her in his house in The Prisoner</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In The Prisoner, the narrator jealously imprisons this character in his house over her lesbian affairs | the narrator suspects this lover of his of having an affair with Mademoiselle Vinteuil</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First glimpsed on a beach at Balbec in Within a Budding Grove; member of the &#x27;little band&#x27; of girls</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">first glimpsed on a beach in Within a Budding Grove | the narrator encounters Albertine Simonet among a group of girls on a beach at Balbec</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gide&#x27;s &#x27;transposition theory&#x27; that Albertine is actually male, based on Proust&#x27;s chauffeur/secretary</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A theory holds that this author&#x27;s character Albertine is actually male and based on his chauffeur | this author&#x27;s most famous work may feature a gender-swapped version of his secretary</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Anne Carson wrote &#x27;The Albertine Workout&#x27; — notes Albertine&#x27;s name occurs 2,363 times; 19% of pages she is asleep</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Anne Carson notes that this character&#x27;s name occurs 2,363 times in the novel she appears in, and that &#x27;on a good 19 per cent of these pages she is asleep&#x27; | Anne Carson wrote that this character&#x27;s problems are &#x27;lying&#x27; and &#x27;lesbianism&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator suspects affair with Andree; messages Albertine about marriage but she dies before receiving it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That character suspects an affair with Andree, but then says that he will marry her; however, that message goes unreceived because the intended recipient dies in a horse riding accident</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Francoise Sagan took her pseudonym from a Proust character; began reading Proust with Albertine Disparue</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author, who took her pseudonym from a Proust character, began reading Proust with Albertine disparu</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="against-sainte-beuve-contre-sainte-beuve" open>
+            <summary class="work-title">Against Sainte-Beuve (Contre Sainte-Beuve)</summary>
+            <p class="work-desc">A critical essay by Proust attacking the biographically-oriented literary criticism of Charles Augustin Sainte-Beuve. Proust argued against the importance of biographical information in literary criticism, and criticized Sainte-Beuve's contradictory attitude towards Baudelaire. <a href="https://en.wikipedia.org/wiki/Against_Sainte-Beuve" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Attacked Sainte-Beuve&#x27;s biographically-oriented literary criticism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sainte-Beuve&#x27;s biographically-oriented criticism was attacked in the essay &#x27;Against Sainte-Beuve&#x27; | this author wrote several essays in opposition to the title literary critic in Contra Sainte-Beuve</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Criticized Sainte-Beuve&#x27;s contradictory attitude towards Baudelaire</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author criticized one of his countrymen for his contradictory attitude towards Charles Baudelaire</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Biographical and contextual clues about Proust: his relationship with Reynaldo Hahn, his cork-lined room, the Proust Questionnaire, Jozef Czapski's lectures, and various literary connections.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lover of the composer Reynaldo Hahn</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This lover of the composer Reynaldo Hahn | this person&#x27;s diaries describe the noisy visits of his lover, the Venezuelan composer Reynaldo Hahn</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jozef Czapski delivered lectures on Proust in a Soviet prison camp</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A series of lectures on this author were delivered by Jozef Czapski in a Soviet prison camp | A drawing of a grain of wheat is at the center of one of the diagrams of this author&#x27;s work that Jozef Czapski made</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Proust Questionnaire — a &#x27;confession album&#x27; he answered at age 14; used by James Lipton on Inside the Actors Studio; appears in Vanity Fair magazine</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a confession album, in which participants filled in answers to prompts like &#x27;your favorite virtue&#x27; | This magazine features a Proust Questionnaire on the back page of each monthly issue</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alain de Botton wrote How Proust Can Change Your Life</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alain de Botton&#x27;s first non-fiction work was a self-help book called How [this author] Can Change Your Life | a popular book on how this frail author &#x27;Can Change Your Life,&#x27; written by Alain de Botton</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Fun Home, Alison Bechdel theorizes Proust inspired her father&#x27;s love of lilacs</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In Fun Home, Alison Bechdel theorizes that this author inspired her father&#x27;s love of lilacs</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Andre Gide initially rejected the manuscript at the NRF</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man submitted a manuscript of his most famous work to the NRF, whereupon it was read and rejected by Andre Gide</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Daudet&#x27;s son Lucien had an affair with Proust</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Daudet&#x27;s son Lucien had an affair with this novelist</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Samuel Beckett wrote a monograph on Proust arguing he ignored moral considerations</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A monograph on this author arguing that he completely ignored moral considerations was written by Samuel Beckett</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lived in a cork-lined room in his last years</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the cork-lined room where he spent the last years of his life</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote about Beethoven, Wagner, Schumann as favorite composers in a confession album</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This person wrote &#x27;Beethoven, Wagner, Schumann&#x27; next to &#x27;My favorite composers&#x27; while filling out a &#x27;confession album&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Anatole France wrote a foreword to Proust&#x27;s Pleasures and Days</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Anatole France also wrote a foreword to this author&#x27;s collection Pleasures and Days</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Isaac Singer compared Bruno Schulz to Kafka and Proust</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Isaac Singer compared Bruno Schulz to Kafka and to this French author</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Passive-aggressive letters about the noisy Dr. Gagey collected in Letters To His Neighbor</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man&#x27;s passive-aggressive letters about the noisy Dr. Gagey were recently collected in Letters To His Neighbor</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">William C. Carter edited books on Proust&#x27;s Swedish valet and on &#x27;Proust In Love&#x27; (containing the &#x27;sex rats&#x27; anecdote)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">William C. Carter has edited books on both this man&#x27;s Swedish valet and on this author &#x27;In Love,&#x27; the latter of which contains a notorious anecdote about this man and the &#x27;sex rats&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Proust&#x27;s essay &#x27;On Reading&#x27; discusses his translation of Ruskin&#x27;s Sesame and Lilies</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Proust&#x27;s essay &#x27;On Reading&#x27; discusses his translation of this author&#x27;s book Sesame and Lilies</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator mourns his grandmother in a section called &#x27;The Intermittencies of the Heart&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character created by this author mourns the death of his grandmother in a section called &#x27;The Intermittencies of the Heart&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Swann&#x27;s Way bemoans &#x27;wasted years loving a woman who wasn&#x27;t even his type&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A book by this author ends with a man bemoaning that he wasted years loving a woman &#x27;who wasn&#x27;t even his type&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ernst Robert Curtius wrote a book about Proust before turning to the Middle Ages</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Curtius was an expert in modern French literature, culminating in a book about this author</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Roland Barthes autobiography pairs &#x27;I was beginning to walk&#x27; with Proust finishing a series of seven novels</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A page of Roland Barthes with the heading &#x27;Contemporaries?&#x27; pairs the statement &#x27;I was beginning to walk&#x27; with this other French author finishing a series of seven novels</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Franz Hessel was a German translator of Proust; &#x27;involuntary memory&#x27; phenomenon named for Proust</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Walking in Berlin by Franz Hessel, a German translator of this author. The phenomenon of &#x27;involuntary memory&#x27; is often named for this French author</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Proust inspired Henri Dutilleux&#x27;s string quartet Ainsi la nuit (uses brief &#x27;parentheses&#x27; segments)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This person&#x27;s work inspired the use of brief segments called &#x27;parentheses&#x27; in Henri Dutilleux&#x27;s string quartet Ainsi la nuit</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Merrill&#x27;s poem &#x27;For Proust&#x27; references his asthma and the &#x27;little phrase&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Merrill&#x27;s poem titled &#x27;For&#x27; this author opens &#x27;You stop for breath outside the lit hotel,&#x27; referencing this author&#x27;s asthma</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jean Santeuil — early autobiographical novel, later expanded into In Search of Lost Time</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this author who expanded his unfinished early novel Jean Santeuil into Sodom and Gomorrah, Swann&#x27;s Way, and the five other volumes | In 1952, this author&#x27;s early autobiographical novel Jean Santeuil was posthumously published</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lydia Davis translated the first part for Penguin Classics; Terence Kilmartin revised Moncrieff&#x27;s translation</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Terence Kilmartin revised an earlier translation of a book by this author, the first part of which was translated by Lydia Davis for Penguin Classics</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator&#x27;s mother reads him George Sand before the madeleine episode</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This action is preceded by a description of the narrator&#x27;s mother reading him George Sand for the first time</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Proust&#x27;s analysis of Nerval&#x27;s Sylvie — called it &#x27;a dream of a dream&#x27;; Nerval may have inspired dreaminess of Swann&#x27;s Way</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this author&#x27;s analysis of Sylvie, including his claim that it is a &#x27;dream of a dream&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Marcel Proust is one of the most frequently clued authors in quizbowl literature, always identified through his seven-volume novel In Search of Lost Time (also known as Remembrance of Things Past). The most iconic giveaway is the madeleine episode: the narrator dips a madeleine in tea, triggering involuntary memories of his childhood at Combray. This appears in virtually every tossup and many bonuses about Proust.</p><p>The novel&#x27;s English translation by C.K. Scott Moncrieff, titled after a line from Shakespeare&#x27;s Sonnet 30, is another very frequent clue. The fictional composer Vinteuil&#x27;s &#x27;little phrase&#x27; in a violin sonata, which symbolizes Charles Swann&#x27;s love for Odette de Crecy, is equally central — appearing in about half of all tossups. Competing theories hold that this fictional music was modeled on works by Franck, Brahms, Saint-Saens, or a Gabriel Perne sonata.</p><p>The novel opens with an &#x27;overture&#x27; beginning &#x27;for a long time I went to bed early,&#x27; in which the narrator cannot sleep without his mother&#x27;s goodnight kiss. The Baron de Charlus&#x27;s homosexual encounter with the tailor Jupien — observed by the narrator while watching a bee fertilize an orchid — opens the volume Sodom and Gomorrah. Swann&#x27;s obsessive love for Odette de Crecy is a major plot thread; they use the euphemism &#x27;to do a cattleya&#x27; for sex.</p><p>Albertine Simonet is a major character with her own cluster of clues. The narrator meets her at Balbec beach in Within a Budding Grove. He imprisons her jealously over her lesbian affairs in The Prisoner. She dies in a horse-riding accident in The Fugitive. Andre Gide&#x27;s &#x27;transposition theory&#x27; holds that Albertine is actually male, based on Proust&#x27;s chauffeur or secretary Albert Nahmias. Anne Carson wrote &#x27;The Albertine Workout&#x27; about her.</p><p>Other notable clues involve the writer Bergotte (based on Anatole France), who dies in front of Vermeer&#x27;s View of Delft while reflecting on a &#x27;patch of yellow wall.&#x27; The kitchen-maid is nicknamed &#x27;Giotto&#x27;s Charity,&#x27; and a woman is compared to Botticelli&#x27;s Zipporah. The narrator is obsessed with the actress Berma&#x27;s <a href="jean_racine_stock.html" class="crossref-inline">Racine</a> performances. Bloch badgers Madame de Norpois about the Dreyfus Affair. The novel ends with a party thrown by the Prince of Guermantes in Time Regained.</p><p>Proust&#x27;s critical essay Against Sainte-Beuve attacks the biographically-oriented criticism of Charles Augustin Sainte-Beuve, arguing against the importance of biographical information in literary criticism.</p><p>Biographically, Proust&#x27;s lover was the Venezuelan composer Reynaldo Hahn. Jozef Czapski famously delivered lectures on Proust in a Soviet prison camp. The Proust Questionnaire (a confession album he filled out at age 14) became famous through James Lipton&#x27;s Inside the Actors Studio and Vanity Fair magazine. Alain de Botton wrote How Proust Can Change Your Life. <a href="beckett_stock.html" class="crossref-inline">Samuel Beckett</a> wrote a monograph on Proust. Andre Gide initially rejected the manuscript at the NRF. Robert de Montesquiou inspired the Baron de Charlus. Proust lived in a cork-lined room in his last years and translated Ruskin&#x27;s Sesame and Lilies.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Marcel_Proust" target="_blank">Marcel Proust — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/In_Search_of_Lost_Time" target="_blank">In Search of Lost Time — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Against_Sainte-Beuve" target="_blank">Against Sainte-Beuve — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Swann%27s_Way" target="_blank">Swann&#x27;s Way — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>In Search of Lost Time / Swann&#x27;s Way — likely has its own answerline</li><li>Albertine Simonet — appears as its own answerline in bonuses</li><li>Vinteuil&#x27;s Sonata — may appear as its own answerline in music/FA questions</li><li>Proust Questionnaire — appears as its own answerline</li><li>Charles Swann — major character, may have own answerline</li></ul>
+        
+        </section>
+        
+</body>
+</html>

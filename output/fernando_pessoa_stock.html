@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Fernando Pessoa</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Fernando Pessoa</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="fernando_pessoa_questions.html">View source questions</a> · <a href="fernando_pessoa_cards.html">Make cards</a></div>
+<div class="summary">Portuguese poet and author, known for his extensive use of &#x27;heteronyms&#x27; -- distinct literary alter egos with their own biographies and styles. Key heteronyms include Alberto Caeiro (the &#x27;Master,&#x27; who wrote The Keeper of Sheep), Alvaro de Campos (a Glasgow-educated futurist naval engineer, who wrote &#x27;The Tobacco Shop&#x27; and &#x27;Opiario&#x27;), Ricardo Reis (an Epicurean doctor who wrote Horatian odes to Lydia), and Bernardo Soares (a semi-heteronym, the bookkeeper credited with The Book of Disquiet). Member of the Orpheu modernist movement. Wrote the poetry collection Mensagem (Message), structured around Portugal&#x27;s coat of arms. Left a trunk of 25,000+ pages of manuscripts discovered posthumously. Jose <a href="saramago_stock.html" class="crossref-inline">Saramago</a> fictionalized the heteronym Ricardo Reis in <a href="saramago_stock.html#the-year-of-the-death-of-ricardo-reis" class="crossref-inline">The Year of the Death of Ricardo Reis</a>.</div>
+
+        <details class="work" id="the-book-of-disquiet" open>
+            <summary class="work-title">The Book of Disquiet</summary>
+            <p class="work-desc">Pessoa's seminal work, a fragmentary 'factless autobiography' credited to the heteronym/semi-heteronym Bernardo Soares, a bookkeeper whose boss is named Vasques. Compiled from over 500 sheets found in a suitcase/trunk after Pessoa's death in 1935. Contains 'Dolorous Interludes' in English translation. Translated by Richard Zenith and Margaret Jull Costa, who struggled to order it. Many of the earliest poems are attributed to Vicente Guedes. Opens with 'My soul is a hidden orchestra' (in Margaret Jull Costa's chronological edition). Soares lives in a fourth-floor apartment and writes during rainy days. Contains the observation that having read The Pickwick Papers is a tragedy because one can't read it for the first time again. Includes 'Forest of Estrangement' and advice to 'unhappily married women' about imagining orgasms. Littered with expressions of saudade. <a href="https://en.wikipedia.org/wiki/The_Book_of_Disquiet" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fragmentary &#x27;factless autobiography&#x27; credited to bookkeeper Bernardo Soares</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Richard Zenith translated a &#x27;factless autobiography&#x27; by this man credited to bookkeeper Bernardo Soares. | a lengthy &#x27;factless autobiography&#x27; about the isolated office clerk Bernardo Soares | a bookkeeper&#x27;s musings framed as a &#x27;factless autobiography&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Found posthumously in a trunk/suitcase after Pessoa&#x27;s 1935 death; compiled from 500+ sheets</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Many &#x27;Dolorous Interludes&#x27; dot an English translation of writing by this man which was compiled from over 500 sheets in a suitcase after his 1935 death. | a fragmentary book discovered posthumously in one of this author&#x27;s trunks | Scholars are still working to edit a 25 thousand page manuscript left by this author in a wooden trunk.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Translated by Richard Zenith and Margaret Jull Costa, who struggled to order it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Richard Zenith and Margaret Jull Costa struggled to order a fragmentary book | Margaret Jull Costa&#x27;s &#x27;complete&#x27; edition of this poet&#x27;s seminal collection is ordered chronologically</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Soares&#x27;s boss is named Vasques; lives in a fourth-floor apartment; writes during rainy days</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man wrote several fragments set during rainy days in the fourth-floor apartment of a man whose boss is named Vasques.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with &#x27;My soul is a hidden orchestra&#x27; (Jull Costa edition)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">opening with a poem that declares, &#x27;My soul is a hidden orchestra.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains &#x27;Forest of Estrangement&#x27; piece</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man published a piece set in a &#x27;Forest of Estrangement&#x27; that later appeared in a larger work.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Life&#x27;s great tragedies include having read The Pickwick Papers, because one can&#x27;t read it first again</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man wrote that life&#x27;s great tragedies include having read The Pickwick Papers, because one can&#x27;t go back and read it a first time.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Advice to Unhappily Married Women&#x27; passage</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">encouraged &#x27;imagining an orgasm with Man A while copulating with Man B&#x27; in one text&#x27;s &#x27;Advice to Unhappily Married Women.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Follows a man who collects books he never reads; celebrates &#x27;sombre majesty of splendours no one knows&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">follows a man who collects books he never reads and celebrates &#x27;sombre majesty of splendours no one knows.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;To have touched the feet of Christ is no excuse for mistakes in punctuation&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this poet asserted that &#x27;to have touched the feet of Christ is no excuse for mistakes in punctuation&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="heteronyms-general" open>
+            <summary class="work-title">Heteronyms (General)</summary>
+            <p class="work-desc">Pessoa's distinctive literary practice of creating over 75 distinct alter egos (heteronyms), each with their own biography, style, and worldview. Key heteronyms: Alberto Caeiro (the 'Master,' wrote The Keeper of Sheep, published a 'General Program' of neopaganism, died of tuberculosis in his mid-twenties), Alvaro de Campos (Glasgow-educated naval engineer, futurist-turned-sentimentalist, wrote 'The Tobacco Shop' and 'Opiario,' devotee of <a href="walt_whitman_stock.html" class="crossref-inline">Walt Whitman</a>), Ricardo Reis (an Epicurean doctor, wrote Greek-inspired odes to Lydia, exiled to Brazil after a failed 1919 rebellion, subject of <a href="saramago_stock.html" class="crossref-inline">Saramago</a>'s novel), and Bernardo Soares (semi-heteronym, bookkeeper, credited with The Book of Disquiet). Lesser-known heteronyms include the Baron of Tieve (committed suicide from insistence on living only by reason), the astrologer <a href="raphael_stock.html" class="crossref-inline">Raphael</a> Baldaya, the Englishman Alexander Search (death at twenty commemorated in an epigraph), the detective Abilio Quaresma, and an English heteronym 'A.A. Crosse' (named for crossword puzzles). <a href="https://en.wikipedia.org/wiki/Heteronym_(literature)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Used over 75 &#x27;heteronyms&#x27; -- distinct literary alter egos with own biographies and styles</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Portuguese author who used one of his many &#x27;heteronyms&#x27; to write The Book of Disquiet | This Portuguese author used over 75 &#x27;heteronyms&#x27; like Alvaro do Campos and Ricardo Reis. | Alberto Caeiro, Bernardo Soares, and Ricardo Reis are among what set of names</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alberto Caeiro -- the &#x27;Master,&#x27; wrote The Keeper of Sheep (written on a &#x27;triumphant day&#x27;), published neopaganism program, died of tuberculosis in mid-twenties (&#x27;I thank God I&#x27;m not good&#x27;)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A member of this group known as the &#x27;Master&#x27; wrote the collection The Keeper of Sheep and published a &#x27;General Program&#x27; of neopaganism. | A character created by this author dies in his mid-twenties from tuberculous after penning lines such as, &#x27;I thank God I&#x27;m not good.&#x27; | opening section, The Keeper of Sheep, was written on a &#x27;triumphant day.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alvaro de Campos -- Glasgow-educated naval engineer, futurist, wrote &#x27;The Tobacco Shop&#x27; (&#x27;How should I know what I&#x27;ll be, I who don&#x27;t know what I am?&#x27;) and &#x27;Opiario&#x27; (inspired by opium in Suez Canal), devotee of Walt Whitman</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of these figures wrote &#x27;How should I know what I&#x27;ll be, I who don&#x27;t know what I am?&#x27; in the poem &#x27;The Tobacco Shop.&#x27; | a polemic Glasgow-educated sailor and devotee of Walt Whitman | studied naval engineering in Scotland before becoming a Futurist and then a sentimentalist who wrote about his childhood</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ricardo Reis -- Epicurean doctor, wrote Greek odes to Lydia, exiled to Brazil after 1919 rebellion; subject of Saramago&#x27;s The Year of the Death of Ricardo Reis</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An Epicurean one of these figures exiled to Brazil following a failed 1919 rebellion talks to the ghost of the author who created him in a 1984 novel. | This doctor wrote many Greek-inspired odes to Lydia | Jose Saramago wrote that novel, titled for the &#x27;Year of the Death of&#x27; one of these figures.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lesser-known heteronyms: Baron of Tieve (suicided from living only by reason), Raphael Baldaya (astrologer), Alexander Search (English, died at twenty), Abilio Quaresma (detective), A.A. Crosse (English, named for crossword puzzles)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Baron of Tieve, whose insistence on living only according to reason led him to commit suicide, and the long-bearded astrologer Raphael Baldaya | the Englishman Alexander Search, whose death at twenty was commemorated in an epigraph; the doctor-detective Abilio Quaresma</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Trunk of heteronym manuscripts found after his death</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A trunk containing hundreds of poems by this author&#x27;s other heteronyms... was found after his death. | Scholars are still working to edit a 25 thousand page manuscript left by this author in a wooden trunk.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="mensagem-message" open>
+            <summary class="work-title">Mensagem (Message)</summary>
+            <p class="work-desc">A 44-poem poetry collection structured around Portugal's coat of arms. Contains the poem 'Ulysses' ('Myth is the nothing that is everything' / 'myth is the nothing that means everything'). Also contains O Mostrengo, a section about the spirit Adamastor. Published in the Orpheu magazine context. <a href="https://en.wikipedia.org/wiki/Mensagem" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">44-poem collection structured around Portugal&#x27;s coat of arms</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">structured one 44-poem collection around his nation&#x27;s coat of arms | declared myth the &#x27;nothing that is everything&#x27; in the poem &#x27;Ulysses,&#x27; which is included in a book inspired by his country&#x27;s coat of arms</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains poem &#x27;Ulysses&#x27; -- &#x27;Myth is the nothing that is everything&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">described how &#x27;myth is the nothing that means everything&#x27; in his poem Ulisses | &#x27;Myth - nothing, everything&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains O Mostrengo -- about the spirit Adamastor</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Adamastor is the title character of O Mostrengo, which is part of this poet&#x27;s book Mensagem.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Fernando Pessoa (1888-1935), Portuguese poet. Member and best-known figure of the Orpheu modernist movement. As a teenager in Durban, South Africa, designed elaborate English-language newspapers filled with fake events. Richard Zenith is his major translator and biographer. Wrote the poem 'If I Die Young' ('roots may be hidden in the ground / But their flowers flower in the open air for all to see'). Wrote the poem 'Antinous' about 'the cold in Hadrian's soul.' Antonio Tabucchi wrote <a href="akhmatova_stock.html#requiem" class="crossref-inline">Requiem</a>: A Hallucination featuring Pessoa's spirit as the Guest. Influenced by Gil Vicente ('the Portuguese Plautus'). Often clued alongside compatriot Jose <a href="saramago_stock.html" class="crossref-inline">Saramago</a> and Portugal's national epic The Lusiads by Luis de Camoes.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Portuguese author (giveaway identifier)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Portuguese poet of The Book of Disquiet, known for his heteronyms | Fernando Pessoa was an author from this country.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Member of the Orpheu modernist movement / wrote for the magazine Orpheus</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This writer for the magazine Orpheus declared myth the &#x27;nothing that is everything&#x27; | This best-known member of the Orpheu movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">As a teenager in Durban, South Africa, designed fake English-language newspapers</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">as a teenager in Durban, South Africa, he designed elaborate English-language newspapers filled with fake events</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Richard Zenith is his major translator and biographer</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Richard Zenith, who translated Drummond in Multitudinous Heart, is better known for his recent biography of this author. | This man&#x27;s translator Richard Zenith noted how, as a teenager in Durban, South Africa...</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poem &#x27;If I Die Young&#x27; -- &#x27;roots may be hidden in the ground / But their flowers flower in the open air&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author correctly prophesied his posthumous legacy in the line &#x27;roots may be hidden in the ground / But their flowers flower in the open air for all to see&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poem &#x27;Antinous&#x27; about &#x27;the cold in Hadrian&#x27;s soul&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote of the &#x27;cold in Hadrian&#x27;s soul&#x27; in the poem &#x27;Antinous&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Antonio Tabucchi wrote Requiem: A Hallucination featuring Pessoa&#x27;s spirit as &#x27;the Guest&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A roaming author awaits a spirit of this man called the Guest in Antonio Tabucchi&#x27;s novel Requiem: A Hallucination.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kafka citation: &#x27;cowardice produced some of the bravest writing of the century&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Over a glass of Colares Chita, this man cites Kafka to illustrate how &#x27;cowardice produced some of the bravest writing of the century.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Fernando Pessoa (1888-1935) is a Portuguese poet best known for his extensive use of &#x27;heteronyms&#x27; -- over 75 distinct literary alter egos with their own biographies and styles -- and for his fragmentary masterwork The Book of Disquiet.</p><p>The Book of Disquiet is a &#x27;factless autobiography&#x27; credited to the semi-heteronym Bernardo Soares, a bookkeeper whose boss is named Vasques. It was compiled from over 500 sheets found in a trunk after Pessoa&#x27;s death in 1935 and translated by Richard Zenith and Margaret Jull Costa, who struggled to order the fragments. The work opens with &#x27;My soul is a hidden orchestra&#x27; in Jull Costa&#x27;s chronological edition. Soares lives in a fourth-floor apartment, writes during rainy days, collects books he never reads, and observes that having read The Pickwick Papers is a tragedy. The work also contains the &#x27;Forest of Estrangement&#x27; piece and an &#x27;Advice to Unhappily Married Women&#x27; section.</p><p>Pessoa&#x27;s key heteronyms include Alberto Caeiro (the &#x27;Master,&#x27; who wrote The Keeper of Sheep on a &#x27;triumphant day,&#x27; published a neopaganism program, died of tuberculosis in his mid-twenties with the line &#x27;I thank God I&#x27;m not good&#x27;); Alvaro de Campos (a Glasgow-educated naval engineer, futurist, devotee of <a href="walt_whitman_stock.html" class="crossref-inline">Walt Whitman</a>, who wrote &#x27;The Tobacco Shop&#x27; -- &#x27;How should I know what I&#x27;ll be, I who don&#x27;t know what I am?&#x27; -- and &#x27;Opiario,&#x27; inspired by opium in the Suez Canal); Ricardo Reis (an Epicurean doctor who wrote Greek-inspired odes to Lydia, exiled to Brazil after a failed 1919 rebellion); and Bernardo Soares. Lesser-known heteronyms include the Baron of Tieve (suicided from insistence on living by reason alone), the astrologer <a href="raphael_stock.html" class="crossref-inline">Raphael</a> Baldaya, Alexander Search (English, died at twenty), detective Abilio Quaresma, and &#x27;A.A. Crosse&#x27; (named for crossword puzzles).</p><p>Ricardo Reis is the subject of Jose <a href="saramago_stock.html" class="crossref-inline">Saramago</a>&#x27;s novel <a href="saramago_stock.html#the-year-of-the-death-of-ricardo-reis" class="crossref-inline">The Year of the Death of Ricardo Reis</a>, in which Reis returns from Brazil to Lisbon after Pessoa&#x27;s death, converses with Pessoa&#x27;s ghost, sleeps with the hotel maid Lydia, reads Herbert Quain&#x27;s The God of the Labyrinth, meets Dr. Sampaio and his daughter Marcenda, and ultimately follows Pessoa into a cemetery.</p><p>Mensagem (Message) is a 44-poem collection structured around Portugal&#x27;s coat of arms, containing the poem &#x27;Ulysses&#x27; (&#x27;Myth is the nothing that is everything&#x27;) and O Mostrengo about the spirit Adamastor.</p><p>Biographically, Pessoa was the best-known member of the Orpheu modernist movement. As a teenager in Durban, South Africa, he designed elaborate fake English-language newspapers. Richard Zenith is his major translator and biographer. He wrote the poem &#x27;If I Die Young,&#x27; prophesying his posthumous legacy, and the poem &#x27;Antinous&#x27; about &#x27;the cold in Hadrian&#x27;s soul.&#x27; Antonio Tabucchi&#x27;s <a href="akhmatova_stock.html#requiem" class="crossref-inline">Requiem</a>: A Hallucination features Pessoa&#x27;s spirit as &#x27;the Guest.&#x27; He is often clued alongside compatriot <a href="saramago_stock.html" class="crossref-inline">Saramago</a> and Portugal&#x27;s national epic The Lusiads by Camoes.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Fernando_Pessoa" target="_blank">Fernando Pessoa — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Book_of_Disquiet" target="_blank">The Book of Disquiet — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Mensagem" target="_blank">Mensagem — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Heteronym_(literature)" target="_blank">Heteronym (literature) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Ricardo Reis — frequently an answerline on his own</li><li>Jose Saramago — The Year of the Death of Ricardo Reis is closely linked</li><li>Alvaro de Campos — may have dedicated answerline clues</li><li>Alberto Caeiro — may have dedicated answerline clues</li><li>The Book of Disquiet — may have dedicated answerline clues</li></ul>
+        
+        </section>
+        
+</body>
+</html>

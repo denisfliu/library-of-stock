@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Anna Akhmatova</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Anna Akhmatova</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="akhmatova_questions.html">View source questions</a> · <a href="akhmatova_cards.html">Make cards</a></div>
+<div class="summary">Russian Silver Age poet (born Anna Gorenko), a leading figure of the Acmeist movement. Best known for the long poems Requiem and Poem Without a Hero. Requiem responds to the imprisonment of her son Lev Gumilev during Stalin&#x27;s Great Purge, opening with the prose section &#x27;Instead of a Preface&#x27; in which a blue-lipped woman asks &#x27;Can you describe this?&#x27; Poem Without a Hero opens at the Fontanka House and reflects on the Leningrad siege. First husband was the poet Nikolay Gumilev (executed 1921). Called &#x27;half-nun, half-harlot&#x27; by Andrei Zhdanov. Also wrote the poem &#x27;Lot&#x27;s Wife.&#x27; Isaiah Berlin visited her in 1945, inspiring the &#x27;Guest from the Future&#x27; figure. Rose to fame with the collections Evening and The Rosary.</div>
+
+        <details class="work" id="requiem" open>
+            <summary class="work-title">Requiem</summary>
+            <p class="work-desc">Akhmatova's most famous work, a cycle of poems written over three decades in response to the imprisonment of her son Lev Gumilev during Stalin's Great Terror. Opens with the prose section 'Instead of a Preface' in which a woman with 'lips blue from the cold' asks 'Can you describe this?' Includes sections titled 'Crucifixion,' 'The Sentence,' and two Epilogues. Shared via samizdat. <a href="https://en.wikipedia.org/wiki/Requiem_(Akhmatova)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">14x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Instead of a Preface&#x27;: a woman with blue/bluish lips asks &#x27;Can you describe this?&#x27; — and the speaker responds &#x27;I can&#x27;; a &#x27;sort of smile&#x27; slides across the woman&#x27;s face</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A blue-lipped woman asks this author &#x27;can you describe this?&#x27; at the start of a poem | A woman with &#x27;bluish lips&#x27; asks, &#x27;Can you describe this?&#x27; as this author waits in line</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written about the 17-month imprisonment of her son Lev Gumilev during Stalin&#x27;s Great Terror / Great Purge</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet responded to her son&#x27;s imprisonment in a poem | about a woman who waits seventeen months outside of a prison in Leningrad</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Crucifixion&#x27; section begins &#x27;Weep not for me, mother&#x27;; Mary Magdalene &#x27;beat her breasts and sobbed&#x27; / &#x27;tore her hair&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Weep not for me, mother&#x27; begins the &#x27;Crucifixion&#x27; section | contrasts Mary Magdalene tearing out her hair with the &#x27;silent and alone&#x27; Virgin Mary</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Sentence&#x27;: &#x27;I have so much to do today: I must kill memory once and for all&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A woman says she has &#x27;so much to do today,&#x27; like &#x27;kill memory&#x27; | wrote, &#x27;Today I have so much to do: I must kill memory once and for all&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with a prison dove cooing / &#x27;ships sail softly down&#x27; the Neva / &#x27;mute ships sail along the Neva&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">imagined the coo of a prison dove as &#x27;ships sail softly down&#x27; a river | This poem ends by describing how &#x27;mute ships sail along the Neva&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;A hundred million people&#x27; shout through the speaker&#x27;s &#x27;tortured mouth&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote of &#x27;a hundred million people&#x27; shouting through their &#x27;tortured mouth&#x27; | &#x27;one hundred million voices shout&#x27; through her &#x27;tortured mouth&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Epilogue: &#x27;I&#x27;d like to call you all by name, but the list has been removed&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet claims &#x27;I&#x27;d like to call you all by name, but the list / Has been removed&#x27; in the &#x27;Epilogue&#x27; section</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens &#x27;No foreign sky protected me&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a poem by this author that opens, &#x27;No foreign sky protected me&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;For one moment of peace / I would give the peace of the tomb&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A poem by this author concludes, &#x27;For one moment of peace / I would give the peace of the tomb&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Second Epilogue: &#x27;I shouldn&#x27;t forget / The deafening roar of Black Maries&#x27; black band&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This cycle&#x27;s second epilogue consists of a series of couplets, including one stating &#x27;I shouldn&#x27;t forget / The deafening roar of Black Maries&#x27; black band&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shared via samizdat; Akhmatova would write poems line by line, have friends memorize them, then burn the slips</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this author would write poems line by line, allow a small group of friends to commit them to memory, and then burn the slips of paper | Requiem was shared via samizdat</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;To Death&#x27;: &#x27;the dark blue radiance of his eyes / Is covered by the final terror&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet notices, &#x27;the dark blue radiance of his eyes / Is covered by the final terror&#x27; in the poem &#x27;To Death&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dedication mentions &#x27;Siberian snows&#x27; and the Neva getting mistier</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The dedication of this poem mentions &#x27;Siberian snows&#x27; and how &#x27;The sun downed, the Neva got mistier&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also memorializes husband Nikolay Punin and first husband Nikolay Gumilev</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a long poem by this Acmeist responds to the arrests of her husband, Nikolay Punin, and her son, Lev Gumilyov | memorializes the suffering of her husband and son under Stalin&#x27;s terror</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="poem-without-a-hero" open>
+            <summary class="work-title">Poem Without a Hero</summary>
+            <p class="work-desc">Akhmatova's longest poem, partly set at the Fontanka House during the siege of Leningrad. Opens 'I have lit my treasured candles, one by one.' Features a ball attended by fictional characters including <a href="goethe_stock.html#faust" class="crossref-inline">Faust</a>, Dorian Gray, and Thomas Glahn. The 'Guest from the Future' represents Isaiah Berlin. Reflects on the Silver Age ('the hellish harlequinade from 1913'). 'Silence itself' is the speaker of the 'Fourth and Final Chapter.' <a href="https://en.wikipedia.org/wiki/Poem_Without_a_Hero" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens &#x27;I have lit my treasured candles, one by one&#x27; / set at the Fontanka House (Fountain House)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this writer asks &#x27;what have poets ... to do with sin?&#x27; and requests &#x27;the peace of the tomb&#x27; | This book-length poem by Akhmatova is partly set at Fountain House, during the siege of Leningrad</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features a ball attended by fictional characters: Faust, Dorian Gray, Thomas Glahn; the &#x27;Guest from the Future&#x27; represents Isaiah Berlin</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet imagined a ball attended by fictional characters like Faust, Dorian Gray, and Thomas Glahn, who are joined by a &#x27;Guest from the Future&#x27; representing Isaiah Berlin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;What have poets, in any case, to do with sin?&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">asks &#x27;what have poets, in any case, to do with sin?&#x27; | the speaker asks &#x27;what have poets, in any case, to do with sin&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The hellish harlequinade from 1913 has passed&#x27; — reflects on the Silver Age</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet remarks that &#x27;The hellish harlequinade from 1913 has passed&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Silence itself&#x27; is the speaker of the &#x27;Fourth and Final Chapter&#x27;; &#x27;does not contain any third, seventh, or twenty-ninth meanings&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Silence itself&#x27; is the speaker of the &#x27;Fourth and Final Chapter&#x27; of one poem by this author, who wrote that it &#x27;does not contain any third, seventh, or twenty-ninth meanings&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator calls Prince Charming &#x27;grace incarnate&#x27;; vows not to meet her old &#x27;black agate necklace&#x27; self until &#x27;Day of Judgment&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The narrator calls Prince Charming &#x27;grace incarnate&#x27; and vows not to meet her old &#x27;black agate necklace&#x27; self until the &#x27;Day of Judgment&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dedicated to those who died during the Leningrad siege / WWII</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Akhmatova wrote &#x27;Poem Without a Hero&#x27; to commemorate those who died during this war | dedicated Poem without a Hero to those that died at Leningrad</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Asks a woman &#x27;Are you the one whom Dante heard dictate the lines of his Inferno?&#x27; and receives &#x27;Yes&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this poet&#x27;s speakers asks a woman, &#x27;Are you the one whom Dante heard dictate the lines of his Inferno?&#x27; and receives the reply, &#x27;Yes&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">When asked to explain the poem, Akhmatova said &#x27;What I have written, I have written&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet wrote that &#x27;What I have written, I have written&#x27; when asked to explain her &#x27;Poem Without a Hero&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-poems" open>
+            <summary class="work-title">Other Poems</summary>
+            <p class="work-desc">Individual poems by Akhmatova that appear in clues, including 'Lot's Wife,' 'Cinque,' 'The Guest,' 'When in Suicidal Anguish,' and 'Mayakovsky in 1913.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Lot&#x27;s Wife&#x27;: asks &#x27;who will grieve for this woman? Does she not seem too insignificant?&#x27; — describes &#x27;a sudden dart of pain / stitching her eyes before she made a sound&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this non-Polish poet asks, &#x27;Who will grieve for this woman? Does she not seem too insignificant for our concern?&#x27; | This author&#x27;s poem &#x27;Lot&#x27;s Wife&#x27; renders her transformation as &#x27;a single glance: a sudden dart of pain / stitching her eyes before she made a sound&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Cinque&#x27;: describes a &#x27;mute world&#x27; with &#x27;only two voices: yours and mine&#x27; — written after Isaiah Berlin&#x27;s visit</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author described a &#x27;mute world&#x27; with &#x27;only two voices: yours and mine&#x27; in a poem written after a visit from Isaiah Berlin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Guest&#x27;: narrator asks &#x27;What do you want?&#x27; and receives the reply &#x27;To be with you in Hell&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author wrote a poem whose narrator asks, &#x27;What do you want?&#x27; and receives the reply, &#x27;To be with you in Hell&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The ancient gods changed men to things, but left them / A consciousness that smoldered endlessly&#x27; — comparing a memory to a stone in a well</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet wrote &#x27;The ancient gods changed men to things, but left them / A consciousness that smoldered endlessly&#x27; in a poem comparing a memory to a stone in the depths of a well</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;When in Suicidal Anguish&#x27; — describes the &#x27;stern spirit of Byzantium&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">describes the &#x27;stern spirit of Byzantium&#x27; and is titled &#x27;When in Suicidal Anguish&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;I have lit my treasured candles&#x27; begins a poem dedicated to people killed during a siege (also in PWAH)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The line &#x27;I have lit my treasured candles&#x27; begins another work by this poet dedicated to people killed during a siege</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Mayakovsky in 1913&#x27; — inspired by Mayakovsky&#x27;s suicide</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mayakovsky&#x27;s suicide in turn inspired this other Russian poet to write &#x27;Mayakovsky in 1913&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Praised Blok as &#x27;the tragic tenor of the epoch&#x27; and &#x27;a monument to the beginning of the century&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">praised Bloch as &#x27;the tragic tenor of the epoch&#x27; and &#x27;a monument to the beginning of the century&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">General biographical clues about Akhmatova: born Anna Gorenko, Russian/Soviet poet, leading figure of the Acmeist movement (Silver Age). First husband was Nikolay Gumilev (executed 1921). Called 'half-nun, half-harlot' by Andrei Zhdanov. Rose to fame with collections Evening and The Rosary. Lived at the Fontanka House. Isaiah Berlin's 1945 visit was mythologized. Close friend of Osip Mandelstam. Born in Ukraine.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Member of the Acmeist movement / Silver Age of Russian poetry; movement met at the Stray Dog Cafe; journal Apollon</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this member of the Acmeist school | Members of this movement met in the Stray Dog Cafe</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called &#x27;half-nun, half-harlot&#x27; (or &#x27;half-nun, half-whore&#x27;) by Andrei Zhdanov</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author, who was called &#x27;half nun, half whore&#x27; | This Acmeist, whom Andrei Zhdanov labelled a &#x27;harlot-nun&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First husband was the poet Nikolay Gumilev (executed by the Cheka in 1921); co-founder of Acmeism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this poet was one of the leading figures in the Acmeist movement along with her husband, Nikolay Gumilev | This poet was married to the author of a collection titled The Quiver</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Isaiah Berlin visited her in 1945; she collapsed and said &#x27;I am in love&#x27;; he appears as &#x27;Guest from the Future&#x27; in PWAH</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">These two people met and talked about life and literature all night in an oft-mythologized 1945 meeting | she wrote about the other, who at the time was the UK ambassador to Russia, as &#x27;The Guest from the Future&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rose to fame with collections Evening and The Rosary</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet rose to fame with the collections Evening and The Rosary</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lived at the Fontanka House (Fountain House / Sheremet&#x27;ev Palace) — now her literary museum</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Akhmatova lived in a palace named for one of these objects, which is now the site of her literary museum | This poet wrote her most famous poem at the Fontanka House</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Close friend of Osip Mandelstam; his poem about her mentions &#x27;ominous voice - drunk with pain&#x27; at Stray Dog cabaret</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet&#x27;s &#x27;ominous voice - drunk with pain - rising from heart&#x27;s depths&#x27; echoes through the Stray Dog cabaret in another author&#x27;s poem</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marina Tsvetaeva dedicated poems to her: called her a &#x27;muse of lament,&#x27; &#x27;I give you my town of many bells&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the speaker calls her a &#x27;muse of lament&#x27; and tells this person, &#x27;I give you my town of many bells, and with the gift: my heart&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Compared to Cassandra by Mandelstam</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This person is compared to Cassandra in a poem which begins, &#x27;I was not then questing, / Cassandra, for your lips&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mikhail Kuzmin wrote a preface to Evening; their friendship later soured</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Kuzmin wrote a preface to this poet&#x27;s first book of poetry called Evening, though their friendship soured</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Uncharacteristically praised Stalin in a 1950 poem: &#x27;Where [Stalin] is, there is Freedom, Peace&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Akhmatova uncharacteristically claimed &#x27;Where [this man] is, there is Freedom, Peace, and the grandeur of the earth&#x27; in a 1950 poem</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Born in Ukraine (Odessa); poem &#x27;The Moon in a Zenith&#x27; refers to Tashkent as &#x27;my dear Asian home&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another Ukraine-born author | &#x27;I was not here for hundreds of years, / But nothing changed for ages here&#x27; in a poem in which Tashkent is referred to as &#x27;my dear Asian home&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ingeborg Bachmann dedicated a late poem to her</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A late poem by Bachmann dedicated to this author reveals her disgust with poetry</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poem &#x27;There are Four of Us&#x27; compares elderberry to a letter by Tsvetaeva</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Anna Akhmatova&#x27;s poem &#x27;There are Four of Us&#x27; compares a branch of elderberry to one of these works by Tsvetaeva</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Anna Akhmatova (born Anna Gorenko, 1889–1966) is one of the greatest Russian poets of the 20th century and a leading figure of the Acmeist movement during the Silver Age of Russian poetry.</p><p>Her most famous work is Requiem, a cycle of poems written over three decades in response to the imprisonment of her son Lev Gumilev during Stalin&#x27;s Great Terror. The poem opens with the prose section &#x27;Instead of a Preface,&#x27; in which Akhmatova stands in line outside a Leningrad prison and a woman with &#x27;lips blue from the cold&#x27; asks &#x27;Can you describe this?&#x27; — to which the speaker responds &#x27;I can,&#x27; and &#x27;a sort of smile&#x27; slides across the woman&#x27;s face. The section &#x27;The Sentence&#x27; contains the lines &#x27;I have so much to do today: I must kill memory once and for all.&#x27; The &#x27;Crucifixion&#x27; section begins &#x27;Weep not for me, mother&#x27; and contrasts Mary Magdalene tearing her hair with the &#x27;silent and alone&#x27; Virgin Mary. The poem speaks of &#x27;a hundred million people&#x27; shouting through the speaker&#x27;s &#x27;tortured mouth.&#x27; The Epilogue states &#x27;I&#x27;d like to call you all by name, but the list has been removed.&#x27; The poem ends with a prison dove cooing and &#x27;ships sail softly down&#x27; the Neva. The dedication mentions &#x27;Siberian snows.&#x27; Requiem was shared via samizdat; Akhmatova would write poems line by line, have friends memorize them, then burn the slips of paper. The poem also memorializes her husband Nikolay Punin and responds to the broader suffering under Stalin&#x27;s purges.</p><p>Poem Without a Hero is Akhmatova&#x27;s longest work, partly set at the Fontanka House (Fountain House / Sheremet&#x27;ev Palace) during the siege of Leningrad. It opens &#x27;I have lit my treasured candles, one by one.&#x27; It features a masquerade ball attended by fictional characters including <a href="goethe_stock.html#faust" class="crossref-inline">Faust</a>, Dorian Gray, and Thomas Glahn, with the &#x27;Guest from the Future&#x27; representing Isaiah Berlin. The poem asks &#x27;What have poets, in any case, to do with sin?&#x27; and reflects on the Silver Age with the line &#x27;The hellish harlequinade from 1913 has passed.&#x27; &#x27;Silence itself&#x27; speaks the &#x27;Fourth and Final Chapter.&#x27; The narrator calls Prince Charming &#x27;grace incarnate.&#x27; It was dedicated to those who died during the Leningrad siege. When asked to explain the poem, Akhmatova said &#x27;What I have written, I have written.&#x27;</p><p>Other frequently clued poems include &#x27;Lot&#x27;s Wife,&#x27; which asks &#x27;who will grieve for this woman?&#x27; and describes &#x27;a single glance: a sudden dart of pain / stitching her eyes before she made a sound.&#x27; &#x27;Cinque&#x27; describes a &#x27;mute world&#x27; with &#x27;only two voices: yours and mine,&#x27; written after Isaiah Berlin&#x27;s visit. &#x27;The Guest&#x27; features the reply &#x27;To be with you in Hell.&#x27;</p><p>Akhmatova was a member of the Acmeist movement, which met at the Stray Dog Cafe and published in the journal Apollon. Her first husband was the poet Nikolay Gumilev, co-founder of Acmeism, who was executed by the Cheka in 1921. She was called &#x27;half-nun, half-harlot&#x27; by the Soviet cultural commissar Andrei Zhdanov. She rose to fame with the poetry collections Evening (with a preface by Mikhail Kuzmin) and The Rosary. She lived at the Fontanka House, now the site of her literary museum. Isaiah Berlin visited her in 1945 in a mythologized all-night meeting after which she collapsed and said &#x27;I am in love.&#x27; She was a close friend of Osip Mandelstam, who compared her to Cassandra. Marina Tsvetaeva called her a &#x27;muse of lament&#x27; and wrote &#x27;I give you my town of many bells.&#x27; She uncharacteristically praised Stalin in a 1950 poem. Born in Ukraine, her poem &#x27;The Moon in a Zenith&#x27; refers to Tashkent as &#x27;my dear Asian home.&#x27;</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Anna_Akhmatova" target="_blank">Anna Akhmatova — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Requiem_(Akhmatova)" target="_blank">Requiem (poem) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Poem_Without_a_Hero" target="_blank">Poem Without a Hero — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Requiem (Akhmatova) — Extremely heavily clued with many specific section-by-section details; could support a deep-dive</li><li>Osip Mandelstam — Frequently cross-referenced as Akhmatova&#x27;s close friend and fellow Acmeist</li></ul>
+        
+        </section>
+        
+</body>
+</html>

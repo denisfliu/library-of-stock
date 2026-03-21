@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Yukio Mishima</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Yukio Mishima</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="yukio_mishima_questions.html">View source questions</a> · <a href="yukio_mishima_cards.html">Make cards</a></div>
+<div class="summary">Japanese novelist and playwright (born Kimitake Hiraoka) who committed seppuku after a failed coup attempt in 1970 (the Mishima Incident). Best known for the Sea of Fertility tetralogy, <a href="george_herbert_stock.html#the-temple" class="crossref-inline">The Temple</a> of the Golden Pavilion, Confessions of a Mask, and The Sailor Who Fell from Grace with the Sea. Founder of the Shield Society. Obsessed with bodybuilding, martial arts, and right-wing nationalism. Wrote the autobiographical essay Sun and Steel. Also wrote plays including Madame de Sade and My Friend Hitler.</div>
+
+        <details class="work" id="the-sea-of-fertility-tetralogy" open>
+            <summary class="work-title">The Sea of Fertility Tetralogy</summary>
+            <p class="work-desc">A four-novel tetralogy about the lawyer/judge Shigekuni Honda, who discovers that his friend Kiyoaki Matsugae is successively reincarnated — as the reactionary nationalist Isao Iinuma (Runaway Horses), the Thai princess Ying Chan (<a href="george_herbert_stock.html#the-temple" class="crossref-inline">The Temple</a> of Dawn), and the teenager Toru Yasunaga (The Decay of an Angel). Honda recognizes each reincarnation by a distinctive pattern of three moles. Spring Snow features the Ayakura and Matsugae families and Kiyoaki's affair with Satoko. The tetralogy ends at Gesshu Temple, where an abbess does not recall if another character existed, leading Honda to ponder 'perhaps there has been no I' in a garden with 'no memories, nothing.' <a href="https://en.wikipedia.org/wiki/The_Sea_of_Fertility" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Honda recognizes successive reincarnations of Kiyoaki by three moles (Isao Iinuma, Ying Chan, Toru Yasunaga)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Thai princess Ying Chan, the reactionary Isao Iinuma, and the orphan Toru Yasunaga all have the same pattern of three moles clustered together, leading Shigekuni Honda to suspect that his friend Kiyoaki is being reincarnated. | Honda recognizes each figure as a reincarnation of Kiyoaki by this sign.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Spring Snow: Kiyoaki&#x27;s affair with Satoko Ayakura; Siamese/Thai princes at the Peers School; Kiyoaki on his deathbed tells Honda &#x27;I&#x27;ll see you again&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the relationship between Satoko Ayakura and Kiyoaki Matsugae, who keeps a journal of prophetic dreams, which he gives to Shigekuni Honda on his death. | A pair of Thai princes come to study at the Peers School | the school prefect unintentionally humiliates two Siamese Princes by having them search the grass in the rain for their lost emerald ring.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Temple of Dawn: Honda visits Thailand; holds pool party at villa to see Ying Chan&#x27;s moles</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Honda&#x27;s visit to the Temple of Dawn in the third novel of his Sea of Fertility tetralogy. | this character holds a pool party at his villa to see if Ying Chan has three moles on her left side.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Honda visits Ajanta Caves in India; reminded of Kiyoaki&#x27;s promise to &#x27;see him beneath the falls&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">While visiting the Ajanta Caves in India, a lawyer created by this author is reminded of his friend&#x27;s promise to &#x27;see him... beneath the falls.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ending: abbess at Gesshu Temple doesn&#x27;t recall another character; Honda ponders &#x27;perhaps there has been no I&#x27;; garden with &#x27;no memories, nothing&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character who ponders &#x27;perhaps there has been no I&#x27; after an abbess doesn&#x27;t recall if another character existed. Afterward, this author&#x27;s character wanders in a garden that had &#x27;no memories, nothing.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Decay of an Angel: protagonist falls asleep smoking, burns down Honda&#x27;s villa</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character inadvertently burns the protagonist&#x27;s villa down after he falls asleep smoking in bed.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kiyoaki was forced to read the Code of Manu in his youth</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The protagonist of one of this author&#x27;s novels was forced to read the Code of Manu in his youth.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;When you meet the Buddha, kill the Buddha&#x27; — repeated in Runaway Horses (and echoed in Temple of the Golden Pavilion)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist is told, &#x27;When you meet the Buddha, kill the Buddha.&#x27; | &#x27;If you meet the Buddha in the road, kill him&#x27; before burning down a building.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-temple-of-the-golden-pavilion-kinkaku-ji" open>
+            <summary class="work-title">The Temple of the Golden Pavilion (Kinkaku-ji) <a href="george_herbert_stock.html#the-temple" class="work-link-btn" title="Go to George Herbert">&rarr;</a></summary>
+            <p class="work-desc">A novel based on a real-life event, in which the protagonist Mizoguchi burns down the Golden Temple (Kinkaku-ji). <a href="george_herbert_stock.html#the-temple" class="crossref-inline">The Temple</a> is 'a symbol of the real world's evanescence'; Mizoguchi is struck by impotence after visions of it. He resolves to destroy it after traveling northwest and seeing the sea. Also features Kashiwagi, who slaps his girlfriend after asking Mizoguchi to steal irises and cattails for ikebana. <a href="https://en.wikipedia.org/wiki/The_Temple_of_the_Golden_Pavilion" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mizoguchi burns down the Golden Temple (Kinkaku-ji) — based on a real-life event</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">described Mizoguchi&#x27;s burning of the title structure | Mizoguchi burns down the Golden Temple in this author&#x27;s novel | inspired by the burning of Kinkaku-ji for his novel The Temple of the Golden Pavilion.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Temple called &#x27;a symbol of the real world&#x27;s evanescence&#x27;; Mizoguchi comforted that it might be destroyed in an air raid</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">called &#x27;a symbol of the real world&#x27;s evanescence&#x27; by a character who feels comforted by the idea that it might be destroyed along with him in an air raid.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mizoguchi struck by impotence after visions of the temple; remarks &#x27;the first real problem I faced in my life was that of beauty&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character who remarks, &#x27;the first real problem I faced in my life was that of beauty,&#x27; is struck by impotence after having visions of this thing.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mizoguchi resolves to destroy it after seeing the sea</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mizoguchi finally resolves to destroy it after traveling northwest and seeing this place.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kashiwagi slaps girlfriend after asking Mizoguchi to steal irises and cattails for ikebana</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Kashiwagi slaps and breaks up with his girlfriend after asking the protagonist, Mizoguchi, to steal irises and cattails for ikebana, or flower arranging.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="confessions-of-a-mask-kamen-no-kokuhaku" open>
+            <summary class="work-title">Confessions of a Mask (Kamen no Kokuhaku)</summary>
+            <p class="work-desc">A semi-autobiographical 'I-novel' in which the protagonist Kochan explores his repressed homosexuality. He daydreams about cannibalizing a fellow student and pretends to be attracted to Sonoko to hide his sexuality. He has a sexual awakening while masturbating to Guido Reni's painting of Saint Sebastian. He is fascinated by the armpits of a body named Omi. He is 'choked by desire' after seeing a night-soil man's trousers. Inspired by Mori Ogai's Vita Sexualis. <a href="https://en.wikipedia.org/wiki/Confessions_of_a_Mask" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kochan explores/struggles with his repressed homosexuality — semi-autobiographical</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Kochan&#x27;s repressed homosexuality and admiration for masculinity | about the Japanese boy Kochan&#x27;s struggles with hiding his true self and his sexuality. | Kochan struggling to accept his homosexuality</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kochan has sexual awakening while masturbating to Guido Reni&#x27;s painting of Saint Sebastian</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Kochan recalls being &#x27;choked by desire&#x27; in his youth after seeing a night-soil man&#x27;s trousers and a painting of St. Sebastian. | a sexual awakening while masturbating to Guido Reni&#x27;s painting of Saint Sebastian.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kochan daydreams about cannibalizing a fellow student; pretends to be attracted to Sonoko</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a weakling child who daydreams about cannibalizing a fellow student and pretends to be attracted to Sonoko to hide his homosexuality.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Night-soil man passing in the street — narrator muses about excrement and the Earth</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">muses about the connection between excrement and the Earth when he sees a &#x27;night-soil man&#x27; pass him in the street. | recalls being &#x27;choked by desire&#x27; in his youth after seeing a night-soil man&#x27;s trousers</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kochan ashamed of admiring a picture of Joan of Arc</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Kochan&#x27;s repressed homosexuality and admiration for masculinity leads him to be ashamed of admiring a picture of Joan of Arc</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kochan fascinated by armpits of body named Omi</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The protagonist of this novel is fascinated with the armpits of a body named Omi.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-sailor-who-fell-from-grace-with-the-sea" open>
+            <summary class="work-title">The Sailor Who Fell from Grace with the Sea</summary>
+            <p class="work-desc">A novel in which Noboru spies through a peephole on his mother Fusako having sex with the sailor Ryuji. Noboru and his gang ('the chief' and friends) drug Ryuji's tea and dissect him. The title character Ryuji works on the Rakuyo. Noboru murders a cat during a meeting with his gang. <a href="https://en.wikipedia.org/wiki/The_Sailor_Who_Fell_from_Grace_with_the_Sea" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Noboru spies through a peephole on his mother Fusako and sailor Ryuji having sex</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man turns towards the sound of a boat&#x27;s horn after having sex with Fusako, while being spied on through a peephole by Noboru. | Noboru watches Ryuji have sex with his mother Fusako.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gang of boys drug Ryuji&#x27;s tea and dissect him</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That novel ends with a gang of boys drugging that man&#x27;s tea to dissect him.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Noboru murders a cat during a meeting with &#x27;the chief&#x27; and friends</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist of this novel viciously murders a cat.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Noboru upset that new father doesn&#x27;t beat him for spying</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Noboru becomes upset when his new father doesn&#x27;t beat him for spying on him and his mother Fusako having sex.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ryuji works on the Rakuyo / a boy is embarrassed by a man who drenches himself in a water fountain</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Its title character is Ryuji, who works on the Rakuyo. | a boy is embarrassed by a man who drenches himself in a water fountain.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="patriotism-and-the-mishima-incident" open>
+            <summary class="work-title">&quot;Patriotism&quot; and the Mishima Incident</summary>
+            <p class="work-desc">"Patriotism" is a short story thought to foreshadow Mishima's own death: Lieutenant Shinji and his wife Reiko have sex under a scroll displaying 'Sincerity' before killing themselves rather than suppressing a mutiny. Mishima's failed coup (the Mishima Incident) in 1970: he led the Shield Society, delivered a barely audible speech from a balcony to the JSDF, then committed seppuku. His kaishakunin botched three attempts to behead him. Oe Kenzaburo's The Day He Himself Shall Wipe Our Tears Away parodies the event. Mishima also wrote a death poem: 'falling is the essence of a flower.' <a href="https://en.wikipedia.org/wiki/Mishima_incident" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Committed seppuku after failed coup / attempted to restore the Emperor / led the Shield Society</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">committed seppuku after staging a failed coup. | the leader of the Shield Society delivered a barely-audible speech from a balcony to the JSDF. | committed seppuku after attempting a coup to overthrow the Japanese Constitution.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;Patriotism&quot; — Lieutenant Shinji and wife Reiko kill themselves; sex under scroll saying &#x27;Sincerity&#x27;; foreshadows Mishima&#x27;s own death</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a young husband and wife have sex under a scroll displaying the word &#x27;Sincerity&#x27; before dying. | Lieutenant Shinji and his wife Reiko kill themselves instead of suppressing a mutiny against the army.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kaishakunin (fellow Shield Society member) botched three attempts to behead him in 1970</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author&#x27;s kaishakunin, a fellow member of the Shield Society, botched three attempts to kill this author in 1970.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Death poem: &#x27;falling is the essence of a flower&#x27; / &#x27;Storm winds at night blow...&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a poem in which a storm declares that &#x27;falling is the essence of a flower&#x27; was written for the occasion of this event. | &#x27;Storm winds at night blow / The message that to fall before / The world and before men / By whom falling is dreaded / Is the mark of a flower.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Oe Kenzaburo&#x27;s The Day He Himself Shall Wipe Our Tears Away parodies the event</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The story The Day He Himself Shall Wipe Our Tears Away parodies this event | A character likely based on this author leads a group that sings a Bach chorale in a different author&#x27;s novella</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nogi Maresuke&#x27;s suicide indirectly inspired &#x27;Patriotism,&#x27; Runaway Horses, and Mishima&#x27;s own coup</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nogi played a large role in reviving seppuku in the 20th century, indirectly inspiring this author&#x27;s story &#x27;Patriotism&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="sun-and-steel" open>
+            <summary class="work-title">Sun and Steel</summary>
+            <p class="work-desc">A 1968/1970 autobiographical essay about Mishima's quest for physical perfection through bodybuilding and martial arts. Compares words to 'white ants' for their 'corrosive function.' Notes that the only way to observe the existence of an apple's core is to cut it, thereby destroying it. The epilogue describes flying in an F-104 fighter and comparing a cloud to a giant Ouroboros that 'mocks all opposites.' <a href="https://en.wikipedia.org/wiki/Sun_and_Steel" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Essay about bodybuilding / physical perfection; words are like &#x27;white ants&#x27; with a &#x27;corrosive function&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">describes how words are like &#x27;white ants&#x27; in their corrosive power | described his quest for physical perfection through bodybuilding in his essay Sun and Steel.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Epilogue: flies in an F-104 fighter; compares cloud to Ouroboros that &#x27;mocks all opposites&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">compares a cloud to a giant Ouroboros that &#x27;mocks all opposites&#x27; as he flies in an F104 fighter. | whose epilogue details a flight taken by an F-104.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Other works by Mishima mentioned in clues.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Forbidden Colors — Shunsuke crafts protege/lover Yuichi into a weapon of revenge against women; Mishima visited gay bars for research</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">depicts an aging postwar author name Shunsuke, who crafts his brilliant young protege and lover Yuichi into a weapon of revenge against women.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Sound of Waves — pearl diver Shinji falls in love with wealthy Hatsue; young men tested on shipping vessel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Shinji, a pearl diver, falls in love with the beautiful and wealthy Hatsue. | two young men are hired on a shipping vessel as a secret test of character to determine who is more worthy to marry a wealthy man&#x27;s daughter.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Madame de Sade — all-female play staged by Ingmar Bergman</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ingmar Bergman staged this man&#x27;s all-female play Madame de Sade</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">My Friend Hitler — all-male play; Mishima wrote and starred in it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">spurred this author to write and star in his all-male play My Friend Hitler.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Five Modern Noh Plays — includes a &#x27;madwoman play&#x27; with setting changed to a hospital</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A folded dress represents this woman&#x27;s spirit in a &#x27;madwoman play&#x27; whose setting was changed to a hospital for a set of &#x27;five modern plays.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Life for Sale — pulp novel from Weekly Playboy; translated by Stephen Dodd</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Stephen Dodd recently produced an English translation of the last of this author&#x27;s &#x27;potboilers,&#x27; a pulp novel originally published in Weekly Playboy titled Life for Sale.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">English-language title pun between &#x27;glory&#x27; and &#x27;drag&#x27; (likely After the Banquet or Forbidden Colors)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this author&#x27;s titles relies on an original-language pun between words for &#x27;glory&#x27; and &#x27;drag&#x27; which a translator thought would mislead homosexuals to buy the book.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Punishment by Roses / Ordeal by Roses — erotic photography collection; Mishima modeled, posed as Saint Sebastian with arrows</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">designed the coffee-table photobook Punishment by Roses. | Arrows pierce this man&#x27;s torso in one piece from an erotic photography collection he modeled for, Ordeal by Roses.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Paul Schrader biopic &#x27;Mishima: A Life in Four Chapters&#x27; — culminates with &#x27;Harmony of Pen and Sword&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The aforementioned biopic, which culminates with the section &#x27;Harmony of Pen and Sword,&#x27; was directed by Paul Schrader. | The ending of The Truman Show uses a piece of music from a biopic about this man</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Philip Glass&#x27;s Third String Quartet nicknamed for Mishima</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A pulsating E-flat major arpeggio in first inversion concludes the third string quartet of Philip Glass, which is nicknamed for this man.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Henry Miller&#x27;s Reflections on the Death of Mishima (1972)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This American imagined meeting Mishima in the realm of Devachan in a set of 1972 &#x27;reflections&#x27; on Mishima&#x27;s death. | This American author reacted to the Mishima coup in his Reflections on the Death of Mishima.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marguerite Yourcenar&#x27;s essay &#x27;A Vision of the Void&#x27; about Mishima&#x27;s suicide</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Yourcenar wrote about this author&#x27;s suicide in an essay subtitled A Vision of the Void.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired butoh / &#x27;dance of darkness&#x27; genre</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first piece in the &#x27;dance of darkness&#x27; genre, which his work inspired</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Modernism Gorilla&#x27; in &#x27;Last Debate&#x27; with All Campus Joint Struggle Committee (2020 documentary)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">billed as a &#x27;Modernism Gorilla&#x27; in a &#x27;Last Debate&#x27; with the All Campus Joint Struggle Committee depicted in a 2020 documentary.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Mishima is identified and biographical details.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Japanese author of Sea of Fertility tetralogy and Temple of the Golden Pavilion who committed seppuku</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Japanese author of the Sea of Fertility tetralogy and The Temple of the Golden Pavilion. | this Japanese author who committed seppuku after staging a failed coup.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Founder of the Shield Society (nationalist paramilitary group)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This founder of the Shield Society | the leader of the Shield Society delivered a barely-audible speech from a balcony to the JSDF.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Obsessed with bodybuilding and right-wing politics</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">became obsessed with bodybuilding and right-wing politics before committing seppuku | this nationalistic Japanese author</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Posed as Saint Sebastian for a 1968 photo</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this gay author posed as Saint Sebastian for a 1968 photo.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Profiled by John Nathan; published romance novels in The Housewife&#x27;s Companion</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A profile of this author by John Nathan notes that his romance novels were published in magazines like The Housewife&#x27;s Companion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Influenced by the I-novel genre</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The personal tone of the I-novel genre had a significant influence on this later Japanese author.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sin Gyeongsuk/Shin Kyung-sook plagiarized from his story &#x27;Patriotism&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sin Gyeongsuk&#x27;s story &#x27;Legend&#x27; was removed from shelves for apparently copying sentences wholesale from this author&#x27;s story &#x27;Patriotism.&#x27; | Shin Kyung-sook had an edition of her 1996 collection Potato Eaters withdrawn after it was revealed she plagiarized a passage from &#x27;Patriotism&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Yukio Mishima (born Kimitake Hiraoka) is a Japanese novelist, playwright, and nationalist who committed seppuku after a failed coup attempt in 1970, making his death and the circumstances surrounding it one of the most frequently clued aspects of any literary figure.</p><p>The Sea of Fertility tetralogy is his most extensively clued work. It consists of four novels — Spring Snow, Runaway Horses, <a href="george_herbert_stock.html#the-temple" class="crossref-inline">The Temple</a> of Dawn, and The Decay of an Angel — following the lawyer/judge Shigekuni Honda as he discovers successive reincarnations of his friend Kiyoaki Matsugae. Honda recognizes each reincarnation by a distinctive pattern of three moles. Spring Snow features the Ayakura and Matsugae families, Kiyoaki&#x27;s affair with Satoko, the humiliation of two Siamese princes searching for a lost emerald ring, and Kiyoaki&#x27;s deathbed promise to Honda (&#x27;I&#x27;ll see you again&#x27;). Runaway Horses features the reactionary nationalist Isao Iinuma. The Temple of Dawn is set partly in Thailand, where Honda visits and holds a pool party at his villa to check Ying Chan&#x27;s moles. The Decay of an Angel features the teenager Toru Yasunaga, whose smoking in bed inadvertently burns Honda&#x27;s villa. The tetralogy ends at Gesshu Temple, where an abbess does not recall whether another character existed, leading Honda to ponder &#x27;perhaps there has been no I&#x27; in a garden with &#x27;no memories, nothing.&#x27; The phrase &#x27;When you meet the Buddha, kill the Buddha&#x27; appears in the tetralogy.</p><p><a href="george_herbert_stock.html#the-temple" class="crossref-inline">The Temple</a> of the Golden Pavilion (Kinkaku-ji) is based on a real-life arson. The protagonist Mizoguchi burns down the Golden Temple, which he calls &#x27;a symbol of the real world&#x27;s evanescence.&#x27; He is struck by impotence after visions of the temple and remarks &#x27;the first real problem I faced in my life was that of beauty.&#x27; He resolves to destroy it after seeing the sea. Kashiwagi slaps his girlfriend after asking Mizoguchi to steal flowers for ikebana.</p><p>Confessions of a Mask is a semi-autobiographical &#x27;I-novel&#x27; in which Kochan explores his repressed homosexuality. He has a sexual awakening while masturbating to Guido Reni&#x27;s painting of Saint Sebastian, daydreams about cannibalizing a fellow student, pretends to be attracted to Sonoko, is fascinated by the armpits of Omi, and is &#x27;choked by desire&#x27; after seeing a night-soil man. The novel was inspired by Mori Ogai&#x27;s Vita Sexualis.</p><p>The Sailor Who Fell from Grace with the Sea features Noboru spying through a peephole on his mother Fusako having sex with the sailor Ryuji (who works on the Rakuyo). Noboru and his gang of boys drug Ryuji&#x27;s tea and dissect him. Noboru murders a cat during a meeting with &#x27;the chief.&#x27;</p><p>&#x27;Patriotism&#x27; foreshadows Mishima&#x27;s own death: Lieutenant Shinji and wife Reiko have sex under a scroll displaying &#x27;Sincerity&#x27; before killing themselves. The Mishima Incident of 1970 saw Mishima, leader of the Shield Society, deliver a barely audible speech from a balcony to the JSDF before committing seppuku. His kaishakunin botched three attempts to behead him. His death poem reads &#x27;falling is the essence of a flower.&#x27; Oe Kenzaburo parodied the incident in The Day He Himself Shall Wipe Our Tears Away.</p><p>Sun and Steel is an autobiographical essay about Mishima&#x27;s bodybuilding obsession, comparing words to &#x27;white ants&#x27; for their &#x27;corrosive function.&#x27; Its epilogue describes flying in an F-104 and comparing a cloud to an Ouroboros that &#x27;mocks all opposites.&#x27;</p><p>Other works include The Sound of Waves (pearl diver Shinji and Hatsue), Forbidden Colors (Shunsuke crafts Yuichi into a weapon of revenge against women), Madame de Sade (all-female play staged by Ingmar Bergman), My Friend Hitler (all-male play), Five Modern Noh Plays, and Life for Sale. Mishima modeled for the erotic photography collection Ordeal by Roses and posed as Saint Sebastian. Paul Schrader directed the biopic Mishima: A Life in Four Chapters. Philip Glass&#x27;s Third String Quartet is nicknamed after Mishima. Henry Miller wrote Reflections on the Death of Mishima, and Marguerite Yourcenar wrote the essay &#x27;A Vision of the Void&#x27; about his suicide. South Korean author Shin Kyung-sook plagiarized from &#x27;Patriotism.&#x27;</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Yukio_Mishima" target="_blank">Yukio Mishima — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Sea_of_Fertility" target="_blank">The Sea of Fertility — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Temple_of_the_Golden_Pavilion" target="_blank">The Temple of the Golden Pavilion — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Confessions_of_a_Mask" target="_blank">Confessions of a Mask — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Mishima_incident" target="_blank">Mishima incident — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Spring Snow — has appeared as its own answerline</li><li>Confessions of a Mask — has appeared as its own answerline</li><li>The Sailor Who Fell from Grace with the Sea — has appeared as its own answerline</li><li>The Temple of the Golden Pavilion / Kinkaku-ji — has appeared as its own answerline</li><li>Shigekuni Honda — has appeared as its own answerline</li><li>Patriotism — has appeared as its own answerline</li><li>The Sound of Waves — has appeared as its own answerline</li></ul>
+        
+        </section>
+        
+</body>
+</html>

@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Haruki Murakami</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Haruki Murakami</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="haruki_murakami_questions.html">View source questions</a> · <a href="haruki_murakami_cards.html">Make cards</a></div>
+<div class="summary">Contemporary Japanese novelist. Best known for Norwegian Wood (Toru Watanabe&#x27;s love triangle with Naoko and Midori, named after a Beatles song), The Wind-Up Bird Chronicle (Toru Okada&#x27;s search for his missing cat Noboru Wataya, sitting in a well), Kafka on the Shore (runaway fifteen-year-old, the amnesiac Nakata, Johnnie Walker, Colonel Sanders), 1Q84 (Aomame and Tengo, two moons, Little People, Air Chrysalis), and A Wild Sheep Chase (a sheep with a star-shaped birthmark). Also wrote the short story collections The Elephant Vanishes, Men Without Women, and First Person Singular. Major translators include Alfred Birnbaum and Jay Rubin. Translated <a href="raymond_carver_stock.html" class="crossref-inline">Raymond Carver</a> and Raymond Chandler into Japanese.</div>
+
+        <details class="work" id="norwegian-wood" open>
+            <summary class="work-title">Norwegian Wood</summary>
+            <p class="work-desc">A novel in which Toru Watanabe recalls his relationships with the depressive Naoko and the vivacious Midori, triggered by hearing the title Beatles song. His roommate is the neurotic geography major nicknamed 'Storm Trooper.' His best friend Kizuki commits suicide on his 17th birthday. The piano teacher Reiko was accused of being a lesbian by a thirteen-year-old student. A female bookstore owner recounts stripping in front of her father's altar. The novel ends with Toru considering 'where are you now?' after declaring his love for Midori. In Germany, it was published as Naoko's Smile. Often described as the Japanese Catcher in the Rye. Expanded from the short story 'Firefly.' <a href="https://en.wikipedia.org/wiki/Norwegian_Wood_(novel)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Toru Watanabe&#x27;s love triangle with Naoko and Midori; named after a Beatles song</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist has love affairs with Midori, Reiko, and Naoko, which he is reminded of by the title song | Toru Watanabe&#x27;s love triangle with the depressive Naoko and the vivacious Midori, and is named after a Beatles song</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Roommate is the geography major nicknamed &#x27;Storm Trooper&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist releases a firefly from his rooftop that he had received from his roommate, the geography major Storm Trooper | This novel&#x27;s protagonist shares a dorm room with a neurotic, stuttering geography major nicknamed &#x27;Storm Trooper&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Reiko the piano teacher was accused of being a lesbian by a thirteen-year-old student</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Reiko formerly worked in this profession before she was accused of being a lesbian by a thirteen-year-old student, whom she slapped across the face</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Expanded from the short story &#x27;Firefly&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this author later expanded its story &#x27;Firefly&#x27; into this novel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Published in Germany as Naoko&#x27;s Smile; often described as the Japanese Catcher in the Rye</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In Germany, this novel was published as Naoko&#x27;s Smile | Norwegian Wood is often described as the Japanese version of this novel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Protagonist and roommate Itoh are fans of Boris Vian</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">he and his new roommate Itoh are both avid fans of Boris Vian</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a 37-year-old recalling sensory details of a Hamburg meadow where his plane lands</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a then-37-year-old Japanese man recalls the sensory details of the Hamburg meadow where his plane lands</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-wind-up-bird-chronicle" open>
+            <summary class="work-title">The Wind-Up Bird Chronicle</summary>
+            <p class="work-desc">A novel about Toru Okada's search for his missing cat Noboru Wataya. While sitting in a dried-out well (shown to him by teenager May Kasahara), Toru fends off the influence of Noboru Wataya to reunite with his wife Kumiko. Lieutenant Mamiya recollects his service in the Japanese army, including being left to die in a well and witnessing a spy (Yamamoto) being skinned alive by Mongolians (the agent Boris). May Kasahara addresses Toru by the name of the wind-up bird. A soldier is ordered to kill a man with a baseball bat. Sections named 'The Thieving Magpie' and 'Bird as Prophet.' The short story about the narrator cooking spaghetti to Rossini's The Thieving Magpie and being called by his wife about their missing cat became the first chapter. <a href="https://en.wikipedia.org/wiki/The_Wind-Up_Bird_Chronicle" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Toru Okada&#x27;s search for his missing cat Noboru Wataya</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Toru Okada&#x27;s search for his missing cat in The Wind-Up Bird Chronicle | the narrator cooks spaghetti to Rossini&#x27;s The Thieving Magpie and is called by his wife about their missing cat Noboru</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lieutenant Mamiya recollects Japanese army service; witness to a spy being skinned alive by Mongolians</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Lieutenant Mamiya recollects his service in the Japanese army | Two actual Mongolians skin a spy alive, buttocks and all, in a horrifying scene</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Toru sits in a dried-out well; fends off the influence of Noboru Wataya; reunites with wife Kumiko</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">While in the well of a &#x27;Hanging House,&#x27; this narrator fends off the pernicious influence of Noboru Wataya to reunite with his lost wife Kumiko | a soldier reminisces about being left to die in a well, which inspires the protagonist to sit in a dried-out well shown to him by the teenager May</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">May Kasahara addresses Toru by the name of the wind-up bird; its &#x27;mechanical cry&#x27; heard by few characters</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">May Kasahara addresses the protagonist of that novel with the name of this animal | whose &#x27;mechanical cry&#x27; is only heard by a few characters</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sections named &#x27;The Thieving Magpie&#x27; and &#x27;Bird as Prophet&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">broke up a novel into sections like &#x27;The Thieving Magpie&#x27; and &#x27;Bird as Prophet&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Short story about missing cat became the first chapter; narrator cooks spaghetti to Rossini</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">described a man who is accused of killing his cat by his wife in a short story that later became the first chapter</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Running theme of November 25th, 1970 (Mishima&#x27;s death)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A running theme in one of this author&#x27;s novel series is the day November 25th, 1970, on which another author died</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="kafka-on-the-shore" open>
+            <summary class="work-title">Kafka on the Shore</summary>
+            <p class="work-desc">A novel in which a fifteen-year-old boy runs away from home and takes shelter in a private library owned by Miss Saeki, who may be his mother. Nakata, an amnesiac who cannot read or write, lost his memory after the Rice Bowl Hill Incident and takes a job searching for lost cats. Johnnie Walker harvests the souls of cats for a flute. Colonel Sanders (an 'abstract concept') helps Hoshino find the 'entrance stone.' The boy named Crow may represent the protagonist's subconscious. The transgender librarian Oshima. <a href="https://en.wikipedia.org/wiki/Kafka_on_the_Shore" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fifteen-year-old Kafka runs away from home; meets Miss Saeki at a private library; transgender librarian Oshima</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This novel&#x27;s title character runs away from home and meets Miss Saeki, who may be his mother, and the transgender librarian Oshima | the protagonist runs away from home and takes shelter in a private library</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nakata is an amnesiac who cannot read/write; lost memory after Rice Bowl Hill Incident; searches for cats</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nakata loses his memory after the Rice Bowl Hill Incident | Nakata takes a job searching for lost cats</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Johnnie Walker harvests cats&#x27; souls for a flute; Colonel Sanders helps Hoshino find the &#x27;entrance stone&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man known as Johnnie Walker from harvesting the souls of cats for a flute | Along with Johnnie Walker, Colonel Sanders appears as a &#x27;concept&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The boy named Crow — &#x27;the world&#x27;s toughest fifteen-year-old&#x27;; may represent Kafka&#x27;s subconscious</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">They frequently refer to the protagonist as the &#x27;world&#x27;s toughest fifteen-year-old&#x27; | The boy named Crow may be interpreted as a representation of this character&#x27;s subconscious</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="1q84" open>
+            <summary class="work-title">1Q84</summary>
+            <p class="work-desc">A three-volume novel in which the assassin Aomame and the math teacher Tengo become entwined with a cult in an alternate reality with two moons. Fuka-Eri writes about the 'Little People' in the story-within-a-story Air Chrysalis. Aomame reads <a href="marcel_proust_stock.html#in-search-of-lost-time-general-cross-volume" class="crossref-inline">In Search of Lost Time</a> while in hiding after killing 'The Leader.' A hitwoman enters an alternate universe after listening to Janacek's Sinfonietta in a taxi. Aomame is magically impregnated after the cult leader's death. The title derives from <a href="george_orwell_stock.html" class="crossref-inline">George Orwell</a>'s <a href="george_orwell_stock.html#1984" class="crossref-inline">1984</a>. <a href="https://en.wikipedia.org/wiki/1Q84" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aomame (assassin/hitwoman) and Tengo (math teacher) in an alternate reality with two moons</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Aomame meets Tengo in an alternate reality with two moons | two protagonists are the math teacher Tengo and the assassin Aomame</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Little People construct air chrysalises; Fuka-Eri writes Air Chrysalis</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Little People construct air chrysalises, the subject of a short novel by the precocious Fuka-Eri | a translator of the memoir Air Chrysalis</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aomame listens to Janacek&#x27;s Sinfonietta in a taxi; enters alternate universe</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a hitwoman who enters an alternate universe after listening to Janacek&#x27;s Sinfonietta in a taxi</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aomame reads In Search of Lost Time while hiding after killing &#x27;The Leader&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Aomame reads In Search of Lost Time while in hiding after killing &#x27;The Leader&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aomame is magically impregnated after cult leader&#x27;s death</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That protagonist is magically impregnated after a cult leader&#x27;s death</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title derives from George Orwell&#x27;s 1984; two moons distinguish the alternate dimension</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Its title derives from a George Orwell novel | The alternate dimension named &#x27;1Q84&#x27; is primarily distinguished by the presence of two of these bodies</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-wild-sheep-chase-rat-trilogy" open>
+            <summary class="work-title">A Wild Sheep Chase / Rat Trilogy</summary>
+            <p class="work-desc">The third novel in the 'Trilogy of the Rat' (with Hear the Wind Sing and Pinball, 1973). The protagonist searches for a sheep with a star-shaped birthmark. 'The Boss' tells the protagonist about the animal. The protagonist's girlfriend has magical ears. <a href="https://en.wikipedia.org/wiki/A_Wild_Sheep_Chase" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Protagonist searches for a sheep with a star-shaped birthmark; &#x27;The Boss&#x27; tells him about it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">attempting to find the title creature, which has a birthmark in the shape of a star | &#x27;The Boss&#x27; tells its protagonist about an animal with a star shaped birthmark on its head</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Protagonist&#x27;s girlfriend has magical ears</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">whose girlfriend has magical ears | the protagonist lusts after magical versions of these body parts</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Trilogy of the Rat includes Hear the Wind Sing and Pinball, 1973</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That trilogy by this author which revolves around &#x27;The Rat&#x27; includes the novels Hear the Wind Sing and Pinball, 1973 | along with Pinball, 1973 and A Wild Sheep Chase makes up Murakami&#x27;s &#x27;Trilogy&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alfred Birnbaum cut some 100 pages from the original translation (titled An Adventure Surrounding Sheep)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first of these people cut some 100 pages from a project originally titled An Adventure Surrounding Sheep</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="hard-boiled-wonderland-and-the-end-of-the-world" open>
+            <summary class="work-title">Hard-Boiled Wonderland and the End of the World</summary>
+            <p class="work-desc">A novel with alternating chapters set in 'The End of the World' and a 'Hard-Boiled Wonderland' where the Calcutecs use their subconscious as encryption keys. The Semiotecs target the Calcutecs. In the End of the World, the narrator receives an accordion from the Caretaker of the Power Station and gives a unicorn skull to an unnamed librarian. The narrator flees from the INKlings in the sewers. <a href="https://en.wikipedia.org/wiki/Hard-Boiled_Wonderland_and_the_End_of_the_World" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alternating chapters in &#x27;Hard-Boiled Wonderland&#x27; (Calcutecs vs. Semiotecs) and &#x27;The End of the World&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the data-stealing Semiotecs target the data-shuffling Calcutecs | alternate chapters set in &#x27;The End of the World&#x27; and a place described by this adjective, where the Calcutecs use their subconscious as encryption keys</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator receives accordion from Caretaker of Power Station; gives unicorn skull to librarian; flees INKlings in sewers</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the narrator receives an accordion from the Caretaker of the Power Station in the Woods | the narrator flees from the INKlings while traveling in the sewers and gives a unicorn skull to an unnamed librarian</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="short-stories-barn-burning-the-second-bakery-attack-etc" open>
+            <summary class="work-title">Short Stories (Barn Burning, The Second Bakery Attack, etc.)</summary>
+            <p class="work-desc">Various frequently clued short stories. 'Barn Burning' is about a mysterious yuppie who admits to setting fire to barns (adapted into the 2018 film Burning by Lee Chang-dong). 'The Second Bakery Attack' features two famished newlyweds who rob a McDonald's. 'Kino' appears in Men Without Women. 'Drive My Car' was adapted into a 2021 film about stage actor Yusuke Kafuku. Collections include The Elephant Vanishes, Men Without Women, First Person Singular, and Blind Willow, Sleeping Woman.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Barn Burning&#x27; — mysterious yuppie admits to burning barns; adapted into Lee Chang-dong&#x27;s Burning (2018)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man admits to his habit of burning barns | paid homage to Faulkner with a story about a mysterious yuppie who claims to set fire to barns | Lee Chang-dong&#x27;s Burning was based</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Second Bakery Attack&#x27; — two famished newlyweds rob a McDonald&#x27;s</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two famished newlyweds relive their youth by robbing a McDonald&#x27;s | a couple attacks a McDonald&#x27;s in the middle of the night after failing to find an available bakery</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Drive My Car&#x27; — adapted into 2021 film about stage actor Yusuke Kafuku</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A 2021 road drama based on another story by this author follows the stage actor and director Yusuke Kafuku</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Cream&#x27; — old man at beach says &#x27;most important essence of life&#x27; is &#x27;creme de la creme&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">an old man at a beach tells the narrator that the &#x27;most important essence of life&#x27; is the &#x27;creme de la creme&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="killing-commendatore" open>
+            <summary class="work-title">Killing Commendatore</summary>
+            <p class="work-desc">A novel featuring an unnamed portrait painter interacting with the title character (a Mozart-like figure). A construction crew uncovers a pit from which a bell ringing had emerged, freeing a two-foot-tall figure. Features concepts embodied as characters like Kafka on the Shore. <a href="https://en.wikipedia.org/wiki/Killing_Commendatore" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Unnamed portrait painter interacts with the title Mozart-like character; a construction crew uncovers a pit with a bell sound; two-foot-tall figure freed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a construction crew uncovers a pit from which the sound of a bell ringing had emerged, freeing a two-foot-tall figure of the title character | depicts an unnamed portrait painter interacting with the title Mozart character</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Murakami's translators include Alfred Birnbaum (Pinball, 1973; A Wild Sheep Chase) and Jay Rubin. He translated <a href="raymond_carver_stock.html" class="crossref-inline">Raymond Carver</a> and Raymond Chandler into Japanese. His memoir What I Talk About When I Talk About Running is titled after Carver's story. Cats are a recurring motif. Chip Kidd designed many of his book covers. He wrote baseball poetry about 'the butts of outfielders.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Translators Alfred Birnbaum and Jay Rubin</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alfred Birnbaum and Jay Rubin translated this author&#x27;s collection The Elephant Vanishes | The first of these people was Alfred Birnbaum, who worked on Pinball, 1973</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Translated Raymond Carver and Raymond Chandler into Japanese</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Raymond Chandler translator | Murakami translated this novel [Catcher in the Rye] into Japanese</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Memoir What I Talk About When I Talk About Running (titled after Carver)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">titled his memoir What I Talk About When I Talk About Running | A Haruki Murakami memoir about this action is titled in reference to a Raymond Carver story</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cats as a recurring motif across novels</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The works of Haruki Murakami also heavily feature these animals</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chip Kidd designed many book covers</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">one of these works by John Gall depicts an animal with a black star on its back, and another one of these works by Chip Kidd shows a ring of text surrounding the eye of a mechanical bird</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote baseball poetry about &#x27;the butts of outfielders&#x27; (Yakult Swallows Poetry Collection)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">writing baseball poetry with lines like &#x27;I enjoy gazing at the butts of outfielders&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Haruki Murakami is a contemporary Japanese novelist whose works frequently appear in quizbowl. His most commonly identified novels are Norwegian Wood (Toru Watanabe&#x27;s love triangle with Naoko and Midori, named after a Beatles song), The Wind-Up Bird Chronicle (Toru Okada&#x27;s search for his missing cat), and Kafka on the Shore.</p><p>Norwegian Wood features the geography major roommate nicknamed &#x27;Storm Trooper,&#x27; the piano teacher Reiko (accused of lesbianism by a student), and was expanded from the short story &#x27;Firefly.&#x27; It was published in Germany as Naoko&#x27;s Smile and is often called the Japanese Catcher in the Rye.</p><p>The Wind-Up Bird Chronicle centers on Toru Okada sitting in a dried-out well (shown to him by teenager May Kasahara) to fend off the influence of Noboru Wataya. Lieutenant Mamiya recollects witnessing a spy being skinned alive by Mongolians. The novel has sections titled &#x27;The Thieving Magpie&#x27; and &#x27;Bird as Prophet.&#x27; A short story about the narrator cooking spaghetti to Rossini became the first chapter.</p><p>Kafka on the Shore features the fifteen-year-old Kafka running away from home to Miss Saeki&#x27;s library, the amnesiac Nakata (who lost his memory after the Rice Bowl Hill Incident and searches for cats), Johnnie Walker harvesting cats&#x27; souls for a flute, and Colonel Sanders as an &#x27;abstract concept.&#x27; The boy named Crow may represent Kafka&#x27;s subconscious.</p><p>1Q84 features the assassin Aomame and math teacher Tengo in an alternate reality with two moons. Fuka-Eri writes about the &#x27;Little People&#x27; in Air Chrysalis. Aomame listens to Janacek&#x27;s Sinfonietta, reads <a href="marcel_proust_stock.html#in-search-of-lost-time-general-cross-volume" class="crossref-inline">In Search of Lost Time</a> while hiding, and is magically impregnated.</p><p>A Wild Sheep Chase concludes the Rat Trilogy (with Hear the Wind Sing and Pinball, 1973). The protagonist searches for a sheep with a star-shaped birthmark, and his girlfriend has magical ears.</p><p>Hard-Boiled Wonderland and the End of the World alternates between chapters about Calcutecs vs. Semiotecs and a strange End of the World with unicorn skulls and INKlings.</p><p>Notable short stories include &#x27;Barn Burning&#x27; (adapted into Lee Chang-dong&#x27;s Burning), &#x27;The Second Bakery Attack&#x27; (newlyweds robbing a McDonald&#x27;s), and &#x27;Drive My Car&#x27; (adapted into a 2021 film). His translators are Alfred Birnbaum and Jay Rubin. He translated <a href="raymond_carver_stock.html" class="crossref-inline">Raymond Carver</a> and Chandler into Japanese, and his memoir is titled What I Talk About When I Talk About Running.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Haruki_Murakami" target="_blank">Haruki Murakami — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Norwegian_Wood_(novel)" target="_blank">Norwegian Wood — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Wind-Up_Bird_Chronicle" target="_blank">The Wind-Up Bird Chronicle — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Kafka_on_the_Shore" target="_blank">Kafka on the Shore — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/1Q84" target="_blank">1Q84 — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Norwegian Wood — likely has its own answerline</li><li>The Wind-Up Bird Chronicle — likely has its own answerline</li><li>Kafka on the Shore — appears as its own answerline in bonuses</li><li>1Q84 — appears as its own answerline in bonuses</li></ul>
+        
+        </section>
+        
+</body>
+</html>

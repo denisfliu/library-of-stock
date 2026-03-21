@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Miguel de Cervantes</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Miguel de Cervantes</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="cervantes_questions.html">View source questions</a> · <a href="cervantes_cards.html">Make cards</a></div>
+<div class="summary">Spanish Golden Age author, best known for Don Quixote. Also wrote the Exemplary Novels (including &#x27;The Colloquy of the Dogs,&#x27; &#x27;The Lawyer of Glass,&#x27; and &#x27;The Deceitful Marriage&#x27;), the pastoral La Galatea, the satirical poem Journey to Parnassus, and plays including The Siege of Numantia. Veteran of the Battle of Lepanto. Imprisoned in Algiers. Excommunicated multiple times. Called <a href="lope_de_vega_stock.html" class="crossref-inline">Lope de Vega</a> &#x27;The Phoenix of Wits&#x27; and &#x27;Monster of Nature.&#x27; Savaged Avellaneda for writing an unauthorized Don Quixote sequel. An annual Spanish-language literary prize is named after him.</div>
+
+        <details class="work" id="don-quixote" open>
+            <summary class="work-title">Don Quixote</summary>
+            <p class="work-desc">Cervantes's masterpiece about an 'ingenious gentleman' (a 50-year-old hidalgo) who goes mad reading books of chivalry and becomes a knight errant. He rides the horse Rocinante alongside his squire Sancho Panza, who joins him hoping to win an island. He loves the imagined lady Dulcinea. A priest and barber burn the books in Don Quixote's library (sparing La Galatea and praising Tirant lo Blanch). He attacks windmills. He thinks a barber's basin full of curds is the helmet of Mambrino. A hunchbacked servant crawls into bed with the protagonist at an inn where Sancho is tossed in a blanket. Samson Carrasco disguises himself as the Knight of the White Moon to defeat Don Quixote. The interpolated tale 'The Impertinently Curious Man' concerns two friends from Florence (Anselmo and Lothario) and the housewife Camilla. In Part 2, Cervantes savages Avellaneda's unauthorized sequel; Alvaro Tarfe signs an affidavit that the sequel's characters are impostors. Don Quixote imagines slaying the giant Caraculiambro. The preface includes a story about a madman who inflates a dog with a pointed reed. Pierre Menard recreates this novel word-for-word in a <a href="borges_stock.html" class="crossref-inline">Borges</a> story. <a href="miguel_de_unamuno_stock.html" class="crossref-inline">Miguel de Unamuno</a> rebuked Cervantes for mistreating Don Quixote. <a href="ruben_dario_stock.html" class="crossref-inline">Ruben Dario</a> wrote 'Litany for Our Lord Don Quixote.' <a href="https://en.wikipedia.org/wiki/Don_Quixote" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title character goes mad reading books of chivalry; rides Rocinante alongside squire Sancho Panza</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">most famous character goes mad reading books of chivalry and rides Rocinante alongside Sancho Panza | a delusional knight befriends Sancho Panza and rides the horse Rocinante</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A priest and barber burn the books in Don Quixote&#x27;s library (La Galatea is spared)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a priest leads the destruction of a private library owned by a 50-year-old hidalgo | a curate and a barber rummage through after a precious gentleman returns from his first sally | his niece, his housekeeper, a parish curate, and a man who holds this occupation in town</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The priest praises Tirant lo Blanch (Catalan romance) as &#x27;the best book in the world&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a priest calls the Catalan romance Tirant lo Blanch &#x27;the best book in the world&#x27; | considered Tirant lo Blanch to be much better than most examples of its genre</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Attacks windmills</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">an &#x27;ingenious&#x27; hidalgo from La Mancha who attacks windmills</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Samson Carrasco disguises himself as the Knight of the White Moon to defeat Don Quixote</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Samson Carrasco disguises himself as the Knight of the White Moon to fight the title character | a man who is defeated by the Knight of the White Moon</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Don Quixote loves the imagined lady Dulcinea</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the title character, who loves Dulcinea | seeks to disenchant his imagined lady Dulcinea so as to restore her beauty</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sancho Panza joins hoping to win an island; Don Quixote imagines slaying the giant Caraculiambro from the isle of Malindrania</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Don Quixote imagines slaying the giant Caraculiambro, who hails from one of these places named Malindrania</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Thinks a barber&#x27;s basin full of curds is the helmet of Mambrino</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">thinks his brain is melting after putting a barber&#x27;s basin full of curds on his head, thinking it was the helmet of Mambrino</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sancho is tossed in a blanket at an inn where a hunchbacked servant crawls into bed with the protagonist</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a hunchbacked servant mistakenly crawls into bed with the protagonist at an inn where his friend is thrown around in a blanket after they refuse to pay</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Interpolated tale &#x27;The Impertinently Curious Man&#x27;: Anselmo, Lothario, and the housewife Camilla (compared to a diamond and an ermine); interrupted by Don Quixote sleepwalking and &#x27;beheading&#x27; a giant</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The housewife Camilla is compared to a diamond and the white coat of an ermine in a story by this author about two friends from Florence | the tale of &#x27;The Impertinent Curious Man&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Part 2 savages Avellaneda&#x27;s unauthorized sequel; Alvaro Tarfe signs affidavit that the sequel&#x27;s characters are impostors</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An affidavit stating that another author&#x27;s characters are impostors is signed by Alvaro Tarfe | savaged Alonso Fernandez de Avellaneda for writing an unauthorized sequel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Preface includes a story about a madman who inflates a dog with a pointed reed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this author asks whether &#x27;it is an easy thing to write a book&#x27; after telling a story about a madman who uses a pointed reed to inflate a dog</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pierre Menard recreates this novel word-for-word in a Borges story</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">re-created by the title character of Borges&#x27;s story &#x27;Pierre Menard, Author of the Quixote&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Miguel de Unamuno rebuked Cervantes for mistreating Don Quixote; imagined a gravestone erected by Samson Carrasco</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Miguel de Unamuno rebuked this author for mistreating the protagonist of his best-known novel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Borges story repeats a passage by Cervantes beginning &#x27;truth, whose mother is history, rival of time, depository of deeds&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a passage by this earlier author that begins &#x27;truth, whose mother is history, rival of time, depository of deeds&#x27; is dismissed as being &#x27;mere rhetorical praise&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ruben Dario wrote &#x27;Litany for Our Lord Don Quixote&#x27; inspired by Cervantes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Spanish author who inspired Ruben Dario&#x27;s &#x27;Litany for Our Lord Don Quixote&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Irving Leonard&#x27;s Books of the Brave follows a shipment of first editions crossing the Atlantic</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Irving Leonard&#x27;s study Books of the Brave follows a shipment of first editions of this author&#x27;s work as it crossed the Atlantic</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="exemplary-novels" open>
+            <summary class="work-title">Exemplary Novels</summary>
+            <p class="work-desc">A collection of twelve novellas published in 1613. Includes 'The Colloquy of the Dogs,' 'The Lawyer of Glass,' 'The Deceitful Marriage,' 'Rinconete y Cortadillo,' 'The Jealous Extremaduran,' 'The Power of Blood,' and 'The Illustrious Scullery Maid.' John Ford's The Spanish Gypsy was based on stories from this collection. <a href="https://en.wikipedia.org/wiki/Exemplary_Novels" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Colloquy/Conversation of the Dogs&#x27;: Cipion and Berganza converse by a hospital window; overheard by the syphilitic Campuzano; Berganza tells of Nicholas Snub-Nose&#x27;s slaughterhouse; the witch Canizares says Berganza is the son of the witch Montiela; Freud signed 55 letters as &#x27;Cipion&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cipion and Berganza&#x27;s meeting by a hospital window is overheard by a syphilitic man | Sigmund Freud is known to have signed 55 letters with the name of Cipion | a character describes his time at Nicholas Snub-Nose&#x27;s slaughterhouse</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Lawyer of Glass&#x27;: Tomas Rodaja eats a spiked quince (failed love potion) and believes he is made of glass</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a student at Salamanca who eats a spiked quince believes that he is made of glass | Tomas Rodaja is convinced that his whole body is made of glass after eating a quince which had been laced with a love potion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Lawyer of Glass&#x27;: the character calls a hornet a &#x27;slanderer&#x27; and escapes celebrity by moving to Flanders and dying as a soldier</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">calls a hornet a &#x27;slanderer&#x27; and escapes his celebrity status by moving to Flanders and dying as a soldier</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Deceitful Marriage&#x27;: Campuzano is robbed by his wife Dona Estefania and ends up in the hospital, where he overhears the dogs&#x27; conversation</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Campuzano is robbed by his wife Dona Estefania and ends up in the hospital | the protagonist of &#x27;The Deceitful Marriage&#x27; overhears the title &#x27;Colloquy of the Dogs&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Rinconete y Cortadillo&#x27;: two vagrant boys enter a confraternity of thieves led by Senor Monopodio in Seville</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">two vagrant boys enter into a confraternity of thieves led by Senor Monopodio in Seville</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Jealous Extremaduran&#x27;: a seventy-year-old man marries a fifteen-year-old girl and dies of jealousy</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A seventy-year-old man marries a fifteen-year-old girl and dies of jealousy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Power of Blood&#x27;: a rape victim uses a silver crucifix to prove her identity after her child is injured at a horse race</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a rape victim uses a silver crucifix to prove her identity after her child is injured while watching a horse race</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Illustrious Scullery Maid&#x27;: two young men overhear mule drivers describe a woman as &#x27;savage as a kestrel&#x27; but beautiful</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">two young men overhear mule drivers describe a woman as &#x27;savage as a kestrel&#x27; but beautiful</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">John Ford&#x27;s The Spanish Gypsy was based on stories from this collection</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The slightly more comic Ford play The Spanish Gypsy was based on the Novelas Ejemplares</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="la-galatea" open>
+            <summary class="work-title">La Galatea</summary>
+            <p class="work-desc">Cervantes's first novel, a pastoral work set near the Tagus river. Features the shepherdess Galatea (Aurelio's daughter) loved by Elicio and Erastro. A journey to the wedding of Daranio and Silveria is a central event. Imitated Jorge de Montemayor's prose romance Diana. Spared during the burning of Don Quixote's library, judged to have 'some good invention' but noted as having 'a pretty good plot that goes nowhere.' Cervantes never wrote the promised second part. <a href="https://en.wikipedia.org/wiki/La_Galatea" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Spared during the burning of Don Quixote&#x27;s library; judged to have &#x27;some good invention&#x27; / &#x27;a pretty good plot that goes nowhere&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">La Galatea is memorably saved during the burning of Don Quixote&#x27;s library | his first novel is spared during the book burning scene in another of his novels | La Galatea has a pretty good plot that goes nowhere</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pastoral novel featuring the shepherdess Galatea loved by Elicio and Erastro</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote of Elicio and Erastro, two friends who both love that same shepherdess | Aurelio&#x27;s shepherdess daughter, who titles a mock-pastoral novel set near the Tagus river</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A journey to the wedding of Daranio and Silveria</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote about a journey to the wedding of Daranio and Silveria in La Galatea</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His first major work; imitated Jorge de Montemayor&#x27;s Diana</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author&#x27;s first major work imitated Jorge de Montemayor&#x27;s prose romance Diana</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="journey-to-parnassus-viaje-del-parnaso" open>
+            <summary class="work-title">Journey to Parnassus (Viaje del Parnaso)</summary>
+            <p class="work-desc">A long satirical poem about poetry. <a href="lope_de_vega_stock.html" class="crossref-inline">Lope de Vega</a> is rained out of a cloud onto a boat of poets. Gongora is declared 'a good poet' and praised. Venus turns poets into pumpkins. Cervantes ridiculed contemporary poets in this work. Included among his Exemplary Novels the story 'Rinconete y Cortadillo.' <a href="https://en.wikipedia.org/wiki/Viaje_del_Parnaso" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Satirical poem about poetry; Lope de Vega rained out of a cloud onto a boat of poets</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Lope de Vega is rained out of a cloud onto a boat filled with poets in this author&#x27;s satire Journey to Parnassus</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gongora is declared &#x27;a good poet&#x27; and praised</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cervantes claims that he had disgraced this poet by &#x27;such brief praise&#x27; in Journey to Parnassus | Gongora comes in for much praise in Viaje del Parnaso</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Venus turns poets into pumpkins</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">does not include him in the poets whom Venus turns into pumpkins</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="plays-the-siege-of-numantia-and-others" open>
+            <summary class="work-title">Plays (The Siege of Numantia and others)</summary>
+            <p class="work-desc">Cervantes wrote several plays, mostly set in Algiers where he was imprisoned. The Siege of Numantia is about the Celtiberian Wars: the first act ends with a discussion between Spain and the river Duero after a speech by Scipio Africanus; the sorcerer Marquino resurrects a corpse; a young lad jumps off a tower amid the Four Horsemen of the Apocalypse. Other plays include one about the baths of Algiers (basis for Massinger's The Renegado), a farce where a divorce court judge refuses to let anybody divorce, and a play titled for a treaty (Aurelio and Silvia love each other in captivity). <a href="https://en.wikipedia.org/wiki/The_Siege_of_Numantia" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Siege of Numantia: first act ends with a discussion between Spain and the river Duero after a speech by Scipio Africanus</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first act of one of his tragedies ends with a discussion between Spain and the river Duero after a heroic speech given by Scipio Africanus</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sorcerer Marquino resurrects a corpse by wetting his lance and striking a coffin; a lad jumps off a tower amid the Four Horsemen</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The sorcerer Marquino wets his lance with a drop of water, then strikes a coffin, resurrecting a corpse</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A farce where a divorce court judge refuses to let anybody divorce</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a farce in which a divorce court judge listens to four oral arguments, then declares that he won&#x27;t let anybody divorce in his courtroom</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set many plays in Algiers where he was imprisoned</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">set many of his plays in Algiers, where he was imprisoned</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Philip Massinger&#x27;s The Renegado is based on a Cervantes play set in the baths of Algiers</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Philip Massinger&#x27;s The Renegado is based on a play by this author titled for the baths of a city where this author lived</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Miguel de Cervantes Saavedra (1547-1616) was a Spanish Golden Age author. A veteran of the Battle of Lepanto. Was imprisoned in Algiers. Excommunicated multiple times. Nicknamed <a href="lope_de_vega_stock.html" class="crossref-inline">Lope de Vega</a> 'The Phoenix of Wits' and called him a 'Monster of Nature.' Parodied Lope de Vega as the puppeteer Gines de Pasamonte in Don Quixote Part 2. Savaged Avellaneda for writing an unauthorized Don Quixote sequel. An annual prize for Spanish-language literature (the Cervantes Prize) is named after him. Also wrote The Travels of Persiles and Sigismunda (posthumously published; Rutilio describes men turning into wolves). Influenced by both Lazarillo de Tormes and Amadis de Gaula.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Spanish Golden Age author of Don Quixote (giveaway identifier)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this author of Don Quixote | this Spanish author who created the windmill-tilting Don Quixote</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">An annual prize for Spanish-language literature (the Cervantes Prize) is named after him</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An annual prize for Spanish-language writing | the Spanish language literary prize named after this author of Don Quixote</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Veteran of the Battle of Lepanto</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this veteran of the Battle of Lepanto</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Imprisoned in Algiers; set many plays there</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">set many of his plays in Algiers, where he was imprisoned before he wrote Don Quixote</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Excommunicated multiple times</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Spanish author, who was excommunicated multiple times</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called Lope de Vega &#x27;The Phoenix of Wits&#x27; and &#x27;Monster of Nature&#x27;; parodied him as Gines de Pasamonte</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">parodied his contemporary Lope de Vega as the puppeteer Gines de Pasamonte | this contemporary of Cervantes, whom he called a &#x27;Monster of Nature&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Travels of Persiles and Sigismunda (posthumous): Rutilio describes men who turn into wolves; Carpentier cites this as an example of the &#x27;marvelous real&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Rutilio&#x27;s description of men who turn into wolves from a posthumously-published work by this author</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Influenced by Lazarillo de Tormes (picaresque) and Amadis de Gaula (chivalric romance)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Both Lazarillo and Amadis heavily influenced this veteran of the Battle of Lepanto</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Miguel de Cervantes Saavedra (1547-1616) is the central figure of Spanish Golden Age literature in quizbowl. His masterpiece Don Quixote dominates the clue pool: the titular hidalgo who goes mad reading books of chivalry, rides Rocinante alongside Sancho Panza, attacks windmills, and loves the imagined Dulcinea. The burning of Don Quixote&#x27;s library by a priest and barber is one of the most frequently clued scenes, with La Galatea being notably spared. Samson Carrasco&#x27;s disguise as the Knight of the White Moon and the interpolated &#x27;Impertinently Curious Man&#x27; tale (about Anselmo, Lothario, and Camilla) also recur. Part 2 of Don Quixote contains Cervantes&#x27;s attacks on Avellaneda&#x27;s unauthorized sequel, including the scene where Alvaro Tarfe signs an affidavit. The novel is the subject of <a href="borges_stock.html" class="crossref-inline">Borges</a>&#x27;s &#x27;Pierre Menard, Author of the Quixote&#x27; and Unamuno&#x27;s critical essays. The Exemplary Novels (1613) form the second major cluster. &#x27;The Colloquy of the Dogs&#x27; — in which the dogs Cipion and Berganza converse by a hospital window, overheard by the syphilitic Campuzano — is the most frequently clued story; Freud notably signed 55 letters as &#x27;Cipion.&#x27; &#x27;The Lawyer of Glass,&#x27; about Tomas Rodaja who eats a spiked quince and believes he is made of glass, appears almost as often. &#x27;The Deceitful Marriage&#x27; is the framing story for the Dogs, with Campuzano robbed by his wife. Other notable stories include &#x27;Rinconete y Cortadillo&#x27; (vagrant boys join thieves led by Monopodio in Seville), &#x27;The Jealous Extremaduran,&#x27; &#x27;The Power of Blood,&#x27; and &#x27;The Illustrious Scullery Maid.&#x27; La Galatea, his first novel, is a pastoral work about the shepherdess Galatea loved by Elicio and Erastro, set near the Tagus. It imitated Montemayor&#x27;s Diana and features a journey to the wedding of Daranio and Silveria. Journey to Parnassus is a satirical poem praising Gongora and mocking other contemporary poets, including raining <a href="lope_de_vega_stock.html" class="crossref-inline">Lope de Vega</a> from a cloud. His plays, mostly set in Algiers, include The Siege of Numantia (featuring Scipio Africanus and the sorcerer Marquino) and a divorce court farce. Biographically, Cervantes was a veteran of the Battle of Lepanto, was imprisoned in Algiers, was excommunicated multiple times, and nicknamed Lope de Vega &#x27;The Phoenix of Wits.&#x27; The annual Cervantes Prize for Spanish-language literature is named after him.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Miguel_de_Cervantes" target="_blank">Miguel de Cervantes — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Don_Quixote" target="_blank">Don Quixote — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Exemplary_Novels" target="_blank">Exemplary Novels — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/La_Galatea" target="_blank">La Galatea — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Siege_of_Numantia" target="_blank">The Siege of Numantia — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Don Quixote — extremely frequently asked as its own answerline</li><li>Exemplary Novels — asked as own answerline</li><li>Avellaneda&#x27;s unauthorized Don Quixote sequel — appeared as its own answerline</li><li>Lazarillo de Tormes — frequently co-mentioned picaresque work</li><li>Lope de Vega — frequently co-mentioned (already processed)</li><li>Luis de Gongora — frequently co-mentioned poet</li></ul>
+        
+        </section>
+        
+</body>
+</html>

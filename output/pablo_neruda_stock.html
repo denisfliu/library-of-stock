@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Pablo Neruda</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Pablo Neruda</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="pablo_neruda_questions.html">View source questions</a> · <a href="pablo_neruda_cards.html">Make cards</a></div>
+<div class="summary">Chilean Nobel Prize-winning poet, born Ricardo Reyes Basoalto, who took his pen name from Czech poet Jan Neruda. Known for Twenty Love Poems and a Song of Despair, Canto General (including &#x27;The Heights of Macchu Picchu&#x27;), and the Elemental Odes. Also a diplomat and Communist. His work ranges from love poetry to political verse inspired by the Spanish Civil War and Latin American history. Always wrote in green ink.</div>
+
+        <details class="work" id="twenty-love-poems-and-a-song-of-despair" open>
+            <summary class="work-title">Twenty Love Poems and a Song of Despair</summary>
+            <p class="work-desc">Neruda's early collection of love poems, published when he was 19. Translated by W. S. Merwin. Includes poems like 'Body of a Woman,' 'Tonight I Can Write the Saddest Lines,' 'White Bee,' 'In My Sky at Twilight,' 'Ah Vastness of Pines,' and the final 'Song of Despair.' Vicente Huidobro accused Neruda of plagiarizing Tagore's The Gardener in the poem 'In My Sky at Twilight.' <a href="https://en.wikipedia.org/wiki/Twenty_Love_Poems_and_a_Song_of_Despair" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Tonight I Can Write the Saddest Lines&#x27;: &#x27;Love is so short, forgetting is so long&#x27;; &#x27;The night is starry and the stars are blue and shiver in the distance&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The line &#x27;Love is so short, forgetting is so long&#x27; appears in a poem that states, &#x27;Tonight I can write the saddest lines&#x27; | the speaker uses &#x27;The night is starry / and the stars are blue and shiver&#x27; as an example of the title phrases</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Song of Despair&#x27;: refrains &#x27;in you everything sank!&#x27; and &#x27;it is the hour of departure&#x27;; &#x27;The memory of you emerges from the night around me&#x27;; addressee is &#x27;lost discoverer&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the speaker proclaims &#x27;it is the hour of departure&#x27; after lamenting &#x27;in you everything sank!&#x27; | &#x27;The memory of you emerges from the night around me&#x27; starts a poem that also includes the repeated exclamation that &#x27;In you everything sank!&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Body of a Woman&#x27;: &#x27;white hills, white thighs&#x27;; &#x27;Body of a woman, white hills, white thighs, you look like a world, lying in surrender&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A line about &#x27;white hills, white thighs&#x27; opens this author&#x27;s poem &#x27;Body of a Woman&#x27; | opens with a poem celebrating the &#x27;white hills, white thighs&#x27; of the title &#x27;Body of a Woman&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Translated by W. S. Merwin</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">which was translated by W.S. Merwin | A line from W. S. Merwin&#x27;s translation</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;I was lonely as a tunnel&#x27; appears in the collection</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">says, &#x27;I was lonely as a tunnel&#x27; | The speaker describes &#x27;Dark river beds&#x27; and says, &#x27;I was lonely as a tunnel&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;White Bee&#x27;: the speaker calls his lover a &#x27;white bee&#x27; and says &#x27;I am the one without hope, the word without echoes&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Chilean poet compared his lover to a white bee in his Twenty Love Poems</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Ah Vastness of Pines&#x27;: beloved described as &#x27;toy doll,&#x27; &#x27;shell in whom the earth sings,&#x27; &#x27;arms of transparent stone&#x27;; ends with &#x27;ears of wheat toiling in the mouth of the wind&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poem describes the poet&#x27;s beloved as a &#x27;toy doll,&#x27; a shell &#x27;in whom the earth sings,&#x27; and someone with &#x27;arms of transparent stone&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Published at age 19; Huidobro accused Neruda of plagiarizing Tagore&#x27;s The Gardener for &#x27;In My Sky at Twilight&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this poet published his Twenty Love Poems and a Song of Despair at age 19 | Huidobro claimed that Neruda poem was a very close plagiarism of a section from Tagore&#x27;s The Gardener</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;I have gone marking the atlas of your body / with crosses of fire&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A poem opens, &#x27;I have gone marking the atlas of your body / with crosses of fire&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Thinking, tangling shadows&#x27; — describes &#x27;burying lamps&#x27; in &#x27;deep solitude&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">describes &#x27;burying lamps&#x27; in &#x27;deep solitude&#x27; in a poem about &#x27;Thinking, tangling shadows&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="canto-general-the-heights-of-macchu-picchu" open>
+            <summary class="work-title">Canto General / The Heights of Macchu Picchu</summary>
+            <p class="work-desc">Neruda's magnum opus, a vast poetic sequence about the Americas. Sections include 'A Lamp on Earth,' 'The Heights of Macchu Picchu,' 'The Conquistadors,' 'The Sand Betrayed,' 'The Fugitive,' 'America, I Do Not Invoke Your Name in Vain,' and 'The Earth's Name is Juan.' 'The Heights of Macchu Picchu' is a 12-part poem about climbing to the Incan ruin, asking the builders to 'Rise up in birth with me, my brother.' Also includes poems attacking the United Fruit Company and 'Celestial Poets.' <a href="https://en.wikipedia.org/wiki/Canto_General" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Arise to birth with me, my brother&#x27; / &#x27;Speak through my words and my blood&#x27; / &#x27;Fasten your bodies to me like magnets&#x27; — the Heights of Macchu Picchu addresses the builders of the ruin</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">commands &#x27;Arise to birth with me, my brother&#x27; in a section of a long poem | asks &#x27;Give me silence, water, hope... Attach your bodies to me like magnets... Speak through my words and my blood&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The poem begins &#x27;From breeze to breeze, like an empty net&#x27;; speaker climbs &#x27;up the ladder of the earth&#x27; to the Incan ruin</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A 12-part poem begins &#x27;From breeze to breeze, like an empty net&#x27; | this writer claims to have risen &#x27;up the ladder of the earth&#x27; to an Incan ruin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sections include &#x27;A Lamp on Earth,&#x27; &#x27;The Conquistadors,&#x27; &#x27;The Sand Betrayed,&#x27; &#x27;The Fugitive,&#x27; &#x27;America, I Do Not Invoke Your Name in Vain&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That poem comes between &#x27;A Lamp on Earth&#x27; and &#x27;The Conquistadors&#x27; in a larger work | included sections titled &#x27;The Fugitive&#x27; and &#x27;The Sand Betrayed&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with &#x27;Before the wig and the dress coat / there were rivers, arterial rivers&#x27;; &#x27;The Birds Arrive&#x27; follows &#x27;Some Beasts&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">begins &#x27;Before the wig and the dress coat / there were rivers, arterial rivers&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lists names like &#x27;Juan Stonecutter&#x27; and &#x27;Juan Barefoot&#x27;; &#x27;The Earth&#x27;s Name is Juan&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">lists names like Juan Stonecutter and Juan Barefoot</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Invisible Man&#x27; opens the collection: &#x27;I laugh / I smile / at the old poets&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He opened another collection with a poem declaring &#x27;I laugh / I smile / at the old poets,&#x27; titled &#x27;The Invisible Man&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Includes poems rebuking &#x27;Celestial Poets,&#x27; &#x27;Oligarchies,&#x27; and the United Fruit Company; &#x27;the Sand Betrayed&#x27; is about humanity being made from a grainy material</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">included poems rebuking &#x27;Celestial Poets,&#x27; &#x27;Oligarchies,&#x27; and the United Fruit Company in a sequence named for the grainy material from which humanity was made</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Macchu Picchu described as &#x27;city of laddered stones&#x27;; as having &#x27;risen like a water glass&#x27;; contrasts images like &#x27;sidereal eagle, misty vine&#x27; and &#x27;Equinoctial quadrant, steam of stone&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">ends with the command to &#x27;fasten your bodies to me like magnets&#x27; and begins with a description of a &#x27;city of laddered stones&#x27; | which &#x27;rose like a water glass&#x27; contrasts two-word images like &#x27;sidereal eagle, misty vine&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Experts from Pennsylvania come to a place with &#x27;so much room for sylvan freedom&#x27; where &#x27;insignificant blood merchants breed and multiply&#x27; (Ode to the Americas)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;experts&#x27; from Pennsylvania coming to a place with &#x27;so much room for sylvan freedom&#x27; where &#x27;insignificant blood merchants breed and multiply&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="elemental-odes" open>
+            <summary class="work-title">Elemental Odes</summary>
+            <p class="work-desc">A collection of odes addressed to everyday objects and foods. Includes odes to socks (gift from Maru Mori), a large tuna in the market, an artichoke, tomatoes, conger chowder, salt, maize, a watermelon ('green whale of summer'), a seashore cactus, and an atom. <a href="https://en.wikipedia.org/wiki/Elemental_Odes" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to socks: gift knitted by Maru Mori; &#x27;beauty is twice beauty and what is good is doubly good&#x27;; socks &#x27;as soft as rabbits&#x27;; feet look like &#x27;two long sharks&#x27; or &#x27;two immense blackbirds&#x27;; impulse to put them in a &#x27;golden cage&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The line &#x27;beauty is twice beauty&#x27; appears in one of these poems about a gift knitted by Maru Mori | These objects, which are &#x27;as soft as rabbits,&#x27; make part of the speaker&#x27;s body seem like &#x27;two long sharks&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to a large tuna in the market: &#x27;bullet from the ocean depths&#x27;; &#x27;among the market greens&#x27;; tuna described as &#x27;catafalqued king&#x27;; &#x27;navigating the waters of death&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">addressed to &#x27;a bullet / from the ocean / depths&#x27; lying &#x27;among the market greens&#x27; | describes a large tuna &#x27;navigating the waters of death&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to artichoke: &#x27;dressed up like a warrior&#x27; before being stripped &#x27;scale by scale&#x27; to eat &#x27;the peaceful mush of its green heart&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title object is &#x27;dressed up like a warrior&#x27; before it is stripped &#x27;scale by scale&#x27; to eat the &#x27;peaceful mush of its green heart&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to conger chowder: &#x27;add the eel that it may be immersed in glory&#x27;; &#x27;drop a dollop of cream into the concoction&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the speaker prescribes, &#x27;you add the eel / that it may be immersed in glory&#x27; and then states, &#x27;Now all that remains is to / drop a dollop of cream / into the concoction&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to tomatoes: people &#x27;pour oil&#x27; onto &#x27;halved hemispheres&#x27;; calls tomato &#x27;star of earth&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">people &#x27;pour / oil&#x27; onto the &#x27;halved hemispheres&#x27; of a food it calls &#x27;star of earth&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to an atom: describes &#x27;crazy spark&#x27; and &#x27;smallest star&#x27;; &#x27;We wake up&#x27; then &#x27;the dawn had consumed itself. All the birds fell calcified&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A &#x27;crazy spark&#x27; and &#x27;smallest star&#x27; are described in one of these poems about an atom</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to salt: &#x27;you won&#x27;t believe me but this thing sings&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Neruda&#x27;s ode to this substance proclaims &#x27;You won&#x27;t believe me but this thing sings&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to maize: &#x27;let history rest in its shroud&#x27;; &#x27;America grew from&#x27; this</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the author asks a poet to &#x27;let history rest in its shroud&#x27; while saying &#x27;America grew from&#x27; this thing</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to a watermelon: calls it the &#x27;green whale of summer&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of these objects is called the &#x27;green whale of summer&#x27; in an ode</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to wine: &#x27;We weep transitory tears&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet wrote, &#x27;We weep transitory tears&#x27; in a poem about wine</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="walking-around-i-explain-a-few-things-residence-on-earth" open>
+            <summary class="work-title">Walking Around / I Explain a Few Things / Residence on Earth</summary>
+            <p class="work-desc">Residence on Earth is a collection written during Neruda's time as a diplomat. 'Walking Around' opens with 'It so happens I am sick of being a man' / 'I happen to be tired of being a man' and describes 'hideous intestines hanging over the doors of houses.' 'I Explain a Few Things' ends with 'Come and see the blood in the streets!' and was inspired by the Spanish Civil War in Madrid. Federico Garcia Lorca drew images to accompany 'Walking Around.' Also includes 'Alberto Rojas Jimenez Comes Flying.' <a href="https://en.wikipedia.org/wiki/Residence_on_Earth" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Walking Around&#x27;: &#x27;It so happens I am sick of being a man&#x27;; imagined himself as &#x27;a felt swan navigating in water of sources and ashes&#x27;; encounters &#x27;hideous intestines hanging over doors&#x27;; Lorca drew images to accompany it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">opens with the proclamation, &#x27;I happen to be tired of being a man&#x27; | This poet imagined himself as &#x27;withered, impenetrable, like a felt swan navigating in the water of sources and ashes&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;I Explain a Few Things&#x27;: ends &#x27;Come and see the blood in the streets!&#x27;; inspired by Spanish Civil War in Madrid; set &#x27;with bells, and clocks, and trees&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">repeated the command, &#x27;Come and see the blood / in the streets!&#x27; at the end of his poem &#x27;I Explain a Few Things&#x27; | inspired by his time living in Madrid during the Spanish Civil War</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Residence on Earth written during diplomatic postings; includes Spain in Our Hearts</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet&#x27;s collections Spain in Our Hearts and Residence on Earth draw on his time as a diplomat in Europe | wrote the first section of his collection Residence on Earth while stationed as a diplomat away from his native Chile</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Alberto Rojas Jimenez Comes Flying&#x27;: about a drowned poet who &#x27;comes flying&#x27; &#x27;over dentists and parishes / cinemas, tunnels, and ears&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alberto Rojas, a drowned poet who &#x27;comes flying&#x27; in a poem from Residence on Earth</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="one-hundred-love-sonnets" open>
+            <summary class="work-title">One Hundred Love Sonnets</summary>
+            <p class="work-desc">A collection of 100 love sonnets, many likely about Matilde Urrutia. Sonnet XVII begins 'I don't love you as if you were a rose of salt, topaz' and includes 'I love you as one loves certain obscure things, / secretly, between the shadow and the soul.' <a href="https://en.wikipedia.org/wiki/100_Love_Sonnets" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sonnet XVII: &#x27;I don&#x27;t love you as if you were a rose of salt, topaz&#x27;; &#x27;I love you as one loves certain obscure things, secretly, between the shadow and the soul&#x27;; &#x27;so close that your hand upon my chest is mine&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;I don&#x27;t love you as if you were a rose of salt, topaz&#x27; | the speaker tells the addressee &#x27;I love you as one loves certain obscure things, / secretly, between the shadow and the soul&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sonnet 16: &#x27;I don&#x27;t love you as if you were a rose of this thing [salt], topaz, or arrow of carnations&#x27;; ode to salt proclaims it &#x27;sings&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Neruda&#x27;s love sonnet 16 begins &#x27;I don&#x27;t love you as if you were a rose of this thing, topaz, or arrow of carnations&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-poems-and-works" open>
+            <summary class="work-title">Other Poems and Works</summary>
+            <p class="work-desc">The Captain's Verses (includes 'Your Laughter' and 'If You Forget Me'; dedicated to future wife Matilde Urrutia). 'If You Forget Me': 'if suddenly you forget me / do not look for me / for I already have forgotten you.' Los versos del capitan published anonymously. Also wrote Confieso que he vivido (memoirs) and Grapes and the Wind (contains pro-Stalin sections). Mourned Cesar Vallejo in an ode. Ode to Jean <a href="rimbaud_stock.html" class="crossref-inline">Arthur Rimbaud</a>. Isla Negra is frequently referenced as his home.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;If You Forget Me&#x27;: &#x27;if suddenly you forget me / do not look for me / for I already have forgotten you&#x27;; &#x27;everything that exists, aromas, light, metals, are little boats that sail toward the isles of the addressee&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">tells the addressee that if the title event occurs, &#x27;do not look for me, for I shall already have forgotten you&#x27; | &#x27;everything that exists, aromas, light, metals,&#x27; are &#x27;little boats that sail toward&#x27; the &#x27;isles&#x27; of the addressee</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Your Laughter&#x27;: &#x27;deny me bread, air, light, spring / but do not take from me your laughter&#x27;; from The Captain&#x27;s Verses</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">writes &#x27;deny me bread, air, / light, spring&#x27; but &#x27;do not take from me your laughter&#x27; | included the poem &#x27;Your Laughter&#x27; in his collection The Captain&#x27;s Verses</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Los versos del capitan published anonymously</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">who anonymously published Los versos del capitan</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poems about dead/dying dogs: speaker calls himself a &#x27;materialist&#x27; and declares &#x27;I believe in a heaven I&#x27;ll never enter&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">calls himself a &#x27;materialist&#x27; and declares &#x27;I believe in a heaven I&#x27;ll never enter&#x27; while mourning a dog</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poem addressing sadness: &#x27;Sadness, scarab with seven crippled feet&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote, &#x27;Sadness, scarab with seven crippled feet&#x27; to open a poem addressed to &#x27;Sadness&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to Jean Arthur Rimbaud; &#x27;you would not be lonely... Today&#x27;; lifelong friend of Louis Aragon</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author of &#x27;Ode to Jean Arthur Rimbaud&#x27; is the dedicatee of an Elegie by lifelong friend Louis Aragon</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Canto General, attacks poets who love Gide and Rilke as &#x27;pale grubs in the capitalist cheese&#x27; and &#x27;false existentialist sorcerers&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">attacks poets who love Gide and Rilke as &#x27;pale grubs in the capitalist cheese&#x27; and &#x27;false existentialist sorcerers&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Neruda is identified and biographical facts.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chilean Nobel Prize-winning poet; born Ricardo Reyes Basoalto; pen name from Czech poet Jan Neruda</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Chilean author of Twenty Love Poems and a Song of Despair | That Czech poet with this surname inspired Ricardo Reyes Basoalto to take this surname for a pen-name</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Communist; served as senator; election overlapped with completing &#x27;The Heights of Machu Picchu&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet&#x27;s election as senator and official entry into the Chilean Communist Party overlapped with his completion of &#x27;The Heights of Machu Picchu&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Diplomat/consul throughout Asia and Spain; Residence on Earth written during diplomatic postings</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Before embarking on a string of consulships throughout Asia and in Spain | his time as a diplomat in Europe</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Always wrote in green ink (the color of hope)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Because he considered it the color of hope, Neruda wrote his poems in ink of this color | who always wrote in green ink</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Appears as a character in Antonio Skarmeta&#x27;s The Postman / Burning Patience; provides advice to Mario on Isla Negra</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a novel dedicated to this author&#x27;s wife, a postman seeks him out on the Isla Negra to learn how to court Beatriz | This author provides romantic advice to Mario Jimenez in Antonio Skarmeta&#x27;s novel The Postman</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Appears in Roberto Bolano&#x27;s By Night in Chile; met by narrator at Farewell&#x27;s house</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The narrator is introduced to this real-life author through his homosexual relationship with the fictitious critic Farewell in a novel that begins &#x27;I am dying now&#x27; | The narrator of Roberto Bolano&#x27;s novel By Night in Chile meets this Chilean poet</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nobel lecture: rejected Huidobro&#x27;s creationist slogan &#x27;the poet is a little god&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In his Nobel lecture, Neruda rejected a creationist slogan of rival great poet Vicente Huidobro that equates &#x27;the poet&#x27; with &#x27;little god&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nobel speech quotes Rimbaud&#x27;s &#x27;prophecy&#x27; about conquering &#x27;the splendid city&#x27; through &#x27;burning patience&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A speech by this author quotes a Rimbaud &#x27;prophecy&#x27; that describes the conquest of &#x27;the splendid city&#x27; through &#x27;burning patience&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Matilde Urrutia was his nurse, then wife; The Captain&#x27;s Verses and One Hundred Love Sonnets likely about her</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this poet briefly moved to Uruguay with his nurse Matilde Urrutia | Neruda wrote &#x27;If suddenly / you forget me / do not look for me&#x27; about his muse and future wife Matilde Urrutia</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Proponent of &#x27;impure poetry&#x27;; valued &#x27;useful objects in repose&#x27; giving &#x27;reality a magnetism&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This proponent of &#x27;impure poetry&#x27; identified the value of &#x27;useful objects in repose&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Congress for Cultural Freedom tried to discredit Neruda and sink his Nobel nomination by publicizing pro-Stalin sections of Grapes and the Wind</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Congress of Cultural Freedom repeatedly attempted to discredit this poet by publicizing the pro-Stalin sections of his collection Grapes and the Wind</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Criticized for failing to condemn USSR forcing Boris Pasternak to reject the 1958 Nobel Prize</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Neruda was widely criticized for failing to condemn the foreign power that forced this writer to reject the 1958 Nobel Prize</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gabriela Mistral read Neruda&#x27;s poems after moving to his hometown of Temuco</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mistral read the poems of this author after she moved to his hometown of Temuco</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Pablo Neruda was a Chilean Nobel Prize-winning poet, born Ricardo Reyes Basoalto, who took his pen name from Czech poet Jan Neruda. He always wrote in green ink, which he considered the color of hope. A Communist who served as a senator, he was also a diplomat with consulships throughout Asia and Spain.</p><p>His most frequently clued collection is Twenty Love Poems and a Song of Despair, published when he was 19 and translated by W. S. Merwin. It includes &#x27;Tonight I Can Write the Saddest Lines&#x27; (&#x27;Love is so short, forgetting is so long&#x27;; &#x27;The night is starry and the stars are blue and shiver in the distance&#x27;), &#x27;Body of a Woman&#x27; (&#x27;white hills, white thighs&#x27;), &#x27;White Bee,&#x27; &#x27;Ah Vastness of Pines,&#x27; and the final &#x27;Song of Despair&#x27; (refrains &#x27;in you everything sank!&#x27; and &#x27;it is the hour of departure&#x27;; opens &#x27;The memory of you emerges from the night around me&#x27;). Vicente Huidobro accused Neruda of plagiarizing Tagore&#x27;s The Gardener for the poem &#x27;In My Sky at Twilight.&#x27;</p><p>Canto General is his magnum opus, a vast poetic sequence about the Americas. It includes &#x27;The Heights of Macchu Picchu,&#x27; a 12-part poem that begins &#x27;From breeze to breeze, like an empty net&#x27; and commands &#x27;Arise to birth with me, my brother&#x27; and &#x27;Speak through my words and my blood.&#x27; Sections include &#x27;A Lamp on Earth,&#x27; &#x27;The Conquistadors,&#x27; &#x27;The Sand Betrayed,&#x27; &#x27;The Fugitive,&#x27; and &#x27;America, I Do Not Invoke Your Name in Vain.&#x27; The collection also includes &#x27;The Invisible Man&#x27; (&#x27;I laugh / I smile / at the old poets&#x27;), poems attacking the United Fruit Company and &#x27;Celestial Poets,&#x27; and &#x27;The Earth&#x27;s Name is Juan.&#x27; Neruda&#x27;s election as senator overlapped with completing &#x27;The Heights of Machu Picchu.&#x27;</p><p>The Elemental Odes are addressed to everyday objects: socks (knitted by Maru Mori; &#x27;beauty is twice beauty&#x27;; socks &#x27;as soft as rabbits&#x27;; feet look like &#x27;two long sharks&#x27;), a large tuna (&#x27;bullet from the ocean depths&#x27;; &#x27;catafalqued king&#x27;), an artichoke (&#x27;dressed up like a warrior&#x27;), tomatoes (&#x27;star of earth&#x27;), conger chowder, salt (&#x27;you won&#x27;t believe me but this thing sings&#x27;), maize (&#x27;America grew from&#x27; it), a watermelon (&#x27;green whale of summer&#x27;), a seashore cactus, and an atom (&#x27;crazy spark&#x27;).</p><p>&#x27;Walking Around&#x27; opens with &#x27;It so happens I am sick of being a man&#x27; and describes &#x27;hideous intestines hanging over doors&#x27;; Federico Garcia Lorca drew images to accompany it. &#x27;I Explain a Few Things&#x27; ends &#x27;Come and see the blood in the streets!&#x27; and was inspired by the Spanish Civil War. Both appear in Residence on Earth, written during his diplomatic postings.</p><p>One Hundred Love Sonnets includes Sonnet XVII (&#x27;I don&#x27;t love you as if you were a rose of salt, topaz&#x27;; &#x27;I love you as one loves certain obscure things, secretly, between the shadow and the soul&#x27;). The Captain&#x27;s Verses includes &#x27;Your Laughter&#x27; and &#x27;If You Forget Me,&#x27; likely about his wife Matilde Urrutia. He anonymously published Los versos del capitan.</p><p>Neruda appears as a character in Antonio Skarmeta&#x27;s The Postman / Burning Patience, where he provides advice to Mario on Isla Negra, and in Roberto Bolano&#x27;s By Night in Chile. In his Nobel lecture, he rejected Huidobro&#x27;s creationist slogan &#x27;the poet is a little god&#x27; and quoted Rimbaud about conquering &#x27;the splendid city&#x27; through &#x27;burning patience.&#x27; He was criticized for failing to condemn the USSR forcing Pasternak to reject the 1958 Nobel Prize, and the Congress for Cultural Freedom tried to discredit him by publicizing pro-Stalin sections of Grapes and the Wind. <a href="gabriela_mistral_stock.html" class="crossref-inline">Gabriela Mistral</a> read his poems after moving to his hometown of Temuco.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Pablo_Neruda" target="_blank">Pablo Neruda — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Twenty_Love_Poems_and_a_Song_of_Despair" target="_blank">Twenty Love Poems and a Song of Despair — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Canto_General" target="_blank">Canto General — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Elemental_Odes" target="_blank">Elemental Odes — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Residence_on_Earth" target="_blank">Residence on Earth — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Twenty Love Poems and a Song of Despair — extremely frequently clued, deserves own answerline search with category &#x27;Literature&#x27;</li><li>Canto General — frequently clued, deserves own answerline search with category &#x27;Literature&#x27;</li><li>Heights of Macchu Picchu — frequently clued as own answerline</li><li>Elemental Odes — frequently clued, may have own answerline results</li><li>Walking Around — clued as own answerline at Chicago Open</li></ul>
+        
+        </section>
+        
+</body>
+</html>
