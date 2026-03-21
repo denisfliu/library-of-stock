@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Romance of the Three Kingdoms</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Romance of the Three Kingdoms</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="romance_of_the_three_kingdoms_questions.html">View source questions</a> · <a href="romance_of_the_three_kingdoms_cards.html">Make cards</a></div>
+<div class="summary">A 14th-century Ming Dynasty novel attributed to Luo Guanzhong, one of the Four Great Classical Novels of China. It details the conflict between the states of Wei, Shu, and Wu after the fall of the Han Dynasty during the Three Kingdoms period. The novel&#x27;s protagonist is Liu Bei, founder of Shu, with Cao Cao serving as the primary antagonist. Major events include the Oath of the Peach Garden, the Battle of Red Cliffs, and the stratagems of Zhuge Liang (the &#x27;Sleeping Dragon&#x27; or &#x27;Crouching Dragon&#x27;). The most common version was compiled in 1679 with an opening line about the cyclical nature of empires. A proverb states that the old should not read this book.</div>
+
+        <details class="work" id="oath-of-the-peach-garden" open>
+            <summary class="work-title">Oath of the Peach Garden</summary>
+            <p class="work-desc">The foundational scene of the novel in which Liu Bei, Guan Yu, and Zhang Fei swear brotherhood. They meet at a tavern, bring a black bull and white horse to the peach garden, and vow to die 'on the same day, in the same month, in the same year.' This occurs during the Yellow Turban Rebellion at the novel's opening. The oath is the most frequently referenced single event from the novel in quizbowl. <a href="https://en.wikipedia.org/wiki/Oath_of_the_Peach_Garden" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three men (Liu Bei, Guan Yu, Zhang Fei) swear an oath in a peach garden to become sworn brothers</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Three men in this novel make an oath in a peach garden to become sworn brothers. | Determined to protect their nation from the Yellow Turban rebels, three characters in this novel swear an oath in a peach garden. | This novel opens with Liu Bei, Guan Yu, and Zhang Fei swearing the Oath of the Peach Garden.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Characters who met at a tavern bring a black bull and white horse to this place; they agree to die &#x27;on the same day, in the same month, in the same year&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Characters who met at a tavern bring a black bull and white horse to this place... those three men agree to die &#x27;on the same day, in the same month, in the same year.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The oath is sworn during the Yellow Turban Rebellion</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Determined to protect their nation from the Yellow Turban rebels, three characters in this novel swear an oath in a peach garden. | During the Yellow Turban rebellion in this work, Guan Zu, Zhang Fei and Liu Bei swear the Oath of the Peach Garden.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="battle-of-red-cliffs" open>
+            <summary class="work-title">Battle of Red Cliffs</summary>
+            <p class="work-desc">The climactic battle of the novel in which the allied forces of Sun Quan and Liu Bei defeat Cao Cao. Central stratagems include Zhuge Liang borrowing arrows using straw boats on a foggy night, summoning the southeast wind, and Pang Tong (Young Phoenix/Fledgling Phoenix) tricking Cao Cao into chaining his ships together. Guan Yu allows Cao Cao to live after the battle. <a href="https://en.wikipedia.org/wiki/Battle_of_Red_Cliffs" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Zhuge Liang borrows arrows using straw boats on a foggy night (sometimes described as &#x27;twenty boats covered with straw&#x27; or &#x27;empty straw ships with lanterns&#x27;)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One character in this novel completes an impossible task with the help of a foggy night and twenty boats covered with straw. | empty straw ships with lanterns on are used to gather one hundred thousand arrows in one evening. | that character supposedly... &#x27;borrows&#x27; arrows with straw boats to win the Battle of Red Cliffs.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Zhuge Liang summons the southeast wind for a fire attack</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">one man plays a trick to borrow arrows and performs a ceremony to summon the eastern wind for a fire attack. | A summoned southeast wind allows Sun Quan and Liu Bei to defeat the forces of Cao Cao at the Battle of Red Cliffs.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Young Phoenix / Fledgling Phoenix (Pang Tong) tricks Cao Cao into chaining his ships together</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in this novel, who is later mistakenly killed after switching horses with his master, proposes chaining some ships together to deal with motion sickness. | One advisor to the protagonist, Young Phoenix, tricked the antagonist into chaining together his ships together for stability.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two characters both write the word &#x27;fire&#x27; in the palms of their hands</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two characters in this novel coincidentally both write the word &#x27;fire&#x27; in the palms of their hands.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Guan Yu (wielding the Green Dragon Crescent Blade, riding Red Hare) allows Cao Cao to live after the battle</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A man who wielded the Green Dragon Crescent Blade and rode Red Hare allowed that antagonist to live after the Battle of Red Cliffs.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="zhuge-liang-s-stratagems" open>
+            <summary class="work-title">Zhuge Liang&#x27;s Stratagems</summary>
+            <p class="work-desc">Zhuge Liang, nicknamed 'Sleeping Dragon' or 'Crouching Dragon,' is the most prominent strategist in the novel. He is recruited after Liu Bei visits his thatched cottage three times. His exploits include the empty fort strategy (playing a guqin at Xicheng with only 100 soldiers), the seven captures of Meng Huo, the Stone Sentinel Maze, praying to the Big Dipper at the Wuzhang Plains, and having a wooden statue of himself made to scare his rival after death. <a href="https://en.wikipedia.org/wiki/Zhuge_Liang" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Liu Bei visits Zhuge Liang&#x27;s thatched cottage three times to recruit him (the &#x27;Sleeping Dragon&#x27;/&#x27;Crouching Dragon&#x27;); Zhuge Liang then outlines a plan involving taking control of the Riverlands</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A sequence of three visits convinces one character in this novel to join a cause, after which he outlines a plan that involves first taking control of the Riverlands. | A leader in this novel visits the thatched cottage of a man nicknamed Sleeping Dragon three times in order to recruit him into that leader&#x27;s service.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Captures and releases a barbarian leader (Meng Huo) seven times before he surrenders</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this novel, a barbarian leader is captured and freed seven times before finally surrendering. | One character in this novel subdues and releases his enemy seven times until he pledges his allegiance.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Creates a wooden sculpture of himself whose appearance after his death causes his rival to flee</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in this novel creates a wooden sculpture of himself, whose appearance after his death causes his rival to flee with fear. | One character in this novel prays to the Big Dipper to relieve his illness but dies anyway at the Wuzhang Plains, although he has a wooden statue of himself made to make his rival think he is still alive.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Prays to the Big Dipper to relieve his illness but dies at the Wuzhang Plains</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One character in this novel prays to the Big Dipper to relieve his illness but dies anyway at the Wuzhang Plains.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stone Sentinel Maze — his father-in-law leads a man out of the stone maze</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That character lays a Stone Sentinel Maze to discourage his enemy from pursuing him. | That character&#x27;s father-in-law leads a man out of a stone maze.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Empty fort strategy: defends Xicheng with 100 soldiers and plays a guqin to bluff Sima Yi</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The town of Xicheng is defended by 100 soldiers and Zhuge Liang playing a guqin in this work. | Name this strategy employed by Zhuge Liang to trick Sima Yi after the Battle of Jieting.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="cao-cao-s-deeds" open>
+            <summary class="work-title">Cao Cao&#x27;s Deeds</summary>
+            <p class="work-desc">Cao Cao serves as the primary antagonist. He is depicted as cunning and ruthless. He claims to enjoy killing in his sleep (and kills a servant to prove it), sets 'chicken ribs' as a password, slaughters a household after a misunderstanding about cooking a pig, and tells Liu Bei they are the only two real heroes (causing Liu Bei to pretend to be scared by lightning). He nearly succeeds in assassinating the tyrant Dong Zhuo early in the novel. <a href="https://en.wikipedia.org/wiki/Cao_Cao" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Claims to like killing people while asleep; kills a servant trying to put a blanket on him to prove it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That character in this novel claims that he likes to kill people while asleep, killing a servant trying to put a blanket on him to prove his point.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sets &#x27;chicken ribs&#x27; as a password; enraged when subordinate correctly interprets its meaning</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One character in this novel sets &#x27;chicken ribs&#x27; as a password and is enraged when his subordinate correctly interprets its meaning.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Slaughters a house full of people after mistaking plans to cook a pig as plans to kill him</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One character in this work slaughters a house full of people after mistaking plans to cook a pig as plans to kill him.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tells Liu Bei they are the only two real heroes, causing Liu Bei to pretend to be scared by lightning</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One character in this novel is spooked when another character tells him that they are the only two real heroes, but pretends to have been scared by lightning.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nearly succeeds in assassinating the tyrant Dong Zhuo</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In his most famous novel, Cao Cao nearly succeeds in assassinating Dong Zhuo.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="liu-bei-s-character" open>
+            <summary class="work-title">Liu Bei&#x27;s Character</summary>
+            <p class="work-desc">Liu Bei is the novel's protagonist, founder of Shu. He is known for benevolent leadership — but also for extreme gestures such as throwing his infant son to the ground after Zhao Yun risks his life to save the baby. He claims to enjoy his new life too much to think of home (the 'lezhong bu si shu' incident). A hunter once serves him the flesh of his own wife, claiming it was wolf meat.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Throws his infant son to the ground after a general (Zhao Yun, one of the &#x27;Five Tigers&#x27;) risks his life to save the baby</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another character in this novel tosses his infant son on the ground after one of his generals had risked his life to save the baby. | One protagonist saves an infant whose mother throws herself down a well; that infant is subsequently cast down by his father.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Claims to enjoy his new life too much to think about his former home</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In one scene in this novel, a character claims to enjoy his new life too much to think about his former home.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A hunter claims to have served wolf&#x27;s meat, but Liu Bei discovers it was the flesh of the hunter&#x27;s wife</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A hunter in this novel claims to his guest that he has served wolf&#x27;s meat, but the guest realizes the day after that it was in fact the flesh of his wife.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Liu Bei is the founder and protagonist of Shu; Guan Yu plays Go while being treated for a poison arrow wound</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">If anyone can be said to be the protagonist of Romance of the Three Kingdoms, it&#x27;s this founder of the kingdom of Shu. | While being treated for a poison arrow wound, Guan Yu pretends to be unhurt by doing this activity [playing Go].</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-characters-and-episodes" open>
+            <summary class="work-title">Other Characters and Episodes</summary>
+            <p class="work-desc">Various other notable characters and events from the novel. Pang Tong ('Young Phoenix'/'Fledgling Phoenix') is killed in an ambush at the Valley of the Fallen Phoenix after switching horses with his master. Guan Yu defeats 6 generals to pass through 5 passes. The Red Hare horse is given to Lu Bu by the warlord Dong Zhuo. The novel includes the coalition against Dong Zhuo (led by Yuan Shao), and Dong Zhuo's death at the hands of his foster son Lu Bu over the beauty Diao Chan. One character receives an empty food box from his superior, interpreting it as an order to kill himself.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fledgling Phoenix / Young Phoenix (Pang Tong) killed in ambush at Valley of the Fallen Phoenix after switching horses with his master</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this novel, the Fledgling Phoenix is killed in an ambush at the Valley of the Fallen Phoenix after switching horses with his master. | A character in this novel, who is later mistakenly killed after switching horses with his master, proposes chaining some ships together.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Guan Yu defeats 6 generals to pass through 5 passes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One general in this work defeats 6 other generals in order to pass through 5 passes.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Red Hare horse is given to Lu Bu by Dong Zhuo; Dong Zhuo seizes Luoyang after the death of Emperor Ling</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Red Hare is given to the greatest warrior of the warlord Dong Zhuo, who had earlier seized Luoyang after the death of Emperor Ling. | A dispute involving Diao Chan causes his death at the hands of his foster son Lu Bu.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One character receives an empty food box and interprets it as an order to kill himself</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One character in this novel receives an empty food box from his superior, which he interprets as an order to kill himself.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Yuan Shao-led coalition against the tyrant Dong Zhuo, who takes power after the Yellow Turban Rebellion</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Liu Bei, Cao Cao, and Sun Jian take part in the Yuan Shao-led coalition against this tyrant, who takes power after the Yellow Turban Rebellion.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-identification" open>
+            <summary class="work-title">General / Identification</summary>
+            <p class="work-desc">How the novel is identified in clues. It is a 14th-century Chinese novel attributed to Luo Guanzhong, one of the Four Great Classical Novels of China. It details the conflict between the states of Wei, Shu, and Wu after the fall of the Han Dynasty. The most common version was compiled in 1679 and added an opening line about the cyclical nature of empires ('what is long divided must unite; what is long united must divide'). Begins with the Yellow Turban Rebellion led by Zhang Jue and ends with Sima Yan establishing the Jin Dynasty. A proverb says the young should not read Water Margin and the old should not read this book. Luo Guanzhong may also have authored or edited Water Margin. Lu Xun was inspired by this novel.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Novel by Luo Guanzhong about the conflict between Wei, Shu, and Wu</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Luo Guanzhong novel that details the conflict between Wu, Wei, and Shu. | this Chinese classic about the struggle for supremacy between Wei, Shu, and Wu.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One of the Four Great Classical Novels of China</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">identify this novel set after the fall of the Han Dynasty, one of the Four Great Classical Novels of China. | Name this member of the Four Great Classical Novels of China, written by Luo Guanzhong.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set after the fall of the Han Dynasty / during the Yellow Turban Rebellion</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This novel begins with a rebellion led by Zhang Jue and ends with Sima Yan establishing the Jin Dynasty. | set during an eponymous period of Chinese history.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">1679 version added opening line about the cyclical nature of empires (&#x27;what is long divided must unite; what is long united must divide&#x27;)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The most common version of this novel was one compiled in 1679 that, among other major revisions, added an opening line describing the cyclical nature of empires. | opening lines note that what&#x27;s &#x27;long divided, must unite&#x27; and what&#x27;s &#x27;long united, must divide.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Proverb: the young should not read Water Margin, the old should not read this book</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">According to a proverb, the young should not read Water Margin, while the old should not read this book.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Luo Guanzhong also credited with editing/authoring Water Margin (Shi Nai&#x27;an&#x27;s); wrote Pingao Zhuan about Wang Ze</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Romance of the Three Kingdoms is by this 14th century Chinese author, who may also have written its fellow Great Classical Novel Water Margin. | This man is credited with editing Shi Nai&#x27;an&#x27;s Water Margin.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lu Xun was inspired by this novel; the protagonist of his story &#x27;Storm in a Teacup&#x27; is obsessed with rereading it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The protagonist of Lu Xun&#x27;s story &#x27;Storm in a Teacup&#x27; is obsessed with rereading this Luo Guanzhong classic. | Lu Xun was inspired by this other classic of Chinese literature.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Referenced in Magic the Gathering cards (Portal: Three Kingdoms set) including Peach Garden Oath, Riding Red Hare, Borrowing 10,000 Arrows, Empty City Ruse</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cards like &#x27;Riding the Dilu Horse&#x27; and &#x27;Empty City Ruse&#x27; reference this work... name this event referenced by the cards &#x27;Peach Garden Oath&#x27; and &#x27;Cao Cao, Lord of Wei.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Akutagawa&#x27;s &#x27;The Nose,&#x27; Father Zenchi compares himself to Liu Bei from this novel</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In &#x27;The Nose,&#x27; Father Zenchi compares himself to Liu Bei, a character from this 14th-century Chinese novel about the wars at the end of the Han dynasty.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Romance of the Three Kingdoms is a 14th-century Ming Dynasty novel attributed to Luo Guanzhong, and one of the Four Great Classical Novels of China. It chronicles the conflict between the states of Wei, Shu, and Wu following the collapse of the Han Dynasty. The most commonly read version was compiled in 1679, which added the famous opening line about the cyclical nature of empires: &#x27;what is long divided must unite; what is long united must divide.&#x27; The novel begins with the Yellow Turban Rebellion led by Zhang Jue and ends with Sima Yan establishing the Jin Dynasty.</p><p>The protagonist is Liu Bei, founder of Shu, whose sworn brotherhood with Guan Yu and Zhang Fei in the Oath of the Peach Garden is the novel&#x27;s most iconic scene. They meet at a tavern, bring a black bull and white horse to the peach garden, and vow to die on the same day. The primary antagonist is Cao Cao of Wei, characterized as ruthless and cunning — he claims to enjoy killing in his sleep and proves it by killing a servant, sets &#x27;chicken ribs&#x27; as a password, slaughters a household over a misunderstanding about pig-cooking, and tells Liu Bei they are the only two real heroes (causing Liu Bei to feign fright from lightning). Cao Cao nearly assassinates the tyrant Dong Zhuo early in the novel.</p><p>The novel&#x27;s strategic centerpiece is the Battle of Red Cliffs, where Zhuge Liang borrows arrows using straw boats on a foggy night, summons the southeast wind for a fire attack, and the Young Phoenix (Pang Tong) tricks Cao Cao into chaining his ships. Guan Yu later allows Cao Cao to escape. Zhuge Liang, nicknamed Sleeping Dragon or Crouching Dragon, is recruited after Liu Bei visits his thatched cottage three times. His other exploits include the empty fort strategy at Xicheng (bluffing Sima Yi by playing a guqin with only 100 soldiers), the seven captures and releases of the barbarian leader Meng Huo, the Stone Sentinel Maze, praying to the Big Dipper at the Wuzhang Plains, and having a wooden statue made of himself to frighten his rival after death.</p><p>Notable episodes include Liu Bei throwing his infant son to the ground after Zhao Yun risked his life to save the baby, Liu Bei claiming to enjoy his new life too much to think of home, a hunter serving Liu Bei the flesh of his own wife while claiming it was wolf meat, Guan Yu defeating six generals to pass through five passes, and Guan Yu playing Go while being treated for a poison arrow wound. Pang Tong is killed at the Valley of the Fallen Phoenix after switching horses with his master. The Red Hare horse is given to Lu Bu by Dong Zhuo, and Dong Zhuo is later killed by Lu Bu over the beauty Diao Chan.</p><p>A Chinese proverb states that the young should not read Water Margin and the old should not read this book. Luo Guanzhong is also credited with editing or co-authoring Water Margin. Lu Xun was inspired by this novel; the protagonist of his story &#x27;Storm in a Teacup&#x27; obsessively rereads it. In Akutagawa&#x27;s &#x27;The Nose,&#x27; Father Zenchi compares himself to Liu Bei. The novel is also referenced extensively in the Magic the Gathering Portal: Three Kingdoms card set.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Romance_of_the_Three_Kingdoms" target="_blank">Romance of the Three Kingdoms — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Battle_of_Red_Cliffs" target="_blank">Battle of Red Cliffs — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Zhuge_Liang" target="_blank">Zhuge Liang — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Oath_of_the_Peach_Garden" target="_blank">Oath of the Peach Garden — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Luo_Guanzhong" target="_blank">Luo Guanzhong — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Luo Guanzhong — the author; may have results as separate answerline</li><li>Water Margin — frequently mentioned alongside this novel as one of the Four Great Classical Novels</li><li>Zhuge Liang — major character with many specific clues; may appear as own answerline in history</li><li>Battle of Red Cliffs — pivotal event; may appear as own answerline in history</li><li>Three Kingdoms period — the historical period; has appeared as its own answerline (T6)</li></ul>
+        
+        </section>
+        
+</body>
+</html>
