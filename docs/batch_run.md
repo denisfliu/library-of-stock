@@ -18,7 +18,7 @@ The controller will:
 
 ## Building Agent Prompts
 
-Agent prompts are assembled programmatically from building blocks in `docs/prompts/`:
+Agent prompts are assembled programmatically from building blocks in `docs/`:
 
 | Block | Content |
 |---|---|
