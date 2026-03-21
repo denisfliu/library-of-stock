@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Patrick White</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Patrick White</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="patrick_white_questions.html">View source questions</a> · <a href="patrick_white_cards.html">Make cards</a></div>
+<div class="summary">Australian Nobel laureate novelist (1973 Nobel Prize in Literature). Known for novels set in the Australian outback and suburbs, often featuring artists, eccentrics, and explorers. Major works include Voss (based on explorer Ludwig Leichhardt), Riders in the Chariot (four visionaries in the suburb of Sarsaparilla), The Vivisector (painter Hurtle Duffield), The Tree of Man, and The Twyborn Affair. Won the Nobel Prize in 1973 and subsequently set up a namesake literary award in Australia.</div>
+
+        <details class="work" id="voss" open>
+            <summary class="work-title">Voss</summary>
+            <p class="work-desc">White's best-known novel, based on the real naturalist and explorer Ludwig Leichhardt. Follows the German explorer Voss on an expedition across Australia, backed by Edmund Bonner, with companions Frank Le Mesurier and Palfreyman. Voss has a deep spiritual/romantic connection with Laura Trevelyan, an orphan from New South Wales who adopts an orphan named Mercy. Voss ultimately dies in the Outback. Laura's cousin Belle Radclyffe hosts a garden party for the unveiling of a statue of Voss, attended by Mr. Judd. Describes the flora of the outback. <a href="https://en.wikipedia.org/wiki/Voss_(novel)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laura Trevelyan&#x27;s connection/love for the German explorer Voss, who leads an expedition across Australia and dies in the Outback</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">depicted Laura Trevelyan&#x27;s time with the title German explorer, who leads an expedition across a continent before dying in the Outback | Laura Trevelyan&#x27;s love for the explorer Voss | centers on the connection that Laura, an orphan from New South Wales, has with a Prussian explorer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on the naturalist Ludwig Leichhardt</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote a novel based on the naturalist Ludwig Leichhardt</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Expedition backed by Edmund Bonner; companions Frank Le Mesurier, Palfreyman</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a journey backed by Edmund Bonner is undertaken by Frank Le Mesurier, Palfreyman and other companions</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laura adopts an orphan named Mercy; cousin Belle Radclyffe hosts a garden party for Voss statue unveiling; Mr. Judd attends</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">She in turn adopts an orphan named Mercy and attends a ball in the absence of the title character</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laura arrives in New South Wales and meets Voss at her uncle&#x27;s home</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this orphan who arrives in New South Wales and meets the title character at the home of her uncle</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="riders-in-the-chariot" open>
+            <summary class="work-title">Riders in the Chariot</summary>
+            <p class="work-desc">A novel about four people who share a vision from the Book of Ezekiel, set in the fictional suburb of Sarsaparilla. The four visionaries are: Mary Hare (eccentric spinster heiress living on the decaying estate of Xanadu), Mordecai (a Holocaust survivor who is subjected to a mock crucifixion outside a bicycle lamp factory), Alf Dubbo (an Aboriginal artist), and Ruth Godbold (a devout mother). Title partially inspired by an <a href="odilon_redon_stock.html" class="crossref-inline">Odilon Redon</a> painting. Wine merchant Norbert poses a question to his young daughter that references the title. <a href="https://en.wikipedia.org/wiki/Riders_in_the_Chariot" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mordecai is subjected to a mock crucifixion outside a bicycle lamp factory; Holocaust survivor</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a Holocaust survivor dies after being subjected to a mock crucifixion outside a bicycle lamp factory | Mordecai is subjected to a mock crucifixion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four people share a vision from the Book of Ezekiel; set in the fictional suburb of Sarsaparilla</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">about four people who share a vision from the book of Ezekiel, set in his fictional suburb of Sarsaparilla | the eccentric heiress Mary Hare lives on the decaying estate of Xanadu outside of the suburb of Sarsaparilla</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mary Hare is an eccentric spinster/heiress living on the estate Xanadu; Alf Dubbo is an Aboriginal artist; Ruth Godbold is a devout mother</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the spinster Mary Hare, who lives in Xanadu near the painter Alf Dubbo | the eccentric heiress Mary Hare lives on the decaying estate of Xanadu | home to the devout mother Ruth Godbold and the artist Alf Dubbo</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title inspired by an Odilon Redon painting</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">title was partially inspired by an Odilon Redon painting that its author saw as a child</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-vivisector" open>
+            <summary class="work-title">The Vivisector</summary>
+            <p class="work-desc">A novel about the painter Hurtle Duffield, who grew up poor in Sydney. He smears excrement on a painting showing the eye of God, an image that has haunted him since childhood. Inspired by characters like Kathy Volkov, Hero Pavloussi, and the hunchbacked Rhoda Courtney (also named Rhoda Courtenay). Duffield seeks to complete his magnum opus after suffering a stroke, and the novel closes with him suffering a stroke while writing the word 'indigo,' an anagram for 'god in I.' The protagonist is theorized by some critics to be based on Sidney Nolan. <a href="https://en.wikipedia.org/wiki/The_Vivisector" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Painter Hurtle Duffield smears excrement on a canvas showing the eye of God</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">daubs excrement on a painting showing the eye of God | the painter Hurtle Duffield, who smears shit onto the canvas of his work showing the eye of god</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Suffers a stroke while writing the word &#x27;indigo&#x27; (anagram for &#x27;god in I&#x27;); seeks to complete magnum opus after stroke</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">closes with the protagonist suffering a stroke while writing the word &#x27;indigo,&#x27; an anagram for &#x27;god in I&#x27; | seeks to complete his magnum opus after suffering a stroke</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by characters Kathy Volkov, Hero Pavloussi, hunchbacked Rhoda Courtney</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Rhoda Courtenay and Kathy Volkov befriend the protagonist | inspired by characters like Kathy Volkov, Hero Pavloussi, and the hunchbacked Rhoda Courtney</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Protagonist theorized to be based on Sidney Nolan</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">theorized by some critics to be based off of Sidney Nolan</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-tree-of-man" open>
+            <summary class="work-title">The Tree of Man</summary>
+            <p class="work-desc">Chronicles the Parker family adapting their traditional way of life to the frontier. Stan Parker marries Amy, whom he meets at a dance. A kitchen maid touches a gum tree for the first time during a bushfire. <a href="https://en.wikipedia.org/wiki/The_Tree_of_Man" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Parker family adapts to life on the frontier; Stan Parker marries Amy whom he meets at a dance</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">chronicles the attempt of the Parker family to adapt a traditional way of life with their new life on the frontier | described the marriage of Stan Parker with a girl named Amy that he meets at a dance</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kitchen maid touches a gum tree for the first time during a bushfire</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">portrayed a kitchen maid touching a gum tree for the first time during a bushfire</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-twyborn-affair" open>
+            <summary class="work-title">The Twyborn Affair</summary>
+            <p class="work-desc">White's last published novel. Features a non-gender conforming protagonist who uses the names Eudoxia, Eddie, and Eadith. Reminiscent of <a href="virginia_woolf_stock.html" class="crossref-inline">Virginia Woolf</a>'s <a href="virginia_woolf_stock.html#orlando" class="crossref-inline">Orlando</a>. The novel was purported to be edited from the papers of Alex Xenophon Demirjian Gray. <a href="https://en.wikipedia.org/wiki/The_Twyborn_Affair" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Non-gender conforming protagonist uses the names Eudoxia, Eddie, and Eadith; reminiscent of Orlando</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">non-gender conforming protagonist who uses the names Eudoxia, Eddie, and Eadith | In a novel reminiscent of Orlando, he wrote about a single soul which inhabits three different identities, two female and one male, all of whom have names starting with E</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Purported to be edited from the papers of Alex Xenophon Demirjian Gray</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">purported to be edited from the papers of one Alex Xenophon Demirjian Gray</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works-and-biographical-details" open>
+            <summary class="work-title">Other Works and Biographical Details</summary>
+            <p class="work-desc">Won the 1973 Nobel Prize in Literature; subsequently set up a namesake literary award in Australia, the first of which went to Christina Stead. His novel features shipping merchant Angelos leaving a Paris hotel after Joan Golson meets his mistress. Praised Janet Frame's autobiography as 'amongst the wonders of the world.' An unfinished novel was published in 2012.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Won the 1973 Nobel Prize in Literature</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Nobel winning Australian novelist | this Australian Nobel laureate</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set up a namesake literary award in Australia after winning Nobel; first went to Christina Stead</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After winning the 1973 Nobel Prize in literature, White set up a namesake literary award in Australia, the first of which went to this writer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Praised Janet Frame&#x27;s autobiography as &#x27;amongst the wonders of the world&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">praised Frame&#x27;s autobiography as &#x27;amongst the wonders of the world&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shipping merchant Angelos leaves a Paris hotel after Joan Golson meets his mistress (unnamed novel)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the shipping merchant Angelos leaves a Paris hotel after Joan Golson meets his mistress</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Patrick White (1912-1990) was an Australian novelist who won the 1973 Nobel Prize in Literature, the only Australian to have done so. He subsequently set up a namesake literary award in Australia, the first recipient of which was Christina Stead.</p><p>His best-known work is Voss, based on the real naturalist and explorer Ludwig Leichhardt. The novel follows the German explorer Voss on an expedition across Australia, backed by Edmund Bonner, with companions including Frank Le Mesurier and Palfreyman. Voss has a deep spiritual and romantic connection with Laura Trevelyan, an orphan from New South Wales who arrives and meets Voss at her uncle&#x27;s home. Laura later adopts an orphan named Mercy. Voss ultimately dies in the Outback. At the end, Laura&#x27;s cousin Belle Radclyffe hosts a garden party for the unveiling of a statue of Voss, attended by Mr. Judd. The novel also describes the flora of the outback.</p><p>Riders in the Chariot is set in the fictional suburb of Sarsaparilla and concerns four people who share a vision from the Book of Ezekiel. The four visionaries are: Mary Hare (an eccentric spinster heiress living on the decaying estate of Xanadu), Mordecai (a Holocaust survivor who is subjected to a mock crucifixion outside a bicycle lamp factory and dies), Alf Dubbo (an Aboriginal artist), and Ruth Godbold (a devout mother). The title was partially inspired by an <a href="odilon_redon_stock.html" class="crossref-inline">Odilon Redon</a> painting that White saw as a child. Wine merchant Norbert poses a question to his young daughter that references the title.</p><p>The Vivisector follows the painter Hurtle Duffield, who grew up poor in Sydney. He smears excrement onto a painting showing the eye of God, an image that has haunted him since childhood. He is inspired by characters including Kathy Volkov, Hero Pavloussi, and the hunchbacked Rhoda Courtney. He seeks to complete his magnum opus after suffering a stroke, and the novel closes with him suffering another stroke while writing the word &#x27;indigo,&#x27; an anagram for &#x27;god in I.&#x27; The protagonist is theorized by some critics to be based on the Australian painter Sidney Nolan.</p><p>The Tree of Man chronicles the Parker family adapting their traditional way of life to the frontier. Stan Parker marries Amy, whom he meets at a dance. A kitchen maid touches a gum tree for the first time during a bushfire.</p><p>The Twyborn Affair was White&#x27;s last published novel. It features a non-gender conforming protagonist who inhabits three different identities (two female, one male) using the names Eudoxia, Eddie, and Eadith. Reminiscent of <a href="virginia_woolf_stock.html" class="crossref-inline">Virginia Woolf</a>&#x27;s <a href="virginia_woolf_stock.html#orlando" class="crossref-inline">Orlando</a>, the novel was purported to be edited from the papers of Alex Xenophon Demirjian Gray. An unfinished novel by White was published in 2012.</p><p>Other biographical details: White praised Janet Frame&#x27;s autobiography as &#x27;amongst the wonders of the world.&#x27; One of his novels features shipping merchant Angelos leaving a Paris hotel after Joan Golson meets his mistress.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Patrick_White" target="_blank">Wikipedia: Patrick White</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Voss (novel) — could potentially have its own page if more clues exist</li><li>Riders in the Chariot — several detailed clues</li></ul>
+        
+        </section>
+        
+</body>
+</html>

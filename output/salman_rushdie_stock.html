@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Salman Rushdie</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<h1>Salman Rushdie</h1>
+<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="salman_rushdie_questions.html">View source questions</a> · <a href="salman_rushdie_cards.html">Make cards</a></div>
+<div class="summary">Indian-born British-American novelist known for magical realism. Most famous for Midnight&#x27;s Children (won the Booker and two &#x27;Best of the Booker&#x27; awards) and The Satanic Verses (which prompted a fatwa from Ayatollah Khomeini in 1989). Frequently writes about Indian independence, partition, postcolonial identity, and the migrant experience. His essay collection Imaginary Homelands is a key text on postcolonial literature. Wrote the memoir Joseph Anton about his decade in hiding under that pseudonym (derived from Conrad + Chekhov). Stabbed in 2022 at a Chautauqua lecture; wrote the memoir Knife about the attack.</div>
+
+        <details class="work" id="midnight-s-children" open>
+            <summary class="work-title">Midnight&#x27;s Children</summary>
+            <p class="work-desc">Rushdie's most famous novel, winner of the Booker Prize and two 'Best of the Booker' awards. Follows Saleem Sinai, born at the exact moment of India's independence, who has a large nose granting him telepathic powers. He connects with other 'midnight's children' — babies born with supernatural abilities during that hour. Features Mary Pereira swapping Saleem and Shiva at birth, the Braganza pickle factory, Parvati-the-Witch, 'the Widow' (Indira Gandhi), and the concept of 'chutnification' blending fiction and history. <a href="https://en.wikipedia.org/wiki/Midnight%27s_Children" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Saleem Sinai is born at the moment of India&#x27;s independence and has telepathic powers due to his large nose</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this author who described Saleem Sinai in Midnight&#x27;s Children | Saleem Sinai uses telepathy to gather together those born at the instant that India became independent | Saleem Sinai, who uses his large nose to telepathically connect to hundreds of people who were born with special powers on the eve of India&#x27;s independence</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mary Pereira swaps two babies (Saleem and Shiva) at birth</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Catholic nurse Mary Pereira swaps rich and poor newborns during this historical event | the owner of the Braganza pickle factory, Mary Pereira, swaps a baby with knobby knees with a large-nosed, telepathically gifted character</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Parvati-the-Witch helps the protagonist; destruction of a slum</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist is helped by Parvati-the-Witch before the destruction of a slum | Parvati the Witch lusts after a character with a constantly dripping nose</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Widow&#x27; represents Indira Gandhi; she sued Rushdie over the novel</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">subsequent capture by the government of the Widow, a representation of Indira Gandhi | Rushdie was sued by this figure over a sentence in Midnight&#x27;s Children in which her son accuses her of contributing to his father&#x27;s death</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pickle/chutney factory (Braganza Pickles); &#x27;chutnification&#x27; of history</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Saleem first meets his wife-to-be at one of these businesses, which is run by Saleem&#x27;s former nanny, Mary | the term &#x27;chutnification&#x27; was coined to describe the blending of fiction and history</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Character acts as a dog for a military unit and guides them into the Sundarbans</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in a novel by this author acts as a dog for a military unit, but guides them into the Sundarbans</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Protagonist is revealed to be the son of William Methwold</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist of another of his novels is revealed to be the son of William Methwold after originally being switched at birth by Mary Pereira</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Saleem falls in love with his sister &#x27;the Brass Monkey&#x27;; feels he will die the day he marries Padma</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Saleem Sinai feels he will die the day he marries his lover Padma</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Won two &#x27;Best of the Booker&#x27; awards; first Indian author to win the Man Booker Prize</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">won two &#x27;Best of the Booker&#x27; awards for a magical realist novel | this author of The Satanic Verses became the first [Indian author to win the Man Booker Prize] when he won for Midnight&#x27;s Children</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-satanic-verses" open>
+            <summary class="work-title">The Satanic Verses</summary>
+            <p class="work-desc">Rushdie's most controversial novel, which prompted Ayatollah Khomeini to issue a fatwa calling for Rushdie's death in 1989. The novel opens with Saladin Chamcha and Gibreel Farishta miraculously surviving a fall from a hijacked plane over the English Channel, transforming into demonic and angelic figures respectively. Includes dream sequences about a prophet called 'the Messenger' (Mahound) and Ayesha leading pilgrims into the Arabian Sea. Gibreel murders Sisodia and his lover Allie Cone. Hal Valance calls Thatcher 'Mrs. Torture.' <a href="https://en.wikipedia.org/wiki/The_Satanic_Verses" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Saladin Chamcha and Gibreel Farishta survive falling from an exploding/hijacked plane over the English Channel</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Saladin Chamcha and Gibreel Farishta miraculously survive | a man who dreams about Mahound after falling out of an exploding airplane with Saladin Chamcha | two characters turn into an angel and demon during one of these events</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Prompted Khomeini&#x27;s fatwa in 1989 calling for Rushdie&#x27;s death</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">prompted Ruhollah Khomeini&#x27;s fatwa on an Indian author | the subject of a 1989 fatwa calling for his death issued by the Ayatollah Khomeini | had a fatwa issued against him by Ayatollah Khomeini over the heretical content of his The Satanic Verses</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dream sequence about Ayesha leading pilgrims into the Arabian Sea, where they drown</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a sequence about a woman who attempts to walk across the Arabian Sea with her followers | Ayesha leading a group of men into the Arabian Sea, where they drown</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dream sequence about the prophet Mahound / &#x27;the Messenger&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a controversial sequence about a prophet known as &#x27;the Messenger&#x27; | a man who dreams about Mahound</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gibreel Farishta inspired by Amitabh Bachchan; has a relationship with mountaineer Allie Cone; murders Sisodia and Allie Cone</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Amitabh Bachchan was a major inspiration for this character, who engages in a tumultuous relationship with the mountaineer Allie Cone | Another of his characters murders Sisodia and Allie Cone</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Saladin Chamcha is a London-based voice-actor who becomes an analogue of the devil</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This London-based voice-actor of Indian descent becomes an analogue of the devil</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hal Valance calls Margaret Thatcher &#x27;Mrs. Torture&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Hal Valance refers to Margaret Thatcher as &#x27;Mrs. Torture&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Baal is an &#x27;assassination poet&#x27; who served the Grandee of Jahilia</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the writer of &#x27;assassination poems,&#x27; a guy who served the Grandee of Jahilia, Baal</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-fatwa-joseph-anton-memoir" open>
+            <summary class="work-title">The Fatwa / Joseph Anton (Memoir)</summary>
+            <p class="work-desc">In 1989, Ayatollah Khomeini issued a fatwa calling for Rushdie's death over The Satanic Verses. Rushdie lived in hiding for a decade under the pseudonym 'Joseph Anton' (from the first names of Conrad and Chekhov). His memoir Joseph Anton describes this period, his marriages to Marianne Wiggins and Padma Lakshmi ('The Illusion'), and the aftermath. Translators were attacked: Hitoshi Igarashi (Japanese translator) was killed in 1991; Ettore Capriolo and William Nygaard were injured. Rushdie appeared at a U2 Wembley concert in 1993, telling Bono 'real devils don't wear horns.' Cat Stevens controversially said he'd harm Rushdie. Jimmy Carter wrote a NYT op-ed denouncing the fatwa but urging understanding. Rushdie wrote an apologetic essay 'In Good Faith' which he later called 'the biggest mistake of my life.' <a href="https://en.wikipedia.org/wiki/The_Satanic_Verses_controversy" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Khomeini&#x27;s fatwa issued February 14, 1989 calling for Rushdie&#x27;s death</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a 1989 fatwa calling for his death issued by the Ayatollah Khomeini | condemnation broadcast on radio on February 14, 1989</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pseudonym &#x27;Joseph Anton&#x27; from first names of Conrad and Chekhov; lived in hiding for a decade</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">forced to live under the pseudonym Joseph Anton | chose the first names of the authors Conrad and Chekhov as his pseudonym | took the pseudonym Joseph Anton to escape a fatwa</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marriage to Marianne Wiggins; marriage to Padma Lakshmi (&#x27;The Illusion&#x27;)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">narrates the disintegration of his marriage to his second wife, Marianne Wiggins | describes his marriage to Padma Lakshmi | used the moniker &#x27;The Illusion&#x27; to refer to his fourth wife</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Japanese translator Hitoshi Igarashi killed in 1991; Ettore Capriolo and William Nygaard injured</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ettore Capriolo and William Nygaard were among the people injured as a result of this order | led to the death of Japanese translator Hitoshi Igarashi | In 1991, two translators of a novel by this man were stabbed</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Surprise appearance at U2 Wembley concert in 1993; told Bono &#x27;real devils don&#x27;t wear horns&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">told Bono that &#x27;real devils don&#x27;t wear horns&#x27; after appearing on stage at a U2 concert | In August 1993, this writer made a surprise appearance during a U2 concert at Wembley Stadium</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cat Stevens controversially threatened Rushdie</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cat Stevens controversially claimed he would &#x27;ring somebody who might do&#x27; damage to this man</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jimmy Carter wrote NYT op-ed denouncing but urging understanding of the anger</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A New York Times op-ed by Jimmy Carter denounced this order, but suggested that it was important to understand the anger behind it</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote apologetic essay &#x27;In Good Faith&#x27; — later called it &#x27;the biggest mistake of my life&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">responded to this order with an apologetic essay titled &#x27;In Good Faith&#x27;, which they subsequently described as the &#x27;biggest mistake of my life&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sivas Massacre: mob burned hotel killing 35 after attendees failed to turn over Aziz Nesin</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">provoked a mob to burn down a hotel, killing 35 people, after attendees at a conference failed to turn over Aziz Nesin in the so-called Sivas Massacre</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">UK severed ties with Iran; Collets and Dillons bookshops on Charing Cross Road bombed; Jackie Mann kidnapped</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">severed ties with the UK on March 7, after which Collets and Dillons on Charing Cross Road were bombed on April 9, and British World War II hero Jackie Mann was kidnapped</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">2022 stabbing attack by Hadi Matar at Chautauqua; wrote memoir Knife (2024)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A stabbing attack in New York in October 2022 injured... this author | the 27 seconds it took were enough to read his favorite Shakespeare sonnet aloud in the 2024 memoir Knife</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="imaginary-homelands-essay-collection" open>
+            <summary class="work-title">Imaginary Homelands (Essay Collection)</summary>
+            <p class="work-desc">Rushdie's major essay collection on postcolonial literature and the migrant experience. Contains 'Commonwealth Literature Does Not Exist,' which argues against the 'bogy of Authenticity' and attacks the idea of a unified 'commonwealth school of literature.' Also contains 'Outside the Whale,' which calls for 'rowdyism' against the quietism of Orwell's 'Inside the Whale.' The title essay discusses straddling two cultures and 'the migrant theory,' and declares 'we are translated men.' <a href="https://en.wikipedia.org/wiki/Imaginary_Homelands" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Commonwealth Literature Does Not Exist&#x27; — attacks the &#x27;bogy of Authenticity&#x27;; argues the &#x27;school&#x27; is an &#x27;oddest of beasts&#x27; whose members deny belonging</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">discusses the &#x27;bogy of Authenticity&#x27; to argue for a mixed literary tradition posits that &#x27;commonwealth literature does not exist&#x27; | labels this association&#x27;s &#x27;school of literature&#x27; the &#x27;very oddest of beasts&#x27; because its &#x27;supposed members deny vehemently that they belong to it&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Outside the Whale&#x27; — calls for &#x27;rowdyism&#x27; against Orwell&#x27;s &#x27;Inside the Whale&#x27; quietism</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">examined George Orwell&#x27;s desire to keep politics out of writing in his essay &#x27;Outside the Whale&#x27; | calls for &#x27;rowdyism&#x27; in place of the quietism advocated in George Orwell&#x27;s essay on Henry Miller</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title essay discusses straddling two cultures / &#x27;the migrant theory&#x27;; &#x27;we are translated men&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">sometimes we feel that we straddle two cultures; at other times that we fall between two stools | Rushdie declares &#x27;we are&#x27; men who have undergone this process [translation]</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Empire Writes Back with a Vengeance&#x27; — post-colonial authors writing back against British colonialism</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">cited the idea of post-colonial authors &#x27;writing back&#x27; against British colonialism in &#x27;The Empire Writes Back with a Vengeance&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="haroun-and-the-sea-of-stories" open>
+            <summary class="work-title">Haroun and the Sea of Stories</summary>
+            <p class="work-desc">A children's novel in which Haroun Khalifa meets Butt the Hoopoe (an AI bird) and Iff the Water Genie and helps the Guppee army defeat Khattam-Shud (a Khomeini analogue), who tries to poison the Sea of Stories and silence the residents of Gup. Set on the moon Kahani, divided into Gup and the silent Chup. Inspired by Somadeva's Kathasaritsagara. Alludes to One Thousand and One Nights (a houseboat is named in reference to it). Haroun's younger brother Luka stars in the sequel Luka and the Fire of Life. <a href="https://en.wikipedia.org/wiki/Haroun_and_the_Sea_of_Stories" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Khattam-Shud tries to poison the Sea of Stories; represents Khomeini; residents of Gup vs. silent Chup</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">villainous Khattam-Shud, who aims to silence the talkative residents of Gup | set on the moon Kahani, which is divided into Gup and the silent Chup</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Haroun meets Butt the Hoopoe (AI bird) and Iff the Water Genie</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An AI Hoopoe named &#x27;Butt&#x27; brings characters to a location | who meets Butt the Hoopoe and Iff the Water Genie</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Haroun&#x27;s brother Luka stars in sequel Luka and the Fire of Life</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This character&#x27;s younger brother stars in Rushdie&#x27;s later novel Luka and the Fire of Life</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by Somadeva&#x27;s Kathasaritsagara (Ocean of Streams of Stories)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Somadeva&#x27;s Kathasaritsagara provides the name for the title location</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alludes to One Thousand and One Nights; houseboat named in reference to it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Rushdie heavily alludes to this work in Haroun and the Sea of Stories, including with a houseboat named in reference to it</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="shame" open>
+            <summary class="work-title">Shame</summary>
+            <p class="work-desc">A political satire set in an allegorical version of Pakistan. Features Iskander Harappa and General Raza Hyder as politicians. Created the fictional Pakistani town of Q. <a href="https://en.wikipedia.org/wiki/Shame_(Rushdie_novel)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Political satire set in allegorical Pakistan; Iskander Harappa and General Raza Hyder</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Iskander Harappa and General Raza Hyder are politicians who rule an allegorical version of this country | this author&#x27;s novel Shame is a political satire set in Pakistan</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Created the fictional Pakistani town of Q</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">created the fictional Pakistani town of Q in the novel Shame</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="grimus" open>
+            <summary class="work-title">Grimus</summary>
+            <p class="work-desc">Rushdie's first novel, about the Axona Indian Flapping Eagle who searches for his lost sister Bird-Dog for 777 years after drinking a magic beverage. <a href="virgil_stock.html" class="crossref-inline">Virgil</a> Jones guides him to the mythical Calf Island (inspired by Mount Qaf from Attar's Conference of the Birds), whose inhabitants are immortal. <a href="https://en.wikipedia.org/wiki/Grimus" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First novel; protagonist Flapping Eagle searches for sister Bird-Dog for 777 years after drinking magic beverage</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist searches for his lost sister for 777 years, 7 months, 7 days after drinking a magic beverage | first novel centers on Axona Indian Flapping Eagle, who searches for his sister Bird-Dog</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Virgil Jones guides to mythical Calf Island (immortal inhabitants); inspired by Mount Qaf / Attar&#x27;s Conference of the Birds</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Virgil Jones guides to the mythical Calf Island, whose inhabitants are immortal | used Attar&#x27;s The Conference of the Birds as a structural inspiration for his first novel, Grimus</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Other notable Rushdie works that appear in clues: Fury (protagonist is a professor-turned-dollmaker 'Little Brain' who moves to New York after nearly stabbing wife Eleanor; leader of coup in Lilliput-Blefuscu dresses as Commander Akasz); The Golden House (2017; Nero moves from Mumbai to New York; filmmaker Rene has affair with Vasilisa; D. is gender-questioning; 'The Joker' = Trump); Quichotte (title character hallucinates son 'Sancho' in Chevrolet Cruze; Sam DuChamp creates Ismail Smile); The Moor's Last Sigh (won Whitbread 1995); Shalimar the Clown (chauffeur-turned-assassin from Kashmir); The Ground Beneath Her Feet (Ormus Cana and Vina Apsara as Orpheus and Eurydice analogues); Two Years Eight Months and Twenty-Eight Nights (2015; princess who controls lightning; alludes to 1001 Nights set in NYC); Victory City (goddess allows Pampa Kampana to conjure city of Bisnaga); The Enchantress of Florence (character saves himself from emperor's elephant by claiming descent from Nina Argalia); The Jaguar Smile (first nonfiction book about his trip to Nicaragua after Sandinista invitation); The Wizard of Oz (monograph; compared subject to 'authorless text'; inspired his writing career); East, West (story collection with 'Yorick,' agents Chekhov and Zulu, 'The Prophet's Hair,' 'At the Auction of the Ruby Slippers'); Luka and the Fire of Life (protagonist realizes world is like a video game; Nobodaddy phantasm; Old Man of the River; title substance guarded by The Aalim).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Quichotte — title character hallucinates son &#x27;Sancho&#x27; in Chevrolet Cruze; Sam DuChamp creates Ismail Smile</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">hallucinates a son appearing in the backseat of his Chevrolet Cruze and names him &#x27;Sancho&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fury — professor-turned-dollmaker &#x27;Little Brain&#x27;; moves to NY after near-stabbing of wife Eleanor</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a professor-turned-dollmaker who becomes famous for his creation &#x27;Little Brain&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Golden House (2017) — Nero and children leave Mumbai for New York; Rene&#x27;s film; D. is gender-questioning; &#x27;The Joker&#x27; = Trump</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nero and his children leave Mumbai for New York and become the subject of Rene&#x27;s film project | Rene has an affair with Vasilisa and uses the extended metaphor of &#x27;The Joker&#x27; to refer to Donald Trump</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Moor&#x27;s Last Sigh won 1995 Whitbread Prize</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">won the Whitbread prize for best novel in 1995 for The Moor&#x27;s Last Sigh</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shalimar the Clown — chauffeur-turned-assassin from Kashmir</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a chauffeur-turned-assassin nicknamed &#x27;the clown&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Ground Beneath Her Feet — Ormus Cana and Vina Apsara as Orpheus and Eurydice</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the rock musician Ormus Cana and the half-Indian singer Vina Apsara become 20th-century analogues of Orpheus and Eurydice</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two Years Eight Months and Twenty-Eight Nights — alludes to 1001 Nights; set in NYC; princess controls lightning</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a 2015 novel featuring a princess who controls lightning, Rushdie set this work in New York City</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Victory City — Pampa Kampana conjures the city of Bisnaga</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the magic of a goddess allows Pampa Kampana to conjure up the city of Bisnaga</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">East, West (story collection) — &#x27;Yorick,&#x27; agents Chekhov and Zulu, &#x27;The Prophet&#x27;s Hair,&#x27; &#x27;At the Auction of the Ruby Slippers&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote about the agents Chekhov and Zulu in a story collection that also describes a man&#x27;s descent into insanity after finding the title &#x27;Prophet&#x27;s Hair&#x27; | This author&#x27;s story &#x27;Yorick&#x27; is included in the collection East, West</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Luka and the Fire of Life — world like a video game; Nobodaddy phantasm; Old Man of the River; The Aalim guards the title substance</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the youngest of whom is the title character, who seeks out the title substance, guarded by The Aalim</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Wizard of Oz monograph — compared subject to &#x27;authorless text&#x27;; inspired Rushdie&#x27;s writing career</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">compared his subject to the &#x27;will-o&#x27;-the-wisp of modern critical theory: the authorless text&#x27; in a monograph on the film that inspired his writing career | wrote a short story, &#x27;At the Auction of the Ruby Slippers&#x27;, about his beloved childhood movie The Wizard of Oz</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Jaguar Smile — nonfiction about his trip to Nicaragua after Sandinista invitation</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">His first nonfiction book was about his trip to Nicaragua after being invited by the Sandinistas</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Enchantress of Florence — character claims descent from Nina Argalia and &#x27;Lady Black Eyes&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">saves himself from an emperor&#x27;s elephant by claiming descent from Nina Argalia and &#x27;Lady Black Eyes&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Salman Rushdie (born 1947) is an Indian-born British-American novelist who is one of the most frequently asked-about authors in quizbowl. His literary career and personal life are both heavily clued, with the fatwa issued by Ayatollah Khomeini in 1989 being one of the most recognizable giveaways in the game.</p><p>His most important work for quizbowl purposes is Midnight&#x27;s Children, which follows Saleem Sinai, born at the exact moment of India&#x27;s independence, whose large nose grants him telepathic abilities. He uses these powers to connect with other &#x27;midnight&#x27;s children&#x27; — babies born in that hour who all possess supernatural gifts. The novel features the nurse Mary Pereira swapping Saleem with Shiva of the Knees at birth, Parvati-the-Witch who helps the protagonist, the Braganza pickle factory, and &#x27;the Widow&#x27; as a representation of Indira Gandhi (who actually sued Rushdie over the novel). The novel coined the term &#x27;chutnification&#x27; for the blending of fiction and history. It won the Booker Prize and two &#x27;Best of the Booker&#x27; awards, making Rushdie the first Indian author to win the Man Booker.</p><p>The Satanic Verses is his most controversial work. It opens with Saladin Chamcha (a London voice-actor who becomes a devil analogue) and Gibreel Farishta (an actor inspired by Amitabh Bachchan who becomes an angel figure) surviving a fall from a hijacked plane over the English Channel. The novel features dream sequences about the prophet Mahound (&#x27;the Messenger&#x27;) and about Ayesha leading pilgrims into the Arabian Sea where they drown. Gibreel murders Sisodia and his lover Allie Cone. Hal Valance refers to Margaret Thatcher as &#x27;Mrs. Torture.&#x27; The poet Baal writes &#x27;assassination poems&#x27; and serves the Grandee of Jahilia.</p><p>The fatwa was issued on February 14, 1989 by Ayatollah Khomeini. Rushdie lived in hiding for a decade under the pseudonym &#x27;Joseph Anton,&#x27; derived from the first names of Conrad and Chekhov. His memoir Joseph Anton describes this period, including his marriages to Marianne Wiggins (his second wife, whose marriage disintegrated during the fatwa) and Padma Lakshmi (referred to as &#x27;The Illusion&#x27;). The fatwa&#x27;s violence extended to translators: Japanese translator Hitoshi Igarashi was killed in 1991, and Ettore Capriolo and William Nygaard were injured. Rushdie made a surprise appearance at a U2 Wembley concert in August 1993, telling Bono &#x27;real devils don&#x27;t wear horns.&#x27; Cat Stevens controversially threatened him. Jimmy Carter wrote a NYT op-ed denouncing the fatwa but urging understanding. Rushdie wrote an apologetic essay &#x27;In Good Faith&#x27; that he later called &#x27;the biggest mistake of my life.&#x27; The fatwa also provoked the Sivas Massacre (mob burned a hotel killing 35 after failing to turn over translator Aziz Nesin), severed UK-Iran ties, and led to the bombing of Collets and Dillons bookshops on Charing Cross Road and the kidnapping of Jackie Mann. In 2022, Rushdie was stabbed by Hadi Matar at a Chautauqua lecture; he wrote about this in the memoir Knife (2024).</p><p>His essay collection Imaginary Homelands contains key postcolonial essays: &#x27;Commonwealth Literature Does Not Exist&#x27; attacks the &#x27;bogy of Authenticity&#x27; and argues this &#x27;school&#x27; is the &#x27;oddest of beasts&#x27; whose members deny belonging; &#x27;Outside the Whale&#x27; calls for &#x27;rowdyism&#x27; against Orwell&#x27;s quietism in &#x27;Inside the Whale&#x27;; the title essay discusses straddling two cultures and &#x27;the migrant theory,&#x27; declaring &#x27;we are translated men.&#x27; He also wrote &#x27;The Empire Writes Back with a Vengeance&#x27; about post-colonial authors writing back against colonialism.</p><p>Haroun and the Sea of Stories is a children&#x27;s novel where Haroun Khalifa meets Butt the Hoopoe (an AI bird) and Iff the Water Genie and helps the Guppee army defeat Khattam-Shud (a Khomeini analogue) who tries to poison the Sea of Stories. Set on the moon Kahani, divided into Gup and silent Chup. Inspired by Somadeva&#x27;s Kathasaritsagara. His brother Luka stars in the sequel Luka and the Fire of Life, where the protagonist encounters a phantasm called &#x27;Nobodaddy,&#x27; dies at the hands of the Old Man of the River, and realizes the world is like a video game.</p><p>Shame is a political satire set in an allegorical Pakistan with politicians Iskander Harappa and General Raza Hyder, and the fictional town of Q. Grimus, his first novel, follows the Axona Indian Flapping Eagle who searches for his sister Bird-Dog for 777 years; it was inspired by Attar&#x27;s Conference of the Birds and Mount Qaf (transformed into &#x27;Calf Mountain&#x27;).</p><p>Other works include: Fury (professor-turned-dollmaker &#x27;Little Brain&#x27; in New York); The Golden House (2017; Nero leaves Mumbai for NYC; filmmaker Rene; gender-questioning D.; &#x27;The Joker&#x27; = Trump); Quichotte (title character hallucinates son &#x27;Sancho&#x27;); The Moor&#x27;s Last Sigh (won 1995 Whitbread); Shalimar the Clown (Kashmir chauffeur-turned-assassin); The Ground Beneath Her Feet (Ormus Cana and Vina Apsara as Orpheus/Eurydice); Two Years Eight Months and Twenty-Eight Nights (1001 Nights in NYC; lightning princess); Victory City (Pampa Kampana conjures Bisnaga); The Enchantress of Florence (claims descent from Nina Argalia); East, West (stories including &#x27;Yorick,&#x27; agents Chekhov and Zulu, &#x27;The Prophet&#x27;s Hair,&#x27; &#x27;At the Auction of the Ruby Slippers&#x27;); The Jaguar Smile (Nicaragua nonfiction); and his monograph on The Wizard of Oz (compared subject to &#x27;authorless text&#x27;; the film inspired his career).</p><p>Rushdie is frequently referenced in bonuses about other authors (<a href="zadie_smith_stock.html" class="crossref-inline">Zadie Smith</a>&#x27;s <a href="zadie_smith_stock.html#white-teeth-2000" class="crossref-inline">White Teeth</a>, Azar Nafisi&#x27;s Reading Lolita in Tehran, Aravind Adiga&#x27;s The White Tiger) and in questions about Indian partition, postcolonial literature, and the One Thousand and One Nights tradition.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Salman_Rushdie" target="_blank">Wikipedia: Salman Rushdie</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Midnight&#x27;s Children (novel) — enough clues for its own standalone page</li><li>The Satanic Verses (novel) — enough clues for its own standalone page</li><li>Imaginary Homelands — potentially enough for standalone if more clues exist</li></ul>
+        
+        </section>
+        
+</body>
+</html>
