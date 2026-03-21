@@ -925,6 +925,13 @@ def build():
     first_list = "".join(f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{item["topic"]}</li>' for item in queue_first["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
     second_list = "".join(f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{item["topic"]}</li>' for item in queue_second["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
 
+    # Write shared guides data file for search_nav.js
+    guides_js_path = OUTPUT_DIR / "guides_data.js"
+    with open(guides_js_path, "w") as gf:
+        gf.write("const GUIDES_DATA = ")
+        json.dump(guides, gf, ensure_ascii=False)
+        gf.write(";\n")
+
     html = INDEX_TEMPLATE.replace("GUIDE_DATA", json.dumps(guides))
     html = html.replace("QUEUE_TOTAL", str(total_count))
     html = html.replace("FIRST_COUNT", str(first_count))

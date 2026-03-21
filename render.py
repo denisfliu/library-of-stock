@@ -110,7 +110,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     cards_file = f"{topic_key}_cards.html"
     has_cards = bool(analysis.get("cards"))
     cards_link = f' · <a href="{cards_file}">Make cards</a>' if has_cards else ""
-    nav_html = f'<div class="nav-bar"><a href="../index.html">← Home</a> · <a href="{questions_file}">View source questions</a>{cards_link}</div>'
+    nav_html = f'<div class="nav-bar"><div class="nav-links"><a href="../index.html">&larr; Home</a> &middot; <a href="{questions_file}">View source questions</a>{cards_link}</div><div class="nav-search"></div></div>'
 
     works_html = ""
     for i, work in enumerate(works):
@@ -503,6 +503,9 @@ h1 {{
 .nav-bar {{
     margin-bottom: 0.8rem;
     font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }}
 .nav-bar a {{
     color: #6b9eff;
@@ -510,6 +513,97 @@ h1 {{
 }}
 .nav-bar a:hover {{
     text-decoration: underline;
+}}
+.nav-links {{
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}}
+/* search nav */
+.search-nav {{ display: inline-block; }}
+.search-nav-row {{
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}}
+.search-nav-input-wrap {{
+    position: relative;
+}}
+.search-nav-input {{
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}}
+.search-nav-input:focus {{
+    border-color: #6b9eff;
+    width: 220px;
+}}
+.search-nav-input::placeholder {{ color: #555; }}
+.search-nav-dropdown {{
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}}
+.search-nav-dropdown.open {{ display: block; }}
+.search-nav-result {{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}}
+.search-nav-result:last-child {{ border-bottom: none; }}
+.search-nav-result:hover, .search-nav-result.active {{
+    background: #262d37;
+}}
+.search-nav-result-name {{
+    color: #6b9eff;
+}}
+.search-nav-result-cat {{
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}}
+.search-nav-empty {{
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}}
+.search-nav-random {{
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}}
+.search-nav-random:hover {{
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
 }}
 </style>
 </head>
@@ -520,6 +614,9 @@ h1 {{
 {works_html}
 {comp_summary_html}
 {links_html}
+<script src="../output/guides_data.js"></script>
+<script src="../lib/search_nav.js"></script>
+<script>initSearchNav('.nav-search', {{ prefix: '../' }});</script>
 </body>
 </html>"""
 
