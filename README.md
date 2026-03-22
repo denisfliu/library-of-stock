@@ -1,126 +1,175 @@
 # Stock Knowledge Tool
 
-A quizbowl study tool that pulls clues from the [qbreader](https://www.qbreader.org/) database and generates structured, frequency-ranked study guides as HTML files. Vibe coded in ~2 hours, mostly using for myself.
+A quizbowl study tool that pulls clues from the [qbreader](https://www.qbreader.org/) database and generates structured, frequency-ranked HTML study guides. Each guide groups clues by work/subtopic, ranks them by how often they appear, and tags power vs. giveaway clues. Claude is the LLM doing the analysis.
 
 ## How It Works
 
-1. **Fetch** — queries the qbreader API for all tossups/bonuses where a topic appears as an answerline
-2. **Parse** — extracts individual clue sentences with metadata (power, giveaway, source)
-3. **Analyze** — Claude reads the clues and groups them by work/subtopic, ranks by frequency, tags power vs. giveaway
-4. **Render** — generates a self-contained HTML study guide with collapsible sections, embedded images (for visual topics), and Wikipedia links
-
-## Quick Start
-
-### Browse existing guides
-
-Open `index.html` in a browser, or run a local server:
-
-```bash
-python -m http.server
-# Opens at http://localhost:8000
-```
-
-### Generate a new guide (with Claude Code)
-
-Paste this prompt into Claude Code:
-
-```
-I want to study [TOPIC]. Run `python3 lib/run.py "[TOPIC]" "[DIFFICULTIES]"` to fetch clues
-(add "[CATEGORY]" as 4th arg if the topic name is ambiguous),
-then read the output file and analyze it following docs/analysis_instructions.md.
-Generate the HTML study guide using render.py and save the analysis JSON.
-After the initial analysis, suggest recursive searches into important works/subtopics.
-```
-
-**Example prompts:**
-
-```
-I want to study Smetana. Run `python3 lib/run.py "Smetana" "7,8,9,10"` to fetch clues,
-then read the output and analyze following docs/analysis_instructions.md.
-Generate the HTML with render.py, save analysis JSON, and suggest deep dives.
-```
-
-```
-I want to study "The Great Gatsby". Run `python3 lib/run.py "The Great Gatsby" "7,8,9,10"`
-and analyze the clues. This is a literary work so organize by themes/characters.
-```
-
-```
-I want to study the novel Indiana. Run `python3 lib/run.py "Indiana" "7,8,9,10" 2012 "Literature"`
-and analyze the clues. Use the Literature category filter since "Indiana" also matches the US state.
-```
-
-```
-I want to study Caravaggio. Run `python3 lib/run.py "Caravaggio" "7,8,9,10"` and analyze.
-This is a visual artist so look up painting images from Wikimedia Commons using lib/images.py.
-```
-
-### Parameters
-
-- **Difficulties**: 1-10 scale. Example:
-  - `7,8,9,10` — college competitive (default recommendation)
-- **Min year**: defaults to 2012 (older questions suck)
-- **Category**: optional filter to restrict results to a qbreader category. Useful when a topic name is ambiguous (e.g., "Indiana" the novel vs. the state). Example:
-  - `python3 lib/run.py "Indiana" "7,8,9,10" 2012 "Literature"`
-  - Multiple categories: `"Literature,Fine Arts"`
-  - Available categories: Literature, Fine Arts, History, Science, Religion, Mythology, Philosophy, Social Science, Geography, Current Events, Trash
+1. **Fetch** — queries qbreader API for all tossups/bonuses where a topic appears as the answerline
+2. **Parse** — extracts individual clue sentences with metadata (power mark, giveaway, source set/year)
+3. **Analyze** — Claude reads the clues, groups by work/subtopic, ranks by frequency, generates flashcards
+4. **Render** — produces self-contained HTML with collapsible sections, embedded images (VFA), cross-links between guides, and Anki export
 
 ## File Structure
 
 ```
 stock/
-├── render.py             # HTML study guide generator (tweak CSS here)
-├── render_cards.py       # Card editor page generator
-├── render_questions.py   # Source question page generator
-├── rerender.py           # Re-render all stock guides from saved analysis JSON
-├── build_index.py        # Index page generator (list + map views)
-├── lib/                  # Pipeline internals (Claude runs these)
-│   ├── fetch.py      # qbreader API data collection
-│   ├── parse.py      # Clue extraction from raw data
-│   ├── images.py     # Wikimedia Commons image lookup
-│   └── run.py        # Combined fetch + parse runner
-├── docs/
-│   └── analysis_instructions.md   # How Claude should analyze clues
-├── cache/            # Cached API responses (auto-generated, gitignored)
-├── output/           # Generated guides and analysis data (gitignored)
-│   ├── *_stock.html      # Study guides (open in browser)
-│   └── *_analysis.json   # Saved analysis data for re-rendering
-└── memory/           # Claude Code persistent memory (gitignored)
+├── build.sh              # Run all renderers (use this after any batch)
+├── serve.sh              # Local dev server (http://localhost:8000)
+├── post_batch.py         # Post-batch automation (crossrefs + render prompt)
+├── index.html            # Main study guide index (auto-generated)
+│
+├── lib/                  # All scripts and pipeline internals
+│   ├── run.py            # Fetch + parse runner (used by agents and manually)
+│   ├── fetch.py          # qbreader API client
+│   ├── parse.py          # Clue extraction
+│   ├── prompt_builder.py # Assembles agent prompts from docs/ building blocks
+│   ├── batch_worker.py   # Queue pop/complete with file locking
+│   ├── topic_queue.py    # Global queue management
+│   ├── render.py         # Core HTML study guide renderer
+│   ├── rerender.py       # Re-render all stock guides from JSON
+│   ├── render_cards.py   # Card editor page renderer
+│   ├── render_questions.py # Source question page renderer
+│   ├── build_index.py    # Index page generator
+│   ├── crossref.py       # Rebuild topic_index.json
+│   ├── backfill_crossrefs.py # Deterministic cross-link backfill
+│   ├── images.py         # Wikimedia Commons image lookup
+│   ├── fix_images.py     # Batch image URL fixer (VFA)
+│   ├── verify_images.py  # Verify image URLs return 200
+│   └── js/
+│       ├── search_nav.js # Shared search + navigation for guide pages
+│       └── anki_export.js # In-browser Anki .apkg export
+│
+├── docs/                 # Agent instructions and reference
+│   ├── batch_run.md      # How to run batches (read before starting)
+│   ├── crossref_backfill.md # Cross-link protocol for Sonnet agent
+│   ├── categories.md     # qbreader category/subcategory taxonomy
+│   ├── analysis_core.md        # Universal analysis rules (all agents)
+│   ├── analysis_first_pass.md  # First-pass additions
+│   ├── analysis_second_pass.md # Second-pass (enrichment) additions
+│   ├── analysis_cards.md       # Card generation rules
+│   ├── analysis_literature.md  # Literature-specific supplement
+│   ├── analysis_vfa.md         # Visual Fine Arts supplement
+│   ├── analysis_philosophy.md  # Philosophy supplement
+│   └── analysis_science.md     # Science supplement
+│
+├── queue/                # Batch queue state
+│   ├── queue_first_pass.json
+│   ├── queue_second_pass.json
+│   └── current_batch.json
+│
+├── cache/                # Cached qbreader API responses (gitignored)
+├── output/               # Generated HTML + analysis JSON (gitignored)
+│   ├── *_stock.html      # Study guides
+│   ├── *_cards.html      # Card editor pages
+│   ├── *_questions.html  # Source question pages
+│   ├── *_analysis.json   # Analysis data (source of truth for re-rendering)
+│   ├── topic_index.json  # Cross-reference index
+│   └── guides_data.js    # Shared nav/search data
+└── memory/               # Claude Code persistent memory (gitignored)
 ```
 
-## Example Renders
+## Batch Processing
 
-### Thomas Cole (visual arts, with embedded paintings)
-![Thomas Cole guide showing Course of Empire with embedded Wikimedia images, compact clue table with frequency counts and power/giveaway badges](output/thomas_cole_stock.html)
+The main workflow is running batches of agents to generate guides in parallel. Each agent pops topics from a shared queue, fetches and analyzes them, and writes JSON + HTML to `output/`.
 
-- 6 tossups, 15 bonuses analyzed
-- 8 work sections including Course of Empire, The Oxbow, Voyage of Life
-- Embedded paintings from Wikimedia Commons
+```mermaid
+flowchart TD
+    Q1[queue_first_pass.json] --> INIT
+    Q2[queue_second_pass.json] --> INIT
 
-### Kobo Abe (literature)
+    INIT["batch_worker.py init\ncreates current_batch.json"] --> PB["prompt_builder.py\nassembles agent instructions\nfrom docs/ building blocks"]
 
-- 6 tossups, 15 bonuses analyzed
-- 10 work sections from Woman in the Dunes to Kangaroo Notebook
-- Recursive search into Woman in the Dunes added additional clues
+    PB --> A1["First-pass Agent 1\n(Opus, ≤10 topics)"]
+    PB --> A2["First-pass Agent 2\n(Opus, ≤10 topics)"]
+    PB --> A3["Second-pass Agent\n(Opus, ≤5 topics)"]
 
-### Smetana (music)
+    A1 --> JSON["output/*_analysis.json"]
+    A2 --> JSON
+    A3 --> JSON
 
-- 6 tossups, 11 bonuses at difficulty 7-10
-- Works: Ma vlast, From My Life, The Bartered Bride, plus minor works and operas
-- Clues ranked by frequency with example quotes from actual questions
+    JSON --> PBA["python3 post_batch.py"]
+    PBA --> CX["lib/crossref.py\nrebuild topic index"]
+    PBA --> BF["lib/backfill_crossrefs.py\ndeterministic cross-links"]
+    PBA --> SP["Sonnet agent\nsemantic cross-links"]
 
-## Workflow Tips
+    SP --> BS["./build.sh"]
+    BS --> R1["lib/rerender.py"]
+    BS --> R2["lib/render_cards.py"]
+    BS --> R3["lib/render_questions.py"]
+    BS --> R4["lib/build_index.py"]
 
-- **Start with answerline clues** — these are the richest (entire question is about your topic)
-- **Recursive searches** — after initial analysis, search for major works as their own answerlines
-- **Ambiguous topics** — use the category filter when a topic name collides with a more common answerline (e.g., "Indiana" the novel vs. the US state, "Sand" the material vs. George Sand). Even with category filtering, some irrelevant results may slip through — see the analysis instructions for how to handle these during analysis.
-- **Text mentions** — for rare topics, also fetch text mentions: `fetch_text_mentions()` in lib/fetch.py
-- **Visual topics** — use `lib/images.py` to find Wikimedia Commons images to embed
-- **Re-render** — if you change the CSS in render.py, run `python rerender.py` to update all guides
-- **Full rebuild** — after generating new guides, run all renderers:
-  ```bash
-  python3 rerender.py          # stock guide HTML pages
-  python3 render_cards.py      # card editor HTML pages
-  python3 render_questions.py  # source question HTML pages
-  python3 build_index.py       # index page
-  ```
+    R1 --> OUT["output/\nHTML study guides"]
+    R2 --> OUT
+    R3 --> OUT
+    R4 --> OUT
+
+    JSON --> IMG["VFA only:\nlib/fix_images.py\nlib/verify_images.py"]
+    IMG --> BS
+```
+
+### Agent prompt assembly
+
+Prompts are built from modular building blocks in `docs/`, concatenated in order:
+
+```
+First-pass:  analysis_core → analysis_first_pass → [category supplement] → analysis_cards
+Second-pass: analysis_core → analysis_second_pass → [category supplement] → analysis_cards
+```
+
+```bash
+python3 lib/prompt_builder.py first --category Literature
+python3 lib/prompt_builder.py second --category "Fine Arts"
+python3 lib/prompt_builder.py first --category Literature --max-topics 5
+```
+
+### Running a batch
+
+```bash
+# 1. Check queues
+python3 lib/topic_queue.py summary
+
+# 2. Initialize batch (pulls from global queues into current_batch.json)
+python3 lib/batch_worker.py init "my-batch" --first 40 --second 10 --category Literature
+
+# 3. Generate prompt and launch agents
+python3 lib/prompt_builder.py first --category Literature
+# Copy output as agent prompt, launch agents
+
+# 4. Monitor at http://localhost:8000/progress.html
+
+# 5. When all agents finish:
+python3 post_batch.py    # rebuilds index + runs deterministic backfill + prints Sonnet prompt
+# Launch Sonnet agent with printed prompt
+./build.sh               # render everything
+```
+
+See `docs/batch_run.md` for full details, sizing rules, and pitfall history.
+
+## Single Topic (Manual)
+
+To generate one guide without the batch system:
+
+```bash
+# Fetch and parse clues
+python3 lib/run.py "Smetana" "7,8,9,10"
+
+# Then ask Claude Code to analyze:
+# "Read output/smetana_clues.txt and analyze following docs/analysis_core.md.
+#  Generate the HTML guide using lib/render.py and save analysis JSON."
+
+# Rebuild
+./build.sh
+```
+
+**Useful flags:**
+- 4th arg filters by category: `python3 lib/run.py "Indiana" "7,8,9,10" 2012 "Literature"`
+- `--mentions` flag fetches text mentions instead of answerline hits
+
+## Browsing Guides
+
+```bash
+./serve.sh
+# Open http://localhost:8000
+```
+
+Or just open `index.html` directly in a browser.
