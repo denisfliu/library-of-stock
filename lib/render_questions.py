@@ -303,10 +303,11 @@ def find_cache_for_topic(topic_key: str, topic_name: str = "") -> Path | None:
     return None
 
 
-def build_all():
+def build_all(force: bool = False):
     """Generate question pages for all topics that have both cache and analysis data."""
     output_dir = Path("output")
     count = 0
+    skipped = 0
     for analysis_file in sorted(output_dir.glob("*_analysis.json")):
         topic_key = analysis_file.stem.replace("_analysis", "")
 
@@ -315,17 +316,39 @@ def build_all():
             analysis = json.load(f)
         topic_display = analysis.get("topic", topic_key.replace("_", " ").title())
 
-        # Find cache file (pass full topic name for better slug matching)
-        cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
+        # Tier 2: use recorded cache_file if present, else fuzzy-match
+        recorded = analysis.get("cache_file")
+        if recorded:
+            candidate = Path("cache") / recorded
+            cache_file = candidate if candidate.exists() else None
+            if not cache_file:
+                print(f"  Warning: recorded cache_file '{recorded}' not found for {topic_key}, falling back to fuzzy match")
+                cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
+        else:
+            cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
+            # Write back the discovered cache filename so future builds use direct lookup
+            if cache_file:
+                analysis["cache_file"] = cache_file.name
+                with open(analysis_file, "w") as fw:
+                    json.dump(analysis, fw, indent=2, ensure_ascii=False)
         if not cache_file:
             print(f"  Skipping {topic_key}: no cache file found")
             continue
+
+        questions_path = output_dir / f"{topic_key}_questions.html"
+
+        # Incremental: skip if questions HTML is newer than both JSON and cache file
+        if not force and questions_path.exists():
+            html_mtime = questions_path.stat().st_mtime
+            if (html_mtime >= analysis_file.stat().st_mtime
+                    and html_mtime >= cache_file.stat().st_mtime):
+                skipped += 1
+                continue
 
         with open(cache_file) as f:
             cache_data = json.load(f)
 
         stock_link = f"{topic_key}_stock.html"
-        questions_path = output_dir / f"{topic_key}_questions.html"
         render_questions_html(cache_data, questions_path,
                               topic_display=topic_display,
                               stock_link=stock_link)
@@ -333,16 +356,18 @@ def build_all():
               f"{len(cache_data.get('answer_matches', {}).get('bonuses', []))}B "
               f"-> {questions_path}")
         count += 1
-    print(f"Built {count} question pages")
+    print(f"Built {count} question pages" + (f" ({skipped} up-to-date)" if skipped else ""))
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 3:
-        cache_path = sys.argv[1]
+    force = "--force" in sys.argv
+    remaining = [a for a in sys.argv[1:] if a != "--force"]
+    if len(remaining) == 2:
+        cache_path = remaining[0]
         output_path = sys.argv[2]
         with open(cache_path) as f:
             data = json.load(f)
         render_questions_html(data, output_path)
         print(f"Rendered to {output_path}")
     else:
-        build_all()
+        build_all(force=force)

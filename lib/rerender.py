@@ -144,14 +144,22 @@ def extract_analysis_from_html(html: str) -> dict:
 
 
 def main():
+    import sys
+    force = "--force" in sys.argv
     output_dir = Path("output")
 
     # Re-render ONLY from analysis JSON — the JSON is the source of truth.
     # Never extract from HTML or overwrite the JSON.
     count = 0
-    skipped = 0
+    skipped_up_to_date = 0
+    skipped_orphan = 0
     for json_path in sorted(output_dir.glob("*_analysis.json")):
         stock_path = output_dir / json_path.name.replace("_analysis.json", "_stock.html")
+
+        # Incremental: skip if HTML is newer than JSON (unless --force)
+        if not force and stock_path.exists() and stock_path.stat().st_mtime >= json_path.stat().st_mtime:
+            skipped_up_to_date += 1
+            continue
 
         with open(json_path) as f:
             analysis = json.load(f)
@@ -169,10 +177,14 @@ def main():
         json_path = output_dir / html_path.name.replace("_stock.html", "_analysis.json")
         if not json_path.exists():
             print(f"  WARNING: {html_path.name} has no analysis JSON — skipped")
-            skipped += 1
+            skipped_orphan += 1
 
-    print(f"\nDone! Re-rendered {count} guides." +
-          (f" ({skipped} skipped — missing JSON)" if skipped else ""))
+    parts = [f"Re-rendered {count} guides"]
+    if skipped_up_to_date:
+        parts.append(f"{skipped_up_to_date} up-to-date")
+    if skipped_orphan:
+        parts.append(f"{skipped_orphan} orphaned HTML")
+    print(f"\nDone! {', '.join(parts)}.")
 
 
 if __name__ == "__main__":

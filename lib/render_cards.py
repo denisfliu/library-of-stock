@@ -16,10 +16,40 @@ from pathlib import Path
 OUTPUT_DIR = Path("output")
 
 
+def _synthesize_image_cards(analysis: dict, cards: list) -> list:
+    """Auto-generate image cards from works that have images, deduplicating
+    against any image cards already present in the JSON."""
+    topic = analysis.get("topic", "Unknown")
+    existing_image_works = {
+        c.get("work", "") for c in cards
+        if c.get("type") == "image" and c.get("work")
+    }
+    extra = []
+    for work in analysis.get("works", []):
+        img = work.get("image", {})
+        url = img.get("url", "") if isinstance(img, dict) else ""
+        if not url:
+            continue
+        if work["name"] in existing_image_works:
+            continue
+        extra.append({
+            "type": "image",
+            "indicator": work.get("indicator", ""),
+            "front": "",
+            "back": f"{work['name']} ({topic})",
+            "work": work["name"],
+            "frequency": 0,
+            "image_url": url,
+            "tags": [],
+            "image_side": "front",
+        })
+    return cards + extra
+
+
 def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
     output_path = Path(output_path)
     topic = analysis.get("topic", "Unknown")
-    cards = analysis.get("cards", [])
+    cards = _synthesize_image_cards(analysis, analysis.get("cards", []))
     stock_link = output_path.name.replace("_cards.html", "_stock.html")
 
     # Build recommended tags from analysis metadata
@@ -929,27 +959,42 @@ async function exportApkgBtn() {{
     return output_path
 
 
-def build_all():
+def build_all(force: bool = False):
     count = 0
+    skipped = 0
     for f in sorted(OUTPUT_DIR.glob("*_analysis.json")):
-        with open(f) as fh:
-            analysis = json.load(fh)
-        if not analysis.get("cards"):
-            continue
         topic_key = f.stem.replace("_analysis", "")
         out_path = OUTPUT_DIR / f"{topic_key}_cards.html"
+
+        # Incremental: skip if cards HTML is newer than JSON (unless --force)
+        if not force and out_path.exists() and out_path.stat().st_mtime >= f.stat().st_mtime:
+            skipped += 1
+            continue
+
+        with open(f) as fh:
+            analysis = json.load(fh)
+        # Render even if no cards in JSON — _synthesize_image_cards may add some
+        has_images = any(
+            isinstance(w.get("image"), dict) and w["image"].get("url")
+            for w in analysis.get("works", [])
+        )
+        if not analysis.get("cards") and not has_images:
+            continue
         render_cards_html(analysis, out_path)
-        print(f"  {analysis.get('topic', '?')}: {len(analysis.get('cards', []))} cards -> {out_path}")
+        cards_total = len(_synthesize_image_cards(analysis, analysis.get("cards", [])))
+        print(f"  {analysis.get('topic', '?')}: {cards_total} cards -> {out_path}")
         count += 1
-    print(f"Built {count} card editor pages")
+    print(f"Built {count} card editor pages" + (f" ({skipped} up-to-date)" if skipped else ""))
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        with open(sys.argv[1]) as f:
+    force = "--force" in sys.argv
+    remaining = [a for a in sys.argv[1:] if a != "--force"]
+    if remaining:
+        with open(remaining[0]) as f:
             analysis = json.load(f)
-        topic_key = Path(sys.argv[1]).stem.replace("_analysis", "")
+        topic_key = Path(remaining[0]).stem.replace("_analysis", "")
         out = render_cards_html(analysis, OUTPUT_DIR / f"{topic_key}_cards.html")
         print(f"Rendered to {out}")
     else:
-        build_all()
+        build_all(force=force)
