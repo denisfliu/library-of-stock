@@ -22,6 +22,16 @@ Organize by **individual works**:
 - `Author: biographical clue` → `Author Name` for general facts
 - Keep full parentheticals in work names: `The Changeling (with William Rowley) (Thomas Middleton)`
 
+## Second Pass: Expanding Work Coverage
+
+During a second pass on literary authors, **actively try to add more work sections**:
+
+- After loading the existing analysis, scan the comprehensive summary and clue data for works that are mentioned but don't have their own section yet
+- Query any significant work that appears in clue text but is only listed under "Other Works" or "General / Biographical" — if you find 3+ distinct clues about it, elevate it to its own section
+- For authors with large canons, run subitem queries on works from "Other Works" sections to check if they deserve promotion
+- Lower the bar for splitting: if a work appears 2+ times across difficulties 5–10, query it and consider giving it a dedicated section
+- For poets: query individual poems that appear frequently but aren't yet sectioned separately
+
 ## Common Pitfalls
 
 - For drama: distinguish between plot clues (what happens in the play) and staging clues (how it's performed, notable productions)
