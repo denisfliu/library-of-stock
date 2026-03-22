@@ -12,6 +12,7 @@ Usage:
 import json, sys, fcntl, time
 from pathlib import Path
 from datetime import datetime
+import re
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
@@ -95,6 +96,10 @@ def complete(topic_name):
             data['completed'].append(completed_item)
             _save(data)
             print(f'Completed: {topic_name}')
+            # Automatically enqueue for second pass
+            if completed_item.get('pass_type') == 'first':
+                from lib.topic_queue import add_second
+                add_second(topic_name, reason='first pass done')
         else:
             # Might not be in in_progress if agent didn't pop properly, just add to completed
             data['completed'] = data.get('completed', [])
