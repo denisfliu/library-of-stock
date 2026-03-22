@@ -98,6 +98,15 @@ def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
     has_score_clips = bool(analysis.get("score_clues"))
     abcjs_script = '<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>' if has_score_clips else ''
 
+    # Add mp3_v (mtime-based cache buster) to each score clip so JS can use it
+    score_clues_with_v = []
+    for clue in analysis.get("score_clues", []):
+        clue = dict(clue)
+        if clue.get("mp3"):
+            mp3_path = output_path.parent / clue["mp3"]
+            clue["mp3_v"] = int(mp3_path.stat().st_mtime) if mp3_path.exists() else 0
+        score_clues_with_v.append(clue)
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -544,7 +553,7 @@ h1 {{
 <script>
 const TOPIC = {json.dumps(topic)};
 let cards = {json.dumps(cards, ensure_ascii=False)};
-const SCORE_CLIPS = {json.dumps(analysis.get("score_clues", []) if has_score_clips else [], ensure_ascii=False)};
+const SCORE_CLIPS = {json.dumps(score_clues_with_v if has_score_clips else [], ensure_ascii=False)};
 let editIndex = -1; // -1 = adding new
 
 // Populate work filter
@@ -894,7 +903,7 @@ function initClipsPalette() {{
             <div id="clip-notation-${{i}}" style="max-width:100%;overflow:hidden;"></div>
             <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
                 ${{clip.mp3
-                    ? `<audio controls preload="none" src="${{escHtml(clip.mp3)}}" style="height:24px;width:120px;"></audio>`
+                    ? `<audio controls preload="none" src="${{escHtml(clip.mp3)}}${{clip.mp3_v ? '?v=' + clip.mp3_v : ''}}" style="height:24px;width:120px;"></audio>`
                     : `<button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="playClip(${{i}})">▶ Play</button>
                        <button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="stopClip(${{i}})">■</button>`
                 }}
