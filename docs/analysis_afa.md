@@ -67,10 +67,12 @@ If the clue is not pitch-explicit, include it as a regular text clue in the work
 
 Add a top-level `"score_clues"` array to the analysis JSON. One entry per extractable musical excerpt:
 
+**Critical:** The `"work"` field must be an exact copy of the `"name"` field of the corresponding work section in the analysis JSON — character for character, including any em-dash suffix like `" – The Work as a Whole"`. If they don't match, the clip will not render on the study page.
+
 ```json
 "score_clues": [
   {
-    "work": "Fanfare for the Common Man",
+    "work": "Fanfare for the Common Man – The Work as a Whole",
     "indicator": "high",
     "description": "Opening brass gesture after percussion intro",
     "source_text": "trumpets playing the ascending notes F, B-flat, F",
@@ -78,7 +80,7 @@ Add a top-level `"score_clues"` array to the analysis JSON. One entry per extrac
     "needs_review": true
   },
   {
-    "work": "Symphony No. 5",
+    "work": "Symphony No. 5 – First Movement",
     "indicator": "high",
     "description": "Oboe cadenza at the recapitulation",
     "source_text": "first oboe plays an unexpected adagio cadenza on a half cadence ending with a fermata on G",
@@ -96,7 +98,9 @@ Only include a `score_clues` entry for excerpts that appear in actual question t
 
 ### Basic cards
 
-Follow the same rules as all other categories. For AFA:
+Follow the same rules as all other categories. **The `"type"` field must be `"basic"` — never the indicator value.** AFA has many indicator words (`Fanfare`, `Symphony`, `Concerto`) that look like types but are not. The indicator goes in `"indicator"`, not `"type"`.
+
+For AFA:
 
 - `Work: opens with four repeated notes in C minor` → `Symphony No. 5 (Beethoven)`
 - `Composer: went deaf in 1874; depicted this with a sustained high E in a string quartet` → `Bedřich Smetana`
