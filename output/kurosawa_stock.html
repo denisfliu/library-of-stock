@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Akira Kurosawa</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>Akira Kurosawa</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="kurosawa_questions.html">View source questions</a><a href="kurosawa_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Legendary Japanese film director (1910–1998), often called &#x27;the Emperor&#x27; of cinema. Best known for Seven Samurai, Rashomon, Ran, Ikiru, High and Low, and Yojimbo. A defining figure of Golden Age Japanese cinema alongside Yasujiro Ozu and Kenji Mizoguchi. Long-term collaborator with actor Toshiro Mifune. His work heavily influenced Western cinema, especially via George Lucas and <a href="sergio_leone_stock.html" class="crossref-inline">Sergio Leone</a>.</div>
+
+        <details class="work" id="seven-samurai-1954" open>
+            <summary class="work-title">Seven Samurai (1954)</summary>
+            <p class="work-desc">Epic jidaigeki film in which a village of peasants hire seven samurai to defend them from bandits. The most frequently clued Kurosawa film in quizbowl. Remade as The Magnificent Seven (1960, John Sturges) and inspired A Fistful of Dollars. <a href="https://en.wikipedia.org/wiki/Seven_Samurai" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Peasants hire seven samurai/warriors to protect their village from bandits</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In that film by him, which was given a Western adaptation called The Magnificent Seven, peasants hire the title soldiers as protection from bandits. | he showed a hired group of warriors defend a farming hamlet from a group of thugs in Seven Samurai</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The film ends with two samurai dying to musket fire in a rainy battle; a surviving samurai says &#x27;The farmers have won, not us&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A film by this director ends with two of the title characters dying to musket fire in a rainy battle, after which another wistfully notes, &#x27;The farmers have won, not us.&#x27; | The final shot of another film by that director with this surname shows swords implanted in four burial mounds as one character says &#x27;The victory belongs to the peasants.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Remade as The Magnificent Seven (1960) by John Sturges starring Yul Brynner</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A 1960 John Sturges film starring Yul Brynner was also based on one of this director&#x27;s movies. | John Sturges&#x27; The Magnificent Seven was a remake of Kurosawa&#x27;s film about seven warriors who help protect a village from bandits.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The two bickering peasant framing characters from this film were imitated by George Lucas with C-3PO and R2-D2 in Star Wars</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director&#x27;s use of two peasants to frame one of his films was imitated by George Lucas&#x27; similar use of C-3P0 and R2-D2. | A film by one of these directors adapted two bickering peasants from a film by the other and turned them into robots</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Toshiro Mifune played Kikuchiyo in Seven Samurai</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He played the title bodyguard of Yojimbo, and portrayed Kikuchiyo in Seven Samurai.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="rashomon-1950" open>
+            <summary class="work-title">Rashomon (1950)</summary>
+            <p class="work-desc">Landmark film presenting multiple contradictory accounts of a samurai's murder and his wife's rape, told by different witnesses. Ends with a woodcutter taking in an abandoned baby. Said to be the first Kurosawa film to aim the camera directly at the sun. <a href="https://en.wikipedia.org/wiki/Rashomon" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Various characters tell conflicting/different versions of a samurai&#x27;s murder and the rape of his wife</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A woodcutter and a priest discuss different murder accounts in a film by a director with this surname | various characters tell conflicting versions of the story of the murder of a samurai and the rape of his wife</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with a woodcutter deciding to take care of an abandoned baby</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">At the end of this film, a woodcutter decides to take care of an abandoned baby. | a 1950 film which ends with the sun coming out as an abandoned baby is taken home by the woodcutter, played by Takashi Shimura</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Toshiro Mifune played the bandit Tajomaru in Rashomon</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This actor&#x27;s more famous roles include the analogue to Macbeth in Throne of Blood and the bandit Tajomaru in Rashomon. | This actor, who played the bandit in Rashomon, appeared in many other Kurosawa films.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Said to be the first film to aim the camera directly at the sun</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director is said to be the first to have aimed the camera directly at the sun, for a 1950 film which ends with the sun coming out as an abandoned baby is taken home by the woodcutter</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="ran-1985" open>
+            <summary class="work-title">Ran (1985)</summary>
+            <p class="work-desc">Kurosawa's adaptation of King Lear, in which warlord Hidetora Ichimonji attempts to divide his kingdom among his three sons, with catastrophic results. Features a Toru Takemitsu score. The blind peasant Tsurumaru is the only one to escape the carnage. Ends with a blood-orange sky behind blind Tsurumaru atop ruins. <a href="https://en.wikipedia.org/wiki/Ran_(film)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adaptation of King Lear; warlord Hidetora Ichimonji divides his kingdom among his three sons with disastrous results</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">an adaptation of King Lear in which a warlord of the Ichimonji clan attempts to divide his land among his three sons, with obviously disastrous results | Known for retelling the King Lear story in Ran</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The blind peasant Tsurumaru is the only one to escape the carnage; the film ends with a blood-orange sky and a blind man standing atop ruins</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The blind peasant Tsurumaru is the only one to escape the carnage of this film. | A blood-orange sky provides the backdrop of the final shot of another of his films, which shows a blind man standing atop some ruins.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Toru Takemitsu composed the score, including the track &#x27;Flute of Darkness&#x27; featuring a shakuhachi during a burning castle scene, and &#x27;Hell&#x27;s Picture Scroll&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Toru Takemitsu&#x27;s score to this film includes the track &#x27;Flute of Darkness,&#x27; in which a shakuhachi plays piercing high notes as several buildings burn in the background, as well as the track &#x27;Hell&#x27;s Picture Scroll.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The court jester Kyoami appears in the film</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The court jester Kyoami appears in Ran, a film adaptation of King Lear directed by this Japanese director</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">We never see a close-up of the face of the apparently beautiful Lady Sue</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this film, we never see a close-up of the face of the apparently beautiful Lady Sue.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="ikiru-1952" open>
+            <summary class="work-title">Ikiru (1952)</summary>
+            <p class="work-desc">Film about a bureaucrat (inspired by Tolstoy's <a href="leo_tolstoy_stock.html#the-death-of-ivan-ilyich" class="crossref-inline">The Death of Ivan Ilyich</a>) who is secretly diagnosed with stomach cancer and told he has six months to live. He devotes his remaining time to building a playground in a slum. Ends with him singing 'The Gondola Song' on a snowy swing set. Features Kurosawa's trademark wipe transitions. <a href="https://en.wikipedia.org/wiki/Ikiru" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A bureaucrat diagnosed with stomach cancer (told it&#x27;s a &#x27;mild ulcer&#x27;) devotes his remaining life to building a children&#x27;s playground in a slum</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Kurosawa film details the story of an old bureaucrat who, upon learning he has stomach cancer, decides to build a children&#x27;s playground. | a bureaucrat is diagnosed with a &#x27;mild ulcer&#x27; by a doctor who secretly knows that the bureaucrat actually has stomach cancer and likely has six months to live</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The protagonist was inspired by Ivan Ilyich from Tolstoy&#x27;s novella The Death of Ivan Ilyich</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in one of this director&#x27;s films who was inspired by Ivan Ilyich builds a playground in a slum | It was partially inspired by Tolstoy&#x27;s novella The Death of Ivan Ilyich.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with the protagonist singing &#x27;The Gondola Song&#x27; on a snowy swing set</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">ends the film singing &#x27;The Gondola Song&#x27; on a snowy swing set after a diagnosis of stomach cancer | an elderly man dying of cancer sings a song to himself while sitting on a swing set during a snowfall</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The film begins with a series of shots depicting parents being thwarted in attempts to have a playground built</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This film begins with a series of shots depicting a concerned group of parents being thwarted in their attempts to convince their city to build a playground.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features Kurosawa&#x27;s trademark horizontal wipe transitions linking a series of bureaucrats who pass women around in a circular referral process</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">These transitions link a series of bureaucrats who refer a group of women to other departments in a circular process in Kurosawa&#x27;s Ikiru. Star Wars also borrows Kurosawa&#x27;s trademark use of the &#x27;horizontal&#x27; type of this transition.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="high-and-low-1963" open>
+            <summary class="work-title">High and Low (1963)</summary>
+            <p class="work-desc">Crime thriller adapted from Ed McBain's novel King's Ransom, in which shoe company executive Kingo Gondo discovers that kidnappers have accidentally abducted his chauffeur's son instead of his own. Features a memorable climactic train sequence and a confrontation scene through reflective glass/wire mesh. <a href="https://en.wikipedia.org/wiki/High_and_Low_(film)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kidnappers accidentally abduct a shoe company executive&#x27;s chauffeur&#x27;s child instead of the executive&#x27;s own son</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In another film by a director with this surname, kidnappers mistakenly abduct a chauffeur&#x27;s child for ransom. | Mifune starred as shoe company executive Kingo Gondo in this adaptation of Ed McBain&#x27;s novel King&#x27;s Ransom. In this film, the son of Gondo&#x27;s chauffeur is kidnapped instead of Gondo&#x27;s real son.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adapted from Ed McBain&#x27;s novel King&#x27;s Ransom; Toshiro Mifune plays executive Kingo Gondo</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mifune starred as shoe company executive Kingo Gondo in this adaptation of Ed McBain&#x27;s novel King&#x27;s Ransom.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Climactic scene: a rigged briefcase is thrown out of a bathroom window during a train sequence; only color shot is pink smoke above the skyline</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A shot of pink smoke above a skyline is the only color in a film by this director in which a rigged briefcase is thrown out of a bathroom window during a climactic train sequence.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Final confrontation scene: protagonist and villain separated by wire mesh and reflective glass, their faces superimposing when either speaks</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A film by this director ends with the protagonist and villain separated by wire mesh and a glass so harshly reflective, that when one of them speaks, the face of the other perfectly superimposes him.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Final act follows the criminal through noisy bars and a drug den before he&#x27;s confronted by the shoe executive in prison</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The final act of a film by this director follows a criminal through noisy bars and a drug den before he&#x27;s confronted by a shoe executive in prison.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="yojimbo-1961" open>
+            <summary class="work-title">Yojimbo (1961)</summary>
+            <p class="work-desc">Film about a bodyguard (played by Toshiro Mifune) who manipulates two rival criminal families into fighting each other. Inspired by Dashiell Hammett's Red Harvest. Remade without permission as <a href="sergio_leone_stock.html" class="crossref-inline">Sergio Leone</a>'s A Fistful of Dollars (Kurosawa sued and won) and also as Django (1966). Sanjuro was its sequel. <a href="https://en.wikipedia.org/wiki/Yojimbo" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A bodyguard pits two rival criminal gangs/families against each other; inspired by Dashiell Hammett&#x27;s Red Harvest</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Red Harvest inspired his film about a bodyguard pitting rival gangs against each other that was remade into A Fist Full of Dollars. | a film about two criminal families competing for the services of a bodyguard</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Remade without permission as Sergio Leone&#x27;s A Fistful of Dollars (starring Clint Eastwood); Kurosawa&#x27;s company sued Leone and won</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director remarked that an unlicensed movie based on one of his films was &#x27;a fine movie, but it was my movie.&#x27; ...his company sued Sergio Leone for his film A Fistful of Dollars, which completely ripped off one of this man&#x27;s movies. | Without Kurosawa&#x27;s permission, his film Yojimbo was remade by Sergio Leone as this Spaghetti Western starring Clint Eastwood.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also remade as Django (1966), starring Franco Nero as a former Union soldier who carries a coffin containing a machine gun</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Like A Fistful of Dollars, another movie based on Kurosawa&#x27;s Yojimbo was this 1966 film starring Franco Nero as a former Union soldier who carries around a coffin that holds a machine gun.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sanjuro (1962) was a sequel to Yojimbo</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sanjuro was the sequel to that work by this man</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Toshiro Mifune played the title bodyguard</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He played the title bodyguard of Yojimbo, and portrayed Kikuchiyo in Seven Samurai.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="throne-of-blood-1957" open>
+            <summary class="work-title">Throne of Blood (1957)</summary>
+            <p class="work-desc">Kurosawa's adaptation of Shakespeare's Macbeth, set in feudal Japan. Toshiro Mifune plays the Macbeth analogue. One of the films that influenced George Lucas for Star Wars. <a href="https://en.wikipedia.org/wiki/Throne_of_Blood" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Macbeth-inspired film set in feudal Japan; Toshiro Mifune plays the Macbeth analogue</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">who directed the Macbeth-inspired Throne of Blood | This actor&#x27;s more famous roles include the analogue to Macbeth in Throne of Blood and the bandit Tajomaru in Rashomon.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="drunken-angel-1948" open>
+            <summary class="work-title">Drunken Angel (1948)</summary>
+            <p class="work-desc">Kurosawa's first major film and his first of sixteen collaborations with Toshiro Mifune. An alcoholic doctor bonds with a yakuza gangster who has tuberculosis. Kurosawa used his score strategically to get the film past censors. <a href="https://en.wikipedia.org/wiki/Drunken_Angel" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First of Kurosawa&#x27;s sixteen films with Toshiro Mifune; an alcoholic doctor diagnoses a gangster with tuberculosis</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An alcoholic doctor diagnoses a gangster with tuberculosis in the first of this director&#x27;s sixteen films with a certain actor. | a film about a bond between a tubercular lowlife and his alcoholic doctor, the titular Drunken Angel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kurosawa relied on the film&#x27;s score to thwart/get around censors</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director of Dreams relied on his score to thwart censors in a film about a bond between a tubercular lowlife and his alcoholic doctor, the titular Drunken Angel.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="dreams-1990" open>
+            <summary class="work-title">Dreams (1990)</summary>
+            <p class="work-desc">Anthology film composed of eight dream segments, including 'The Peach Orchard' and 'Crows.' In 'Crows,' an aspiring artist enters a Van Gogh landscape and meets a <a href="scorsese_stock.html" class="crossref-inline">Martin Scorsese</a>-portrayed Van Gogh. Kurosawa's autobiography recounts how a bathtub sense-memory influenced the Chopin/Van Gogh segment. <a href="https://en.wikipedia.org/wiki/Dreams_(1990_film)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Anthology film with segments titled &#x27;The Peach Orchard&#x27; and &#x27;Crows&#x27;; in &#x27;Crows&#x27; an art student hears Chopin&#x27;s Raindrop Prelude and is sucked into Van Gogh&#x27;s Wheatfield with Crows, where he meets a Martin Scorsese-portrayed Van Gogh</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A boy ignores his mother&#x27;s command to stay home when the sun is shining through the rain in the first segment of a 1990 film by this director with segments titled &#x27;The Peach Orchard&#x27; and &#x27;Crows.&#x27; | An aspiring artist enters into a landscape of the Langlois Bridge and meets Vincent van Gogh in &#x27;Crows,&#x27; a short film from this director&#x27;s collection Dreams.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kurosawa&#x27;s Something Like an Autobiography describes how a bathtub sense-memory influenced the &#x27;Crows&#x27; segment</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The opening chapter of this director&#x27;s Something Like an Autobiography describes how a recurring sense-memory of sitting in a bathtub influenced his film about an art student who hears Chopin&#x27;s Raindrop Prelude and is sucked into Wheatfield with Crows</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="kagemusha-1980" open>
+            <summary class="work-title">Kagemusha (1980)</summary>
+            <p class="work-desc">Palme d'Or-winning film in which a thief saved from crucifixion impersonates the deceased warlord Shingen. Funded with help from George Lucas after the success of Star Wars. <a href="https://en.wikipedia.org/wiki/Kagemusha" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Won the Palme d&#x27;Or; a thief saved from crucifixion impersonates the deceased warlord Shingen</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this Palme d&#x27;Or winner by Kurosawa, a thief who has been saved from crucifixion impersonates the deceased warlord Shingen.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Funded with help from George Lucas after the success of Star Wars</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After the success of a film by one of these directors, he used his influence to help the other get the funding needed for their own film Kagemusha.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="red-beard-1965" open>
+            <summary class="work-title">Red Beard (1965)</summary>
+            <p class="work-desc">Film about doctors set at a rural clinic; an arrogant young doctor arrives and is trained by the title character (Red Beard). A scene features women shouting the name of a young thief into a well, camera moving down to see their reflections. Kurosawa's last film with Toshiro Mifune. <a href="https://en.wikipedia.org/wiki/Red_Beard_(film)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">An arrogant young doctor arrives at a rural clinic and is trained by the title character; features a scene of women shouting a thief&#x27;s name into a well with camera moving down to see their reflection</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A film about doctors by this director includes a scene in which a group of women shout the name of a young thief into a well, with the camera moving down into the well to view their reflection in the water below. | In that film by this director, an arrogant young doctor arrives at a rural clinic, where he is trained by the title character.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="dersu-uzala-1975" open>
+            <summary class="work-title">Dersu Uzala (1975)</summary>
+            <p class="work-desc">Kurosawa's only 70mm film, made for Mosfilm (Soviet studio). Follows the Siberian hunter Dersu Uzala. Features a famous shot in which the moon and setting sun are visible in opposite corners of the frame while Dersu explains that the sun is 'the most important person.' <a href="https://en.wikipedia.org/wiki/Dersu_Uzala_(1975_film)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kurosawa&#x27;s only 70mm film; made for Mosfilm; features a shot with the moon and setting sun in opposite corners while the title hunter says the sun is the most important person</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director&#x27;s only 70 millimeter film includes a shot in which the moon and the setting sun are visible in opposite corners of the frame while the title hunter explains that the sun is the most important person. | This director created a film about the Siberian hunter Dersu Uzala for Mosfilm.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="hidden-fortress-1958" open>
+            <summary class="work-title">Hidden Fortress (1958)</summary>
+            <p class="work-desc">Film featuring two bickering peasants who frame the story, a structure George Lucas directly adapted for Star Wars with C-3PO and R2-D2. The story involves saving a princess. <a href="https://en.wikipedia.org/wiki/The_Hidden_Fortress" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features two bickering peasants who frame the film, directly adapted by George Lucas as C-3PO and R2-D2; also adapted story elements about saving a princess for Star Wars</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director&#x27;s use of two peasants to frame one of his films was imitated by George Lucas&#x27; similar use of C-3P0 and R2-D2. | A film by one of these directors adapted two bickering peasants from a film by the other and turned them into robots, as well as adapting story elements about saving a princess from Hidden Fortress.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Akira Kurosawa (1910–1998) was a Japanese filmmaker considered one of the three great directors of Golden Age Japanese cinema, alongside Yasujiro Ozu and Kenji Mizoguchi. He had a 16-film collaboration with actor Toshiro Mifune. He wrote the memoir Something Like an Autobiography. His films profoundly influenced Western cinema, particularly George Lucas and <a href="sergio_leone_stock.html" class="crossref-inline">Sergio Leone</a>. Kurosawa is known for his trademark use of horizontal wipe transitions. <a href="https://en.wikipedia.org/wiki/Akira_Kurosawa" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Long-term collaborator with actor Toshiro Mifune across 16 films</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">often worked with Toshiro Mifune | An alcoholic doctor diagnoses a gangster with tuberculosis in the first of this director&#x27;s sixteen films with a certain actor.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Considered one of the three great directors of Golden Age Japanese cinema alongside Yasujiro Ozu and Kenji Mizoguchi</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mizoguchi is generally considered one of the three great directors of Golden Age Japanese cinema, alongside Yasujiro Ozu and this director of Seven Samurai and Rashomon.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Star Wars (1977) by George Lucas was influenced by Kurosawa&#x27;s films; Lucas used his influence to fund Kagemusha; Lucas described Kurosawa&#x27;s attention to detail with the term &#x27;immaculate reality&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Part of the influence of silent film and the Western genre on one of this director&#x27;s 1977 breakout film comes filtered through the films of the other director, like Throne of Blood and Ran. | In one interview, one of these directors described the influence of the other on his attention to detail and unglamorous nature of set design with the term &#x27;immaculate reality&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote the memoir Something Like an Autobiography; one chapter recounts his crew&#x27;s failed attempt to film at Mt. Fuji&#x27;s summit when the light failed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Something Like An Autobiography is a book by this film director. One chapter relates the struggle of his crew to get their equipment to the summit of Mt. Fuji, only for the light to fail | The opening chapter of this director&#x27;s Something Like an Autobiography describes how a recurring sense-memory of sitting in a bathtub influenced his film</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Trademark use of horizontal wipe transitions, also borrowed by George Lucas for Star Wars</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Star Wars also borrows Kurosawa&#x27;s trademark use of the &#x27;horizontal&#x27; type of this transition. | These transitions link a series of bureaucrats who refer a group of women to other departments in a circular process in Kurosawa&#x27;s Ikiru.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wanted to direct the opening and closing ceremonies of the 1964 Tokyo Olympics but was refused by producers; Kon Ichikawa directed instead</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After the producers refused the demands of their first choice, Akira Kurosawa, Kon Ichikawa directed a 1965 film about this sort of event</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Included a character named Murakami in his crime drama Stray Dog</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This earlier Japanese director included a character called Murakami in his crime drama Stray Dog. His later films include Rashomon and Seven Samurai.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Akira Kurosawa was a Japanese film director whose career spanned from the 1940s through the 1990s. He is considered one of the three great directors of the Golden Age of Japanese cinema, alongside Yasujiro Ozu and Kenji Mizoguchi. His most frequently clued film is Seven Samurai (1954), in which a group of peasants hire seven samurai to defend their village from bandits; the film ends with two samurai dying to musket fire in a rainy battle as a survivor remarks &#x27;The farmers have won, not us.&#x27; The Magnificent Seven (1960) by John Sturges was a Western remake starring Yul Brynner. George Lucas adapted the two bickering peasant framing characters from Seven Samurai into C-3PO and R2-D2 for Star Wars.</p><p>Kurosawa&#x27;s Rashomon (1950) presents multiple contradictory testimonies about a samurai&#x27;s murder and his wife&#x27;s rape; it ends with a woodcutter taking in an abandoned baby. Toshiro Mifune played the bandit Tajomaru. This film is said to be the first to aim the camera directly at the sun. Ran (1985) adapts Shakespeare&#x27;s King Lear: warlord Hidetora Ichimonji divides his kingdom among three sons with disastrous results. The blind peasant Tsurumaru is the only one to escape the carnage; the film ends with a blood-orange sky behind a blind man on ruins. The court jester Kyoami appears. Toru Takemitsu&#x27;s score includes &#x27;Flute of Darkness&#x27; and &#x27;Hell&#x27;s Picture Scroll.&#x27;</p><p>Ikiru (1952) follows a bureaucrat secretly diagnosed with stomach cancer (told he has a &#x27;mild ulcer&#x27;) who devotes his remaining months to building a playground in a slum. Inspired by Tolstoy&#x27;s <a href="leo_tolstoy_stock.html#the-death-of-ivan-ilyich" class="crossref-inline">The Death of Ivan Ilyich</a>, the film ends with the protagonist singing &#x27;The Gondola Song&#x27; on a snowy swing set. Kurosawa&#x27;s trademark horizontal wipe transitions appear in Ikiru, linking bureaucrats who shuffle women between departments. High and Low (1963), adapted from Ed McBain&#x27;s King&#x27;s Ransom, stars Toshiro Mifune as shoe executive Kingo Gondo, whose chauffeur&#x27;s child is accidentally kidnapped instead of Gondo&#x27;s own son. The film&#x27;s climax features a rigged briefcase thrown from a bathroom window during a train sequence; a single shot of pink smoke is the only color in the otherwise black-and-white finale.</p><p>Yojimbo (1961) features a bodyguard pitting two criminal families against each other, inspired by Dashiell Hammett&#x27;s Red Harvest. <a href="sergio_leone_stock.html" class="crossref-inline">Sergio Leone</a> remade it without permission as A Fistful of Dollars; Kurosawa sued and called it &#x27;a fine movie, but it was my movie.&#x27; Django (1966) starring Franco Nero was another unauthorized remake. Sanjuro (1962) was the sequel to Yojimbo. Throne of Blood (1957) adapts Macbeth for feudal Japan, with Mifune in the lead. Drunken Angel (1948) was Kurosawa&#x27;s first of sixteen collaborations with Mifune; an alcoholic doctor bonds with a yakuza gangster who has tuberculosis, and Kurosawa used the score to evade censors. Kagemusha (1980) won the Palme d&#x27;Or and shows a thief impersonating the deceased warlord Shingen; George Lucas helped fund the film after Star Wars&#x27; success. Dreams (1990) is an anthology film including &#x27;Crows,&#x27; in which an art student hears Chopin&#x27;s Raindrop Prelude and enters Van Gogh&#x27;s Wheatfield with Crows, meeting a <a href="scorsese_stock.html" class="crossref-inline">Martin Scorsese</a>-played Van Gogh. Dersu Uzala (1975), Kurosawa&#x27;s only 70mm film, was made for the Soviet Mosfilm studio and follows Siberian hunter Dersu Uzala. Hidden Fortress (1958) uses two bickering peasants as framing characters, directly adapted by Lucas.</p><p>Kurosawa wrote the memoir Something Like an Autobiography, whose opening chapter traces a bathtub sense-memory that influenced the Dreams segment, and another chapter describes his crew&#x27;s failed attempt to film on Mt. Fuji&#x27;s summit. He was also the first choice to direct the 1964 Tokyo Olympics documentary but was replaced by Kon Ichikawa after a dispute with producers. His crime drama Stray Dog featured a character named Murakami. Lucas described Kurosawa&#x27;s set design philosophy with the term &#x27;immaculate reality.&#x27;</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Akira_Kurosawa" target="_blank">Akira Kurosawa — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Seven_Samurai" target="_blank">Seven Samurai — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Rashomon" target="_blank">Rashomon — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Ikiru" target="_blank">Ikiru — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Ran_(film)" target="_blank">Ran — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/High_and_Low_(film)" target="_blank">High and Low — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Yojimbo" target="_blank">Yojimbo — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Seven Samurai — highest frequency Kurosawa film; rich plot and character clues worth deeper search (Fine Arts)</li><li>Rashomon — second most frequently clued; landmark in film history (Fine Arts)</li><li>Ikiru — multiple specific clues; Ivan Ilyich connection; swing set ending (Fine Arts)</li><li>Ran — many detail clues; Takemitsu score, Kyoami, King Lear adaptation (Fine Arts)</li><li>High and Low — detailed plot mechanic clues; train sequence, reflective glass confrontation (Fine Arts)</li><li>Yojimbo — frequently clued via Leone/Django connection; specific plot clues (Fine Arts)</li><li>Toshiro Mifune — long-term collaborator clued repeatedly across many Kurosawa films (Fine Arts)</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'kurosawa' });</script>
+</body>
+</html>

@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Bonnie and Clyde</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>Bonnie and Clyde</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="bonnie_and_clyde_questions.html">View source questions</a><a href="bonnie_and_clyde_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">1967 New Hollywood film directed by Arthur Penn, starring Warren Beatty (Clyde Barrow) and Faye Dunaway (Bonnie Parker). The screenplay by David Newman and Robert Benton (Esquire writers, inspired by Godard&#x27;s <a href="french_new_wave_stock.html#breathless-a-bout-de-souffle-1960" class="crossref-inline">Breathless</a>) was first offered to <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a>; Godard declined by telegram. Pauline Kael&#x27;s 9000-word rave review catapulted her to fame; Bosley Crowther was fired from the NYT for hating it. Dede Allen edited. Theadora van Runkle&#x27;s costumes started a fashion fad. &#x27;Foggy Mountain Breakdown&#x27; by Earl Scruggs popularized in car chases. Film ends in a hail of bullets from Texas Rangers led by Frank Hamer.</div>
+
+        <details class="work" id="reception-and-critical-legacy" open>
+            <summary class="work-title">Reception and Critical Legacy</summary>
+            <p class="work-desc">Pauline Kael wrote an approximately 9000-word (sources also say 8000-word) review championing the film's 'violence without sadism,' which catapulted her to notoriety and led William Shawn to hire her at The New Yorker. Bosley Crowther of the New York Times repeatedly savaged the film's violence; he was fired (or pressured to resign) and replaced by Renata Adler. The BFI Film Classic book on the film by Lester Friedman identifies a generational divide: Crowther and Page Cook were negative; Kael and Kathleen Carroll were positive. A review by Charles Samuels called it 'a bunch of decaying cabbage leaves smeared with catsup.' Along with Easy Rider and The Graduate, the film is considered the start of New American Cinema (New Hollywood). A still from the film appears on the cover of Mark Harris's book Pictures at a Revolution.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pauline Kael&#x27;s 9000-word review championing &#x27;violence without sadism&#x27; catapulted her to notoriety; William Shawn hired her at The New Yorker on the strength of it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">William Shawn hired this author of &#x27;Circles and Squares&#x27; after running her 8,000-word vindication of the &#x27;violence without sadism&#x27; in Arthur Penn&#x27;s film Bonnie and Clyde. | the latter&#x27;s 9000-word review of this film catapulted her to notoriety.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bosley Crowther was fired from the New York Times due to his repeated attacks on this film; he was replaced by Renata Adler</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The New York Times fired Bosley Crowther due to his hate for this 1967 Arthur Penn film. | Bosley Crowther&#x27;s opposition to this film led to his replacement by Renata Adler as film critic for the New York Times.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Along with Easy Rider and The Graduate, considered the start of New American Cinema (New Hollywood); Arthur Penn directed</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Along with Easy Rider and The Graduate, this film is considered the start of the New American Cinema. | For 10 points, name this New Hollywood film starring Warren Beatty and Faye Dunaway as two bank robbers.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A still from this film appears on the print cover of Mark Harris&#x27;s book Pictures at a Revolution</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A still from this film appears on the print cover of Mark Harris&#x27;s book Pictures at a Revolution.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="production-and-screenplay" open>
+            <summary class="work-title">Production and Screenplay</summary>
+            <p class="work-desc">Screenplay written by David Newman and Robert Benton, untested Esquire magazine writers inspired by Godard's <a href="french_new_wave_stock.html#breathless-a-bout-de-souffle-1960" class="crossref-inline">Breathless</a>, who initially offered it to <a href="french_new_wave_stock.html#francois-truffaut" class="crossref-inline">Francois <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a></a>. Godard sent a telegram — 'I'm talking cinema, you're talking weather. Au revoir' — ending his interest in directing it. Directed by Arthur Penn; edited by Dede Allen. Robert Towne was a script doctor on the film before writing Chinatown. In honor of the film's 50th anniversary (2017), its two leads (Warren Beatty and Faye Dunaway) announced the Best Picture winner — infamously misreading La La Land as the winner over Moonlight.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Screenplay by Esquire writers David Newman and Robert Benton, inspired by Godard&#x27;s Breathless; initially offered to Truffaut; Godard declined with telegram: &#x27;I&#x27;m talking cinema, you&#x27;re talking weather. Au revoir&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The screenplay of this film was written by the untested Esquire magazine writers David Newman and Robert Benton, who were inspired by Godard&#x27;s Breathless to initially offer it to Francois Truffaut. | The telegram &#x27;I&#x27;m talking cinema, you&#x27;re talking weather. Au revoir&#x27; signalled the end of Jean-Luc Godard&#x27;s interest in directing this film.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dede Allen edited; Robert Towne served as script doctor before going on to write Chinatown</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Dede Allen edited and Arthur Penn directed a 1967 film titled for these two characters. | This screenwriter of The Last Detail conceived the final scene between Vito and Michael Corleone in The Godfather after becoming Hollywood&#x27;s go-to script doctor for rewriting Bonnie and Clyde.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In honor of the film&#x27;s 50th anniversary, Warren Beatty and Faye Dunaway announced the 2017 Best Picture winner — the La La Land/Moonlight mix-up</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In honor of 50 years of this film, its two leads announced the 2017 Best Picture winner. | During this event, one of the stars of Bonnie and Clyde hesitated while looking at an envelope before handing it to Faye Dunaway.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="iconic-scenes-and-style" open>
+            <summary class="work-title">Iconic Scenes and Style</summary>
+            <p class="work-desc">The film opens with B&W credits over 32 sepia-tinted photographs; the credits initially appear in white text that turns blood red; then an extreme close-up of a woman's lips as she applies lipstick. At their first meeting, Bonnie strokes Clyde's gun suggestively along his thigh, daring him to 'use it.' The title characters go on a crime spree with C.W. Moss. A car chase uses Earl Scruggs's bluegrass banjo track 'Foggy Mountain Breakdown,' popularizing it. Gene Wilder's big-screen debut is in this film as Eugene, kidnapped along with his girlfriend Velma. The camera tracks two newspapers fluttering in the wind after the couple have sex. A hazy filter is used as Bonnie and Clyde visit one of their mothers in a wheat field. The film ends in an ambush — Texas Rangers led by Frank Hamer riddle them with bullets by a fake flat tire; the climax uses several quick cuts between their faces.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opening: B&amp;W credits over 32 sepia photographs, credits turn blood red; then extreme close-up of a woman&#x27;s lips applying lipstick</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After displaying black and white credits over thirty-two sepia tinted photographs, this film opens with an extreme close-up of a woman&#x27;s lips as she applies lipstick. | This film&#x27;s opening alternates between still photographs and the credits, which initially appear in white text that turns blood red.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">At their first meeting, Bonnie strokes Clyde&#x27;s gun suggestively along his thigh and dares him to &#x27;use it&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">As these two characters meet and drink Coke, one of them sexually strokes the other&#x27;s gun along his thigh and dares him to use it. | One of this film&#x27;s protagonists suggestively caresses the other&#x27;s gun and dares him to &#x27;use it&#x27;, which he does.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Car chase scenes popularized Earl Scruggs&#x27;s bluegrass banjo piece &#x27;Foggy Mountain Breakdown&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A car chase in this film popularized Earl Scruggs&#x27;s bluegrass track &#x27;Foggy Mountain Breakdown.&#x27; | This film popularized the banjo piece &#x27;Foggy Mountain Breakdown,&#x27; which was used in some of its car chase scenes.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gene Wilder&#x27;s big-screen debut as Eugene, kidnapped with his girlfriend Velma</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gene Wilder&#x27;s big-screen debut was in this film as Eugene, who is kidnapped with his girlfriend Velma.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Climax: Texas Rangers led by Frank Hamer ambush and kill the title characters in a hail of bullets; preceded by several quick cuts between their faces near a fake flat tire</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A film ends after several quick cuts between the faces of these two characters near a fake flat tire. | Its title characters take a picture of themselves with Frank Hamer, long before being ambushed by Texas Rangers and killed in a fusillade of gunfire.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="costumes-and-fashion" open>
+            <summary class="work-title">Costumes and Fashion</summary>
+            <p class="work-desc">Theadora van Runkle designed the costumes. For Bonnie, the design included a mid-calf skirt and blouse combination with an angled (rakish) beret and a colorful kerchief. The costume design inspired a real-world fashion fad.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Theadora van Runkle designed Bonnie&#x27;s costume: angled beret, mid-calf skirt and blouse, colorful kerchief — inspired a real fashion fad</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Theadora van Runkle&#x27;s costume design for this film included a mid-calf skirt and blouse combo with an angled beret and colorful kerchief for the female lead, inspiring a real-world fashion fad. | Theodora van Runkle&#x27;s costume design for one character in this film included a beret set at a rakish angle and a separate skirt and blouse combination.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Bonnie and Clyde (1967) is a landmark New Hollywood film directed by Arthur Penn, starring Warren Beatty as Clyde Barrow and Faye Dunaway as Bonnie Parker. The film is considered alongside Easy Rider and The Graduate as the start of the New American Cinema. The screenplay was written by David Newman and Robert Benton, untested Esquire magazine writers inspired by Godard&#x27;s <a href="french_new_wave_stock.html#breathless-a-bout-de-souffle-1960" class="crossref-inline">Breathless</a>; it was first offered to <a href="french_new_wave_stock.html#francois-truffaut" class="crossref-inline">Francois <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a></a>. <a href="jean_luc_godard_stock.html" class="crossref-inline">Jean-Luc Godard</a> sent a telegram — &#x27;I&#x27;m talking cinema, you&#x27;re talking weather. Au revoir&#x27; — ending his involvement. The film was edited by Dede Allen; Robert Towne served as a script doctor before going on to write Chinatown.</p><p>The film opens with B&amp;W credits over 32 sepia-tinted photographs; the credits initially appear in white text that turns blood red, then an extreme close-up of a woman&#x27;s lips applying lipstick. At their first meeting, Bonnie strokes Clyde&#x27;s gun suggestively along his thigh, daring him to &#x27;use it.&#x27; They go on a crime spree with C.W. Moss. Car chase scenes popularized Earl Scruggs&#x27;s bluegrass banjo piece &#x27;Foggy Mountain Breakdown.&#x27; Gene Wilder made his big-screen debut as Eugene, kidnapped with his girlfriend Velma. The film ends with Texas Rangers led by Frank Hamer ambushing and killing the title characters in a hail of bullets by a fake flat tire; several quick cuts between their faces precede the ambush.</p><p>Theadora van Runkle designed Bonnie&#x27;s iconic costume: an angled beret, mid-calf skirt and blouse with a colorful kerchief — inspiring a real-world fashion fad. Pauline Kael&#x27;s approximately 9000-word review championing the film&#x27;s &#x27;violence without sadism&#x27; catapulted her to notoriety; William Shawn hired her at The New Yorker on its strength. Bosley Crowther of the NYT repeatedly attacked the film and was subsequently fired, replaced by Renata Adler. A still from the film appears on the cover of Mark Harris&#x27;s book Pictures at a Revolution. In honor of the film&#x27;s 50th anniversary, Beatty and Dunaway announced the 2017 Best Picture winner — the La La Land/Moonlight Oscar mix-up. Serge Gainsbourg and Brigitte Bardot recorded a song called &#x27;Bonnie and Clyde.&#x27;</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Bonnie_and_Clyde_(film)" target="_blank">Bonnie and Clyde (film) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Bonnie_and_Clyde" target="_blank">Bonnie and Clyde — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Arthur Penn — director of Bonnie and Clyde and other New Hollywood films (Fine Arts)</li><li>Pauline Kael — film critic; rave 9000-word review of Bonnie and Clyde launched her career at The New Yorker (Fine Arts)</li><li>Warren Beatty — star and producer; also starred in Reds, Bulworth, Dick Tracy (Fine Arts)</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'bonnie_and_clyde' });</script>
+</body>
+</html>

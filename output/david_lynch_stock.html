@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: David Lynch</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>David Lynch</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="david_lynch_questions.html">View source questions</a><a href="david_lynch_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">American surrealist filmmaker and multimedia artist (1946–2025). Known for dreamlike, disturbing imagery and nonlinear narratives. Major works include Blue Velvet, Twin Peaks (with Mark Frost), <a href="david_lynch_stock.html#mulholland-drive-2001" class="crossref-inline">Mulholland Drive</a>, The Elephant Man, and Eraserhead. Longtime collaborator with composer Angelo Badalamenti. Also a painter, musician, and writer (book: Catching the Big Fish).</div>
+
+        <details class="work" id="blue-velvet-1986" open>
+            <summary class="work-title">Blue Velvet (1986)</summary>
+            <p class="work-desc">Opens with an extreme close-up of beetles warring in the grass and the discovery of a severed ear in a field. Jeffrey Beaumont watches from a closet as nightclub singer Dorothy Vallens (played by Isabella Rossellini) is ritualistically raped by the gas-huffing, PBR-obsessed Frank Booth (Dennis Hopper). Frank exclaims 'Heineken? Fuck that shit! Pabst! Blue! Ribbon!' Isabella Rossellini performs the title song as Dorothy Vallens. Jeffrey shoots the Yellow Man in the film. A <a href="david_foster_wallace_stock.html" class="crossref-inline">David Foster Wallace</a> essay titled '[Lynch] Keeps His Head' discusses a scene in which a woman covers her face in red lipstick. <a href='https://en.wikipedia.org/wiki/Blue_Velvet_(film)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with an extreme close-up of beetles warring in the grass, then the discovery of a severed ear in a field</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of his film&#x27;s opening sequences ends with an extreme close-up of beetles warring in the grass. | This Lynch film famously begins with a shot of a severed ear covered in ants.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Frank Booth (Dennis Hopper) is a gas-huffing antagonist who exclaims &#x27;Heineken? Fuck that shit! Pabst! Blue! Ribbon!&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A fast food customer inspired this director to create a character who exclaims &#x27;Heineken? Fuck that shit! Pabst! Blue! Ribbon!&#x27; | Dennis Hopper received renewed attention for his role in the film Blue Velvet</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dorothy Vallens (Isabella Rossellini) is a nightclub singer ritualistically raped while Jeffrey watches from a closet</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He created a nightclub singer who is ritualistically raped as Jeffrey Beaumont watches from the closet | Isabella Rossellini performs the title song of a film by this director as nightclub singer Dorothy Vallens, who is tormented by the gas-huffing Frank Booth.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">David Foster Wallace&#x27;s essay &#x27;[Lynch] Keeps His Head&#x27; discusses a scene in which a woman covers her face in red lipstick</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A David Foster Wallace essay titled &#x27;[this artist] Keeps His Head&#x27; discusses a scene in which a woman covers her entire face in red lipstick.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Angelo Badalamenti was hired as Isabella Rossellini&#x27;s singing coach for this film, beginning a longtime partnership with Lynch</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After hiring Angelo Badalamenti as a singing coach for his wife Isabella Rossellini, this artist collaborated with him on a series | Angelo Badalamenti was hired as Isabella Rossellini&#x27;s singing coach for this man&#x27;s movie Blue Velvet, beginning a longtime partnership.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="twin-peaks-tv-series-1990-1991-2017" open>
+            <summary class="work-title">Twin Peaks (TV series, 1990–1991; 2017)</summary>
+            <p class="work-desc">A TV series co-created with Mark Frost, themed around the murder of Laura Palmer. The series theme 'Falling' is sung by Julee Cruise (Lynch wrote the lyrics). The score is by Angelo Badalamenti. Agent Dale Cooper famously praises 'a damn fine cup of coffee.' A depiction of the Trinity test is accompanied by Penderecki's Threnody for the Victims of Hiroshima in Twin Peaks: The Return (2017). Twin Peaks: Fire Walk with Me (the film prequel) shows Cherubini's C minor Requiem as Leland kills his daughter in a train car, wrapping her in plastic. Dougie Jones is a 'tulpa' of Agent Cooper who becomes trapped in the Black Lodge; Kyle MacLachlan plays both. Alice in Wonderland connections are referenced in the first episode (a 'cottontail rabbit'). <a href='https://en.wikipedia.org/wiki/Twin_Peaks' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Theme song &#x27;Falling&#x27; sung by Julee Cruise (Lynch wrote lyrics); score by Angelo Badalamenti</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a series that opens with the theme &#x27;Falling&#x27; by Julee Cruise | This composer scored films like Wild at Heart for a director who used his song &#x27;Falling,&#x27; which was sung by Julee Cruise, as the theme for a TV series.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-created with Mark Frost; Agent Dale Cooper praises &#x27;a damn fine cup of coffee&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the two co-creators of a character who often praises the merits of a &#x27;damn fine cup of coffee&#x27; | He worked with Mark Frost on a popular television series.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Twin Peaks: The Return features a depiction of the Trinity test accompanied by Penderecki&#x27;s Threnody for the Victims of Hiroshima</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a depiction of the Trinity test is accompanied by Penderecki&#x27;s Threnody for the Victims of Hiroshima</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Twin Peaks: Fire Walk with Me — Cherubini&#x27;s C minor Requiem plays as Leland kills Laura Palmer in a train car, then wraps her in plastic</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In another film by this director, Cherubini&#x27;s C minor Requiem plays as Leland kills his daughter in a train car, before wrapping her in plastic and throwing her in a river. | In one of this director&#x27;s films, Cherubini&#x27;s Requiem in C Minor accompanies a murder in a train car, after which the killer gives up his garmonbozia.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dougie Jones is a &#x27;tulpa&#x27; of Agent Cooper, trapped in the Black Lodge; Kyle MacLachlan plays both; inspired by Peter Sellers in Being There</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Dougie is played by Kyle MacLachlan and created by this director. | MacLachlan said his inspiration for the largely non-verbal Dougie was this actor&#x27;s [Peter Sellers] performance in Being There.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="mulholland-drive-2001" open>
+            <summary class="work-title">Mulholland Drive (2001) <a href="david_lynch_stock.html#mulholland-drive-2001" class="work-link-btn" title="Go to David Lynch">&rarr;</a></summary>
+            <p class="work-desc">A surrealist mystery set in Hollywood. Diane Selwyn resembles/is aspiring actress Betty Elms; the two characters (played by Naomi Watts and Laura Harring) shift identities when a mysterious blue box is opened. A creepy monster emerges from behind a diner. A woman believing herself to be Rita Hayworth discovers the body of Diane Selwyn. Lynch paid tribute to the doubling theme of <a href="bergman_stock.html" class="crossref-inline">Bergman</a>'s <a href="persona_stock.html" class="crossref-inline">Persona</a>. <a href='https://en.wikipedia.org/wiki/Mulholland_Drive_(film)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opening of a mysterious blue box causes most characters to shift identities; Diane Selwyn and Betty Elms (Naomi Watts and Laura Harring) exchange identities</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In another of his films, the opening of a mysterious blue box causes most characters to shift identities. | The waitress Diane Selwyn turns out to resemble aspiring actress Betty Elms in this director&#x27;s non-linear mystery Mulholland Drive.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A creepy monster emerges from behind a diner</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a creepy monster emerges from behind a diner in what director&#x27;s film Mulholland Drive?</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A woman believing herself to be Rita Hayworth discovers the body of Diane Selwyn</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a film by this director, a woman believing herself to be Rita Hayworth discovers the body of Diane Selwyn.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lynch paid tribute to the doubling theme of Bergman&#x27;s Persona in this film</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director paid tribute to the doubling theme of Persona in his own film Mulholland Drive.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-elephant-man-1980" open>
+            <summary class="work-title">The Elephant Man (1980)</summary>
+            <p class="work-desc">A 1980 film. John Hurt spent eight hours a day attaching prosthetics to portray Joseph Merrick. Barber's Adagio for Strings plays as the John Hurt character dies in his sleep, after which Tennyson's 'Nothing Will Die' is recited (this predated Oliver Stone's Platoon's use of the same piece). <a href='https://en.wikipedia.org/wiki/The_Elephant_Man_(film)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">John Hurt spent eight hours a day attaching prosthetics to portray Joseph Merrick</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">John Hurt spent eight hours a day attaching prosthetics to portray Joseph Merrick in a 1980 film by this director.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Barber&#x27;s Adagio for Strings plays as the John Hurt character dies in his sleep; Tennyson&#x27;s &#x27;Nothing Will Die&#x27; is then recited (predating Platoon&#x27;s use)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Before Oliver Stone&#x27;s Platoon, this director used Barber&#x27;s Adagio for Strings as a John Hurt character dies in his sleep, after which Tennyson&#x27;s &#x27;Nothing Will Die&#x27; is recited.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="eraserhead-1977" open>
+            <summary class="work-title">Eraserhead (1977)</summary>
+            <p class="work-desc">Lynch's debut feature. Opens with a giant floating sperm emerging from the main character's mouth. Follows Henry Spencer and Mary X as they try to care for and ultimately kill a horrifying skinless baby. <a href='https://en.wikipedia.org/wiki/Eraserhead' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a giant floating sperm emerging from Henry Spencer&#x27;s mouth; Henry and Mary X struggle to care for and kill a horrifying skinless baby</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This early Lynch film begins with a giant floating sperm emerging from the main character&#x27;s mouth and involves Henry Spencer and Mary X trying to take care of and then kill a horrifying skinless baby.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">American filmmaker and multimedia artist David Lynch (1946–2025). Longtime music collaborator: Angelo Badalamenti (first met through Blue Velvet). Lynch wrote the book Catching the Big Fish about creativity and Transcendental Meditation. He also played slide guitar on BlueBOB (with John Neff) and made a painting called Rock with Seven Eyes. A 2019 Bonnefanten Museum retrospective displayed his surrealist artworks. He filmed a 13-minute shot of a cheese head in front of power lines for a film at the Festival of Disruption. <a href="david_foster_wallace_stock.html" class="crossref-inline">David Foster Wallace</a> wrote an essay titled '[Lynch] Keeps His Head.' Lynch ordered a chocolate milkshake at Bob's Big Boy every day at 2:30 pm for seven years. He and Mark Frost co-created Twin Peaks. Kyle MacLachlan frequently starred in his work. <a href='https://en.wikipedia.org/wiki/David_Lynch' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Longtime music collaborator: Angelo Badalamenti, first hired to coach Isabella Rossellini&#x27;s singing for Blue Velvet</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Angelo Badalamenti was hired as Isabella Rossellini&#x27;s singing coach for this man&#x27;s movie Blue Velvet, beginning a longtime partnership.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote the book Catching the Big Fish about creativity and Transcendental Meditation</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a twenty-minute long film, this author of the book Catching the Big Fish recalls helping a European girl drink her first Coke</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">David Foster Wallace wrote an essay titled &#x27;[Lynch] Keeps His Head&#x27; about him</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A David Foster Wallace essay titled &#x27;[this artist] Keeps His Head&#x27; discusses a scene in which a woman covers her entire face in red lipstick.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ordered a chocolate milkshake at Bob&#x27;s Big Boy diner every day at 2:30 pm for seven years</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Every day at 2:30 pm for seven years, this director ordered a chocolate milkshake at Bob&#x27;s Big Boy diner.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also a visual artist: 2019 Bonnefanten Museum retrospective displayed surrealist artworks including Rock with Seven Eyes and Boy Lights Fire</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A 2019 Bonnefanten Museum retrospective on this artist displayed surrealist artworks such as Rock with Seven Eyes and Boy Lights Fire.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>David Lynch (1946–2025) was an American surrealist filmmaker and multimedia artist known for dreamlike, disturbing imagery and nonlinear narratives. He also painted (a 2019 Bonnefanten Museum retrospective displayed surrealist works like Rock with Seven Eyes and Boy Lights Fire), played slide guitar on an album (BlueBOB with John Neff), and wrote the book Catching the Big Fish about creativity and Transcendental Meditation. <a href="david_foster_wallace_stock.html" class="crossref-inline">David Foster Wallace</a> wrote an essay titled &#x27;[Lynch] Keeps His Head&#x27; about him. Lynch ordered a chocolate milkshake at Bob&#x27;s Big Boy every day at 2:30 pm for seven years.</p><p>Blue Velvet (1986) opens with an extreme close-up of beetles warring in the grass and the discovery of a severed ear in a field. Dorothy Vallens (Isabella Rossellini) is a nightclub singer ritualistically raped by gas-huffing Frank Booth (Dennis Hopper) while Jeffrey Beaumont watches from a closet. Frank exclaims &#x27;Heineken? Fuck that shit! Pabst! Blue! Ribbon!&#x27; — a line inspired by a fast food customer Lynch observed. Angelo Badalamenti was originally hired as Rossellini&#x27;s singing coach for this film, beginning a lasting creative partnership with Lynch.</p><p>Twin Peaks (1990–91, 2017), co-created with Mark Frost, follows the murder of Laura Palmer. The theme &#x27;Falling&#x27; was sung by Julee Cruise (lyrics by Lynch) and scored by Badalamenti. Agent Dale Cooper is known for praising &#x27;a damn fine cup of coffee.&#x27; In the prequel film Twin Peaks: Fire Walk with Me, Cherubini&#x27;s Requiem in C Minor plays as Leland kills his daughter in a train car and wraps her in plastic. Twin Peaks: The Return (2017) features a depiction of the Trinity nuclear test accompanied by Penderecki&#x27;s Threnody for the Victims of Hiroshima. Dougie Jones, a &#x27;tulpa&#x27; of Agent Cooper trapped in the Black Lodge and played by Kyle MacLachlan, was inspired by Peter Sellers&#x27;s performance in Being There.</p><p><a href="david_lynch_stock.html#mulholland-drive-2001" class="crossref-inline">Mulholland Drive</a> (2001) is a surrealist Hollywood mystery starring Naomi Watts and Laura Harring, whose characters shift identities when a mysterious blue box is opened. A creepy monster emerges from behind a diner. A woman believing herself to be Rita Hayworth discovers the body of Diane Selwyn. Lynch paid tribute to the doubling theme of <a href="bergman_stock.html" class="crossref-inline">Bergman</a>&#x27;s <a href="persona_stock.html" class="crossref-inline">Persona</a>.</p><p>The Elephant Man (1980) starred John Hurt, who spent eight hours a day in prosthetics to portray Joseph Merrick. Barber&#x27;s Adagio for Strings plays as his character dies in his sleep, followed by a recitation of Tennyson&#x27;s &#x27;Nothing Will Die&#x27; — this predated Oliver Stone&#x27;s more famous use of the same piece in Platoon.</p><p>Eraserhead (1977), Lynch&#x27;s debut feature, opens with a giant floating sperm emerging from the protagonist Henry Spencer&#x27;s mouth; Henry and Mary X struggle to care for and ultimately kill a horrifying skinless baby.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/David_Lynch" target="_blank">David Lynch — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Blue_Velvet_(film)" target="_blank">Blue Velvet (film) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Twin_Peaks" target="_blank">Twin Peaks — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Mulholland_Drive_(film)" target="_blank">Mulholland Drive (film) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Elephant_Man_(film)" target="_blank">The Elephant Man (film) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Eraserhead" target="_blank">Eraserhead — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Blue Velvet — densely clued; Frank Booth and Dorothy Vallens both iconic</li><li>Twin Peaks — huge cultural footprint; Agent Cooper, Laura Palmer, Angelo Badalamenti</li><li>Mulholland Drive — nonlinear structure and doubling themes worth deeper search</li><li>Angelo Badalamenti — Lynch&#x27;s composer; appears in many Lynch clue sets</li><li>The Elephant Man — standalone clue set likely; John Hurt&#x27;s performance specific and testable</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'david_lynch' });</script>
+</body>
+</html>

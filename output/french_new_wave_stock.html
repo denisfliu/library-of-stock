@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: French New Wave</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>French New Wave</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="french_new_wave_questions.html">View source questions</a><a href="french_new_wave_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">A French film movement (Nouvelle Vague) of the late 1950s and 1960s emphasizing innovative techniques (handheld cameras, natural lighting, jump cuts, non-professional actors) and auteur-driven filmmaking. Associated directors include <a href="jean_luc_godard_stock.html" class="crossref-inline">Jean-Luc Godard</a>, Francois <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a>, Agnes Varda, Chris Marker, and Alain Resnais. Key films: <a href="french_new_wave_stock.html#breathless-a-bout-de-souffle-1960" class="crossref-inline">Breathless</a> (Godard) and <a href="francois_truffaut_stock.html#the-400-blows-les-quatre-cents-coups-1959" class="crossref-inline">The 400 Blows</a> (Truffaut). Centered on Cahiers du Cinema criticism. Divided into Right Bank (Godard, Truffaut) and Left Bank (Marker, Resnais, Varda) factions.</div>
+
+        <details class="work" id="breathless-a-bout-de-souffle-1960" open>
+            <summary class="work-title">Breathless / A bout de souffle (1960) <a href="french_new_wave_stock.html#breathless-a-bout-de-souffle-1960" class="work-link-btn" title="Go to French New Wave">&rarr;</a></summary>
+            <p class="work-desc"><a href="jean_luc_godard_stock.html" class="crossref-inline">Jean-Luc Godard</a>'s seminal New Wave film. A Humphrey Bogart-obsessed protagonist named Michel kills a police officer after being caught with a stolen car, in a now-famous jarring five-shot sequence. <a href='https://en.wikipedia.org/wiki/Breathless_(1960_film)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A Humphrey Bogart-obsessed character (Michel) kills a police officer after being caught with a stolen car, in a famous five-shot sequence</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a film from this movement, a Humphrey Bogart-obsessed character kills a cop after being caught with a stolen car. | In one of the seminal films of the French New Wave, Breathless, Michel commits this crime during a jarring, now famous, five shot sequence.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="style-characteristics" open>
+            <summary class="work-title">Style / Characteristics</summary>
+            <p class="work-desc">The French New Wave emphasized handheld cameras, natural lighting, jump cuts, and non-professional actors. Jean Rouch's Moi, un Noir was cited as inspiring the movement through its use of jump cuts and non-professional actors. Jean Vigo was a key predecessor and his name was given to the Prix Jean Vigo. The movement is divided into Right Bank directors (Godard, <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a> — more popular and commercially successful) and Left Bank directors (Marker, Resnais, Varda — more experimental). <a href='https://en.wikipedia.org/wiki/French_New_Wave' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Techniques: handheld cameras, natural lighting, jump cuts, non-professional actors; self-conscious writing</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This two word phrase names a French film movement developed in the early 1960s that emphasized innovative cinematic techniques and self-conscious writing. | Handheld cameras, natural lighting and rebellious protagonists characterize many of the films in this country&#x27;s New Wave movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jean Rouch&#x27;s Moi, un Noir was cited as inspiring the movement through its jump cuts and non-professional actors</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Rouch&#x27;s Moi, un Noir was cited as inspiring this French film movement through its use of jump-cuts and non-professional actors.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Left Bank directors include Chris Marker, Alain Resnais, and Agnes Varda; Right Bank includes Godard and Truffaut</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Marker was often grouped with the Left Bank directors of this French film movement along with Alain Resnais and husband-and-wife Jacques Demy and Agnes Varda. | In contrast, the Right Bank included more popular and successful filmmakers such as this director of Pierrot le fou and Vivre sa vie</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Prix Jean Vigo is a prize named for a director who influenced the movement; Sembene won it for a Wolof-language film</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sembene produced Wolof-language films after winning the Prix Jean Vigo, a prize named for a director that influenced this 1950s French movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also influenced Taiwanese New Wave cinema; &#x27;New Wave&#x27; label applied to multiple national movements (Romanian, Thai, etc.)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Yang was part of a Taiwanese film movement titled for this two-word term, which also names a 1960s &#x27;French&#x27; movement that produced films like Breathless and The 400 Blows.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="jean-luc-godard" open>
+            <summary class="work-title">Jean-Luc Godard <a href="jean_luc_godard_stock.html" class="work-link-btn" title="Go to Jean-Luc Godard">&rarr;</a></summary>
+            <p class="work-desc">Right Bank French New Wave director. Made <a href="french_new_wave_stock.html#breathless-a-bout-de-souffle-1960" class="crossref-inline">Breathless</a> (A bout de souffle, 1960), as well as <a href="jean_luc_godard_stock.html#pierrot-le-fou-1965" class="crossref-inline">Pierrot le Fou</a> and <a href="jean_luc_godard_stock.html#vivre-sa-vie-my-life-to-live-1962" class="crossref-inline">Vivre sa Vie</a> — both starring his then-wife Anna Karina. <a href="jean_luc_godard_stock.html#alphaville-1965" class="crossref-inline">Alphaville</a> is described as 'neo-noir.' <a href='https://en.wikipedia.org/wiki/Jean-Luc_Godard' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Directed Breathless; also directed Pierrot le fou and Vivre sa vie (both starring then-wife Anna Karina); neo-noir Alphaville</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Right Bank included more popular and successful filmmakers such as this director of Pierrot le fou and Vivre sa vie, both of which star his then-wife Anna Karina | New Wave films like Le Samourai and Alphaville are often called &#x27;neo-&#x27; this word [noir]</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="francois-truffaut" open>
+            <summary class="work-title">Francois Truffaut <a href="francois_truffaut_stock.html" class="work-link-btn" title="Go to François Truffaut">&rarr;</a></summary>
+            <p class="work-desc">Right Bank French New Wave director, co-founder of the movement. Directed <a href="francois_truffaut_stock.html#the-400-blows-les-quatre-cents-coups-1959" class="crossref-inline">The 400 Blows</a>. Also famous as a film critic (Cahiers du Cinema) and for his book-length interview with <a href="hitchcock_stock.html" class="crossref-inline">Alfred Hitchcock</a>. Wrote the essay on 'auteur' theory and a ruthless essay on 'a certain tendency' of French cinema that killed the careers of the directors known as 'Aurenchebost.' <a href='https://en.wikipedia.org/wiki/Fran%C3%A7ois_Truffaut' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Associated with The 400 Blows; one of the main directors of the French New Wave</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Directors associated with this movement include Jean-Luc Godard and Francois Truffaut. | which also names a 1960s &#x27;French&#x27; movement that produced films like Breathless and The 400 Blows</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="left-bank-directors-marker-resnais-varda" open>
+            <summary class="work-title">Left Bank Directors (Marker, Resnais, Varda)</summary>
+            <p class="work-desc">The Left Bank faction included Chris Marker (La Jetee, Sans Soleil), Alain Resnais, and Agnes Varda (along with her husband Jacques Demy). Their films were more experimental than Right Bank films. <a href='https://en.wikipedia.org/wiki/Left_Bank_(cinema)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Left Bank directors include Chris Marker, Alain Resnais, Agnes Varda (and Jacques Demy); more experimental faction of the movement</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Marker was often grouped with the Left Bank directors of this French film movement along with Alain Resnais and husband-and-wife Jacques Demy and Agnes Varda. | proponents included Agnes Varda and Jean-Luc Godard</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>The French New Wave (Nouvelle Vague) was an influential French film movement of the late 1950s and 1960s that emphasized innovative techniques — handheld cameras, natural lighting, jump cuts, and non-professional actors — and auteur-driven filmmaking. Jean Rouch&#x27;s Moi, un Noir was explicitly cited as inspiring the movement through its use of jump cuts and non-professional actors. Directors associated with the movement include <a href="jean_luc_godard_stock.html" class="crossref-inline">Jean-Luc Godard</a>, Francois <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a>, Agnes Varda, Chris Marker, Alain Resnais, and Jacques Demy.</p><p>The movement is divided into two factions: the Right Bank, which included more popular and commercially successful directors like Godard and <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a>; and the Left Bank, which included the more experimental Chris Marker, Alain Resnais, and Agnes Varda (married to Jacques Demy). Jean Vigo was a key predecessor; the Prix Jean Vigo, a prize named for him, was won by Ousmane Sembene for a Wolof-language film.</p><p>The seminal film of the movement is <a href="french_new_wave_stock.html#breathless-a-bout-de-souffle-1960" class="crossref-inline">Breathless</a> (A bout de souffle, 1960) by <a href="jean_luc_godard_stock.html" class="crossref-inline">Jean-Luc Godard</a>, in which a Humphrey Bogart-obsessed protagonist named Michel kills a police officer after being caught with a stolen car, in a famous jarring five-shot sequence. <a href="francois_truffaut_stock.html#the-400-blows-les-quatre-cents-coups-1959" class="crossref-inline">The 400 Blows</a> (Les Quatre Cents Coups, 1959) by <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a> is the other canonical film. Godard also directed <a href="jean_luc_godard_stock.html#pierrot-le-fou-1965" class="crossref-inline">Pierrot le Fou</a> and <a href="jean_luc_godard_stock.html#vivre-sa-vie-my-life-to-live-1962" class="crossref-inline">Vivre sa Vie</a> (both starring then-wife Anna Karina) and <a href="jean_luc_godard_stock.html#alphaville-1965" class="crossref-inline">Alphaville</a> (a neo-noir). Neo-noir films like Le Samourai and Alphaville are called &#x27;neo-noir&#x27; within the New Wave tradition.</p><p>The French New Wave directly influenced multiple national cinema movements, including the Taiwanese New Wave (Edward Yang, <a href="ang_lee_stock.html" class="crossref-inline">Ang Lee</a>) and had wide international influence.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/French_New_Wave" target="_blank">French New Wave — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Breathless_(1960_film)" target="_blank">Breathless (1960 film) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Jean-Luc_Godard" target="_blank">Jean-Luc Godard — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Fran%C3%A7ois_Truffaut" target="_blank">Francois Truffaut — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Left_Bank_(cinema)" target="_blank">Left Bank (cinema) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Jean-Luc Godard — major New Wave director; Breathless, Vivre sa vie, Anna Karina</li><li>Francois Truffaut — The 400 Blows, Jules and Jim; Hitchcock interview</li><li>Agnes Varda — Left Bank director; Cleo from 5 to 7</li><li>Chris Marker — La Jetee, Sans Soleil; Left Bank director</li><li>Alain Resnais — Hiroshima Mon Amour, Last Year at Marienbad; Left Bank director</li><li>The 400 Blows — likely has its own clue set</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'french_new_wave' });</script>
+</body>
+</html>
