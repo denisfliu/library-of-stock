@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Ansel Adams</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>Ansel Adams</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html">&larr; Home</a> &middot; <a href="ansel_adams_questions.html">View source questions</a> · <a href="ansel_adams_cards.html">Make cards</a></div><div class="nav-search"></div></div>
+<div class="summary">American photographer (1902–1984) best known for his black-and-white landscape photographs of Yosemite National Park and the American West. Co-founded the photography group f/64 with Edward Weston and <a href="imogen_cunningham_stock.html" class="crossref-inline">Imogen Cunningham</a>. Co-developed the Zone System with Fred Archer for controlling exposure and contrast. Also documented Japanese-American internment at Manzanar in Born Free and Equal. His first book was Taos Pueblo, co-written with Mary Austin.</div>
+
+        <details class="work" id="moonrise-hernandez-new-mexico" open>
+            <summary class="work-title">Moonrise, Hernandez, New Mexico</summary>
+            <p class="work-desc">One of Adams's most famous photographs, showing a moon rising over a cemetery and landscape in Hernandez, New Mexico. Adams famously pulled off Route 84 to capture it. He progressively increased contrast to make the moon stand out. The moon is placed within Zone VII in the image. <a href='https://en.wikipedia.org/wiki/Moonrise,_Hernandez,_New_Mexico' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shows the moon rising over Hernandez, New Mexico; Adams pulled off Route 84 to snap it</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">his memorable shots include one snapped after pulling off Route 84 near Hernandez | captured a famous shot of Moonrise, Hernandez, New Mexico</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adams progressively increased contrast to make the moon stand out more</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That same photographer progressively increased the contrast to make this object stand out more in a photo taken in Hernandez, New Mexico.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The moon is placed within Zone VII in this image</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This alphabetically later title object is placed within Zone VII (7) in a photograph taken en route to the Ahwahnee Hotel.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="monolith-the-face-of-half-dome" open>
+            <summary class="work-title">Monolith, the Face of Half Dome</summary>
+            <p class="work-desc">An early iconic Adams photograph of the granite formation Half Dome in Yosemite, published in his first book Parmelian Prints of the High Sierras. Used a deep-red filter to lower exposure and create a jet black sky. <a href='https://en.wikipedia.org/wiki/Monolith,_the_Face_of_Half_Dome' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shows the granite monolith Half Dome in Yosemite; published in Parmelian Prints of the High Sierras</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Albert Bender helped him publish his book Parmelian Prints of the High Sierras, which contained his photograph Monolith, the Face of Half Dome. | this surname of the photographer of Monolith, the Face of Half Dome</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Used a deep-red filter to lower exposure and create a jet-black sky; taken from a perch called the &#x27;Diving Board&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">captured using a deep-red filter to lower the exposure and create a jet black sky by a photographer standing at a perch called the &#x27;Diving Board&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="born-free-and-equal-book" open>
+            <summary class="work-title">Born Free and Equal (book)</summary>
+            <p class="work-desc">Adams's photo collection documenting life at the Manzanar Japanese-American internment camp in California during World War II. He was invited by camp director Ralph Merritt. Includes images of Tom/Richard Kobayashi (a farmer with cabbages), girls doing calisthenics, people playing baseball, and a cemetery monument 'outlined against mountains.' <a href='https://en.wikipedia.org/wiki/Born_Free_and_Equal' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Documents Japanese-American internment at the Manzanar camp</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Born Free and Equal is a collection by this American photographer who co-founded the group f/64 and devised the Zone System. | this photographer detailed the life of Japanese-Americans in internment camps in his book Born Free and Equal</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adams was invited by Ralph Merritt (camp director) to photograph Manzanar</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This photographer was invited by Ralph Merritt to take such photographs as Tom Kobayashi, Landscape, South Fields and Pleasure Park to showcase conditions in Manzanar</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Includes photos of a white cemetery monument &#x27;outlined against mountains,&#x27; girls doing calisthenics, and people playing baseball</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A wartime series by this artist includes images of women doing calisthenics. | In one image, people of this ethnicity line up at a white cemetery monument, which &#x27;suggests eternity&#x27; in a depiction of it outlined against mountains.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mike Mandel, inspired by Adams&#x27;s baseball photos, invited Adams and 133 other photographers to pose like baseball players</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Inspired by Adams&#x27;s photos of people performing this activity at Manzanar, Mike Mandel invited Adams and 133 other famous photographers to pose like this activity&#x27;s participants.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="zone-system" open>
+            <summary class="work-title">Zone System</summary>
+            <p class="work-desc">A system co-developed by Adams and Fred Archer for standardizing exposure and brightness in photography, rating levels from 0 to 10 (zero to ten) based on black-and-white contrast. Inspired by the Hurter and Driffield actinograph. <a href='https://en.wikipedia.org/wiki/Zone_System' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-developed by Adams and Fred Archer; rates levels of exposure/brightness from zero to ten</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Fred Archer helped this man develop a scale for EV levels that he called the Zone System. | Along with Fred Archer, this photographer designed a system that categorised images from zero to ten, based on their black-and-white contrast.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by the Hurter and Driffield actinograph</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Hurter and Driffield actinograph inspired a system developed by this artist and Fred Archer which rated levels of exposure and brightness.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="group-f-64" open>
+            <summary class="work-title">Group f/64</summary>
+            <p class="work-desc">A group of San Francisco-based photographers co-founded by Adams with Edward Weston, <a href="imogen_cunningham_stock.html" class="crossref-inline">Imogen Cunningham</a>, and Willard Van Dyke (among others). Named for the f/64 aperture setting on large-format cameras, which produces maximum sharpness and depth. Associated with 'straight photography.' <a href='https://en.wikipedia.org/wiki/Group_f/64' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-founded by Adams with Edward Weston, Imogen Cunningham, and Willard Van Dyke; named for the aperture setting f/64</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Imogen Cunningham and Edward Weston helped him found the group f/64. | Along with Willard van Dyke, Adams founded this photographic group based out of San Francisco.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="taos-pueblo-book" open>
+            <summary class="work-title">Taos Pueblo (book)</summary>
+            <p class="work-desc">Adams's first published book of photographs, co-written with poet Mary Austin / Mary Hunter Austin, documenting the culture and architecture of Taos Pueblo in New Mexico. Adams met <a href="paul_strand_stock.html" class="crossref-inline">Paul Strand</a> during this project. <a href='https://en.wikipedia.org/wiki/Taos_Pueblo_(book)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adams&#x27;s first book, co-written with Mary Austin (Mary Hunter Austin), documenting Taos Pueblo</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ansel Adams&#x27; first book of photographs includes many images of churches in this town | Ansel Adams co-wrote a book with Mary Hunter Austin about this place, which is his first collection of published photographs.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adams met Paul Strand during this documentation project; Strand inspired Adams to move away from Pictorialism</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man met Paul Strand during his documentation of Taos Pueblo culture | This artist was inspired by Paul Strand to move away from the Pictorialist style</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Ansel Adams (1902–1984) was an American photographer best known for black-and-white landscape photography of Yosemite and the American West. He was associated with the Sierra Club and used photography to promote conservation. Alfred Stieglitz hosted one of Adams's first exhibitions in 1936. He photographed a rose petal on driftwood after meeting <a href="paul_strand_stock.html" class="crossref-inline">Paul Strand</a>. He created the collection The Parmelian Prints of the High Sierras (with help from Albert Bender). His landscapes include The Tetons and Snake River (Grand Teton National Park), Mount Williamson, Clearing Winter Storm, Moon and Half Dome, and White House Ruin in Canyon de Chelly. <a href='https://en.wikipedia.org/wiki/Ansel_Adams' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Best known for black-and-white landscape photographs of Yosemite National Park</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this American photographer best known for his pictures of Yosemite National Park | He took many pictures of Yosemite National Park and captured a famous shot of Moonrise, Hernandez, New Mexico.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alfred Stieglitz hosted an early exhibition of Adams&#x27;s work in 1936</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In 1936, Stieglitz hosted an exhibition for the work of this other artist who photographed many landmarks in Yosemite National Park, including Half Dome. | In 1936, Stieglitz hosted one of the first exhibitions of work by this other American photographer.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Photographed a rose petal on a piece of driftwood after meeting Paul Strand</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist created an image of a rose petal on a piece of driftwood after an inspirational meeting with Paul Strand.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Photographed The Tetons and Snake River in Grand Teton National Park</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He also captured a Wyoming national park in &#x27;The Tetons and Snake River.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adams&#x27;s photograph of Manzanar includes an image of a cemetery monument and women doing calisthenics; Mike Mandel invited Adams and 133 other photographers to pose as baseball players</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Inspired by Adams&#x27;s photos of people performing this activity at Manzanar, Mike Mandel invited Adams and 133 other famous photographers to pose like this activity&#x27;s participants.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Photograph Mount Williamson appeared in the Family of Man exhibition (Edward Steichen)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One section of The Family of Man consisted of photos of folk families interspersed with large landscapes, including this man&#x27;s Mount Williamson.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Praised Alfred Stieglitz&#x27;s cloud series (&#x27;Equivalents&#x27;), calling them musical in quality</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ansel Adams praised the musical quality of a series of photographs depicting these objects arranged by its artist into so-called &#x27;sets.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Ansel Adams (1902–1984) was an American photographer celebrated for his black-and-white landscape photography of Yosemite National Park and the American West. He is one of the most recognized names in photography history, strongly associated with both artistic and conservation photography.</p><p>His most iconic photograph is Moonrise, Hernandez, New Mexico, captured after Adams pulled off Route 84 near Hernandez. The moon is placed in Zone VII and Adams progressively increased contrast in the darkroom to make it stand out. Nearly as famous is Monolith, the Face of Half Dome, published in his first commercial collection The Parmelian Prints of the High Sierras (supported by Albert Bender). This image was taken from a perch called the &#x27;Diving Board&#x27; using a deep-red filter to create a jet-black sky.</p><p>Adams co-developed the Zone System with Fred Archer, a method for standardizing exposure and brightness in photography that rates tonal values from zero to ten on a black-and-white contrast scale. The system was inspired by the Hurter and Driffield actinograph. Adams also co-founded Group f/64, a San Francisco-based photography collective named for the f/64 aperture setting (which produces maximum depth of field and sharpness on large-format cameras). Other members included Edward Weston, <a href="imogen_cunningham_stock.html" class="crossref-inline">Imogen Cunningham</a>, and Willard Van Dyke.</p><p>Adams&#x27;s first published book was Taos Pueblo, co-written with the poet Mary Austin (Mary Hunter Austin). He met <a href="paul_strand_stock.html" class="crossref-inline">Paul Strand</a> during this project documenting Taos Pueblo culture, and Strand inspired Adams to move away from Pictorialism toward straight photography. In 1936, Alfred Stieglitz hosted one of Adams&#x27;s first major exhibitions in New York. Adams also photographed a rose petal on a piece of driftwood after meeting Strand.</p><p>During World War II, Adams was invited by camp director Ralph Merritt to photograph the Manzanar Japanese-American internment camp in California. This work was published as Born Free and Equal (1944), documenting the everyday lives of Japanese-Americans at Manzanar — including images of women doing calisthenics, people playing baseball, the Richard/Tom Kobayashi family farming cabbages, and a white cemetery monument &#x27;outlined against mountains.&#x27; Adams&#x27;s baseball photographs from Manzanar later inspired Mike Mandel to invite Adams and 133 other photographers to pose as baseball players.</p><p>Other notable works include The Tetons and Snake River (a Grand Teton National Park landscape), Mount Williamson (included in the Family of Man exhibition), Clearing Winter Storm (Yosemite), and Moon and Half Dome. He also photographed the White House Ruin in Canyon de Chelly National Monument, Arizona. Adams praised Alfred Stieglitz&#x27;s cloud photograph series (&#x27;Equivalents&#x27;) for their musical quality.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Ansel_Adams" target="_blank">Ansel Adams (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Moonrise,_Hernandez,_New_Mexico" target="_blank">Moonrise, Hernandez, New Mexico (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Born_Free_and_Equal" target="_blank">Born Free and Equal (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Group_f/64" target="_blank">Group f/64 (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Zone_System" target="_blank">Zone System (Wikipedia)</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Edward Weston (co-founder of Group f/64; appears in multiple clues)</li><li>Imogen Cunningham (member of Group f/64; appears in several clues; category: Fine Arts)</li><li>Dorothea Lange (frequently co-clued with Adams re: Manzanar and Depression-era photography)</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'ansel_adams' });</script>
+</body>
+</html>

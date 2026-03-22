@@ -130,14 +130,13 @@ Required top-level fields:
 
 ### Render
 ```bash
-python3 -c "from render import render_html; import json; f=open('output/{{slug}}_analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}_stock.html')"
-python3 render_cards.py
+python3 -c "from lib.render import render_html; import json; f=open('output/{{slug}}_analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}_stock.html')"
+python3 lib/render_cards.py
 ```
 
 ### Mark complete
 ```bash
 python3 lib/batch_worker.py complete "FULL TOPIC NAME"
-echo "FULL TOPIC NAME" >> csvs/completed.txt
 python3 lib/topic_queue.py remove-first "FULL TOPIC NAME"
 ```
 
@@ -183,8 +182,8 @@ Reference `output/emily_carr_analysis.json` for JSON formatting.
 
 ### Render
 ```bash
-python3 -c "from render import render_html; import json; f=open('output/{{slug}}_analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}_stock.html')"
-python3 render_cards.py
+python3 -c "from lib.render import render_html; import json; f=open('output/{{slug}}_analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}_stock.html')"
+python3 lib/render_cards.py
 ```
 
 ### Mark complete

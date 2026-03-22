@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Diane Arbus</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>Diane Arbus</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html">&larr; Home</a> &middot; <a href="diane_arbus_questions.html">View source questions</a> · <a href="diane_arbus_cards.html">Make cards</a></div><div class="nav-search"></div></div>
+<div class="summary">American photographer (1923–1971) known for documentary portraits of marginalized and unconventional people — &#x27;freaks,&#x27; transvestites, nudists, giants, and dwarves in New York City. Best known for Child with Toy Hand Grenade in Central Park and Identical Twins, Roselle, New Jersey, 1967 (which inspired the ghost twins in Stanley Kubrick&#x27;s The Shining). Photographed the &#x27;Jewish Giant&#x27; Eddie Carmel and shot in square format after switching to a Rolleiflex. Criticized by <a href="susan_sontag_stock.html" class="crossref-inline">Susan Sontag</a>. Committed suicide in 1971.</div>
+
+        <details class="work" id="child-with-toy-hand-grenade-in-central-park-1962" open>
+            <summary class="work-title">Child with Toy Hand Grenade in Central Park (1962)</summary>
+            <p class="work-desc">Arbus's most famous photograph: a young boy (Colin Wood) standing in Central Park with one suspender strap hanging off his shoulder, head tilted, making a wide-eyed grimace (rictus smile), clutching a fake MK2 Pineapple hand grenade in his claw-like right hand. <a href="norman_mailer_stock.html" class="crossref-inline">Norman Mailer</a> commented on this photo after Arbus photographed him for the New York Times Book Review. <a href="susan_sontag_stock.html" class="crossref-inline">Susan Sontag</a> criticized Arbus in part through this image. <a href="https://en.wikipedia.org/wiki/Child_with_Toy_Hand_Grenade_in_Central_Park" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shows a boy (Colin Wood) in Central Park with one suspender/overall strap hanging off his shoulder, making a grimace, clutching a fake MK2 Pineapple grenade</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s most famous work depicts a boy with a suspender strap hanging off his right shoulder holding a fake MK2 Pineapple weapon. | An overall strap falls off Colin Wood&#x27;s shoulder as he clutches an &#x27;Mk 2 Pineapple&#x27; in this woman&#x27;s photo Child with Toy Hand Grenade in Central Park.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Norman Mailer made a critical comment about giving grenades to babies after Arbus photographed him awkwardly for the NY Times Book Review</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After seeing this photographer&#x27;s portrait of him sprawled on an armchair for the New York Times Book Review, Norman Mailer referenced her best known photo in a comment. | She also took the photo Child with Toy Hand Grenade in Central Park, which inspired a critical quote about her work by Norman Mailer.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="identical-twins-roselle-new-jersey-1967" open>
+            <summary class="work-title">Identical Twins, Roselle, New Jersey, 1967</summary>
+            <p class="work-desc">Portrait of identical twin girls (Cathleen and Colleen Wade) in matching corduroy dresses and headbands, with opposite expressions. Directly inspired the ghost twin motif in Stanley Kubrick's The Shining. <a href="https://en.wikipedia.org/wiki/Identical_Twins,_Roselle,_New_Jersey,_1967" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shows twin girls (Cathleen and Colleen Wade) in matching corduroy dresses and headbands with opposite expressions; inspired the ghost twins in The Shining</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This photographer&#x27;s image of two girls with matching headbands and corduroy dresses may have inspired the twin motif in The Shining. | The ghosts of the Grady twins in Stanley Kubrick&#x27;s The Shining bear a striking resemblance to this photographer&#x27;s image Identical Twins, Roselle, New Jersey, 1967.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The twins are named Cathleen and Colleen Wade and wear opposite expressions</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cathleen and Colleen Wade wear opposite expressions but identical clothing in this photographer&#x27;s &#x27;Identical Twins, Roselle, New Jersey, 1967.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-jewish-giant-at-home-with-his-parents-in-the-bronx-n-y-c-1970" open>
+            <summary class="work-title">A Jewish Giant at Home with His Parents in the Bronx, N.Y.C. (1970)</summary>
+            <p class="work-desc">Portrait of Eddie Carmel, a nearly nine-foot-tall man known as 'The Jewish Giant,' leaning over at home so his head doesn't hit the ceiling while his smaller parents look on. Carmel's cousin produced an audio documentary inspired by the photo. <a href="https://en.wikipedia.org/wiki/A_Jewish_Giant_at_Home_with_His_Parents_in_the_Bronx" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shows Eddie Carmel (&#x27;The Jewish Giant&#x27;) leaning over so his head doesn&#x27;t hit the ceiling, with his parents looking on in the Bronx</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This photographer captured an elderly couple looking up at their nearly nine-foot-tall son, the &#x27;Jewish Giant.&#x27; | This photographer captured Eddie Carmel in his home, motivating his cousin to produce an audio documentary.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="boy-with-a-straw-hat-waiting-to-march-in-a-pro-war-parade-1967" open>
+            <summary class="work-title">Boy with a Straw Hat Waiting to March in a Pro-War Parade (1967)</summary>
+            <p class="work-desc">Shows a young man in a suit and straw (boater) hat holding a small American flag and wearing a button reading 'Bomb Hanoi' on his lapel (and a larger button reading 'God Bless America — Support Our Boys in Viet Nam'). Frequently clued with the 'Bomb Hanoi' button detail. <a href="https://en.wikipedia.org/wiki/Diane_Arbus" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shows a young man in a suit and straw/boater hat holding a small flag, wearing a button reading &#x27;Bomb Hanoi&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A boy in a boater holds a small flag in his right hand and wears a button on his left lapel that says &#x27;Bomb Hanoi.&#x27; | She photographed a boy in a straw hat with a button reading &#x27;Bomb Hanoi&#x27; in a pro-Vietnam War parade.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also wears a larger button reading &#x27;God Bless America — Support Our Boys in Viet Nam&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another of this artist&#x27;s works depicts a man wearing buttons that say &#x27;Bomb Hanoi&#x27; and &#x27;God Bless America, Support Our Boys in Viet Nam.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="portrait-of-norman-mailer" open>
+            <summary class="work-title">Portrait of Norman Mailer <a href="norman_mailer_stock.html" class="work-link-btn" title="Go to Norman Mailer">&rarr;</a></summary>
+            <p class="work-desc">Portrait of <a href="norman_mailer_stock.html" class="crossref-inline">Norman Mailer</a> for the New York Times Book Review, showing him smoking, with legs spread awkwardly in an armchair. Mailer was angered by the image and his hostile reaction referenced Arbus's Child with Toy Hand Grenade. A museumgoer once spat on this photograph. <a href="https://en.wikipedia.org/wiki/Diane_Arbus" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Portrait of Norman Mailer for the NY Times Book Review, showing him awkwardly spread-legged in an armchair; Mailer was angered by it; a museumgoer spat on it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A book review portrait by this photographer angered its subject because it showed him smoking with legs spread awkwardly in an armchair. | A museumgoer once spat on this photographer&#x27;s image of a smoking man with manicured nails wearing hair curlers.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works-and-general-biographical" open>
+            <summary class="work-title">Other Works and General / Biographical</summary>
+            <p class="work-desc">American photographer (1923–1971), born Diane Nemerov. Her brother was poet/novelist Howard Nemerov. Committed suicide in 1971, having scribbled 'Last Supper' in her diary beforehand. Switched from a grainy Nikon to a twin-lens Rolleiflex, resulting in her characteristic square format. First major exhibition was the 'New Documents' show (alongside Lee Friedlander and Garry Winogrand). Former student Neil Selkirk compiled a retrospective in 1972 and was the only person authorized to print her work. Published 'A Box of Ten Photographs' (a limited edition of 50 sets, only 4 sold in her lifetime), with a plastic box designed by Marvin Israel, handwritten captions. Marvin Israel also compiled the posthumous Monograph. Last series (posthumously titled 'Untitled') depicted residents of homes for the developmentally disabled, inspired by R.D. Laing. <a href="susan_sontag_stock.html" class="crossref-inline">Susan Sontag</a> criticized her in the essay 'Freak Show' (in On Photography). Photographed Anderson Cooper as a baby for Harper's Bazaar. Also photographed a tattooed man at a carnival (Maryland), a naked man tucking his genitals between his legs ('A Naked Man Being a Woman, NYC, 1968'), Lillian and Dorothy Gish in fur coats, and Two Ladies at the Automat. <a href="https://en.wikipedia.org/wiki/Diane_Arbus" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Susan Sontag criticized Arbus&#x27;s absence of beauty in the essay &#x27;Freak Show&#x27; (or &#x27;America, Seen Through Photographs, Darkly&#x27;) in On Photography</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Susan Sontag criticized the absence of beauty in this artist&#x27;s work in her essay &#x27;America, Seen Through Photographs, Darkly.&#x27; | This is the primary artist contrasted with depression-era photography in Susan Sontag&#x27;s On Photography.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Switched from a grainy Nikon to a twin-lens Rolleiflex, producing characteristic square-format photographs</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s switch from a grainy Nikon to a twin-lens Rolleiflex led to a shift to sharp, square portraiture. | This artist&#x27;s works were unusually square in format.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Committed suicide in 1971; had scribbled &#x27;Last Supper&#x27; in her diary beforehand</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Before her suicide, this artist scribbled &#x27;Last Supper&#x27; in her diary. | Howard Nemerov likely committed incest with this artist... made a square photo... four years before committing suicide in 1971.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Former student Neil Selkirk compiled her 1972 retrospective and was the only person authorized to print her work</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A former student of this artist, Neil Selkirk, compiled a retrospective for her in 1972 and was the only person ever authorized to print her work.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First major exhibition was &#x27;New Documents&#x27; (alongside Lee Friedlander and Garry Winogrand)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s first major exhibition, the &#x27;New Documents&#x27; exhibit, included similar work by Lee Friedlander and Garry Winogrand.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Published A Box of Ten Photographs (limited edition of 50 sets, only 4 sold in her lifetime; plastic box designed by Marvin Israel, handwritten captions)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One collection produced by this photographer included a clear plastic box for each of its images designed by Marvin Israel and hand-written captions for each of the photos, but only four sold in this photographer&#x27;s lifetime.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Last series (posthumously titled &#x27;Untitled&#x27;) depicted people at homes for the developmentally disabled; inspired by R.D. Laing</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this artist&#x27;s series depicted the experiences of people at homes for the developmentally disabled; that series was posthumously titled Untitled. | R.D. Laing&#x27;s books on mental illness inspired this photographer&#x27;s last, untitled series, in which most of the subjects are masked.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Photographed Anderson Cooper as a baby for a Harper&#x27;s Bazaar Valentine&#x27;s Day issue</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist photographed Anderson Cooper as &#x27;a very young baby&#x27; for a Harper&#x27;s Bazaar Valentine&#x27;s Day Issue.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Her brother was poet/novelist Howard Nemerov</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Howard Nemerov likely committed incest with this artist...</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Germaine Greer accused Arbus of trying to distress her to get a better image</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Germaine Greer accused this artist of &#x27;kneeling astride [her]&#x27; and trying to distress her to uproot the image of the &#x27;sexy feminist that men like.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Diane Arbus (1923–1971), born Diane Nemerov, was an American photographer famous for documentary portraits of marginalized, unconventional, and taboo subjects — transvestites, giants, dwarves, nudists, mentally disabled people, and circus &#x27;freaks&#x27; — primarily in New York City. Her brother was the poet and novelist Howard Nemerov.</p><p>Her most famous work is Child with Toy Hand Grenade in Central Park (1962), depicting a boy (Colin Wood) in Central Park with one suspender strap hanging off his shoulder, making a wide-eyed grimace, and clutching a fake MK2 Pineapple hand grenade in his claw-like right hand. Almost equally famous is Identical Twins, Roselle, New Jersey, 1967, showing twin girls Cathleen and Colleen Wade in matching corduroy dresses and headbands with opposite expressions — this photograph directly inspired the ghost twin motif in Stanley Kubrick&#x27;s The Shining. Other major works include A Jewish Giant at Home with His Parents in the Bronx (depicting the nearly nine-foot-tall Eddie Carmel leaning down to fit under his family&#x27;s ceiling while his parents look on); Boy with a Straw Hat Waiting to March in a Pro-War Parade (showing a young man in a boater hat with a &#x27;Bomb Hanoi&#x27; button); and a portrait of <a href="norman_mailer_stock.html" class="crossref-inline">Norman Mailer</a> for the New York Times Book Review (Mailer spread-legged in an armchair — a picture that angered him and that a museumgoer once spat on).</p><p>Arbus switched from a grainy Nikon to a twin-lens Rolleiflex camera, producing her characteristic square-format photographs. Her first major exhibition was &#x27;New Documents&#x27; (alongside Lee Friedlander and Garry Winogrand). She published A Box of Ten Photographs, a limited edition of 50 sets with plastic boxes designed by Marvin Israel and handwritten captions — only 4 sets sold in her lifetime. Her final, posthumously titled series &#x27;Untitled&#x27; depicted residents of homes for the developmentally disabled, inspired by R.D. Laing&#x27;s writings. Her student Neil Selkirk compiled a 1972 retrospective and was the only person authorized to print her work; Marvin Israel also compiled the Monograph.</p><p>Writer <a href="susan_sontag_stock.html" class="crossref-inline">Susan Sontag</a> criticized Arbus at length in On Photography, particularly in the essay &#x27;Freak Show&#x27; (also known as &#x27;America, Seen Through Photographs, Darkly&#x27;). Germaine Greer also accused Arbus of trying to distress her in order to get a better image. Arbus committed suicide in 1971, having written &#x27;Last Supper&#x27; in her diary beforehand.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Diane_Arbus" target="_blank">Diane Arbus — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Child_with_Toy_Hand_Grenade_in_Central_Park" target="_blank">Child with Toy Hand Grenade — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Identical_Twins,_Roselle,_New_Jersey,_1967" target="_blank">Identical Twins, Roselle, New Jersey — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Susan Sontag — wrote &#x27;Freak Show&#x27; criticizing Arbus; On Photography repeatedly mentioned alongside Arbus</li><li>Weegee — mentioned as an artistic predecessor to Arbus in at least one bonus</li><li>Norman Mailer — appeared as subject of Arbus portrait; his reaction is a recurring clue</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'diane_arbus' });</script>
+</body>
+</html>

@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Jeff Wall</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>Jeff Wall</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html">&larr; Home</a> &middot; <a href="jeff_wall_questions.html">View source questions</a> · <a href="jeff_wall_cards.html">Make cards</a></div><div class="nav-search"></div></div>
+<div class="summary">Canadian conceptual photographer (born 1946) known for large-format, staged &#x27;near documentary&#x27; photographs, often displayed as backlit transparencies. Known for recreating famous artworks as photographs: Picture for Women (after Manet&#x27;s A Bar at the Folies-Bergère), The Destroyed Room (after Delacroix&#x27;s The Death of Sardanapalus), and A Sudden Gust of Wind (after <a href="hokusai_stock.html" class="crossref-inline">Hokusai</a>). Also known for Mimic (depicting a racist white man mocking an Asian man) and Dead Troops Talk (sold for $3.7 million in 2012). Part of the Vancouver photoconceptualist school.</div>
+
+        <details class="work" id="picture-for-women-1979" open>
+            <summary class="work-title">Picture for Women (1979)</summary>
+            <p class="work-desc">Large-format photograph recreating Manet's A Bar at the Folies-Bergère. Shows a camera on a tripod in the center of the frame between a male photographer (Wall himself) in profile and a female model, all reflected in a mirror. Two metal stands split the frame into three sections, and the woman on the left rests her hands on a table. <a href="https://en.wikipedia.org/wiki/Picture_for_Women" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Recreates Manet&#x27;s A Bar at the Folies-Bergère; camera on tripod faces a mirror, placed between the male photographer and a female model; two metal stands split the frame into three sections</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That work, Picture for Women, is a recreation of A Bar at the Folies-Bergere. | Jeff Wall&#x27;s Picture for Women was chiefly inspired by a painting by this artist in which a bartender faces the viewers and places her hands next to a dish of oranges.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-destroyed-room-1978" open>
+            <summary class="work-title">The Destroyed Room (1978)</summary>
+            <p class="work-desc">Photograph inspired by Delacroix's The Death of Sardanapalus. Shows a woman's destroyed room: insulation visible through a torn red wall, broken furniture, a slashed mattress, high-heels and clothes strewn across the floor, and drawers pulled out from a dresser. <a href="https://en.wikipedia.org/wiki/The_Destroyed_Room" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by Delacroix&#x27;s The Death of Sardanapalus; shows a destroyed room with insulation visible through a torn red wall, broken furniture, slashed mattress, clothes and high-heels strewn about</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">High-heels and clothes are strewn across the floor in a work by this photographer inspired by The Death of Sardanapalus, in which insulation is visible through a torn red wall behind broken furniture and a slashed mattress. | This photographer channeled... Delacroix&#x27;s The Destruction of Sardanapalus in his The Destroyed Room.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-sudden-gust-of-wind-after-hokusai-1993" open>
+            <summary class="work-title">A Sudden Gust of Wind (after Hokusai) (1993) <a href="hokusai_stock.html" class="work-link-btn" title="Go to Hokusai">&rarr;</a></summary>
+            <p class="work-desc">Photograph recreating <a href="hokusai_stock.html" class="crossref-inline">Hokusai</a>'s 'Ejiri in Suruga Province' print from the Thirty-Six Views of Mount Fuji series. Shows men in business suits with paper scattered into the air by an airstream (a 'non-accidental accident'). <a href="https://en.wikipedia.org/wiki/A_Sudden_Gust_of_Wind_(after_Hokusai)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Recreates a Hokusai print (from Thirty-Six Views of Mount Fuji); shows men in business suits with paper thrown into an airstream</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This photographer of The Destroyed Room portrayed a non-accidental accident by having paper thrown into an airstream in his A Sudden Gust of Wind, which recreates a Hokusai work. | He also recreated Hokusai&#x27;s A Sudden Gust of Wind using men in business suits.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="mimic-1982" open>
+            <summary class="work-title">Mimic (1982)</summary>
+            <p class="work-desc">Photograph showing a racist white man pulling the corner of his eye (slanting gesture) as he walks past an Asian man on the street. Part of the Vancouver School of photoconceptualism. <a href="https://en.wikipedia.org/wiki/Mimic_(Wall)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Shows a White man using his finger to mock an Asian man by slanting his eye as he walks past him on the street</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A racist white man slants his eye as he walks past an Asian man on the street in this photographer&#x27;s Mimic. | This conceptualist photographer, who depicted a White man using his finger to mock an Asian man while walking down a street in his Mimic.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="dead-troops-talk-1992" open>
+            <summary class="work-title">Dead Troops Talk (1992)</summary>
+            <p class="work-desc">Staged photograph showing several men lying wounded in a trench (set during the Soviet-Afghan War). Sold for $3.7 million in 2012, making it the third most expensive photograph ever sold at that time. Extensively analyzed in the last essay of <a href="susan_sontag_stock.html" class="crossref-inline">Susan Sontag</a>'s Regarding the Pain of Others. <a href="https://en.wikipedia.org/wiki/Dead_Troops_Talk" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicts several wounded men in a trench; sold for $3.7 million in 2012 (then the third most expensive photograph ever sold)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man&#x27;s image of several men lying wounded in a trench entitled Dead Troops Talk sold for $3.7 million in 2012, making it the third most expensive photograph ever sold.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Extensively analyzed in the last essay of Susan Sontag&#x27;s Regarding the Pain of Others; shows a man dangling flesh in front of another bloody-faced man</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A staged photo of a fictional event in this country [Afghanistan], which is extensively analyzed in the last essay of Susan Sontag&#x27;s Regarding the Pain of Others, depicts a man who dangles a bit of flesh in front of a second, bloody-faced man jokingly riding a third amidst a &#x27;dialogue of the dead.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works-and-general-biographical" open>
+            <summary class="work-title">Other Works and General / Biographical</summary>
+            <p class="work-desc">Canadian photographer born in Vancouver (1946), part of the Vancouver photoconceptualist school. Known for large-format staged 'near documentary' photographs. Also created Restoration (a 180-degree photo of workers mending a panoramic painting); two photos showing the same scene with an octopus vs. a pile of beans on a table; and a photo documenting a man cleaning the Barcelona Pavilion. Known for displaying work as large-scale backlit transparencies. <a href="https://en.wikipedia.org/wiki/Jeff_Wall" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Canadian conceptual photographer known for staged &#x27;near documentary&#x27; photographs; part of the Vancouver photoconceptualist school</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">For 10 points, name this Canadian conceptual artist known for his staged photographs. | Kevin Lum and Rodney Graham are part of this city&#x27;s [Vancouver&#x27;s] photoconceptualist School, as is a photographer who showed a White man pulling at the corner of his eye.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Restoration: a 180-degree photo of workers mending a panoramic painting</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Canadian photographer took a 180 degree photo of workers mending a panoramic painting in his photo Restoration.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two identical photographs differ only in that one has an octopus and the other has a pile of beans on the left table</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two photographs taken by this artist are identical except that in one photo, an octopus sits on the table on the left and in the other, a pile of beans sit on the table on the right.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Jeff Wall (born 1946) is a Canadian conceptual photographer from Vancouver, known for large-format staged photographs displayed as backlit transparencies. He is part of the Vancouver photoconceptualist school alongside Kevin Lum and Rodney Graham. Wall frequently recreates well-known artworks as photographs: Picture for Women (1979) recreates Manet&#x27;s A Bar at the Folies-Bergère, placing Wall&#x27;s camera on a tripod between himself and a female model, both reflected in a mirror; The Destroyed Room (1978) recreates Delacroix&#x27;s The Death of Sardanapalus as a wrecked woman&#x27;s room with torn red walls exposing insulation, broken furniture, a slashed mattress, and clothes strewn on the floor; and A Sudden Gust of Wind (1993) recreates a <a href="hokusai_stock.html" class="crossref-inline">Hokusai</a> print from Thirty-Six Views of Mount Fuji with men in business suits and paper thrown into an airstream.</p><p>Wall&#x27;s Mimic (1982) shows a White man pulling at the corner of his eye to mock an Asian man walking past him on the street. Dead Troops Talk (1992) is a staged image of wounded soldiers in a trench set during the Soviet-Afghan War; it sold for $3.7 million in 2012 (then the third most expensive photograph ever sold) and is extensively analyzed in the final essay of <a href="susan_sontag_stock.html" class="crossref-inline">Susan Sontag</a>&#x27;s Regarding the Pain of Others. Wall also made Restoration (a 180-degree panoramic photo of workers mending a large painting) and spent several days photographing a man cleaning the Barcelona Pavilion. Two of his photographs are identical except that one shows an octopus and the other a pile of beans on a table.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Jeff_Wall" target="_blank">Jeff Wall — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Picture_for_Women" target="_blank">Picture for Women — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Dead_Troops_Talk" target="_blank">Dead Troops Talk — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>A Bar at the Folies-Bergère — Manet painting; Wall&#x27;s Picture for Women is repeatedly used as a mention clue for this painting</li><li>The Death of Sardanapalus — Delacroix painting; Wall&#x27;s Destroyed Room is used as a mention clue for it</li><li>Hokusai — Wall&#x27;s A Sudden Gust of Wind is repeatedly used as a mention clue for Hokusai questions</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'jeff_wall' });</script>
+</body>
+</html>
