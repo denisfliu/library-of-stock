@@ -46,10 +46,45 @@ def _synthesize_image_cards(analysis: dict, cards: list) -> list:
     return cards + extra
 
 
+def _synthesize_audio_cards(analysis: dict, cards: list) -> list:
+    """Auto-generate audio cards from score_clues that have mp3 paths,
+    deduplicating against any audio cards already present in the JSON."""
+    topic = analysis.get("topic", "Unknown")
+    existing_keys = {
+        (c.get("work", ""), c.get("front", ""))
+        for c in cards if c.get("type") == "audio"
+    }
+    extra = []
+    for clue in analysis.get("score_clues", []):
+        mp3 = clue.get("mp3", "")
+        if not mp3:
+            continue
+        work = clue.get("work", "")
+        description = clue.get("description", "")
+        if (work, description) in existing_keys:
+            continue
+        back = topic if work == topic else f"{work} ({topic})"
+        extra.append({
+            "type": "audio",
+            "indicator": clue.get("indicator", ""),
+            "front": description,
+            "back": back,
+            "work": work,
+            "frequency": 0,
+            "mp3": mp3,
+            "abc": clue.get("abc", ""),
+            "needs_review": clue.get("needs_review", True),
+            "tags": [],
+        })
+    return cards + extra
+
+
 def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
     output_path = Path(output_path)
     topic = analysis.get("topic", "Unknown")
-    cards = _synthesize_image_cards(analysis, analysis.get("cards", []))
+    cards = _synthesize_audio_cards(
+        analysis, _synthesize_image_cards(analysis, analysis.get("cards", []))
+    )
     stock_link = output_path.name.replace("_cards.html", "_stock.html")
 
     # Build recommended tags from analysis metadata
@@ -66,6 +101,7 @@ def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cards: {escape(topic)}</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 body {{
@@ -424,7 +460,7 @@ h1 {{
 </div>
 
 <details class="img-palette" open>
-    <summary>Image Palette <span id="palette-count"></span></summary>
+    <summary>Media Palette <span id="palette-count"></span></summary>
     <div class="palette-grid" id="palette-grid"></div>
     <div class="palette-actions">
         <input type="text" id="palette-url" placeholder="Add image URL...">
@@ -439,6 +475,10 @@ h1 {{
         </select>
         <button onclick="applyPaletteToSelected()">Apply to selected cards</button>
         <button onclick="clearPaletteSelection()" style="background:#1a1f25;">Cancel</button>
+    </div>
+    <div id="clips-section" style="display:none;margin-top:0.6rem;border-top:1px solid #3a3f47;padding-top:0.5rem;">
+        <div style="font-size:0.75rem;color:#808790;margin-bottom:0.4rem;">Score Clips</div>
+        <div id="clips-grid" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div>
     </div>
 </details>
 
@@ -504,6 +544,7 @@ h1 {{
 <script>
 const TOPIC = {json.dumps(topic)};
 let cards = {json.dumps(cards, ensure_ascii=False)};
+const SCORE_CLIPS = {json.dumps(analysis.get("score_clues", []), ensure_ascii=False)};
 let editIndex = -1; // -1 = adding new
 
 // Populate work filter
@@ -838,6 +879,63 @@ let selectedPaletteIdx = -1;
     }});
 }})();
 
+// --- Score Clips Palette ---
+let _clipSynths = {{}};
+
+function initClipsPalette() {{
+    const clips = SCORE_CLIPS.filter(c => c.abc && (c.mp3 || c.abc));
+    if (!clips.length) return;
+    const section = document.getElementById('clips-section');
+    const grid = document.getElementById('clips-grid');
+    section.style.display = '';
+    grid.innerHTML = clips.map((clip, i) => `
+        <div style="background:#1a1f25;border:1px solid #3a3f47;border-radius:4px;padding:0.4rem 0.6rem;min-width:180px;max-width:280px;">
+            <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${{escHtml(clip.work || '')}}${{clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}}</div>
+            <div id="clip-notation-${{i}}" style="max-width:100%;overflow:hidden;"></div>
+            <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
+                ${{clip.mp3
+                    ? `<audio controls preload="none" src="${{escHtml(clip.mp3)}}" style="height:24px;width:120px;"></audio>`
+                    : `<button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="playClip(${{i}})">▶ Play</button>
+                       <button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="stopClip(${{i}})">■</button>`
+                }}
+            </div>
+        </div>
+    `).join('');
+
+    // Render ABC notation for each clip
+    clips.forEach((clip, i) => {{
+        if (clip.abc && typeof ABCJS !== 'undefined') {{
+            try {{
+                ABCJS.renderAbc(`clip-notation-${{i}}`, clip.abc, {{
+                    responsive: 'resize',
+                    staffwidth: 240,
+                    scale: 0.7,
+                    paddingright: 0,
+                    paddingleft: 0,
+                }});
+            }} catch(e) {{}}
+        }}
+    }});
+}}
+
+async function playClip(i) {{
+    const clip = SCORE_CLIPS.filter(c => c.abc)[i];
+    if (!clip || typeof ABCJS === 'undefined') return;
+    if (_clipSynths[i]) {{ try {{ _clipSynths[i].stop(); }} catch(e) {{}} }}
+    try {{
+        const visualObjs = ABCJS.renderAbc('offscreen-render', clip.abc, {{}});
+        const synth = new ABCJS.synth.CreateSynth();
+        await synth.init({{ visualObj: visualObjs[0] }});
+        await synth.prime();
+        synth.start();
+        _clipSynths[i] = synth;
+    }} catch(e) {{ console.warn('playClip error:', e); }}
+}}
+
+function stopClip(i) {{
+    if (_clipSynths[i]) {{ try {{ _clipSynths[i].stop(); }} catch(e) {{}} delete _clipSynths[i]; }}
+}}
+
 function renderPalette() {{
     const grid = document.getElementById('palette-grid');
     const countEl = document.getElementById('palette-count');
@@ -925,7 +1023,9 @@ document.querySelector('.img-palette')?.addEventListener('paste', e => {{
 
 renderPalette();
 renderTable();
+initClipsPalette();
 </script>
+<div id="offscreen-render" style="display:none;position:absolute;"></div>
 <script src="../lib/js/anki_export.js"></script>
 <script>
 async function exportApkgBtn() {{
@@ -973,15 +1073,18 @@ def build_all(force: bool = False):
 
         with open(f) as fh:
             analysis = json.load(fh)
-        # Render even if no cards in JSON — _synthesize_image_cards may add some
+        # Render if there are cards, images, or score clips to show
         has_images = any(
             isinstance(w.get("image"), dict) and w["image"].get("url")
             for w in analysis.get("works", [])
         )
-        if not analysis.get("cards") and not has_images:
+        has_clips = bool(analysis.get("score_clues"))
+        if not analysis.get("cards") and not has_images and not has_clips:
             continue
         render_cards_html(analysis, out_path)
-        cards_total = len(_synthesize_image_cards(analysis, analysis.get("cards", [])))
+        cards_total = len(_synthesize_audio_cards(
+            analysis, _synthesize_image_cards(analysis, analysis.get("cards", []))
+        ))
         print(f"  {analysis.get('topic', '?')}: {cards_total} cards -> {out_path}")
         count += 1
     print(f"Built {count} card editor pages" + (f" ({skipped} up-to-date)" if skipped else ""))

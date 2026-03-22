@@ -7,7 +7,7 @@ After analysis, generate a default set of Anki cards from the clues. Store them 
 ### Card format
 
 Each card object has:
-- **`type`**: `"basic"` or `"image"` (or `"cloze"` in the future)
+- **`type`**: MUST be `"basic"` or `"image"` — never the indicator value, never a work type like "Fanfare" or "Symphony"
 - **`indicator`**: the type indicator for the front (e.g., `"Play"`, `"Novel"`, `"Composer"`, `"Painting"`)
 - **`front`**: the full card front text including indicator (e.g., `"Play: the protagonist tricks..."`)
 - **`back`**: the card back text

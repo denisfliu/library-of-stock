@@ -20,6 +20,7 @@ DOCS_DIR = ROOT / 'docs'
 CATEGORY_SUPPLEMENTS = {
     'literature': 'analysis_literature.md',
     'fine arts': 'analysis_vfa.md',
+    'auditory fine arts': 'analysis_afa.md',
     'philosophy': 'analysis_philosophy.md',
     'science': 'analysis_science.md',
 }

@@ -79,6 +79,12 @@ def run_checks() -> list[str]:
         if recorded_cache and not (CACHE_DIR / recorded_cache).exists():
             issues.append(f"[STALE CACHE_FILE] {topic}: '{recorded_cache}' not found")
 
+        # 8. Score clues flagged for ABC notation review
+        for clue in analysis.get("score_clues", []):
+            if clue.get("needs_review") and clue.get("abc"):
+                work = clue.get("work", "?")
+                issues.append(f"[NEEDS_ABC_REVIEW] {topic}: '{work}'")
+
     return issues
 
 
