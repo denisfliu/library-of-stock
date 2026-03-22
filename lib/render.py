@@ -140,7 +140,11 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         abc_json = json.dumps(clip.get("abc", ""))
         mp3 = clip.get("mp3", "")
         review_badge = ' <span class="review-badge" title="ABC needs review">⚠</span>' if clip.get("needs_review") else ""
-        audio_el = (f'<audio controls preload="none" src="{escape(mp3)}" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio>'
+        if mp3:
+            mp3_path = output_path.parent / mp3
+            mtime = int(mp3_path.stat().st_mtime) if mp3_path.exists() else 0
+            mp3_src = f"{escape(mp3)}?v={mtime}"
+        audio_el = (f'<audio controls preload="none" src="{mp3_src}" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio>'
                     if mp3 else
                     '<button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button>'
                     '<button class="stop-abc-btn" onclick="stopAbc(this)">■</button>')

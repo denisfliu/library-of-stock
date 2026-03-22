@@ -53,14 +53,32 @@ def _find_soundfont() -> Path | None:
 
 
 def _abc_to_midi(abc_text: str, midi_path: Path) -> bool:
-    """Convert ABC notation to MIDI using music21. Returns True on success."""
+    """Convert ABC notation to MIDI using music21. Returns True on success.
+
+    Honors the %%MIDI program N directive that music21's ABC parser ignores,
+    by extracting the program number and applying it as a music21 instrument.
+    """
+    import re
     try:
-        from music21 import converter
+        from music21 import converter, instrument
     except ImportError:
         print("    music21 not installed — run: pip install music21")
         return False
     try:
         score = converter.parse(abc_text, format="abc")
+
+        # Apply %%MIDI program directive (ignored by music21's ABC reader)
+        m = re.search(r'%%MIDI program (\d+)', abc_text)
+        if m:
+            program = int(m.group(1))
+            inst = instrument.Instrument()
+            inst.midiProgram = program
+            for part in score.parts:
+                # Remove any existing instrument at offset 0 before inserting
+                for existing in part.getElementsByClass(instrument.Instrument):
+                    part.remove(existing)
+                part.insert(0, inst)
+
         score.write("midi", fp=str(midi_path))
         return midi_path.exists()
     except Exception as e:
