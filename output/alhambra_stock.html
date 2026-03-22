@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Alhambra</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>Alhambra</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="alhambra_questions.html">View source questions</a><a href="alhambra_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Nasrid palace complex in Granada, Spain named for the red clay used to build it (&#x27;the Red Fortress&#x27;). Prime example of Moorish / Islamic architecture featuring the Court of the Lions (twelve marble lion fountain), Court of the Myrtles (rectangular reflecting pool), muqarnas stalactite vaulting, and elaborate geometric tile patterns that inspired M.C. Escher. Adjacent to the Generalife gardens.</div>
+
+        <details class="work" id="court-of-the-lions-patio-de-los-leones" open>
+            <summary class="work-title">Court of the Lions (Patio de los Leones)</summary>
+            <p class="work-desc">The most famous courtyard of the Alhambra, built by the Nasrid dynasty. Features four projecting pavilions facing each other in front of a basin resting on twelve marble lion statues. The basin may have been taken from an earlier palace. Surrounded by arcaded galleries. Adjacent rooms include the Hall of the Two Sisters and the Hall of the Abencerrages, which have exceptionally elaborate Muqarnas domes across from each other. Archways and the Hall of Kings within the Palace of Lions are dominated by elaborate muqarnas. The Court also connects to the Hall of the Ambassadors.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fountain supported by / resting on twelve marble lion statues</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">contains a fountain surrounded by twelve statues of lions | a fountain resting on twelve marble lions in its Court of the Lions | a fountain supported by twelve lions</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four projecting pavilions face each other in front of the basin</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">most famous courtyard has four projecting pavilions facing each other in front of a basin, possibly taken from an earlier palace</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hall of the Two Sisters and Hall of the Abencerrages: two rooms with exceptionally elaborate Muqarnas domes across from each other</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">places the Abcenjarres Hall across a courtyard from the Hall of the Two Sisters | stalactite vaulting in its Hall of the Two Sisters | Hall of the Abencerrages, named after an influential family in its city</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hall of the Boat: hall named after its ceiling&#x27;s resemblance to the hull of a boat; connected by a double arch to the Hall of the Two Sisters</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a hall that is named after its ceiling&#x27;s resemblance to the hull of a boat | connected by a double arch to the Hall of the Boat and is lined with deep niches that have window grilles</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ibn Zamrak composed inscriptions on the fountain comparing it to &#x27;houses of the constellations&#x27; / stars; poem on fountain compares water to &#x27;the lover who in vain / tries to hide his tears from his beloved&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Those inscriptions, which compare this building to houses of the constellations, were composed by Ibn Zamrak | A poem inscribed on a fountain in this complex compares its water to &#x27;the lover who in vain / tries to hide his tears from his beloved&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Debate between Yasser Taabba and Oleg Grabar over whether the inscriptions relate to the Muztallite-Asharite controversy or are generic comparisons to stars</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Yasser Taabba argued with Oleg Grabar over whether inscriptions in this structure have some relation to the Muztallite-Asharite controversy or are just generic comparisons to stars</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="court-of-the-myrtles-patio-de-los-arrayanes" open>
+            <summary class="work-title">Court of the Myrtles (Patio de los Arrayanes)</summary>
+            <p class="work-desc">A courtyard containing a large rectangular reflecting pool (alberca) lined with myrtle trees and shrubs. Arcades line one end of the pool. The Tower of Comares lies to the north of this court. Also known for its sebka arch designs and stucco decorations. The Gate of Justice leads to this patio.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Large rectangular reflecting pool surrounded by myrtle trees / myrtle shrubbery</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">contains a rectangular pool surrounded by myrtle trees | a large reflecting pool surrounded with green shrubbery in its Court of the Myrtles | a courtyard with myrtle bushes lining a central pond</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lies to the south of the Tower of Comares; has an arcade at one end</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">lies to the south of the Tower of Comares | This building has an arcade at one end of a rectangular reflecting pool in the Court of the Myrtles</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gate of Justice in the horseshoe arch style leads to patio of myrtles surrounded by arcades with stucco sebka designs</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gate of Justice is in the region&#x27;s style of horseshoe arch and leads to a patio of myrtles surrounded by arcades with stucco sebka designs</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hall of the Ambassadors: large hall within the Comares complex; courtyard has a Hall of the Ambassadors</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a complex in this country contains a courtyard with myrtle bushes lining a central pond, as well as a large Hall of the Ambassadors</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="muqarnas-and-geometric-decoration" open>
+            <summary class="work-title">Muqarnas and Geometric Decoration</summary>
+            <p class="work-desc">The Alhambra contains the most intricately patterned muqarnas (honeycomb-shaped stalactite vaulting) in Islamic architecture. These consist of small cells called alveoles and are used to decorate domes and mihrabs. The decorations uniquely use all seventeen wallpaper groups; the tessellated geometric tile patterns inspired M.C. Escher, who visited in 1936 and copied the tessellations. Niches in the complex once held large blue-and-gold vases unique in the region for being purely decorative. Owen Jones made chromolithographs of the wall decorations that influenced his Crystal Palace interiors.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Muqarnas (stalactite/honeycomb vaulting): characteristic feature of the Alhambra; consist of alveoles</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Halls with stalactite-work vaults called muqarnas surround a space in this complex | Stalactite vaults known as muqarnas can be found in this complex&#x27;s Hall of the Abencerrages | The Alhambra contains the most intricately-patterned of these honeycomb-like structures</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">M.C. Escher inspired by / copied tessellated tile patterns here (1936 visit)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This complex&#x27;s decorations uniquely use all seventeen wallpaper groups, whose tessellations greatly inspired M.C. Escher | M.C. Escher became interested in tessellation after viewing tiles at this complex | During a 1936 visit, M.C. Escher copied this building&#x27;s tessellations</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Decorations uniquely use all seventeen wallpaper groups</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This complex&#x27;s decorations uniquely use all seventeen wallpaper groups</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Owen Jones made innovative chromolithographs of this complex that influenced his interiors for the Crystal Palace</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Owen Jones made innovative chromolithographs of this complex that influenced his interiors for the Crystal Palace | Jones&#x27;s sketches of the elaborate wall decorations of this palace influenced the architecture of Anglo-American smoking rooms</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Niches once held large blue-and-gold vases unique in the region for being only decorative</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This complex&#x27;s niches once held large blue-and-gold vases unique in the region for being only decorative</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-architectural-identity" open>
+            <summary class="work-title">General / Architectural Identity</summary>
+            <p class="work-desc">The Alhambra is a Nasrid palace complex in Granada, Spain. Its name derives from the Arabic for 'the Red One' (al-Hamra), referring to the red clay used to build it. It was built for the Muslim Nasrid rulers of al-Andalus and overlooks the city of Granada. After the Reconquista, it inspired the fusion Mudejar style. The Duke of Wellington planted English elms in the complex during the Peninsular War. Charles V later built a palace within it. Marie Menken's 1961 experimental short film was shot in the complex. Washington Irving lived in and wrote Tales from the Alhambra (1832) here.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Named for red clay used to build it / &#x27;the Red Fortress&#x27; / &#x27;the Red One&#x27; (al-Hamra)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">named after the red clay used to build it | whose name means &#x27;The Red Fortress&#x27; | name this Islamic palace in Granada</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Built by / originally built by the Nasrid Dynasty for the Muslim rulers of al-Andalus</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">built by the Nasrid Dynasty | Built for the Muslim rulers of Al-andalus | palace of the Nasrid rulers of Granada</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired Mudejar art / architecture after the Reconquista (fusion of Islamic and Christian styles)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">like the Royal Alcazar inspired the fusion of Mudejar art after the Reconquista | This building in Grenada is a masterpiece of Islamic interior design</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Connected to / adjacent to the Generalife gardens</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">connected to the gardens of the Generalife | adjacent to this sprawling &#x27;red fortress&#x27; | once connected to the Generalife palace</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Duke of Wellington planted English elms in the complex during the Peninsular War</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Duke of Wellington planted English elms in this palace complex during the Peninsular War</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Charles V built a palace within the Alhambra (Moorish laborers were expelled during its over-100-year construction)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Moorish laborers were expelled during the over-100-year-long construction of Charles V&#x27;s palace within this other building</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Washington Irving wrote Tales from the Alhambra (1832) after living in the building; includes &#x27;The Legend of the Arabian Astrologer&#x27; and &#x27;The Legend of the Three Beautiful Princesses&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this building that titles an 1832 collection of travel essays and historical short stories | An American author lived in this building when he recorded the stories &#x27;The Legend of the Arabian Astrologer&#x27; and &#x27;The Legend of the Three Beautiful Princesses&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marie Menken dedicated a 1961 experimental short film shot in this complex to Kenneth Anger</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Marie Menken dedicated a 1961 experimental short film shot in this complex to Kenneth Anger</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="recuerdos-de-la-alhambra-francisco-t-rrega" open>
+            <summary class="work-title">Recuerdos de la Alhambra (Francisco Tárrega)</summary>
+            <p class="work-desc">Guitar tremolo etude by Francisco Tárrega inspired by a visit to Granada. The 'i,' 'm,' and 'a' fingers play a melody entirely tremolo while the thumb plays a counter-melody. Often performed by classical guitarists as a virtuoso showpiece.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Francisco Tárrega&#x27;s tremolo guitar etude &#x27;Recuerdos de la Alhambra&#x27; (Memories of the Alhambra)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Francisco Tarrega&#x27;s challenging &#x27;tremolo etude&#x27; for guitar is titled Recuerdos de, or Memories of, this location | Name this virtuoso guitar piece by Francisco Tarrega | Francisco Tarrega included a difficult tremolo passage for this instrument in his Recuerdos de la Alhambra</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;i,&#x27; &#x27;m,&#x27; and &#x27;a&#x27; fingers play a tremolo melody while the thumb plays a counter-melody</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the &#x27;i,&#x27; &#x27;m,&#x27; and &#x27;a&#x27; fingers play a melody entirely tremolo as the thumb plays a counter-melody</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>The Alhambra is a Nasrid palace complex in Granada, Spain, whose name derives from the Arabic al-Hamra, meaning &#x27;the Red One,&#x27; a reference to the red clay used to construct it. Built for the Muslim rulers of al-Andalus, it stands as the most celebrated monument of Moorish architecture in Western Europe and is a prime example of Mudejar art, which fused Islamic and Christian styles after the Reconquista.</p><p>The complex&#x27;s most famous feature is the Court of the Lions (Patio de los Leones), a courtyard whose central basin rests on twelve marble lion statues. The court features four projecting pavilions facing each other and is connected to the Hall of the Two Sisters and the Hall of the Abencerrages — two rooms with exceptionally elaborate Muqarnas domes positioned across from each other. The Hall of the Boat, named for its ceiling&#x27;s resemblance to the hull of a ship, connects via a double arch to the Hall of the Two Sisters. Inscriptions on the court&#x27;s fountain, composed by the poet Ibn Zamrak, compare the building to &#x27;houses of the constellations&#x27;; scholars Yasser Taabba and Oleg Grabar have debated whether these texts relate to the Muztallite-Asharite theological controversy or are merely generic stellar comparisons. Another poem inscribed on a fountain compares its water to &#x27;the lover who in vain / tries to hide his tears from his beloved.&#x27;</p><p>The Court of the Myrtles (Patio de los Arrayanes) features a large rectangular reflecting pool framed by myrtle shrubs and arcades, lying to the south of the Tower of Comares. The Gate of Justice, built in the regional horseshoe arch style, leads to a patio surrounded by arcades with stucco sebka designs. A large Hall of the Ambassadors occupies the Comares Tower.</p><p>The Alhambra&#x27;s muqarnas — honeycomb-shaped stalactite vaults composed of small cells called alveoles — are considered the most intricately patterned in Islamic architecture. The geometric tile decorations uniquely use all seventeen wallpaper groups. During a 1936 visit, M.C. Escher copied these tessellations, an encounter that catalyzed his lifelong obsession with the regular division of the plane, visible in works such as Verbum and his series of tessellated knights and birds. Owen Jones made innovative chromolithographs of the Alhambra&#x27;s wall decorations that influenced his interiors for the Crystal Palace; Jones&#x27;s sketches also influenced the design of Anglo-American smoking rooms. The complex&#x27;s niches once held large blue-and-gold vases unique in the region for being purely decorative.</p><p>The Alhambra is connected to the Generalife, the adjacent Nasrid summer palace known for its jasmine-scented gardens and water courtyards. During the Peninsular War, the Duke of Wellington planted English elms within the palace complex. Later, Charles V commissioned a Renaissance palace within the Alhambra, during whose protracted construction Moorish laborers were expelled. Washington Irving lived in the building while compiling his Tales from the Alhambra (1832), an influential collection of travel essays and historical legends including &#x27;The Legend of the Arabian Astrologer&#x27; and &#x27;The Legend of the Three Beautiful Princesses.&#x27; The filmmaker Marie Menken shot a 1961 experimental short film in the complex dedicated to Kenneth Anger.</p><p>The Alhambra also inspired a celebrated guitar tremolo etude — Recuerdos de la Alhambra (Memories of the Alhambra) — by Francisco Tárrega, in which the &#x27;i,&#x27; &#x27;m,&#x27; and &#x27;a&#x27; fingers play a continuous tremolo melody while the thumb provides a counter-melody. The first movement of Manuel de Falla&#x27;s Nights in the Gardens of Spain and Joaquin Rodrigo&#x27;s Junto al Generalife were both inspired by the adjacent palace. Claude Debussy&#x27;s &#x27;Evening in Granada&#x27; (from Estampes) and the piano duet Lindaraja were also reportedly influenced by the Alhambra.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Alhambra" target="_blank">Wikipedia: Alhambra</a></li><li><a href="https://en.wikipedia.org/wiki/Court_of_the_Lions,_Alhambra" target="_blank">Wikipedia: Court of the Lions</a></li><li><a href="https://en.wikipedia.org/wiki/Muqarnas" target="_blank">Wikipedia: Muqarnas</a></li><li><a href="https://en.wikipedia.org/wiki/Recuerdos_de_la_Alhambra" target="_blank">Wikipedia: Recuerdos de la Alhambra</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Generalife</li><li>M.C. Escher</li><li>Francisco Tarrega</li><li>Mudejar architecture</li><li>Manuel de Falla</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'alhambra' });</script>
+</body>
+</html>

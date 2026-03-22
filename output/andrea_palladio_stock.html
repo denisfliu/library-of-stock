@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Andrea Palladio</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>Andrea Palladio</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="andrea_palladio_questions.html">View source questions</a><a href="andrea_palladio_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Venetian Renaissance architect (1508–1580), born Andrea di Pietro della Gondola, active in and around Vicenza. Best known for the Villa La Rotonda, the Teatro Olimpico, San Giorgio Maggiore, and the treatise The Four Books of Architecture. His Palladian style profoundly influenced Thomas Jefferson, <span class="crossref-inline-red" title="No page yet: Inigo Jones">Inigo Jones</span>, and English Palladianism.</div>
+
+        <details class="work" id="villa-la-rotonda-villa-almerico-capra" open>
+            <summary class="work-title">Villa La Rotonda (Villa Almerico-Capra)</summary>
+            <p class="work-desc">Country villa built for Paolo Almerico outside Vicenza, with four identical temple porticos facing each of the cardinal directions and a large circular domed central hall. The design was inspired by the Pantheon in Rome. Thomas Jefferson used it as the primary model for Monticello; it also inspired Chiswick House and many other Palladian villas. The rooms all receive sunlight because the building is oriented 45 degrees from the cardinal directions. A service corridor by Vincenzo Scamozzi is adjacent. <a href="https://en.wikipedia.org/wiki/Villa_La_Rotonda" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four identical temple porticos facing each of the four cardinal directions</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A country house designed by this man has porticos facing each of the four cardinal directions. | This Palladian Villa built for Paolo Almerico has a temple pediment for each of its four facades. | name this temple-like house with four iconic porticos, designed by Andrea Palladio</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Thomas Jefferson based Monticello on this building</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Thomas Jefferson based Monticello on this building. | An inspiration for Monticello, this building was built for Paolo Almerico | Thomas Jefferson&#x27;s design for Monticello was inspired by this architect&#x27;s Villa La Rotonda.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Central circular domed hall; floor plan uses a circle inside two larger squares; design inspired by the Roman Pantheon</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Palladio&#x27;s Villa Capra is also known as La Rotonda for its large central hall, which is covered by a dome | Palladio&#x27;s design for the Villa Rotunda was inspired by the rotunda from this former temple in Rome</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rooms all receive sunlight because the building is oriented 45 degrees from the cardinal directions</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A service corridor designed by Vincenzo Scamozzi is adjacent to this building, whose rooms all receive sunlight because it is oriented at 45 degrees from the cardinal directions.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Portico of Octavia inspired its striking outer features; built for Paolo Almerico</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Portico of Octavia inspired the striking outer features of this building, which follows the principles of the Four Books of Architecture.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired Lord Burlington&#x27;s Chiswick House in England; also inspired other Palladian English country houses</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Villa Rotonda inspired this neo-Palladian English estate built by Lord Burlington. | Chiswick House is an example of a style of Palladian architecture named for this country.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-four-books-of-architecture-i-quattro-libri-dell-architettura" open>
+            <summary class="work-title">The Four Books of Architecture (I Quattro Libri dell&#x27;Architettura)</summary>
+            <p class="work-desc">Palladio's 1570 architectural treatise divided into four books covering the five classical orders, city planning, and descriptions of Roman temples. Thomas Jefferson called it his 'Bible.' It popularized Palladian style in England after <span class="crossref-inline-red" title="No page yet: Inigo Jones">Inigo Jones</span>'s visit to Italy with the Earl of Arundel. The treatise ends with detailed descriptions of 26 Roman temples. <a href="https://en.wikipedia.org/wiki/I_quattro_libri_dell%27architettura" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">1570 architectural treatise; Thomas Jefferson called it his &#x27;Bible&#x27;; covers the five classical orders, city planning, and Roman temples</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Venetian Renaissance architect who wrote the Four Books on Architecture | A book about this discipline, which Thomas Jefferson referred to as &#x27;the Bible,&#x27; heavily inspired Monticello and is by Andrea Palladio. | Thomas Jefferson heavily plagiarized this author of the Four Books of Architecture in buildings such as Monticello.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Palladio also illustrated Daniele Barbaro&#x27;s commentary on Vitruvius; called &#x27;architect of Vicenza&#x27; in Barbaro&#x27;s introduction</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Palladio is called the &#x27;architect of Vicenza&#x27; in Daniele Barbaro&#x27;s introduction to this man&#x27;s writings, which Palladio illustrated. | The Villa Foscari was designed by this Italian architect of the Villa Barbaro whose classically-derived style influenced Thomas Jefferson.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with detailed descriptions of 26 Roman temples</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This treatise ends with detailed descriptions of 26 Roman temples.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Colen Campbell&#x27;s preface to &#x27;Vitruvius Britannicus&#x27; praises Palladio as &#x27;the best of the moderns&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Colen Campbell&#x27;s preface to a book named [for Vitruvius] Brittanicus praises Andrea Palladio as &#x27;the best of the moderns&#x27; and laments Italy&#x27;s embrace of Baroque architecture.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="teatro-olimpico" open>
+            <summary class="work-title">Teatro Olimpico</summary>
+            <p class="work-desc">Olympic Theater in Vicenza, Palladio's final commission. After his death, student Vincenzo Scamozzi completed it and designed a trompe l'oeil stage set depicting streets receding from the stage. The theater is still used today and was completed in 1584. <a href="https://en.wikipedia.org/wiki/Teatro_Olimpico" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">After Palladio&#x27;s death, Vincenzo Scamozzi completed it and designed a trompe l&#x27;oeil stage set depicting streets receding upstage</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After his death, a theater designed by this man was given a trompe-l&#x27;œil set designed to look like a long street heading upstage. | A theater completed by Vincenzo Scamozzi, whose scenery uses trompe l&#x27;oeil to depict streets receding from its stage. | This man&#x27;s student Vincenzo Scamozzi designed the trompe-l&#x27;oeil stage scenery for his final commission, the Teatro Olimpico.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Located in Vicenza; Palladio met his mentor Gian Giorgio Trissino in Vicenza</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This designer of the Olympic Theater adapted Roman temple designs for his many villas in and around Vicenza.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="san-giorgio-maggiore" open>
+            <summary class="work-title">San Giorgio Maggiore</summary>
+            <p class="work-desc">Church in Venice on its own island; its white marble facade was designed to be seen from across the water. Palladio used a four-column elevated classical temple facade superimposed over a second, lower temple facade. Tintoretto's diagonal Last Supper hangs inside. Vincenzo Scamozzi completed the facade after Palladio's death. <a href="https://en.wikipedia.org/wiki/San_Giorgio_Maggiore,_Venice" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">White marble facade: a four-column elevated classical temple facade superimposed over a second, lower temple facade; designed to be seen from across the water</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A church designed by this man uses white marble for a four-column, elevated classical temple facade that&#x27;s superimposed over a second, lower temple facade. | Identify this building, whose white, temple-like facade was designed to be seen from the city across a gap of water.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tintoretto&#x27;s diagonal Last Supper is located inside</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Tintoretto&#x27;s diagonal Last Supper is located in this building.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Vincenzo Scamozzi completed the facade after Palladio&#x27;s death; Palladio&#x27;s planned oculus over the portal was not realized</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The facade of this building was completed by Vincenzo Scamozzi, working on a design from another architect. | Palladio&#x27;s plan for an oculus over the portal of the church of San Giorgio Maggiore in Venice was not realized by the men who completed the building after his death.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Witold Rybczynski wrote a monograph on Palladio titled The Perfect House</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Canadian-American architect wrote a monograph about Palladio titled The Perfect House.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="villa-foscari-la-malcontenta" open>
+            <summary class="work-title">Villa Foscari (La Malcontenta)</summary>
+            <p class="work-desc">White stone mansion on the Brenta Riviera with a raised front portico accessible through twin side stone stairways. Also called La Malcontenta due to the legend that the owner's wife was locked there when she refused to sleep with him. Located a few miles west of Venice. <a href="https://en.wikipedia.org/wiki/Villa_Foscari" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">White stone mansion on the Brenta Riviera; raised front portico accessible through twin side stone stairways; nicknamed &#x27;La Malcontenta&#x27; because the owner&#x27;s wife was allegedly locked there</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This white stone mansion on the Brenta Riviera has a raised front portico that can be accessed through twin side stone stairways. | Identify this building that is also known as La Malcontenta, due to the legend that the spouse of its owner was locked up there when she refused to sleep with him.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="villa-barbaro" open>
+            <summary class="work-title">Villa Barbaro</summary>
+            <p class="work-desc">Villa designed for the scholar Daniele Barbaro (who wrote a commentary on Vitruvius that Palladio illustrated). Veronese painted frescoes for the villa. Features two symmetrical wings leading out to pavilions with sundials beneath the pediments. <a href="https://en.wikipedia.org/wiki/Villa_Barbaro" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Designed for Daniele Barbaro (Palladio&#x27;s patron and Vitruvius commentator); Veronese designed frescoes for it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Veronese designed frescoes for a villa built by this architect for Daniele Barbaro. | The Villa Foscari was designed by this Italian architect of the Villa Barbaro</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two symmetrical wings lead out to pavilions with sundials beneath the pediments of their facades</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A house designed by this man includes two symmetrical wings leading out to pavilions that sport sundials underneath the pediments of their facades.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Born Andrea di Pietro della Gondola in 1508. Nickname 'Palladio' given by patron Gian Giorgio Trissino, after Pallas Athena. Active primarily in and around Vicenza, Italy. He adapted Roman temple designs for Renaissance villas, adapting Vitruvian principles for his buildings. He also designed a triumphal arch for Henry III's visit to Venice in 1574. Palladian style was introduced to England by <span class="crossref-inline-red" title="No page yet: Inigo Jones">Inigo Jones</span> and later championed by Colen Campbell and Lord Burlington.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nickname &#x27;Palladio&#x27; given by patron Gian Giorgio Trissino (named after Pallas Athena, Greek goddess of wisdom)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of his patron&#x27;s, the scholar Giangiorgio Trissino nicknamed him for the Greek Goddess of Wisdom.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adapted Roman temple designs for villas in and around Vicenza; Vicenza designated a UNESCO World Heritage Site for Palladio&#x27;s buildings</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This designer of the Olympic Theater adapted Roman temple designs for his many villas in and around Vicenza. | Many of Palladio&#x27;s buildings, such as the Villa La Rotonda and the Santa Maria Nova, can be found in Vicenza, which was turned into a UNESCO World Heritage site to commemorate Palladio&#x27;s works.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inigo Jones introduced Palladian style to England; Banqueting House at Whitehall is a key example</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Inigo Jones helped bring Palladianism to this country and designed its Banqueting House at Whitehall. | This architect deviated from the mathematical constraints of Palladio in a house he designed for Anne of Denmark, the first consciously classical building in Britain.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commissioned to create a triumphal arch for Henry III&#x27;s visit to Venice in 1574</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Andrea Palladio was commissioned to create a work of this type to commemorate a visit Henry III made to Venice in 1574.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Granary above main bedrooms common to his buildings, reflecting the Venetian custom of storing goods in attics rather than marshy basements</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Many of this man&#x27;s buildings had a granary above the main bedrooms owing to the Venetian custom of storing goods in attics rather than marshy basements.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Palazzo Chiericati uses Doric columns on the ground floor and a different, more ornamented order on the second</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Palladio used these features [Doric columns] in the ground-floor of his Palazzo Chiericati while he used a different, more ornamented feature on the second.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Andrea Palladio (1508–1580), born Andrea di Pietro della Gondola, was a Venetian Renaissance architect active primarily in and around Vicenza in northern Italy. His nickname &#x27;Palladio&#x27; was given to him by his patron, the scholar Gian Giorgio Trissino, after Pallas Athena. He adapted Roman temple designs for his many Renaissance villas and churches, synthesizing Vitruvian principles with practical innovation.</p><p>Palladio&#x27;s most famous work is the Villa La Rotonda (also called Villa Almerico-Capra or Villa Capra), a country villa built for Paolo Almerico outside Vicenza. The villa features four identical temple porticos, one on each of the four cardinal directions, and a large central circular hall covered by a dome. The design was inspired by the Pantheon in Rome. Thomas Jefferson modeled Monticello directly on it, and Lord Burlington used it as the template for Chiswick House in England, among many other Palladian derivatives. The building&#x27;s rooms all receive sunlight because the structure is oriented 45 degrees from the cardinal directions.</p><p>His 1570 treatise The Four Books of Architecture (I Quattro Libri dell&#x27;Architettura) became one of the most influential architectural texts ever written. Jefferson called it his &#x27;Bible.&#x27; The work covers the five classical orders, city planning, and ends with detailed descriptions of 26 Roman temples. Palladio also illustrated Daniele Barbaro&#x27;s commentary on Vitruvius, and is called &#x27;the architect of Vicenza&#x27; in Barbaro&#x27;s introduction. Colen Campbell&#x27;s &#x27;Vitruvius Britannicus&#x27; praised Palladio as &#x27;the best of the moderns.&#x27;</p><p>His final commission was the Teatro Olimpico in Vicenza. After Palladio died, his student Vincenzo Scamozzi completed the theater and designed its famous trompe l&#x27;oeil stage set depicting streets receding from the stage. Scamozzi also completed the facade of San Giorgio Maggiore in Venice, another major Palladio project. San Giorgio Maggiore features a striking white marble facade—a four-column elevated classical temple facade superimposed over a lower, wider facade—designed to be seen from across the water. Inside hangs Tintoretto&#x27;s diagonal Last Supper. Palladio&#x27;s original plan for an oculus over the portal was never realized.</p><p>Other major works include the Villa Foscari (La Malcontenta), a white stone mansion on the Brenta Riviera with a raised front portico accessible by twin side stairways, nicknamed for the legend of an owner&#x27;s wife locked inside; and the Villa Barbaro, built for Daniele Barbaro and decorated with frescoes by Veronese. Palladio&#x27;s Palladian style was brought to England by <span class="crossref-inline-red" title="No page yet: Inigo Jones">Inigo Jones</span>, whose Banqueting House at Whitehall was the first consciously classical building in Britain.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Andrea_Palladio" target="_blank">Andrea Palladio - Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Villa_La_Rotonda" target="_blank">Villa La Rotonda - Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/I_quattro_libri_dell%27architettura" target="_blank">The Four Books of Architecture - Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Teatro_Olimpico" target="_blank">Teatro Olimpico - Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/San_Giorgio_Maggiore,_Venice" target="_blank">San Giorgio Maggiore - Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Villa_Foscari" target="_blank">Villa Foscari - Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Villa La Rotonda</li><li>Thomas Jefferson (architecture)</li><li>Inigo Jones</li><li>San Giorgio Maggiore</li><li>Vitruvius</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'andrea_palladio' });</script>
+</body>
+</html>
