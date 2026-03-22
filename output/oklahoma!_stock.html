@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Oklahoma!</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>Oklahoma!</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html">&larr; Home</a> &middot; <a href="oklahoma!_questions.html">View source questions</a> · <a href="oklahoma!_cards.html">Make cards</a></div><div class="nav-search"></div></div>
+<div class="summary">The first collaboration between <span class="crossref-inline-red" title="No page yet: Richard Rodgers">Richard Rodgers</span> and <span class="crossref-inline-red" title="No page yet: Oscar Hammerstein II">Oscar Hammerstein II</span> (1943). A landmark musical about cowboy Curly courting Laurey in the Oklahoma territory, while the farmhand Jud Fry also vies for her affections. Famous for <span class="crossref-inline-red" title="No page yet: Agnes de Mille">Agnes de Mille</span>&#x27;s dream ballet, the songs &#x27;Oh, What a Beautiful Mornin&#x27;&#x27; and &#x27;The Surrey with the Fringe on Top,&#x27; and its 2019 Daniel Fish revival. Credited with popularizing the dream ballet in Broadway musicals. Orchestrated by Robert Russell Bennett.</div>
+
+        <details class="work" id="dream-ballet-laurey-makes-up-her-mind" open>
+            <summary class="work-title">Dream Ballet (&quot;Laurey Makes Up Her Mind&quot;)</summary>
+            <p class="work-desc"><span class="crossref-inline-red" title="No page yet: Agnes de Mille">Agnes de Mille</span>'s choreographed dream ballet sequence, in which Laurey drinks the Elixir of Egypt and dreams about choosing between Jud and Curly. Begins after the song 'Out of My Dreams.' This sequence is approximately fifteen minutes long and is considered one of the most famous features of the musical. Oklahoma! is credited with popularizing dream ballets in Broadway, though it did not invent them. In the 2019 Daniel Fish revival, John Heginbotham choreographed the dream sequence with performers dancing barefoot in a dark setting. <a href="https://en.wikipedia.org/wiki/Oklahoma!" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Agnes de Mille choreographed the dream ballet in which Laurey &#x27;makes up her mind&#x27; about Jud and Curly</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Agnes de Mille choreographed this musical&#x27;s &#x27;dream ballet&#x27; in which Laurey &#x27;makes up her mind&#x27; about Jud and Curly | one of these sequences convinces Laurey that she should marry Curly over the irritable farmhand Jud | a songwriting duo invited this dancer to choreograph a &#x27;dream ballet&#x27; in which Laurey &#x27;Makes Up Her Mind&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Oklahoma! popularized dream ballets in Broadway (but did not invent them)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the popularization of dream ballets in Broadway is credited to this Rodgers and Hammerstein musical | atmospheric sections focused on dancing are known as this sort of &#x27;ballet,&#x27; popularized by Agnes de Mille&#x27;s choreography for Oklahoma!</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The dream ballet is approximately fifteen minutes long</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A fifteen-minute &#x27;dream ballet&#x27; in which Laurey struggles to choose between Jud and Curly</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Begins after Laurey drinks the Elixir of Egypt; features the song &#x27;Out of My Dreams&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A long ballet dream sequence in this musical begins after a character drinks the Elixir of Egypt and features the song &#x27;Out of My Dreams&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the 2019 revival, performers dance barefoot during the dark dream sequence (choreography by John Heginbotham)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In John Heginbotham&#x27;s choreography for the 2019 revival of Oklahoma!, performers dance in this fashion during the dark dream sequence</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-surrey-with-the-fringe-on-top" open>
+            <summary class="work-title">&quot;The Surrey with the Fringe on Top&quot;</summary>
+            <p class="work-desc">A song in which Curly describes the surrey he will take Laurey out in. Contains the famous lyric 'Chicks and ducks and geese better scurry.' The melody was based on the repetition of one note with a 'clip-clop' rhythm, according to Bob Craig. Adapted into a jazz standard by Ahmad Jamal, which inspired a popular Miles Davis recording (on the album Steamin').</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Chicks and ducks and geese better scurry&#x27; before the imagined surrey with the fringe on top</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">one of the female lead&#x27;s love interests sings &#x27;chicks and ducks and geese better scurry&#x27; before the imagined &#x27;surrey with the fringe on top&#x27; | &#x27;Chicks and ducks and geese better scurry&#x27; when Curly takes Laurey to go out in</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lyrics include &#x27;the wheels are yeller, the upholstery&#x27;s brown, the dashboard&#x27;s genuine leather&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">one character sings &#x27;the wheels are yeller, the upholstery&#x27;s brown, the dashboard&#x27;s genuine leather,&#x27; before a character asks if one of this object&#x27;s features is made of silk</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Melody was based on repetition of one note with a &#x27;clip-clop&#x27; rhythm (per Bob Craig)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bob Craig remarked that the writer of a song about this object was inspired to employ &#x27;clip-clop&#x27; while writing a melody that &#x27;was based on the repetition of one note&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adapted into a jazz standard by Ahmad Jamal, inspiring a Miles Davis recording on the album Steamin&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Miles Davis&#x27;s album Steamin&#x27; opens with a cover of a song from this musical | adapted into a jazz standard by Ahmal Jamal, who inspired a popular Miles Davis recording</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the 2019 revival, one character sings about it while playing acoustic guitar with a slowed-down section (&#x27;don&#x27;t you wish it would go on forever?&#x27;)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">one character sings about this object while playing an acoustic guitar; that performance includes a slowed down section where he sings &#x27;don&#x27;t you wish it would go on forever?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Curly sings it to describe the &#x27;slickest gig you&#x27;ll ever see&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character describes &#x27;the slickest gig you&#x27;ll ever see&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="oh-what-a-beautiful-mornin" open>
+            <summary class="work-title">&quot;Oh, What a Beautiful Mornin&#x27;&quot;</summary>
+            <p class="work-desc">The opening number of Oklahoma!, in which Curly proclaims 'I've got a beautiful feeling / everything's going my way.' Its melody features prominently in the dream ballet. The musical both opens and closes with this song.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opening number in which Curly proclaims &#x27;I&#x27;ve got a beautiful feeling / everything&#x27;s going my way&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Curley energetically proclaims that he&#x27;s &#x27;got a beautiful feeling / everything&#x27;s going [his] way&#x27; | Curly sings &#x27;Oh, What a Beautiful Mornin&#x27;&#x27; in this show</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The melody features prominently in the dream ballet</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The melody of this song features prominently in the musical&#x27;s &#x27;dream ballet&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The musical opens and closes with this song</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This musical opens and closes with the song &#x27;Oh What a Beautiful Mornin&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="2019-daniel-fish-revival" open>
+            <summary class="work-title">2019 Daniel Fish Revival</summary>
+            <p class="work-desc">Daniel Fish directed the 2019 Broadway revival, which served cornbread and chili to audience members during intermission. Ali Stroker (also spelled Stoker in some sources), who is paralyzed from the waist down and uses a wheelchair, played Ado Annie and became the first wheelchair-using performer to win a Tony. John Heginbotham choreographed the dream sequence with performers dancing barefoot. Aunt Eller makes cornbread instead of churning butter in the opening.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Daniel Fish&#x27;s 2019 revival served cornbread and chili to audience members during intermission</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Daniel Fish&#x27;s 2019 Broadway revival of this musical served cornbread and chili to audience members during intermission</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ali Stroker played Ado Annie; first wheelchair-using performer to win a Tony</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the promiscuous Ado Annie was played by Ali Stoker, a performer with this condition. Stoker subsequently became the first person with this condition to win a Tony</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aunt Eller makes cornbread instead of churning butter in the opening of the 2019 revival</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Aunt Eller makes a baked good named after this food instead of churning butter in the opening of the 2019 revival of Oklahoma!</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-songs-and-plot-elements" open>
+            <summary class="work-title">Other Songs and Plot Elements</summary>
+            <p class="work-desc">Other notable songs include 'Lonely Room' (Jud's song about winning a bride, imagining 'long tangled hair'), 'The Farmer and the Cowboy' (which features a square dance), and 'It's a Scandal! It's a Outrage!' The show features a scene where women say 'all right boys, revolve!' after men shout about starting a revolution upon hearing about a marriage forced at gunpoint. Laurey agrees to go to the dance with Jud Fry before Curly buys the surrey.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Lonely Room&#x27; — Jud imagines &#x27;long tangled hair&#x27; which &#x27;falls across my face&#x27; while vowing to win a bride</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in this musical imagines &#x27;long tangled hair&#x27; which &#x27;falls across my face&#x27; in a song in which he vows to win a bride, &#x27;Lonely Room&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Farmer and the Cowboy&#x27; features a square dance</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A square dance occurs in this musical during the song &#x27;The Farmer and the Cowboy&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Women say &#x27;all right boys, revolve!&#x27; after men shout about starting a revolution upon hearing about a forced-at-gunpoint marriage</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a group of women say &#x27;all right boys. Revolve!&#x27; after men shout &#x27;we gotta start a revolution!&#x27; when they hear a story about a marriage forced at gunpoint</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laurey agrees to go to the dance with Jud Fry before Curly buys the surrey</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A woman in this musical agrees to go to the dance with Jud Fry before the male lead buys a &#x27;Surrey with the Fringe on Top&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Described as &#x27;where the wind comes sweepin&#x27; down the plain&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">named for a location &#x27;where the wind comes sweepin&#x27; down the plain&#x27; | describes the wind &#x27;sweepin&#x27; down the plain&#x27; in the title state</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-production" open>
+            <summary class="work-title">General / Production</summary>
+            <p class="work-desc">The first collaboration between <span class="crossref-inline-red" title="No page yet: Richard Rodgers">Richard Rodgers</span> and <span class="crossref-inline-red" title="No page yet: Oscar Hammerstein II">Oscar Hammerstein II</span>. Rodgers' first musical after switching lyricists from <span class="crossref-inline-red" title="No page yet: Lorenz Hart">Lorenz Hart</span> to Hammerstein. Choreographed by <span class="crossref-inline-red" title="No page yet: Agnes de Mille">Agnes de Mille</span>. Originally orchestrated by Robert Russell Bennett; John Wilson's 2023 recording was the first complete recording of this orchestration. Rodgers and Hammerstein were inspired to hire de Mille after watching her receive 22 curtain calls at the premiere of Rodeo.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">By Rodgers and Hammerstein; first collaboration after Rodgers switched from Lorenz Hart</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Rodgers and Hammerstein musical titled after a US state | Rodgers&#x27; first musical after switching lyricists from Hart to Hammerstein was this musical</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Choreographed by Agnes de Mille</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Agnes de Mille choreographed this musical&#x27;s &#x27;dream ballet&#x27; | this Rodgers and Hammerstein musical choreographed by Agnes de Mille</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Original orchestration by Robert Russell Bennett; John Wilson&#x27;s 2023 recording was the first complete recording of it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">John Wilson&#x27;s 2023 recording of this musical was the first complete recording of the original orchestration by Robert Russell Bennett</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rodgers and Hammerstein hired de Mille after watching her receive 22 curtain calls at Rodeo&#x27;s premiere</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After watching this choreographer receive 22 curtain calls at a ballet&#x27;s premiere, a songwriting duo invited this dancer to choreograph a &#x27;dream ballet&#x27; | Rodgers and Hammerstein were allegedly so impressed by the choreography of this work that they invited the choreographer to work on Oklahoma!</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">About Curly courting Laurey while the farmhand Jud also pursues her</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Rodgers and Hammerstein musical about Curley&#x27;s attempts to woo Laurey, much to the chagrin of the incel farmhand Jud</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Oklahoma! is the first collaboration between composer <span class="crossref-inline-red" title="No page yet: Richard Rodgers">Richard Rodgers</span> and lyricist <span class="crossref-inline-red" title="No page yet: Oscar Hammerstein II">Oscar Hammerstein II</span>, premiering in 1943. It was Rodgers&#x27; first musical after switching from his previous lyricist <span class="crossref-inline-red" title="No page yet: Lorenz Hart">Lorenz Hart</span>. The show tells the story of the cowboy Curly courting Laurey in the Oklahoma territory, while the farmhand Jud Fry also vies for her affections. The title state is described as a place &#x27;where the wind comes sweepin&#x27; down the plain.&#x27;</p><p>The musical is most famous for its dream ballet, choreographed by <span class="crossref-inline-red" title="No page yet: Agnes de Mille">Agnes de Mille</span>, in which Laurey &#x27;makes up her mind&#x27; about Jud and Curly. This fifteen-minute sequence begins after Laurey drinks the Elixir of Egypt and features the song &#x27;Out of My Dreams.&#x27; Oklahoma! is widely credited with popularizing the dream ballet in Broadway musicals, though it did not invent the form. Rodgers and Hammerstein hired de Mille after watching her receive 22 curtain calls at the premiere of her ballet Rodeo (scored by <span class="crossref-inline-red" title="No page yet: Aaron Copland">Aaron Copland</span>). De Mille also choreographed dream ballets for their subsequent musical Carousel.</p><p>The musical&#x27;s signature songs include &#x27;Oh, What a Beautiful Mornin&#x27;,&#x27; the opening number in which Curly proclaims &#x27;I&#x27;ve got a beautiful feeling / everything&#x27;s going my way&#x27; (the musical both opens and closes with this song, and its melody features prominently in the dream ballet); &#x27;The Surrey with the Fringe on Top,&#x27; in which Curly sings &#x27;chicks and ducks and geese better scurry&#x27; and describes &#x27;the wheels are yeller, the upholstery&#x27;s brown, the dashboard&#x27;s genuine leather&#x27; (this song was adapted into a jazz standard by Ahmad Jamal, inspiring a Miles Davis recording that opens the album Steamin&#x27;; the melody was based on repetition of one note with a &#x27;clip-clop&#x27; rhythm per Bob Craig); &#x27;Lonely Room,&#x27; Jud&#x27;s solo about imagining &#x27;long tangled hair&#x27; which &#x27;falls across my face&#x27; while vowing to win a bride; &#x27;The Farmer and the Cowboy,&#x27; which features a square dance; and &#x27;It&#x27;s a Scandal! It&#x27;s a Outrage!&#x27;</p><p>The original orchestration was by Robert Russell Bennett, and John Wilson&#x27;s 2023 recording was the first complete recording of this orchestration.</p><p>Daniel Fish directed a notable 2019 Broadway revival that served cornbread and chili to audience members during intermission. In this revival, Ali Stroker played the promiscuous Ado Annie; Stroker, who is paralyzed from the waist down and uses a wheelchair, became the first wheelchair-using performer to win a Tony Award. John Heginbotham choreographed the dream sequence in this revival with performers dancing barefoot in a dark setting. In the revival&#x27;s opening, Aunt Eller makes cornbread instead of churning butter. One character sings about the surrey while playing an acoustic guitar, with a slowed-down section where he sings &#x27;don&#x27;t you wish it would go on forever?&#x27;</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Oklahoma!_(musical)" target="_blank">Oklahoma! — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Agnes_de_Mille" target="_blank">Agnes de Mille — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Oklahoma!_(2019_musical)" target="_blank">2019 Revival — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Agnes de Mille — choreographed Oklahoma! and Rodeo; frequently co-asked</li><li>Rodgers and Hammerstein — the songwriting duo; core topic for musicals</li><li>Carousel — another R&amp;H musical with dream ballet; frequently paired</li><li>Rodeo (Aaron Copland) — ballet that led to de Mille&#x27;s hiring for Oklahoma!</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'oklahoma!' });</script>
+</body>
+</html>

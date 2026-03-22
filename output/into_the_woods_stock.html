@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Into the Woods</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>Into the Woods</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html">&larr; Home</a> &middot; <a href="into_the_woods_questions.html">View source questions</a> · <a href="into_the_woods_cards.html">Make cards</a></div><div class="nav-search"></div></div>
+<div class="summary">A 1987 <a href="stephen_sondheim_stock.html" class="crossref-inline">Stephen Sondheim</a> musical (lyrics and music) with a book by James Lapine, their second collaboration. Interweaves fairy tale characters — <a href="charles_perrault_stock.html#cinderella" class="crossref-inline">Cinderella</a>, Jack (and the Beanstalk), <a href="charles_perrault_stock.html#little-red-riding-hood" class="crossref-inline">Little Red Riding Hood</a>, Rapunzel, and the Baker and his Wife — who venture into the woods to fulfill their wishes. The Witch drives the plot by demanding the Baker collect four items (a cow as white as milk, a cape as red as blood, hair as yellow as corn, a slipper as pure as gold) to reverse a curse. Act II subverts fairy-tale endings as characters face consequences. Joanna Gleason originated the role of the Baker&#x27;s Wife. Bernadette Peters originated the Witch. The musical opens and closes with the word &#x27;I wish.&#x27;</div>
+
+        <details class="work" id="songs-agony" open>
+            <summary class="work-title">Songs: &quot;Agony&quot;</summary>
+            <p class="work-desc">A comedic duet performed by <a href="charles_perrault_stock.html#cinderella" class="crossref-inline">Cinderella</a>'s Prince and Rapunzel's Prince, in which they try to one-up each other over their respective loves. The two princes compete about whose romantic suffering is greater, singing about "what's intriguing / or half so fatiguing / as what's out of reach." One of the most frequently clued songs from the show. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two princes perform this song while trying to one-up each other&#x27;s love for Cinderella and Rapunzel</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two princes in this musical perform the song &#x27;Agony&#x27; while trying to one-up each other&#x27;s love for Cinderella and Rapunzel | It includes the songs &#x27;Agony,&#x27; &#x27;It Takes Two,&#x27; and &#x27;No One is Alone.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The singers imagine &#x27;what&#x27;s intriguing / or half so fatiguing / as what&#x27;s out of reach?&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The singers of a duet from this musical imagine &#x27;what&#x27;s intriguing / or half so fatiguing / as what&#x27;s out of reach?&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="songs-no-one-is-alone" open>
+            <summary class="work-title">Songs: &quot;No One is Alone&quot;</summary>
+            <p class="work-desc">A consoling ensemble number sung near the end of the musical, after several characters have died. <a href="charles_perrault_stock.html#cinderella" class="crossref-inline">Cinderella</a> reassures <a href="charles_perrault_stock.html#little-red-riding-hood" class="crossref-inline">Little Red Riding Hood</a>, Jack, and the Baker that they are not alone. One of the most referenced songs from the show in quizbowl. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cinderella consoles characters by singing this song after the deaths of Granny and the Baker&#x27;s Wife</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This character consoles characters in another musical by singing &#x27;No One is Alone&#x27; after the deaths of Granny and the Baker&#x27;s Wife. | It includes the songs &#x27;Agony,&#x27; &#x27;It Takes Two,&#x27; and &#x27;No One is Alone.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="songs-on-the-steps-of-the-palace" open>
+            <summary class="work-title">Songs: &quot;On the Steps of the Palace&quot;</summary>
+            <p class="work-desc"><a href="charles_perrault_stock.html#cinderella" class="crossref-inline">Cinderella</a>'s solo number in which she deliberates about her 'first big decision' — whether to leave her slipper on the steps of the palace or flee. The prince has spread sticky pitch on the stairs to trap her. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cinderella sings about her &#x27;first big decision&#x27; in abandoning an object (her slipper) on some steps</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character sings about her &#x27;first big decision&#x27; in abandoning an object on some steps | A large amount of sticky pitch spread over a set of stairs immobilizes this character&#x27;s escape, prompting her to sing &#x27;On the Steps of the Palace&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="songs-stay-with-me" open>
+            <summary class="work-title">Songs: &quot;Stay with Me&quot;</summary>
+            <p class="work-desc">The Witch's plea to Rapunzel, her adopted daughter, urging her not to leave. The Witch sings 'Stay with me / The world is dark and wild. / Stay a child while you can be a child.' <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Witch implores her adopted daughter (Rapunzel): &#x27;Stay with me / The world is dark and wild. / Stay a child while you can be a child.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One character in this musical implores her adopted daughter to &#x27;Stay with me / The world is dark and wild. / Stay a child while you can be a child.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="songs-any-moment" open>
+            <summary class="work-title">Songs: &quot;Any Moment&quot;</summary>
+            <p class="work-desc">A duet between <a href="charles_perrault_stock.html#cinderella" class="crossref-inline">Cinderella</a>'s Prince and the Baker's Wife, during which the Baker's Wife briefly entertains an affair. Shortly after, the Baker's Wife is crushed by a giant's foot. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">After cheating on her husband during this song, the Baker&#x27;s Wife is crushed by a foot</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After cheating on her husband during the song &#x27;Any Moment,&#x27; one character in this musical is crushed by a foot. | The Baker&#x27;s Wife briefly entertains an affair with Cinderella&#x27;s Prince</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="characters-the-baker-and-baker-s-wife" open>
+            <summary class="work-title">Characters: The Baker and Baker&#x27;s Wife</summary>
+            <p class="work-desc">A married couple inspired by the Rapunzel fairy tale who desperately want a child. The Witch tasks them with collecting four items — a cow as white as milk, a cape as red as blood, hair as yellow as corn, and a slipper as pure as gold — to reverse a curse placed on their family. Joanna Gleason originated the role of the Baker's Wife on Broadway. The Baker's Wife dies in Act II, crushed by a giant. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Joanna Gleason originated the role of the Baker&#x27;s Wife</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This musical, its composer&#x27;s second collaboration with James Lapine, premiered with Joanna Gleason as the Baker&#x27;s Wife. | Joanna Gleason originated another role with this two-word name who obtains a cow, a cape, some hair, and a slipper in order to have a baby.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Baker&#x27;s Wife obtains a cow, a cape, some hair, and a slipper to have a baby</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Joanna Gleason originated another role with this two-word name who obtains a cow, a cape, some hair, and a slipper in order to have a baby.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Baker sells his cow Milky White for a few beans</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another character in this musical sells his cow Milky White for a few beans.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Rapunzel&#x27; inspired this couple who want a child</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Rapunzel&#x27; inspired a couple with this profession who want a child in Into the Woods.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="characters-the-witch" open>
+            <summary class="work-title">Characters: The Witch</summary>
+            <p class="work-desc">The central antagonist who drives the plot by placing a curse on the Baker's family and demanding four items to reverse it. She needs a cow as white as milk, a cape as red as blood, hair as yellow as corn, and a slipper as pure as gold. She is Rapunzel's adoptive mother. Bernadette Peters originated the role. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A witch needs a cow as white as milk, a cape as red as blood, hair as yellow as corn, and a slipper as pure as gold to reverse a curse</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a witch needs a cow as white as milk, a cape as red as blood, hair as yellow as corn, and a slipper as pure as gold to reverse a curse</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Various fairy-tale characters like the Witch venture into the title location</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this musical by Stephen Sondheim, in which various fairy-tale characters like the Witch venture into the title location</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="characters-cinderella" open>
+            <summary class="work-title">Characters: Cinderella <a href="charles_perrault_stock.html#cinderella" class="work-link-btn" title="Go to Charles Perrault">&rarr;</a></summary>
+            <p class="work-desc"><a href="charles_perrault_stock.html#cinderella" class="crossref-inline">Cinderella</a>'s storyline follows the Brothers Grimm version. She calls birds to help pick lentils from ashes so she can attend the King's Festival. The Prince spreads sticky pitch on the palace steps to catch her. In Act II, she breaks up with the Prince over his infidelity and helps raise Little Red and Jack with the Baker. Cinderella opens and closes the show by singing 'I wish.' Anna Kendrick played her in the 2014 film. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cinderella opens and closes the musical by singing &#x27;I wish&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This musical begins and ends with one character singing, &#x27;I wish.&#x27; | This character opens and closes Into the Woods by stating, &#x27;I wish&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cinderella breaks up with the Prince over his infidelity and helps Little Red and the Baker</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">At the end of this musical, Cinderella breaks up with the Prince over his infidelity and decides to help Little Red and the Baker instead. | this character asks, &#x27;If you loved me, why did you stray?&#x27; after her husband seduces a woman who is trampled by a giant</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cinderella calls birds to help her pick lentils out of ashes so she can go to the King&#x27;s Festival</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">calls birds to help her pick lentils out of ashes so she can go to the King&#x27;s Festival</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Anna Kendrick played Cinderella in the film adaptation</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This character played by Anna Kendrick helps the Baker raise Little Red and Jack in the film adaptation of Into the Woods.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="characters-jack" open>
+            <summary class="work-title">Characters: Jack</summary>
+            <p class="work-desc">Based on Jack and the Beanstalk. Jack sells his cow Milky White for magic beans. He feeds Milky White golden cornsilk to fulfill the prophecy about 'hair as yellow as corn.' He climbs the beanstalk and meets 'big, tall, terrible, awesome, scary' beings in the sky, stealing gold coins and a gold egg. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jack feeds Milky White golden cornsilk to fulfill the prophecy about &#x27;hair as yellow as corn&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Jack, feeds Milky White golden cornsilk to fulfill a prophecy about &#x27;hair as yellow as corn.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jack sings about encountering &#x27;big, tall, terrible&#x27; beings reached by climbing a beanstalk</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Jack sings about encountering these &#x27;big, tall, terrible&#x27; beings whom he reached by climbing a beanstalk</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="characters-the-narrator-the-giant" open>
+            <summary class="work-title">Characters: The Narrator / The Giant</summary>
+            <p class="work-desc">In the stage version, the show includes a Narrator character who is sacrificed to a giant in Act II. The giant is a major antagonist in the second act, crushing the Baker's Wife underfoot. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the stage version, the narrator is sacrificed to a giant</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the stage version of Into the Woods, the narrator is sacrificed to one of these beings.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="musical-motifs-and-structure" open>
+            <summary class="work-title">Musical Motifs and Structure</summary>
+            <p class="work-desc">The musical features distinctive leitmotifs. A recurring motif begins with a descending fifth (A down to D, E, C-sharp, B) associated with the warning 'Don't you know what's out there in the world?' The motif 'short D, long E' represents the closing words 'I wish.' The show was Sondheim's second collaboration with librettist James Lapine (after <a href="stephen_sondheim_stock.html#sunday-in-the-park-with-george-1984" class="crossref-inline">Sunday in the Park with George</a>). <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A motif begins with a descending fifth of A down to D, E, C-sharp, B — associated with &#x27;Don&#x27;t you know what&#x27;s out there in the world?&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A motif in this musical begins with a descending fifth of &#x27;A, down to D, E, C-sharp, B&#x27; and occurs as a character warns, &#x27;Don&#x27;t you know what&#x27;s out there in the world?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The motif &#x27;short D, long E&#x27; represents the closing words &#x27;I wish&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The motif &#x27;short D, long E&#x27; represents this musical&#x27;s closing words, &#x27;I wish.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sondheim&#x27;s second collaboration with James Lapine (after Sunday in the Park with George)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This musical, its composer&#x27;s second collaboration with James Lapine</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-magic-beans" open>
+            <summary class="work-title">The Magic Beans</summary>
+            <p class="work-desc">Five magic beans are traded for Milky White, the cow. The beans, when planted, grow a giant beanstalk. In the 2014 film, they burst in flashes of orange when they hit the ground. The Witch drinks a potion made from Milky White's milk to regain her beauty. A dedicated tossup has been written specifically about the magic beans as a standalone answer. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Five beans were traded for Milky White, a cow whose milk produces a potion the Witch drinks to regain her beauty</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Five of these items were traded for Milky-White, a cow who produces a potion drunk by the Witch to regain her beauty.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A character sings &#x27;Were they worthless?&#x27; and &#x27;Were they oversold?&#x27; about the beans</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One character asks &#x27;Were [these items] worthless?&#x27; and &#x27;Were they oversold?&#x27; when another sings that &#x27;it isn&#x27;t my fault I was given&#x27; these items.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the film, the beans burst in flashes of orange when they hit the ground</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a film, these objects burst in flashes of orange whenever they hit the ground.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-identification" open>
+            <summary class="work-title">General / Identification</summary>
+            <p class="work-desc">How Into the Woods is typically identified in giveaway clues: a fairytale-inspired 1987 musical by <a href="stephen_sondheim_stock.html" class="crossref-inline">Stephen Sondheim</a>, interweaving Jack and the Beanstalk, <a href="charles_perrault_stock.html#little-red-riding-hood" class="crossref-inline">Little Red Riding Hood</a>, <a href="charles_perrault_stock.html#cinderella" class="crossref-inline">Cinderella</a>, and Rapunzel. Often paired with <a href="stephen_sondheim_stock.html#sweeney-todd-1979" class="crossref-inline">Sweeney Todd</a> and <a href="stephen_sondheim_stock.html#company-1970" class="crossref-inline">Company</a> as Sondheim identifiers. Bernadette Peters frequently collaborated with Sondheim. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fairytale-inspired musical by Stephen Sondheim</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this fairytale-inspired musical by Stephen Sondheim | this 1987 Stephen Sondheim musical featuring fairy tale characters</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mishmashes fairy tales like Jack and the Beanstalk, Little Red Riding Hood, Cinderella, and Rapunzel</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this musical, which mishmashes fairy tales like Jack and the Beanstalk and Little Red Riding Hood | various fairy-tale characters like the Witch venture into the title location</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Often listed alongside Sweeney Todd and Company as Sondheim identifiers</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer of Sweeney Todd and Into the Woods | this composer of Into the Woods, Company and Sweeney Todd</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bernadette Peters frequently collaborated with Sondheim (including originating the Witch)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">She frequently collaborated with the composer of Follies and Into the Woods.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Into the Woods is one of the most frequently referenced <a href="stephen_sondheim_stock.html" class="crossref-inline">Stephen Sondheim</a> musicals in quizbowl, appearing both as a direct answerline and as one of the standard identifiers for Sondheim (alongside <a href="stephen_sondheim_stock.html#sweeney-todd-1979" class="crossref-inline">Sweeney Todd</a>, <a href="stephen_sondheim_stock.html#company-1970" class="crossref-inline">Company</a>, and <a href="stephen_sondheim_stock.html#sunday-in-the-park-with-george-1984" class="crossref-inline">Sunday in the Park with George</a>). The musical premiered in 1987 with a book by James Lapine, making it their second collaboration after Sunday in the Park with George.</p><p>The most commonly clued elements are the songs &quot;Agony&quot; (the two princes&#x27; duet), &quot;No One is Alone&quot; (<a href="charles_perrault_stock.html#cinderella" class="crossref-inline">Cinderella</a>&#x27;s consolation number), and &quot;On the Steps of the Palace&quot; (Cinderella&#x27;s deliberation about leaving her slipper). The Baker and Baker&#x27;s Wife are central characters, with Joanna Gleason&#x27;s Tony-winning origination of the Baker&#x27;s Wife being a frequent clue. The Witch&#x27;s four-item curse (cow as white as milk, cape as red as blood, hair as yellow as corn, slipper as pure as gold) appears regularly.</p><p>Harder clues focus on musical motifs — particularly the descending fifth motif (A-D-E-C#-B) and the &quot;short D, long E&quot; motif representing &quot;I wish.&quot; The narrator&#x27;s sacrifice to the giant is a stage-specific detail that appears at higher difficulties. The magic beans have been the subject of their own standalone tossup. <a href="charles_perrault_stock.html#cinderella" class="crossref-inline">Cinderella</a> is the character most frequently asked about in connection with this show, particularly her opening/closing &quot;I wish&quot; and her Act II decision to leave the Prince.</p><p>In mention-based clues, Into the Woods most often appears as a Sondheim identifier, typically listed with <a href="stephen_sondheim_stock.html#sweeney-todd-1979" class="crossref-inline">Sweeney Todd</a>. Bernadette Peters and the 2014 film adaptation (with Anna Kendrick as <a href="charles_perrault_stock.html#cinderella" class="crossref-inline">Cinderella</a>) also generate mentions.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Into the Woods — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Stephen_Sondheim" target="_blank">Stephen Sondheim — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Into_the_Woods_(film)" target="_blank">Into the Woods (2014 film) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Stephen Sondheim — the composer; Into the Woods is one of his most frequently used identifiers</li><li>Sweeney Todd — frequently paired with Into the Woods as a Sondheim identifier</li><li>Sunday in the Park with George — Sondheim&#x27;s first collaboration with James Lapine</li><li>Cinderella (fairy tale / musicals) — appears as its own answerline with Into the Woods references</li><li>Bernadette Peters — frequently associated with Sondheim musicals including Into the Woods</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'into_the_woods' });</script>
+</body>
+</html>

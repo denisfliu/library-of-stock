@@ -89,18 +89,15 @@ Open `progress.html` (via `./serve.sh`) — auto-refreshes every 5s showing queu
 ### 5. After all agents complete
 
 ```bash
-# 1. Rebuild cross-ref index
-python3 lib/crossref.py
+# 1. Run post_batch.py — rebuilds cross-ref index AND prints the Sonnet agent prompt
+python3 post_batch.py
 
-# 2. Cross-reference backfill (use Sonnet agent — cheaper, equally effective)
-# Launch ONE Sonnet agent with all newly created + modified topics:
-# Agent(model="sonnet", prompt="Read docs/crossref_backfill.md. Add cross_refs to these topics: [list]")
+# 2. Launch the Sonnet crossref backfill agent using the prompt post_batch.py printed.
+#    The agent adds cross_refs to all completed topics, then runs rerender.py + build_index.py.
 
-# 3. Final render
-python3 rerender.py
+# 3. After the Sonnet agent finishes, render cards and questions:
 python3 render_cards.py
 python3 render_questions.py
-python3 build_index.py
 
 # 4. For VFA topics only — image pipeline
 python3 lib/fix_images.py                    # sequential, respects rate limits

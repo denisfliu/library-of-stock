@@ -99,6 +99,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     topic = escape(analysis.get("topic", "Unknown"))
     cross_refs = analysis.get("cross_refs", [])
     self_topic = analysis.get("topic", "")
+    topic_index = _load_crossref_index()
     summary = _linkify(analysis.get("summary", ""), cross_refs, self_topic)
     works = analysis.get("works", [])
     suggestions = analysis.get("recursive_suggestions", [])
@@ -177,9 +178,10 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         # Check if this work/section links to another topic's page
         work_link_btn = ""
         work_name_raw = work.get("name", "")
+        work_name_lower = work_name_raw.lower()
         for ref in cross_refs:
             ref_name = ref.get('name', '')
-            if ref.get('exists') and ref_name and ref_name.lower() in work_name_raw.lower():
+            if ref.get('exists') and ref_name and ref_name.lower() in work_name_lower:
                 slug = ref.get('target_slug', '')
                 href = f"{slug}_stock.html"
                 # If the ref points to a work (not the topic itself), add anchor
@@ -189,6 +191,23 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                     href += f"#{anchor}"
                 work_link_btn = f' <a href="{href}" class="work-link-btn" title="Go to {escape(ref.get("target_topic", ""))}">&rarr;</a>'
                 break
+        # If no cross_ref match, check topic index directly for section names like
+        # "Robert Henri (leader)" or "George Bellows" that have their own pages.
+        if not work_link_btn and topic_index:
+            for indexed_name, entry in topic_index.items():
+                # Only match primary topic names (not aliases) and skip self
+                if (entry.get('type') == 'topic'
+                        and indexed_name == entry.get('topic')
+                        and indexed_name.lower() != self_topic.lower()):
+                    iname_lower = indexed_name.lower()
+                    # Match if work name equals or starts with the indexed name
+                    # (handles "Robert Henri (leader)", "Into the Woods (1987)", etc.)
+                    if (work_name_lower == iname_lower
+                            or work_name_lower.startswith(iname_lower + ' ')
+                            or work_name_lower.startswith(iname_lower + '(')):
+                        slug = entry.get('slug', '')
+                        work_link_btn = f' <a href="{slug}_stock.html" class="work-link-btn" title="Go to {escape(indexed_name)}">&rarr;</a>'
+                        break
 
         # Generate anchor ID from work name
         anchor_id = re.sub(r'[^a-z0-9]+', '-', work_name_raw.lower()).strip('-')

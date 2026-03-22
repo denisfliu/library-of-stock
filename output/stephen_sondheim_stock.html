@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stock: Stephen Sondheim</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>Stephen Sondheim</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html">&larr; Home</a> &middot; <a href="stephen_sondheim_questions.html">View source questions</a> · <a href="stephen_sondheim_cards.html">Make cards</a></div><div class="nav-search"></div></div>
+<div class="summary">American composer and lyricist, widely considered the most important figure in 20th-century musical theater. Known for writing both music and lyrics to Sweeney Todd, Company, <a href="into_the_woods_stock.html" class="crossref-inline">Into the Woods</a>, Sunday in the Park with George, Follies, Merrily We Roll Along, and A Little Night Music, as well as lyrics for <a href="jerome_robbins_stock.html#west-side-story-1957" class="crossref-inline">West Side Story</a> (composed by Leonard Bernstein). Protege of Oscar Hammerstein and student of Milton Babbitt. His book Finishing the Hat collects annotated lyrics. Frequent collaborators include Hal Prince, James Lapine, Bernadette Peters, and orchestrator Jonathan Tunick. Died in 2021.</div>
+
+        <details class="work" id="sweeney-todd-1979" open>
+            <summary class="work-title">Sweeney Todd (1979)</summary>
+            <p class="work-desc">Sondheim's stage adaptation of a Victorian penny-dreadful about the "Demon Barber of Fleet Street." Features the darkly comic song "A Little Priest" in which Mrs. Lovett and Sweeney imagine the taste of pies made from various professions ("Shepherd's pie peppered / With actual shepherd on top"). The musical begins with an ominous organ solo cut off by a shrill whistle. Anthony Hope sings "Johanna" ("I feel you, and one day, I'll steal you") to Judge Turpin's ward. Features a Stravinsky-inspired "madness motif" repeating the eighth-note pattern D, C, D, C, E-flat, C, F, C. <a href="https://en.wikipedia.org/wiki/Sweeney_Todd:_The_Demon_Barber_of_Fleet_Street_(musical)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stage adaptation of a Victorian penny-dreadful about the &#x27;Demon Barber of Fleet Street&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Broadway composer who wrote of a &#x27;Demon Barber of Fleet Street&#x27; in Sweeney Todd | his stage adaptation of a Victorian penny-dreadful</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&quot;A Little Priest&quot; — Mrs. Lovett imagines whether priests or poets would taste better in her cannibalistic pies; &quot;Shepherd&#x27;s pie peppered / With actual shepherd on top&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mrs. Lovett wonders whether priests or poets would taste better in her cannibalistic pies | &#x27;Shepherd&#x27;s pie peppered / With actual shepherd on top&#x27; is one of many imagined delicacies that this writer listed in &#x27;A Little Priest.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Begins with an ominous organ solo cut off by the shrill sound of a whistle</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A musical by this composer begins with an ominous organ solo that is cut off by the shrill sound of a whistle.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features a Stravinsky-inspired &#x27;madness motif&#x27; repeating the eighth-note pattern D, C, D, C, E-flat, C, F, C</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A work by this composer features a Stravinsky-inspired &#x27;madness motif&#x27; repeating the eighth-note pattern &#x27;D, C, D, C, E-flat, C, F, C.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Anthony Hope sings &#x27;Johanna&#x27; — &#x27;I feel you, and one day, I&#x27;ll steal you&#x27; to Judge Turpin&#x27;s ward</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Anthony Hope sings &#x27;I feel you, and one day, I&#x27;ll steal you&#x27; and &#x27;I was half convinced I&#x27;d waken, satisfied enough to dream you&#x27; to this character, who Judge Turpin intends to marry.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="company-1970" open>
+            <summary class="work-title">Company (1970)</summary>
+            <p class="work-desc">A concept musical about the unmarried 35-year-old Bobby who observes the dysfunctional marriages of his friends during his birthday party. Bobby sings "Being Alive" ("Somebody, hold me too close / Somebody, hurt me too deep"). Amy panics on the morning of her wedding, lambasting "a prehistoric ritual where everybody promises fidelity forever" in a rapid patter song. The "personable" / "coercin' a bull" rhyme appears here. Marianne Elliott staged a genderbent revival. The protagonist's name is repeated by a group at the opening. <a href="https://en.wikipedia.org/wiki/Company_(musical)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bobby celebrates his 35th birthday and sings &#x27;Being Alive&#x27; (&#x27;Somebody, hold me too close / Somebody, hurt me too deep&#x27;)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bobby celebrates his 35th birthday and sings &#x27;Being Alive&#x27; in this composer&#x27;s musical Company. | the protagonist begs &#x27;Somebody, hold me too close&#x27; and &#x27;Somebody, hurt me too deep&#x27; after seeing multiple scenes of his friends&#x27; dysfunctional married lives on his thirty-fifth birthday party.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Amy panics on the morning of her wedding, lambasting &#x27;a prehistoric ritual where everybody promises fidelity forever&#x27; in a rapid patter song</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Amy lambasts &#x27;a prehistoric ritual where everybody promises fidelity forever&#x27; in a rapid patter as she panics on the morning of her wedding.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rhymed &#x27;personable&#x27; with &#x27;coercin&#x27; a bull&#x27; in a work staged by Marianne Elliott in a genderbent revival</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This writer rhymed &#x27;personable&#x27; with &#x27;coercin&#x27; a bull&#x27; in a work that Marianne Elliott staged in a genderbent revival.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A group of people repeat Bobby&#x27;s name at the opening — &#x27;your line was busy&#x27; / &#x27;what have you been up to, kiddo?&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a group of people repeat this character&#x27;s name over and over again while saying lines like &#x27;your line was busy&#x27; and &#x27;what have you been up to, kiddo?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features the Act II dance &#x27;Tick-Tock&#x27; and the descending minor third &#x27;A-flat, F&#x27; calling the protagonist&#x27;s name</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The quick descending minor third &#x27;A-flat, F&#x27; is used to repeatedly call the protagonist&#x27;s name in a work by this composer featuring the Act II dance &#x27;Tick-Tock.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-little-night-music-1973" open>
+            <summary class="work-title">A Little Night Music (1973)</summary>
+            <p class="work-desc">Sondheim's adaptation of Ingmar Bergman's film Smiles of a Summer Night. Features the song "Send in the Clowns," sung by Desiree Armfeldt ("Isn't it rich? / Are we a pair? / Me here at last on the ground and you in midair"). Bernadette Peters succeeded Catherine Zeta-Jones in the role of Desiree in the Broadway revival. The melody of "Send in the Clowns" was written with many pauses to fit Glynis Johns's voice. Ravel inspired the many "Night Waltzes" orchestrated by Jonathan Tunick. <a href="https://en.wikipedia.org/wiki/A_Little_Night_Music" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains the song &#x27;Send in the Clowns,&#x27; sung by Desiree — &#x27;Isn&#x27;t it rich? / Are we a pair?&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He included &#x27;Send in the Clowns&#x27; in his musical A Little Night Music. | Desiree moans &#x27;Isn&#x27;t it rich? Are we a pair? Me here at last on the ground and you in midair.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adaptation of an Ingmar Bergman film (Smiles of a Summer Night)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Bergman-inspired musical A Little Night Music | his 1973 adaptation of an Ingmar Bergman film, A Little Night Music</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Melody of &#x27;Send in the Clowns&#x27; written with many pauses to fit Glynis Johns&#x27;s voice</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This student of Milton Babbitt included many pauses in a melody to fit Glynis Johns&#x27;s voice, as described in his book Finishing the Hat.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ravel inspired the many &#x27;Night Waltzes,&#x27; orchestrated by Jonathan Tunick</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ravel inspired the many &#x27;Night Waltzes&#x27; of a work by this composer orchestrated by Jonathan Tunick.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bernadette Peters succeeded Catherine Zeta-Jones as Desiree Armfeldt in the Broadway revival</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this actress who succeeded Catherine Zeta-Jones in the role of Desiree Armfeldt in the Broadway revival of A Little Night Music</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="sunday-in-the-park-with-george-1984" open>
+            <summary class="work-title">Sunday in the Park with George (1984)</summary>
+            <p class="work-desc">A musical about French pointillist painter Georges Seurat in the months leading up to his masterpiece A Sunday Afternoon on the Island of La Grande Jatte. Features the songs "Finishing the Hat," "Color and Light" (in which Seurat sings "Red red red red Red red orange"), "Move On," and "No Life." The mistress Dot sings "a trickle of sweat, the back of the head." Seurat's work is displayed in 1984 with Chromolume #7. Mandy Patinkin debuted the role; Bernadette Peters played Dot and Marie. Written with collaborator James Lapine. <a href="https://en.wikipedia.org/wiki/Sunday_in_the_Park_with_George" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">About a French pointillist painter (Georges Seurat) in the months leading up to his most famous work</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Sondheim musical, which follows a French pointillist painter in the months leading up to his most famous work | Seurat appears in Sunday in the Park with George</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Songs include &#x27;Finishing the Hat,&#x27; &#x27;Color and Light&#x27; (&#x27;Red red red red Red red orange&#x27;), &#x27;Move On,&#x27; and &#x27;No Life&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">sings numbers like &#x27;Move On&#x27; and &#x27;Finish the Hat&#x27; | rapidly sings &#x27;Red red red red Red red orange Red red orange&#x27; in the song &#x27;Color and Light.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with &#x27;White. A blank page or canvas. The challenge: bring order to the whole.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">begins with this character saying &#x27;White. A blank page or canvas. The challenge: bring order to the whole.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mandy Patinkin debuted the role of Seurat; Bernadette Peters played Dot and Marie</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this character originally debuted by Mandy Patinkin | Peters was nominated for a Tony for starring as Dot and Marie in this Sondheim musical</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Seurat&#x27;s masterpiece is displayed in 1984 alongside Chromolume #7</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">his masterpiece, which is displayed in 1984 with Chromolume #7</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="into-the-woods-1987" open>
+            <summary class="work-title">Into the Woods (1987) <a href="into_the_woods_stock.html" class="work-link-btn" title="Go to Into the Woods">&rarr;</a></summary>
+            <p class="work-desc">A musical that interweaves fairy tales like Jack and the Beanstalk and Little Red Riding Hood. Features the songs "Agony," "It Takes Two," and "No One is Alone." The 1987 "Prologue" contains the triple homonym "withers wither with her" and the rhyme "ask it / basket." Written with collaborator James Lapine. <a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mishmashes fairy tales like Jack and the Beanstalk and Little Red Riding Hood</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this musical, which mishmashes fairy tales like Jack and the Beanstalk and Little Red Riding Hood</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Songs include &#x27;Agony,&#x27; &#x27;It Takes Two,&#x27; and &#x27;No One is Alone&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">It includes the songs &#x27;Agony,&#x27; &#x27;It Takes Two,&#x27; and &#x27;No One is Alone.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">1987 &#x27;Prologue&#x27; contains the triple homonym &#x27;withers wither with her&#x27; and the rhyme &#x27;ask it / basket&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The triple homonym &#x27;withers wither with her&#x27; and the rhyme &#x27;ask it / basket&#x27; appear in an 1987 &#x27;Prologue&#x27; by this writer</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="merrily-we-roll-along-1981" open>
+            <summary class="work-title">Merrily We Roll Along (1981)</summary>
+            <p class="work-desc">Sondheim's infamous flop that uses reverse chronology to follow the disintegrating friendship of Mary Flynn, Charley Kringas, and Franklin Shepard from adulthood back to adolescence. Gussie has an affair with composer Frank Shepard. The chorus sings about "see[ing] the pretty countryside" and "bursting with dreams" during scene changes. Jonathan Groff starred as Frank in the 2023 revival alongside Daniel Radcliffe and Lindsay Mendez. Sondheim worked with Hal Prince until this show's failure. He was working on another reverse chronology musical, All Together Now, before his death. <a href="https://en.wikipedia.org/wiki/Merrily_We_Roll_Along_(musical)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Uses reverse chronology to follow the disintegrating friendship of Mary Flynn, Charley Kringas, and Franklin Shepard</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gussie has an affair with the composer Frank Shepard, whose life since adolescence is shown in reverse chronology. | this plot structure used to follow the disintegrating friendship of Mary Flynn, Charley Kringas, and Franklin Shepard in a 1981 musical</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Described as Sondheim&#x27;s &#x27;biggest flop&#x27;; Sondheim and Hal Prince parted ways after its failure</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Merrily We Roll Along has been described as this composer&#x27;s &#x27;biggest flop.&#x27; | This frequent collaborator of Bernadette Peters worked with Hal Prince until the failure of Merrily We Roll Along.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jonathan Groff starred as Frank in the 2023 revival alongside Daniel Radcliffe and Lindsay Mendez</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the 2023 revival of Merrily We Roll Along, this actor starred as Frank alongside Daniel Radcliffe and Lindsay Mendez.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chorus sings about &#x27;see[ing] the pretty countryside&#x27; and &#x27;bursting with dreams&#x27; during scene changes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the chorus sings about &#x27;see[ing] the pretty countryside&#x27; and &#x27;bursting with dreams&#x27; during scene changes</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="follies-1971" open>
+            <summary class="work-title">Follies (1971)</summary>
+            <p class="work-desc">A musical about the 30th reunion of a vaudeville act, exploring the loveless marriage of Phyllis Rogers and Ben Stone. Sally Durant's torch song "Losing My Mind" reveals her lifelong obsession with Ben. Other songs include "Could I Leave You?," "Loveland" (which mocks the characters), and "I'm Still Here" (in which the singer says she's "been through Herbert and J. Edgar Hoover"). <a href="https://en.wikipedia.org/wiki/Follies" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">About the 30th reunion of a vaudeville act; Phyllis Rogers and Ben Stone&#x27;s loveless marriage</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this musical about the 30th reunion of the title vaudeville act</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sally Durant&#x27;s torch song &#x27;Losing My Mind&#x27; reveals her obsession with Ben Stone</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">whose late torch song &#x27;Losing My Mind&#x27; reveals Sally Durant&#x27;s lifelong obsession with the aforementioned Ben</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;I&#x27;m Still Here&#x27; — singer recounts &#x27;been through Herbert and J. Edgar Hoover&#x27; and the ups and downs of show business</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the singer says she&#x27;s &#x27;been through Herbert and J. Edgar Hoover&#x27; and recounts the ups and downs of show business</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Songs include &#x27;Could I Leave You?,&#x27; &#x27;Loveland,&#x27; &#x27;Losing My Mind,&#x27; and &#x27;I&#x27;m Still Here&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The song &#x27;Could I leave you?&#x27; is part of a sequence in this musical</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="west-side-story-1957" open>
+            <summary class="work-title">West Side Story (1957) <a href="jerome_robbins_stock.html#west-side-story-1957" class="work-link-btn" title="Go to Jerome Robbins">&rarr;</a></summary>
+            <p class="work-desc">Sondheim wrote the lyrics for this musical with music by Leonard Bernstein. Contains the song "I Feel Pretty" ("It's alarming how charming I feel"), which Sondheim later scorned as "purple prose" in his book Finishing the Hat. <a href="https://en.wikipedia.org/wiki/West_Side_Story" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lyrics by Sondheim, composed by Leonard Bernstein</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this lyricist of West Side Story | the song &#x27;I Feel Pretty&#x27; for a collaboration with Leonard Bernstein</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains &#x27;I Feel Pretty&#x27; — Sondheim scorned this as &#x27;purple prose&#x27; (&#x27;It&#x27;s alarming how charming I feel&#x27;)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">who scorned his early &#x27;purple prose&#x27; such as &#x27;It&#x27;s alarming how charming I feel&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="finishing-the-hat-book" open>
+            <summary class="work-title">Finishing the Hat (book)</summary>
+            <p class="work-desc">Sondheim's first annotated lyrics anthology, collecting his work and commentary. Described as a volume of his collected works. He scorns some early lyrics (like "I Feel Pretty") and discusses technical details like the pauses in "Send in the Clowns" for Glynis Johns. <a href="https://en.wikipedia.org/wiki/Finishing_the_Hat" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First annotated lyrics anthology; collects his works with commentary</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">annotations to a volume of his collected works titled Finishing the Hat | his first annotated lyrics anthology, Finishing the Hat</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Sondheim is identified and biographical clues not specific to a single work.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Protege of Oscar Hammerstein</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this protege of Oscar Hammerstein</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Student of Milton Babbitt</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This student of Milton Babbitt</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Frequent collaborator of Bernadette Peters</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This frequent collaborator of Bernadette Peters | Peters often starred in musicals by this composer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Worked with Hal Prince until the failure of Merrily We Roll Along; later worked frequently with James Lapine</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This frequent collaborator of Bernadette Peters worked with Hal Prince until the failure of Merrily We Roll Along. | a frequent collaborator with James Lapine</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three artistic principles: &#x27;Less is more,&#x27; &#x27;Content dictates form,&#x27; &#x27;God is in the details,&#x27; in service of &#x27;CLARITY&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote that his three artistic principles are &#x27;Less is more,&#x27; &#x27;Content dictates form,&#x27; and &#x27;God is in the details,&#x27; all in service of &#x27;CLARITY&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Won an Oscar for composing Madonna&#x27;s song &#x27;Sooner or Later&#x27; from Dick Tracy</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This writer won an Oscar for composing Madonna&#x27;s song &#x27;Sooner or Later&#x27; from Dick Tracy.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-wrote the whodunit movie The Last of Sheila with Anthony Perkins</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Anthony Perkins and this writer co-wrote the whodunit movie The Last of Sheila.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cameoed on a Zoom call with Benoit Blanc and Angela Lansbury in Glass Onion</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this writer cameoed on a Zoom call with Benoit Blanc and Angela Lansbury in Glass Onion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Was working with David Ives on Here We Are (based on two Luis Bunuel films) at the time of his death</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">At the time of his death, this writer was working with David Ives on Here We Are, a work based on two Luis Bunuel films.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Finale (2022) by D.T. Max includes &#x27;late conversations&#x27; in which Sondheim calls Vertigo &#x27;the most overrated movie ever&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This writer declares Vertigo to be the &#x27;most overrated movie ever&#x27; in one of the &#x27;late conversations&#x27; included in Finale, a 2022 book on this writer by D.T. Max.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">John Mulaney parodied him in the Documentary Now! episode &#x27;Co-Op,&#x27; which spoofs D.A. Pennebaker&#x27;s Original Cast Album</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">John Mulaney parodied this writer in the Documentary Now! episode &#x27;Co-Op,&#x27; which spoofs D.A. Pennebaker&#x27;s film about one of his works, Original Cast Album.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Quadruple rhyme &#x27;he goes / she goes / egos / amigos&#x27; delighted Cole Porter</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This writer&#x27;s surprise quadruple rhyme of &#x27;he goes / she goes / egos / amigos&#x27; delighted the despondent writer of &#x27;It&#x27;s De-Lovely.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Died in 2021; was working on All Together Now (another reverse chronology musical) before his death</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer of Sweeney Todd and Into the Woods started work on another reverse chronology musical, All Together Now, before his 2021 death</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Orchestrator was Jonathan Tunick</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a work by this composer orchestrated by Jonathan Tunick</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Stephen Sondheim is the single most frequently asked-about composer in quizbowl Fine Arts musical theater questions. Clues overwhelmingly identify him through his best-known musicals: Sweeney Todd (the &quot;Demon Barber of Fleet Street,&quot; &quot;A Little Priest,&quot; the ominous organ opening), Company (Bobby&#x27;s 35th birthday, &quot;Being Alive,&quot; Amy&#x27;s wedding patter), and A Little Night Music (&quot;Send in the Clowns,&quot; the Bergman adaptation, Desiree Armfeldt). His role as lyricist of <a href="jerome_robbins_stock.html#west-side-story-1957" class="crossref-inline">West Side Story</a> (with Leonard Bernstein) is the single most common giveaway clue.</p><p>At the middle difficulty level, clues draw on Sunday in the Park with George (Seurat, &quot;Finishing the Hat,&quot; &quot;Color and Light&quot;), <a href="into_the_woods_stock.html" class="crossref-inline">Into the Woods</a> (fairy tale mashup, &quot;Agony&quot;), Merrily We Roll Along (reverse chronology, his biggest flop, the 2023 revival with Jonathan Groff), and Follies (&quot;Losing My Mind,&quot; &quot;I&#x27;m Still Here&quot;). His book Finishing the Hat is referenced frequently as a source of lyrical commentary.</p><p>Hard/power clues focus on musical-technical details (the Stravinsky-inspired madness motif in Sweeney Todd, the descending minor third in Company, Ravel&#x27;s influence on A Little Night Music&#x27;s waltzes), biographical details (student of Milton Babbitt, protege of Oscar Hammerstein, three artistic principles), and obscure facts (co-writing The Last of Sheila with Anthony Perkins, the Glass Onion cameo, the Vertigo opinion in Finale by D.T. Max, Here We Are with David Ives). His collaborators — Hal Prince, James Lapine, Bernadette Peters, Jonathan Tunick — appear at various difficulty levels.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Stephen_Sondheim" target="_blank">Stephen Sondheim — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Sweeney_Todd:_The_Demon_Barber_of_Fleet_Street_(musical)" target="_blank">Sweeney Todd (musical) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Company_(musical)" target="_blank">Company (musical) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/A_Little_Night_Music" target="_blank">A Little Night Music — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Sunday_in_the_Park_with_George" target="_blank">Sunday in the Park with George — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Into_the_Woods" target="_blank">Into the Woods — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Follies" target="_blank">Follies — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Merrily_We_Roll_Along_(musical)" target="_blank">Merrily We Roll Along (musical) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Finishing_the_Hat" target="_blank">Finishing the Hat (book) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Sweeney Todd — heavily clued musical; likely has its own answerline</li><li>Company (musical) — frequently asked about in its own right</li><li>Sunday in the Park with George — appears as its own bonus answerline</li><li>Into the Woods — appears as its own bonus answerline</li><li>Follies — appears as its own bonus answerline with detailed clues</li><li>A Little Night Music — &#x27;Send in the Clowns&#x27; is one of the most recognizable Broadway songs</li><li>Bernadette Peters — frequent Sondheim collaborator, appears as her own answerline</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'stephen_sondheim' });</script>
+</body>
+</html>
