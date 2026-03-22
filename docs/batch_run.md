@@ -132,6 +132,7 @@ These mistakes were made before — do NOT repeat them:
 7. **Wrong category for VFA**: Some agents tagged subcategory as "Visual Arts" instead of "Visual Fine Arts". **Fix**: Reference `docs/categories.md`.
 8. **Empty summary field**: Agents wrote comprehensive_summary but left the "summary" field empty, causing blank blurbs on the page. **Fix**: "summary" is now in the required fields list and self-check.
 9. **Forgot cross-ref backfill**: Controller skipped the Sonnet cross-ref step after agents finished. **Fix**: Run `python3 post_batch.py` immediately when the last agent finishes — it automates index rebuild + deterministic backfill and prints the Sonnet prompt. Don't report "done" until all steps complete.
+10. **verify_images.py runs multiple times**: The script silently backgrounds itself when not in a TTY, so the Bash tool returns immediately with a background job ID. **Fix**: Run it once, then wait for the background task notification — do NOT re-run if the shell returns immediately. Check the task output file when notified.
 
 ## Permissions
 
