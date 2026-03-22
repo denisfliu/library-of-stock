@@ -116,12 +116,8 @@ For each topic:
 4. Add cross_refs array
 5. Save the JSON
 
-After all topics:
-```
-./build.sh
-```
-
-Important: Don't modify any field except cross_refs. Don't add refs for the topic itself.""")
+Important: Don't modify any field except cross_refs. Don't add refs for the topic itself.
+Do not run any render scripts — the controller will run ./build.sh after you finish.""")
     print("=" * 60)
     print()
     print("After the Sonnet agent finishes, run:")

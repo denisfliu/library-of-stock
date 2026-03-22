@@ -13,8 +13,9 @@ The controller will:
 2. Build agent prompts using `lib/prompt_builder.py`
 3. Launch N+M agents with assembled prompts
 4. Monitor agents, relaunch when one finishes (if queue not empty)
-5. After all done, launch a Sonnet agent for cross-ref backfill
-6. Run final renders
+5. After all done, run `python3 post_batch.py` (rebuilds index, runs deterministic backfill, prints Sonnet prompt)
+6. Launch the Sonnet crossref agent with the printed prompt
+7. Run `./build.sh`
 
 ## Building Agent Prompts
 
@@ -127,10 +128,10 @@ These mistakes were made before — do NOT repeat them:
 3. **Rate limiting**: Parallel agents all hitting Wikimedia caused hours-long blocks. **Fix**: Image search is always sequential, never in parallel agents.
 4. **Terse descriptions**: Agents wrote one-line descriptions like "His most famous work." **Fix**: Self-check requires mini-paragraph descriptions.
 5. **Multi-clue cards**: Cards with 3+ semicolons packing multiple facts. **Fix**: Self-check — each card tests one fact.
-6. **Missing question pages**: Agents forgot to run `render_questions.py`. **Fix**: Included in post-run checklist.
+6. **Missing question pages**: Agents forgot to render. **Fix**: Always run `./build.sh` after the batch — it covers all four renderers.
 7. **Wrong category for VFA**: Some agents tagged subcategory as "Visual Arts" instead of "Visual Fine Arts". **Fix**: Reference `docs/categories.md`.
 8. **Empty summary field**: Agents wrote comprehensive_summary but left the "summary" field empty, causing blank blurbs on the page. **Fix**: "summary" is now in the required fields list and self-check.
-9. **Forgot cross-ref backfill**: Controller skipped the Sonnet cross-ref step after agents finished. **Fix**: Always run the full post-batch checklist — don't report "done" until every step is complete.
+9. **Forgot cross-ref backfill**: Controller skipped the Sonnet cross-ref step after agents finished. **Fix**: Run `python3 post_batch.py` immediately when the last agent finishes — it automates index rebuild + deterministic backfill and prints the Sonnet prompt. Don't report "done" until all steps complete.
 
 ## Permissions
 
