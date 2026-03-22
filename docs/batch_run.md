@@ -93,11 +93,10 @@ Open `progress.html` (via `./serve.sh`) — auto-refreshes every 5s showing queu
 python3 post_batch.py
 
 # 2. Launch the Sonnet crossref backfill agent using the prompt post_batch.py printed.
-#    The agent adds cross_refs to all completed topics, then runs rerender.py + build_index.py.
+#    The agent adds cross_refs to all completed topics, then runs ./build.sh.
 
-# 3. After the Sonnet agent finishes, render cards and questions:
-python3 render_cards.py
-python3 render_questions.py
+# 3. After the Sonnet agent finishes, run all renderers:
+./build.sh
 
 # 4. For VFA topics only — image pipeline
 python3 lib/fix_images.py                    # sequential, respects rate limits
