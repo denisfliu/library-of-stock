@@ -201,6 +201,9 @@ h1 {
 .dropdown-list label.sub-item {
     padding-left: 1.6rem;
 }
+.dropdown-list label.sub-sub-item {
+    padding-left: 3.2rem;
+}
 .dropdown-list input[type="checkbox"] {
     accent-color: #6b9eff;
     flex-shrink: 0;
@@ -464,7 +467,7 @@ const search = document.querySelector('.search');
 const countEl = document.querySelector('.count');
 
 // --- State ---
-let selectedCats = new Set();     // category or subcategory strings
+let selectedCats = new Set();     // category, subcategory, or genre strings
 let selectedTags = new Set();
 let activeSort = 'alpha';
 
@@ -515,7 +518,10 @@ function buildCatList(filter) {
         const subcats = [...new Set(guides.filter(g => g.category === cat).map(g => g.subcategory).filter(Boolean))].sort();
         const catMatches = cat.toLowerCase().includes(q);
         const subMatches = subcats.some(s => s.toLowerCase().includes(q));
-        if (!catMatches && !subMatches) return;
+        const genreMatches = subcats.some(sub =>
+            [...new Set(guides.filter(g => g.category === cat && g.subcategory === sub).map(g => g.genre).filter(Boolean))]
+                .some(gn => gn.toLowerCase().includes(q)));
+        if (!catMatches && !subMatches && !genreMatches) return;
 
         // Category header with checkbox
         const catCount = guides.filter(g => g.category === cat).length;
@@ -527,11 +533,18 @@ function buildCatList(filter) {
         catCb.onchange = () => {
             if (catCb.checked) {
                 selectedCats.add(cat);
-                // also select all visible subcats
-                subcats.forEach(s => selectedCats.add(s));
+                subcats.forEach(s => {
+                    selectedCats.add(s);
+                    const genres = [...new Set(guides.filter(g => g.category === cat && g.subcategory === s).map(g => g.genre).filter(Boolean))];
+                    genres.forEach(gn => selectedCats.add(gn));
+                });
             } else {
                 selectedCats.delete(cat);
-                subcats.forEach(s => selectedCats.delete(s));
+                subcats.forEach(s => {
+                    selectedCats.delete(s);
+                    const genres = [...new Set(guides.filter(g => g.category === cat && g.subcategory === s).map(g => g.genre).filter(Boolean))];
+                    genres.forEach(gn => selectedCats.delete(gn));
+                });
             }
             updateCatBtn();
             buildCatList(filter);
@@ -549,7 +562,8 @@ function buildCatList(filter) {
         // Subcategories
         if (subcats.length > 1) {
             subcats.forEach(sub => {
-                if (q && !sub.toLowerCase().includes(q) && !catMatches) return;
+                if (q && !sub.toLowerCase().includes(q) && !catMatches && !genreMatches) return;
+                const genres = [...new Set(guides.filter(g => g.category === cat && g.subcategory === sub).map(g => g.genre).filter(Boolean))].sort();
                 const subCount = guides.filter(g => g.subcategory === sub).length;
                 const subLabel = document.createElement('label');
                 subLabel.className = 'sub-item';
@@ -559,9 +573,11 @@ function buildCatList(filter) {
                 subCb.onchange = () => {
                     if (subCb.checked) {
                         selectedCats.add(sub);
+                        genres.forEach(gn => selectedCats.add(gn));
                     } else {
                         selectedCats.delete(sub);
-                        selectedCats.delete(cat); // uncheck parent
+                        selectedCats.delete(cat);
+                        genres.forEach(gn => selectedCats.delete(gn));
                     }
                     updateCatBtn();
                     buildCatList(filter);
@@ -573,8 +589,42 @@ function buildCatList(filter) {
                 const sspan = document.createElement('span');
                 sspan.className = 'item-count';
                 sspan.textContent = subCount;
+                sspan.appendChild(document.createTextNode(''));
                 subLabel.appendChild(sspan);
                 el.appendChild(subLabel);
+
+                // Genres (third level) under this subcategory
+                if (genres.length > 0) {
+                    genres.forEach(gn => {
+                        if (q && !gn.toLowerCase().includes(q) && !catMatches && !sub.toLowerCase().includes(q)) return;
+                        const gnCount = guides.filter(g => g.genre === gn).length;
+                        const gnLabel = document.createElement('label');
+                        gnLabel.className = 'sub-sub-item';
+                        const gnCb = document.createElement('input');
+                        gnCb.type = 'checkbox';
+                        gnCb.checked = selectedCats.has(gn);
+                        gnCb.onchange = () => {
+                            if (gnCb.checked) {
+                                selectedCats.add(gn);
+                            } else {
+                                selectedCats.delete(gn);
+                                selectedCats.delete(sub);
+                                selectedCats.delete(cat);
+                            }
+                            updateCatBtn();
+                            buildCatList(filter);
+                            buildTagList(document.getElementById('tag-search').value);
+                            update();
+                        };
+                        gnLabel.appendChild(gnCb);
+                        gnLabel.appendChild(document.createTextNode(gn));
+                        const gnspan = document.createElement('span');
+                        gnspan.className = 'item-count';
+                        gnspan.textContent = gnCount;
+                        gnLabel.appendChild(gnspan);
+                        el.appendChild(gnLabel);
+                    });
+                }
             });
         }
     });
@@ -596,7 +646,7 @@ buildCatList('');
 // --- Tag dropdown (checkboxes, flat but context-aware) ---
 function getVisibleGuides() {
     if (selectedCats.size === 0) return guides;
-    return guides.filter(g => selectedCats.has(g.category) || selectedCats.has(g.subcategory));
+    return guides.filter(g => selectedCats.has(g.category) || selectedCats.has(g.subcategory) || selectedCats.has(g.genre));
 }
 
 function buildTagList(filter) {
@@ -658,7 +708,7 @@ function render() {
     const q = normalize(search.value || '');
     let filtered = guides.filter(g => {
         const matchesText = normalize(g.name).includes(q);
-        const matchesCat = selectedCats.size === 0 || selectedCats.has(g.category) || selectedCats.has(g.subcategory);
+        const matchesCat = selectedCats.size === 0 || selectedCats.has(g.category) || selectedCats.has(g.subcategory) || selectedCats.has(g.genre);
         const matchesTag = selectedTags.size === 0 || (g.tags && g.tags.some(t => selectedTags.has(t)));
         return matchesText && matchesCat && matchesTag;
     });
@@ -737,7 +787,7 @@ function getFilteredGuides() {
     const q = (search.value || '').toLowerCase();
     return guides.filter(g => {
         const matchesText = g.name.toLowerCase().includes(q);
-        const matchesCat = selectedCats.size === 0 || selectedCats.has(g.category) || selectedCats.has(g.subcategory);
+        const matchesCat = selectedCats.size === 0 || selectedCats.has(g.category) || selectedCats.has(g.subcategory) || selectedCats.has(g.genre);
         const matchesTag = selectedTags.size === 0 || (g.tags && g.tags.some(t => selectedTags.has(t)));
         return matchesText && matchesCat && matchesTag;
     });
@@ -879,6 +929,7 @@ def build():
         works_count = "?"
         category = ""
         subcategory = ""
+        genre = ""
         year = None
         continent = ""
         country = ""
@@ -892,6 +943,7 @@ def build():
                         ["General", "Biographical", "Other Works", "Other "])))
                     category = data.get("category", "")
                     subcategory = data.get("subcategory", "")
+                    genre = data.get("genre", "")
                     year = data.get("year")
                     continent = data.get("continent", "")
                     country = data.get("country", "")
@@ -908,6 +960,7 @@ def build():
             "works": works_count,
             "category": category,
             "subcategory": subcategory,
+            "genre": genre,
             "modified": mtime,
             "continent": continent,
             "country": country,
