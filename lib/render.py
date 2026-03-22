@@ -11,7 +11,7 @@ from html import escape
 
 def _load_crossref_index():
     """Load the topic index for inline linking."""
-    idx_path = Path(__file__).parent / 'output' / 'topic_index.json'
+    idx_path = Path(__file__).parent.parent / 'output' / 'topic_index.json'
     if idx_path.exists():
         with open(idx_path) as f:
             return json.load(f)
@@ -652,7 +652,7 @@ h1 {{
 {comp_summary_html}
 {links_html}
 <script src="../output/guides_data.js"></script>
-<script src="../lib/search_nav.js"></script>
+<script src="../lib/js/search_nav.js"></script>
 <script>initSearchNav('.nav-search', {{ prefix: '../', currentSlug: '{topic_key}' }});</script>
 </body>
 </html>"""

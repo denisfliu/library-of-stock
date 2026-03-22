@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-post_batch.py — Prepare post-batch steps and print the Sonnet crossref agent prompt.
+post_batch.py — Run all post-batch steps after analysis agents finish.
 
 Usage:
     python3 post_batch.py
 
-Reads completed topics from queue/current_batch.json, rebuilds the cross-ref index,
-and prints the ready-to-use Sonnet agent prompt. The controller then:
-  1. Launches the Sonnet agent with the printed prompt
-  2. After Sonnet finishes, runs: render_cards.py, render_questions.py
+Steps:
+  1. Rebuild cross-ref index
+  2. Run lib/backfill_crossrefs.py (deterministic pass — catches mechanical name matches)
+  3. Print ready-to-use Sonnet agent prompt (for semantic links the script can't catch)
+  4. After Sonnet finishes, run: ./build.sh
 """
 
 import json
@@ -86,15 +87,22 @@ def main():
     print(f"Completed topics: {len(topics)}")
 
     # Step 1: Rebuild cross-ref index
-    print("\n[1/2] Rebuilding cross-reference index...")
+    print("\n[1/3] Rebuilding cross-reference index...")
     result = subprocess.run("python3 lib/crossref.py", shell=True, cwd=ROOT)
     if result.returncode != 0:
         print("ERROR: crossref rebuild failed")
         sys.exit(1)
 
-    # Step 2: Print Sonnet agent prompt
+    # Step 2: Deterministic backfill (fast, no LLM needed)
+    print("\n[2/3] Running deterministic crossref backfill (lib/backfill_crossrefs.py)...")
+    result = subprocess.run("python3 lib/backfill_crossrefs.py", shell=True, cwd=ROOT)
+    if result.returncode != 0:
+        print("ERROR: backfill_crossrefs.py failed")
+        sys.exit(1)
+
+    # Step 3: Print Sonnet agent prompt (for semantic links the script misses)
     topic_list = "\n".join(f"- {t}" for t in topics)
-    print("\n[2/2] Launch this Sonnet crossref backfill agent:\n")
+    print("\n[3/3] Launch this Sonnet crossref backfill agent for richer semantic links:\n")
     print("=" * 60)
     print(f"""Read /home/laufey/code/stock/docs/crossref_backfill.md for full instructions.
 
@@ -110,15 +118,14 @@ For each topic:
 
 After all topics:
 ```
-python3 rerender.py
-python3 build_index.py
+./build.sh
 ```
 
 Important: Don't modify any field except cross_refs. Don't add refs for the topic itself.""")
     print("=" * 60)
     print()
     print("After the Sonnet agent finishes, run:")
-    print("  python3 render_cards.py && python3 render_questions.py")
+    print("  ./build.sh")
 
 
 if __name__ == '__main__':
