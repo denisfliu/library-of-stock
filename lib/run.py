@@ -2,17 +2,16 @@
 run.py — Runner script for the stock knowledge pipeline.
 
 Usage:
-    python run.py <topic> [difficulties] [min_year] [category]
+    python run.py <topic> [difficulties] [min_year] [category] [--mentions]
 
 Examples:
     python run.py "Smetana" "7,8,9,10"
     python run.py "Beethoven" "7,8,9,10" 2015
     python run.py "The Rite of Spring"
     python run.py "Indiana" "5,6,7,8,9,10" 2012 "Literature"
+    python run.py "Smetana" "5,6,7,8,9,10" --mentions
 """
 
-import json
-import os
 import sys
 from pathlib import Path
 
