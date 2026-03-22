@@ -99,8 +99,7 @@ To check: look up the name in `output/topic_index.json`. If found with `type: "t
 # 2. Add cross_refs array
 # 3. Save the JSON
 
-# After all topics:
-./build.sh
+# No need to render — post_batch.py runs ./build.sh after the agent finishes.
 ```
 
 ## Lookup Helper
