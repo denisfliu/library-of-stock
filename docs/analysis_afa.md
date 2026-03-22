@@ -35,7 +35,7 @@ Choose the most specific applicable indicator:
 ```
 
 Use `"genre"` to distinguish subcategories within AFA:
-`"Classical"`, `"Opera"`, `"Jazz"`, `"Folk"`, `"Contemporary Classical"`, `"Baroque"`, `"Romantic"`.
+`"Classical"`, `"Opera"`, `"Jazz"`, `"Folk"`, `"Contemporary"`, `"Baroque"`, `"Romantic"`.
 
 ## Score Clues
 
@@ -57,11 +57,11 @@ If the clue is not pitch-explicit, include it as a regular text clue in the work
 ### ABC notation rules
 
 - Write **2–4 bars maximum** — enough to be recognizable, not a transcription
-- Include standard headers: `X:1`, `T:`, `M:` (meter), `L:` (note length unit), `K:` (key)
-- Use standard ABC pitch notation: `C D E F G A B` (middle octave), `c d e f g a b` (octave above), `C,` (octave below)
-- Accidentals: `^C` (C-sharp), `_B` (B-flat), `=C` (natural)
-- Note lengths: `C2` (double), `C/2` (half), `C3/2` (dotted)
-- Always set `needs_review: true` — ABC entries require manual verification before use
+- Always use `K:C` (no key signature) — use explicit accidentals (`_B` for B-flat, `^F` for F-sharp) to avoid parser ambiguity
+- Uppercase letters (`C`–`B`) = middle octave; lowercase (`c`–`b`) = one octave higher. Ascending sequences must reach the right octave: "ascending F, B-flat, F" → `F _B f` (F4, Bb4, F5), not `F _B F` (which stays in the same octave)
+- Note lengths with `L:1/4`: `C` = quarter, `C2` = half, `C4` = whole, `C/2` = eighth
+- Add `%%MIDI program N` to set the instrument. Common: Trumpet=56, Horn=60, Trombone=57, Violin=40, Flute=73, Oboe=68, Clarinet=71, Piano=0 (default). Use the instrument named in the clue
+- Always set `needs_review: true`
 
 ### `score_clues` field format
 
@@ -74,7 +74,7 @@ Add a top-level `"score_clues"` array to the analysis JSON. One entry per extrac
     "indicator": "high",
     "description": "Opening brass gesture after percussion intro",
     "source_text": "trumpets playing the ascending notes F, B-flat, F",
-    "abc": "X:1\nT:Fanfare opening\nM:4/4\nL:1/4\nK:F\n|F2 B,2|F4||",
+    "abc": "X:1\nT:Fanfare opening\n%%MIDI program 56\nM:4/4\nL:1/4\nK:C\n|F2 _B2|f4||",
     "needs_review": true
   },
   {
@@ -98,10 +98,10 @@ Only include a `score_clues` entry for excerpts that appear in actual question t
 
 Follow the same rules as all other categories. For AFA:
 
-- `Symphony: opens with four repeated notes in C minor` → `Symphony No. 5 (Beethoven)`
+- `Work: opens with four repeated notes in C minor` → `Symphony No. 5 (Beethoven)`
 - `Composer: went deaf in 1874; depicted this with a sustained high E in a string quartet` → `Bedřich Smetana`
 - `Opera: the heroine stabs herself with Scarpia's own knife after he reneges on the bargain` → `Tosca (Puccini)`
-- `Étude: opens with the slurred sostenuto 4/4 melody over a dominant pedal that is respelled in C-sharp minor in the middle section` → `Raindrop Prelude (Chopin)`
+- `Work: opens with the slurred sostenuto 4/4 melody over a dominant pedal that is respelled in C-sharp minor in the middle section` → `Raindrop Prelude (Chopin)`
 
 ### Audio cards
 
@@ -113,11 +113,3 @@ Follow the same rules as all other categories. For AFA:
 - Clues that simply name the composer without a testable fact ("this Austrian composer")
 - Tempo markings or key signatures in isolation unless they are clued specifically in questions
 
-## Common Pitfalls
-
-- **Key and meter errors in ABC**: ABC uses `K:C` for C major, `K:Am` for A minor, `K:Bb` for B-flat major. Wrong key signature will shift all pitches — always double-check.
-- **Octave errors**: Middle C in ABC is `C` (or `C,` in some conventions — pick one and be consistent within a score). The octave above is `c`.
-- **Do not conflate movements with works**: A symphony is one work; its movements are not separate works unless they are frequently clued independently. Use one section per symphony with subsections per movement.
-- **Opus numbers**: Include in the work name only if they appear in question answerlines (e.g., `"String Quartet Op. 18 No. 1"` vs. just `"String Quartet in F major"`).
-- **Arrangements and transcriptions**: Note when a clue refers to a transcription (e.g., Liszt's piano transcriptions of Beethoven symphonies) — these are separate from the original.
-- **Non-Western music**: For topics outside the Western classical canon (Indian classical, gagaku, maqam), use appropriate genre metadata and do not force Western notation conventions into ABC score clues.

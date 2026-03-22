@@ -127,10 +127,56 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         f'</div>'
     )
 
+    # Build score_clues lookup: work_name → list of clues with abc/mp3
+    score_clips_by_work: dict[str, list] = {}
+    for sc in analysis.get("score_clues", []):
+        if sc.get("abc") or sc.get("mp3"):
+            score_clips_by_work.setdefault(sc["work"], []).append(sc)
+
+    has_score_clips = bool(score_clips_by_work)
+
+    def _score_clip_html(clip: dict) -> str:
+        """Render a single score clip as an inline block."""
+        abc_json = json.dumps(clip.get("abc", ""))
+        mp3 = clip.get("mp3", "")
+        review_badge = ' <span class="review-badge" title="ABC needs review">⚠</span>' if clip.get("needs_review") else ""
+        audio_el = (f'<audio controls preload="none" src="{escape(mp3)}" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio>'
+                    if mp3 else
+                    '<button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button>'
+                    '<button class="stop-abc-btn" onclick="stopAbc(this)">■</button>')
+        return (f'<div class="score-clip" data-abc={abc_json}>'
+                f'<div class="score-clip-header">'
+                f'<span class="score-clip-label">Score clip{review_badge}</span>{audio_el}'
+                f'</div>'
+                f'<div class="score-notation"></div>'
+                f'</div>')
+
     works_html = ""
     for i, work in enumerate(works):
+        # Pre-match score clips to clue indices by source_text word overlap
+        work_name = work.get("name", "")
+        work_clips = []
+        for clip_work, clips in score_clips_by_work.items():
+            if clip_work == work_name or clip_work in work_name or work_name.startswith(clip_work):
+                work_clips.extend(clips)
+        clue_list = work.get("clues", [])
+        clip_for_clue: dict[int, list] = {}  # clue_idx → [clips]
+        unmatched_clips = []
+        for clip in work_clips:
+            src_words = {w for w in re.sub(r'[^\w\s]', ' ', clip.get("source_text", "").lower()).split() if len(w) > 2}
+            best_idx, best_overlap = -1, 0
+            for ci, clue in enumerate(clue_list):
+                clue_words = {w for w in re.sub(r'[^\w\s]', ' ', clue.get("clue", "").lower()).split() if len(w) > 2}
+                overlap = len(src_words & clue_words)
+                if overlap > best_overlap:
+                    best_overlap, best_idx = overlap, ci
+            if best_overlap >= 2:
+                clip_for_clue.setdefault(best_idx, []).append(clip)
+            else:
+                unmatched_clips.append(clip)
+
         clues_html = ""
-        for clue in work.get("clues", []):
+        for clue in clue_list:
             freq = clue.get("frequency", 1)
             tendency = clue.get("tendency", "mid")
             badge_class = {
@@ -145,12 +191,14 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                 tooltip_text = " | ".join(escape(ex) for ex in examples[:3])
                 ex_html = f'<span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">{tooltip_text}</span></span>'
 
+            ci = clue_list.index(clue)
+            inline_clips = "".join(_score_clip_html(c) for c in clip_for_clue.get(ci, []))
             clues_html += f"""
             <tr class="clue-row">
                 <td class="clue-freq">{freq}x</td>
                 <td class="clue-body">
                     <span class="clue-text">{escape(clue.get("clue", ""))}</span>
-                    <span class="badge {badge_class}">{tendency}</span>{ex_html}
+                    <span class="badge {badge_class}">{tendency}</span>{ex_html}{inline_clips}
                 </td>
             </tr>
             """
@@ -187,7 +235,12 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                     """
             images_html = f'<div class="work-images">{figures}</div>'
 
-        clues_table = f'<table class="clue-table">{clues_html}</table>' if clues_html else ""
+        # Unmatched clips → spanning rows at top of table
+        unmatched_rows = "".join(
+            f'<tr><td colspan="2" style="padding:0.3rem 0.5rem;">{_score_clip_html(c)}</td></tr>'
+            for c in unmatched_clips
+        )
+        clues_table = f'<table class="clue-table">{unmatched_rows}{clues_html}</table>' if (clues_html or unmatched_rows) else ""
 
         # Check if this work/section links to another topic's page
         work_link_btn = ""
@@ -274,11 +327,14 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         </section>
         """
 
+    abcjs_script = '<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>' if has_score_clips else ""
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{abcjs_script}
 <title>Stock: {topic}</title>
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -740,6 +796,44 @@ h1 {{
     border-color: #6b9eff;
     text-decoration: none;
 }}
+.score-clip {{
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}}
+.score-clip-header {{
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}}
+.score-clip-label {{
+    font-size: 0.8rem;
+    color: #808790;
+}}
+.review-badge {{
+    font-size: 0.72rem;
+    color: #f0a060;
+}}
+.play-abc-btn, .stop-abc-btn {{
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}}
+.score-notation svg {{
+    max-width: 100%;
+}}
+.score-notation .abcjs-staff path {{
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}}
 </style>
 </head>
 <body>
@@ -752,6 +846,39 @@ h1 {{
 <script src="../output/guides_data.js"></script>
 <script src="../lib/js/search_nav.js"></script>
 <script>initSearchNav('.nav-search', {{ prefix: '../', currentSlug: '{topic_key}' }});</script>
+{f'''<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {{
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {{
+        ABCJS.renderAbc(el, abc, {{ responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' }});
+    }}
+}});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {{
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) {{ try {{ _clipSynth.stop(); }} catch(e) {{}} _clipSynth = null; }}
+    var visual = ABCJS.renderAbc('_offscreen', abc, {{}});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({{ visualObj: visual[0] }}).then(function() {{
+        return synth.prime();
+    }}).then(function() {{
+        synth.start();
+        _clipSynth = synth;
+    }}).catch(function(e) {{ console.warn('abcjs synth:', e); }});
+}}
+function stopAbc(btn) {{
+    if (_clipSynth) {{ try {{ _clipSynth.stop(); }} catch(e) {{}} _clipSynth = null; }}
+}}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>''' if has_score_clips else ''}
 </body>
 </html>"""
 

@@ -128,6 +128,7 @@ Required top-level fields:
 - [ ] comprehensive_summary is real prose (multiple sentences)
 - [ ] Metadata present: category, subcategory, year, continent, country, tags
 - [ ] Each card tests ONE fact
+- [ ] Every card has `"type": "basic"` or `"type": "image"` — NEVER a work type like "Fanfare", "Symphony", "Painting"
 
 ### Render
 ```bash

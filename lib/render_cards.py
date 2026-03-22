@@ -95,13 +95,16 @@ def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
     rec_tags.extend(analysis.get("tags", []))
     rec_tags = list(dict.fromkeys(rec_tags))  # dedupe, preserve order
 
+    has_score_clips = bool(analysis.get("score_clues"))
+    abcjs_script = '<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>' if has_score_clips else ''
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cards: {escape(topic)}</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+{abcjs_script}
 <style>
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 body {{
@@ -476,10 +479,7 @@ h1 {{
         <button onclick="applyPaletteToSelected()">Apply to selected cards</button>
         <button onclick="clearPaletteSelection()" style="background:#1a1f25;">Cancel</button>
     </div>
-    <div id="clips-section" style="display:none;margin-top:0.6rem;border-top:1px solid #3a3f47;padding-top:0.5rem;">
-        <div style="font-size:0.75rem;color:#808790;margin-bottom:0.4rem;">Score Clips</div>
-        <div id="clips-grid" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div>
-    </div>
+    {'<div id="clips-section" style="display:none;margin-top:0.6rem;border-top:1px solid #3a3f47;padding-top:0.5rem;"><div style="font-size:0.75rem;color:#808790;margin-bottom:0.4rem;">Score Clips</div><div id="clips-grid" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div></div>' if has_score_clips else ''}
 </details>
 
 <table class="card-table">
@@ -544,7 +544,7 @@ h1 {{
 <script>
 const TOPIC = {json.dumps(topic)};
 let cards = {json.dumps(cards, ensure_ascii=False)};
-const SCORE_CLIPS = {json.dumps(analysis.get("score_clues", []), ensure_ascii=False)};
+const SCORE_CLIPS = {json.dumps(analysis.get("score_clues", []) if has_score_clips else [], ensure_ascii=False)};
 let editIndex = -1; // -1 = adding new
 
 // Populate work filter
@@ -1023,9 +1023,9 @@ document.querySelector('.img-palette')?.addEventListener('paste', e => {{
 
 renderPalette();
 renderTable();
-initClipsPalette();
+{'initClipsPalette();' if has_score_clips else ''}
 </script>
-<div id="offscreen-render" style="display:none;position:absolute;"></div>
+{'<div id="offscreen-render" style="display:none;position:absolute;"></div>' if has_score_clips else ''}
 <script src="../lib/js/anki_export.js"></script>
 <script>
 async function exportApkgBtn() {{
