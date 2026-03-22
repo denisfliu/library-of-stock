@@ -110,8 +110,22 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     questions_file = f"{topic_key}_questions.html"
     cards_file = f"{topic_key}_cards.html"
     has_cards = bool(analysis.get("cards"))
-    cards_link = f' · <a href="{cards_file}">Make cards</a>' if has_cards else ""
-    nav_html = f'<div class="nav-bar"><div class="nav-links"><a href="../index.html">&larr; Home</a> &middot; <a href="{questions_file}">View source questions</a>{cards_link}</div><div class="nav-search"></div></div>'
+    cards_secondary = f'<a href="{cards_file}">Make cards</a>' if has_cards else ""
+    nav_html = (
+        f'<div class="nav-bar">'
+        f'<div class="nav-links">'
+        f'<a href="../index.html" class="nav-home">&larr; Home</a>'
+        f'<div class="nav-overflow-wrap">'
+        f'<button class="nav-overflow-btn" title="More">&#9776;</button>'
+        f'<div class="nav-secondary">'
+        f'<a href="{questions_file}">View source questions</a>'
+        f'{cards_secondary}'
+        f'</div>'
+        f'</div>'
+        f'</div>'
+        f'<div class="nav-search"></div>'
+        f'</div>'
+    )
 
     works_html = ""
     for i, work in enumerate(works):
@@ -525,6 +539,8 @@ h1 {{
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
 }}
 .nav-bar a {{
     color: #6b9eff;
@@ -537,6 +553,88 @@ h1 {{
     display: flex;
     gap: 0.3rem;
     align-items: center;
+}}
+.nav-overflow-wrap {{
+    position: relative;
+    display: flex;
+    align-items: center;
+}}
+.nav-secondary {{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}}
+.nav-secondary a::before {{
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}}
+.nav-overflow-btn {{
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}}
+.nav-overflow-btn:hover {{
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}}
+@media (max-width: 600px) {{
+    .nav-overflow-btn {{
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }}
+    .nav-secondary {{
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }}
+    .nav-overflow-wrap.open .nav-secondary {{
+        display: flex;
+    }}
+    .nav-secondary a {{
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }}
+    .nav-secondary a::before {{
+        display: none;
+    }}
+    .nav-secondary a:hover {{
+        background: #262d37;
+        text-decoration: none;
+    }}
+    .search-nav-input {{
+        width: 110px;
+    }}
+    .search-nav-input:focus {{
+        width: 150px;
+    }}
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {{
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }}
 }}
 /* search nav */
 .search-nav {{ display: inline-block; }}
