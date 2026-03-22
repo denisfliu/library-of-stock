@@ -8,9 +8,15 @@ Usage:
 """
 
 import json
+import re
 import sys
 from html import escape
 from pathlib import Path
+
+
+def _sanitize(name: str) -> str:
+    """Same normalization fetch.py uses for cache filenames."""
+    return re.sub(r'[^\w\-]', '_', name.strip().lower())
 
 
 def render_questions_html(cache_data: dict, output_path: str | Path,
@@ -209,18 +215,90 @@ h2 {{
     return output_path
 
 
-def find_cache_for_topic(topic_key: str) -> Path | None:
-    """Find the cache file matching a topic key (from analysis filename)."""
+def find_cache_for_topic(topic_key: str, topic_name: str = "") -> Path | None:
+    """Find the cache file matching a topic key (from analysis filename).
+
+    Agents often search by last name (e.g. 'kafka' for Franz Kafka), so the
+    cache file slug won't match the full-name analysis slug.  Strategy:
+
+    1. Exact prefix match on topic_key.
+    2. If topic_name provided, apply fetch.py's _sanitize() to get the
+       canonical cache slug (handles dots, special chars) and try that.
+    3. Try each word component from last to first as a prefix — catches the
+       common last-name-search pattern.
+    4. Try adjacent word pairs from the end — catches compound names
+       like "du Maurier" → prefix "du_maurier".
+    5. Substring fallback.
+    """
     cache_dir = Path("cache")
-    # Try exact match first
-    for f in cache_dir.glob(f"{topic_key}_*.json"):
-        if "_mentions" not in f.name:
-            return f
-    # Try partial match
+
+    name_lower = topic_name.lower() if topic_name else ""
+
+    def _first_non_mention(pattern: str) -> Path | None:
+        for f in sorted(cache_dir.glob(pattern)):
+            if "_mentions" not in f.name:
+                return f
+        return None
+
+    def _validated(pattern: str) -> Path | None:
+        """Like _first_non_mention but also checks that the cache's
+        query_string is actually a word in the topic name.  This prevents
+        e.g. 'smith_d7...' (about Adam Smith) from being served to a
+        different topic whose only match is the surname 'Smith'."""
+        for f in sorted(cache_dir.glob(pattern)):
+            if "_mentions" in f.name:
+                continue
+            if not name_lower:
+                return f  # no topic_name to validate against, accept blindly
+            try:
+                qs = json.load(open(f)).get("query_string", "").lower()
+            except Exception:
+                continue
+            if qs and qs in name_lower:
+                return f
+        return None
+
+    # 1. Exact prefix match (always trusted — no validation needed)
+    result = _first_non_mention(f"{topic_key}_*.json")
+    if result:
+        return result
+
+    # 2. Sanitized topic_name (matches fetch.py's cache key convention)
+    if topic_name:
+        sanitized = _sanitize(topic_name)
+        if sanitized != topic_key:
+            result = _first_non_mention(f"{sanitized}_*.json")
+            if result:
+                return result
+
+    # 3. Each word component from last to first (min 3 chars) — validated.
+    # Use components from both the topic_key and the sanitized topic_name so
+    # that apostrophes/special chars in names like "O'Connor" resolve correctly
+    # (analysis slug: flannery_oconnor, sanitized: flannery_o_connor → 'connor').
+    sanitized_name = _sanitize(topic_name) if topic_name else topic_key
+    all_components = dict.fromkeys(
+        p for source in (topic_key, sanitized_name)
+        for p in source.replace(".", "").split("_")
+        if len(p) >= 3
+    )
+    for part in reversed(list(all_components)):
+        result = _validated(f"{part}_*.json")
+        if result:
+            return result
+
+    # 4. Adjacent word pairs from the end — validated (compound last names).
+    # Use sanitized name so O'Connor → ['o', 'connor'] → pair 'o_connor'.
+    for source_key in dict.fromkeys([sanitized_name, topic_key.replace(".", "")]):
+        raw_parts = [p for p in source_key.split("_") if p]
+        for i in range(len(raw_parts) - 1, 0, -1):
+            pair = "_".join(raw_parts[i - 1:i + 1])
+            result = _validated(f"{pair}_*.json")
+            if result:
+                return result
+
+    # 5. Substring fallback
     for f in sorted(cache_dir.glob("*.json")):
-        if "_mentions" in f.name:
-            continue
-        if topic_key in f.name:
+        if "_mentions" not in f.name and topic_key in f.name:
             return f
     return None
 
@@ -237,8 +315,8 @@ def build_all():
             analysis = json.load(f)
         topic_display = analysis.get("topic", topic_key.replace("_", " ").title())
 
-        # Find cache file
-        cache_file = find_cache_for_topic(topic_key)
+        # Find cache file (pass full topic name for better slug matching)
+        cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
         if not cache_file:
             print(f"  Skipping {topic_key}: no cache file found")
             continue
