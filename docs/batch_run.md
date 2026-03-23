@@ -10,7 +10,7 @@ Tell the controller (Claude Code conversation):
 
 The controller will:
 1. Create `queue/current_batch.json` from the global queues
-2. Build agent prompts using `lib/prompt_builder.py`
+2. Build agent prompts using `lib/pipeline/prompt_builder.py`
 3. Launch N+M agents with assembled prompts
 4. Monitor agents, relaunch when one finishes (if queue not empty)
 5. After all done, run `python3 post_batch.py` (rebuilds index, runs deterministic backfill, prints Sonnet prompt)
@@ -40,9 +40,9 @@ Second-pass: analysis_core → analysis_second_pass → category_supplement → 
 ### Generate a prompt
 
 ```bash
-python3 lib/prompt_builder.py first --category Literature
-python3 lib/prompt_builder.py second --category Philosophy
-python3 lib/prompt_builder.py first --category "Fine Arts" --max-topics 5
+python3 lib/pipeline/prompt_builder.py first --category Literature
+python3 lib/pipeline/prompt_builder.py second --category Philosophy
+python3 lib/pipeline/prompt_builder.py first --category "Fine Arts" --max-topics 5
 ```
 
 The builder reads blocks, concatenates in order, renumbers steps sequentially, and wraps in the agent loop template. The full protocol text is inlined into the prompt — agents never need to read doc files.
@@ -56,7 +56,7 @@ The builder reads blocks, concatenates in order, renumbers steps sequentially, a
 
 ### Two-Phase Pipeline (VFA only)
 - **Phase 1**: Analysis agents — fetch, analyze, render. **No image searching.**
-- **Phase 2**: Run `python3 lib/fix_images.py` **once, sequentially** after all analysis agents finish. Then LLM reviews `cache/pending_images.json`.
+- **Phase 2**: Run `python3 lib/images/fix_images.py` **once, sequentially** after all analysis agents finish. Then LLM reviews `cache/pending_images.json`.
 
 Non-VFA categories (Literature, Philosophy, Science) don't need Phase 2.
 
@@ -64,13 +64,13 @@ Non-VFA categories (Literature, Philosophy, Science) don't need Phase 2.
 
 ### 1. Check queues
 ```bash
-python3 lib/topic_queue.py summary
+python3 lib/queue/topic_queue.py summary
 ```
 
 ### 2. Initialize batch
 ```bash
 # Pull from global queues into the shared batch queue
-python3 lib/batch_worker.py init "batch-name" --first 40 --second 10 --category Literature
+python3 lib/queue/batch_worker.py init "batch-name" --first 40 --second 10 --category Literature
 ```
 This pops items from the global queues and creates `queue/current_batch.json`.
 Use `--category` to scope to one category, or omit for mixed batches.
@@ -78,7 +78,7 @@ Use `--category` to scope to one category, or omit for mixed batches.
 ### 3. Launch agents
 Generate the prompt and launch agents:
 ```bash
-python3 lib/prompt_builder.py first --category Literature
+python3 lib/pipeline/prompt_builder.py first --category Literature
 # Copy output as the agent prompt
 ```
 Each agent pops from the shared batch queue filtered by its category and pass type.
@@ -100,15 +100,15 @@ python3 post_batch.py
 ./build.sh
 
 # 4. For VFA topics only — image pipeline
-python3 lib/fix_images.py                    # sequential, respects rate limits
+python3 lib/images/fix_images.py             # sequential, respects rate limits
 # Then review cache/pending_images.json      # LLM approves/rejects ambiguous images
-python3 lib/verify_images.py                 # verify all URLs return 200
+python3 lib/images/verify_images.py          # verify all URLs return 200
 
 # 5. Quality audit
 python3 -c "
 import json
 from pathlib import Path
-for f in sorted(Path('output').glob('*_analysis.json')):
+for f in sorted(Path('output').glob('*/analysis.json')):
     with open(f) as fh:
         data = json.load(fh)
     works = len(data.get('works', []))
@@ -124,7 +124,7 @@ for f in sorted(Path('output').glob('*_analysis.json')):
 These mistakes were made before — do NOT repeat them:
 
 1. **Shallow analyses**: Agents with 60+ queries crammed everything into single sections with no cards. **Fix**: 10/5 items to query max per agent (1st pass / 2nd pass).
-2. **Guessed image URLs**: Agents constructed Wikimedia URLs that were 404s or showed the wrong artist's painting. **Fix**: No image searching during analysis. Use `lib/fix_images.py` after.
+2. **Guessed image URLs**: Agents constructed Wikimedia URLs that were 404s or showed the wrong artist's painting. **Fix**: No image searching during analysis. Use `lib/images/fix_images.py` after.
 3. **Rate limiting**: Parallel agents all hitting Wikimedia caused hours-long blocks. **Fix**: Image search is always sequential, never in parallel agents.
 4. **Terse descriptions**: Agents wrote one-line descriptions like "His most famous work." **Fix**: Self-check requires mini-paragraph descriptions.
 5. **Multi-clue cards**: Cards with 3+ semicolons packing multiple facts. **Fix**: Self-check — each card tests one fact.

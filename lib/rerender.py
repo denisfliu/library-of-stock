@@ -7,9 +7,12 @@ Also saves the extracted analysis dicts as JSON for future re-rendering.
 
 import json
 import re
+import sys
 from html import unescape
 from pathlib import Path
-from render import render_html
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.render.render import render_html
 
 
 def extract_analysis_from_html(html: str) -> dict:

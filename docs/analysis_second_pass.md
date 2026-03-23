@@ -4,7 +4,7 @@ You are **enriching an existing analysis** with additional data. The analysis JS
 
 ## Step 1: Load Existing Analysis
 
-Read `output/{slug}_analysis.json`. Note:
+Read `output/{slug}/analysis.json`. Note:
 - How many work sections exist
 - How many cards exist
 - Which works have thin clue coverage
@@ -63,4 +63,4 @@ Read ALL new clue files and merge following these rules:
 ## What NOT to Do
 
 - Don't re-derive existing clues from scratch — add to them
-- Don't search for images — that's handled by `lib/fix_images.py` separately
+- Don't search for images — that's handled by `lib/images/fix_images.py` separately

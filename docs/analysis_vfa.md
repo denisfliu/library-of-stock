@@ -29,12 +29,12 @@ For movements (Ashcan School, YBA, etc.): use `Movement` indicator and organize 
 
 ### Image pipeline
 
-1. Run `python3 lib/fix_images.py` — searches Commons for all missing visual works
+1. Run `python3 lib/images/fix_images.py` — searches Commons for all missing visual works
 2. Review `cache/pending_images.json` — LLM approves or rejects ambiguous matches
 3. For works that remain imageless (copyrighted, not on Commons), manually add Wikipedia links
-4. Run `python3 lib/verify_images.py` to confirm all URLs return HTTP 200
+4. Run `python3 lib/images/verify_images.py` to confirm all URLs return HTTP 200
 
-### How `lib/images.py` works
+### How `lib/images/images.py` works
 
 **Never construct or guess Wikimedia URLs.** All image URLs go through:
 
@@ -53,11 +53,11 @@ if url:
 
 ### Rate limiting
 
-`lib/images.py` uses a **file lock** (`cache/.images.lock`) to ensure only one process accesses the Wikimedia API at a time. Multiple agents or scripts can safely call `find_image()` concurrently — they'll queue automatically.
+`lib/images/images.py` uses a **file lock** (`cache/.images.lock`) to ensure only one process accesses the Wikimedia API at a time. Multiple agents or scripts can safely call `find_image()` concurrently — they'll queue automatically.
 
 Rules:
 1. Never search for images inside parallel agents
-2. All operations go through `lib/images.py` (2s delays, `Retry-After` support)
+2. All operations go through `lib/images/images.py` (2s delays, `Retry-After` support)
 3. Persistent cache (`cache/image_urls.json`) — repeated runs are free
 4. Agents must NOT use WebSearch, manual Commons lookups, or construct URLs
 5. User-Agent must comply with Wikimedia policy: `BotName/version (URL; email)`

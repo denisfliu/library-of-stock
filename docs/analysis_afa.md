@@ -109,7 +109,7 @@ For AFA:
 
 ### Audio cards
 
-**Do not create audio cards manually.** They are auto-generated at build time from `score_clues` entries that have a resolved `mp3` path (after `lib/render_audio.py` runs). The front of an audio card is the `description` field; the back is the work and composer name.
+**Do not create audio cards manually.** They are auto-generated at build time from `score_clues` entries that have a resolved `mp3` path (after `lib/render/render_audio.py` runs). The front of an audio card is the `description` field; the back is the work and composer name.
 
 ### What NOT to card
 

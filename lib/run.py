@@ -18,8 +18,8 @@ from pathlib import Path
 # Ensure project root is on sys.path so imports work from any cwd
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from lib.fetch import fetch_topic, fetch_text_mentions
-from lib.parse import parse_answer_clues, parse_text_mention_clues
+from lib.pipeline.fetch import fetch_topic, fetch_text_mentions
+from lib.pipeline.parse import parse_answer_clues, parse_text_mention_clues
 
 
 def format_clues_for_analysis(parsed: dict) -> str:

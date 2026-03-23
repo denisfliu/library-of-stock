@@ -7,8 +7,8 @@ For agents adding hyperlinks to existing pages. This is a mechanical task — us
 Before doing any LLM-based backfill, run the deterministic script which handles mechanical name matches automatically:
 
 ```bash
-python3 lib/backfill_crossrefs.py          # adds cross_refs to any topic missing them
-python3 lib/backfill_crossrefs.py --dry-run  # preview without writing
+python3 lib/crossref/backfill_crossrefs.py          # adds cross_refs to any topic missing them
+python3 lib/crossref/backfill_crossrefs.py --dry-run  # preview without writing
 ```
 
 This script only touches topics with no `cross_refs` key yet. It's conservative: only matches canonical multi-word names from the index, skips ambiguous short titles. Run it first — then use the Sonnet agent only for richer semantic links it might miss (e.g., a work's title alluding to another author, cross-category connections).
