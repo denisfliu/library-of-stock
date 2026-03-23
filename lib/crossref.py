@@ -20,10 +20,10 @@ def rebuild_index():
     """Rebuild topic_index.json from all analysis JSONs."""
     index = {}
 
-    for f in sorted((ROOT / 'output').glob('*_analysis.json')):
+    for f in sorted((ROOT / 'output').glob('*/analysis.json')):
         with open(f) as fh:
             data = json.load(fh)
-        slug = f.stem.replace('_analysis', '')
+        slug = f.parent.name
         topic = data.get('topic', '')
         cat = data.get('category', '')
 
@@ -94,7 +94,7 @@ def main():
             target = entry['topic']
             if entry['type'] == 'work':
                 target += f" / {entry['work']}"
-            print(f'"{args.lookup}" -> {target} (output/{entry["slug"]}_stock.html)')
+            print(f'"{args.lookup}" -> {target} (output/{entry["slug"]}/stock.html)')
         else:
             print(f'"{args.lookup}" -> NOT FOUND (would be a red link)')
 

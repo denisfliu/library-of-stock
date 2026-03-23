@@ -32,7 +32,6 @@ import tempfile
 from pathlib import Path
 
 OUTPUT_DIR = Path("output")
-AUDIO_DIR = OUTPUT_DIR / "audio"
 
 # Common soundfont search paths across distros / macOS
 _SOUNDFONT_CANDIDATES = [
@@ -132,8 +131,8 @@ def build_all(force: bool = False) -> None:
     skipped = 0
     errors = 0
 
-    for analysis_file in sorted(OUTPUT_DIR.glob("*_analysis.json")):
-        topic_key = analysis_file.stem.replace("_analysis", "")
+    for analysis_file in sorted(OUTPUT_DIR.glob("*/analysis.json")):
+        topic_key = analysis_file.parent.name
 
         with open(analysis_file) as f:
             analysis = json.load(f)
@@ -150,8 +149,8 @@ def build_all(force: bool = False) -> None:
             if not abc:
                 continue
 
-            mp3_rel = f"audio/{topic_key}/{i}.mp3"
-            mp3_path = OUTPUT_DIR / mp3_rel
+            mp3_rel = f"audio/{i}.mp3"
+            mp3_path = analysis_file.parent / mp3_rel
 
             # Incremental: skip if MP3 is newer than the analysis JSON
             if not force and mp3_path.exists():

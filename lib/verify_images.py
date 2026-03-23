@@ -100,7 +100,7 @@ def main():
 
     # Also clear broken URLs from analysis JSONs and cards
     files_modified = set()
-    for f in sorted(output_dir.glob('*_analysis.json')):
+    for f in sorted(output_dir.glob('*/analysis.json')):
         with open(f) as fh:
             data = json.load(fh)
 

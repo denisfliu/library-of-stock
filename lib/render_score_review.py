@@ -19,10 +19,10 @@ def collect_clues():
     """Collect all score clues with ABC notation, deduplicating by abc content."""
     seen_abc = set()
     clues = []
-    for f in sorted(OUTPUT_DIR.glob("*_analysis.json")):
+    for f in sorted(OUTPUT_DIR.glob("*/analysis.json")):
         data = json.load(open(f))
         topic = data.get("topic", "")
-        slug = f.stem.replace("_analysis", "")
+        slug = f.parent.name
         for i, c in enumerate(data.get("score_clues", [])):
             abc = c.get("abc")
             if not abc:
@@ -32,10 +32,11 @@ def collect_clues():
                 continue
             seen_abc.add(key)
             mp3 = c.get("mp3", "")
-            mp3_path = OUTPUT_DIR / mp3 if mp3 else None
-            mtime = int(mp3_path.stat().st_mtime) if mp3_path and mp3_path.exists() else 0
-            # Paths are relative to dev/, so prefix with ../output/
-            mp3_rel = f"../output/{mp3}" if mp3 else ""
+            # mp3 is relative to topic dir (e.g. "audio/0.mp3")
+            # dev/ pages need: ../output/{slug}/audio/0.mp3
+            mp3_abs = OUTPUT_DIR / slug / mp3 if mp3 else None
+            mtime = int(mp3_abs.stat().st_mtime) if mp3_abs and mp3_abs.exists() else 0
+            mp3_rel = f"../output/{slug}/{mp3}" if mp3 else ""
             clues.append({
                 "topic": topic,
                 "slug": slug,
@@ -74,7 +75,7 @@ def render(clues):
 <div class="clue-card" id="clue-{idx}" data-needs-review="{str(c['needs_review']).lower()}">
   <div class="clue-header">
     <div class="clue-title">
-      <a href="../output/{escape(c['slug'])}_stock.html" class="topic-link">{escape(c['topic'])}</a>
+      <a href="../output/{escape(c['slug'])}/stock.html" class="topic-link">{escape(c['topic'])}</a>
       <span class="work-name">{escape(c['work'])}</span>
     </div>
     {badge}

@@ -231,14 +231,12 @@ def find_cross_refs(d, topic_name, topic_slug):
 
 def get_slug(filepath, d):
     """Get slug from filepath."""
-    stem = filepath.stem  # e.g., 'andrew_wyeth_analysis'
-    slug = stem.replace('_analysis', '')
-    return slug
+    return filepath.parent.name
 
 
 # Find all topics missing cross_refs
 missing_files = []
-for f in sorted(Path('output').glob('*_analysis.json')):
+for f in sorted(Path('output').glob('*/analysis.json')):
     d = json.load(open(f))
     if not d.get('cross_refs'):
         missing_files.append((f, d))

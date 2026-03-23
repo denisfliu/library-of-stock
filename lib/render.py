@@ -106,15 +106,15 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     links = analysis.get("links", [])
 
     # Nav links
-    topic_key = str(output_path.stem).replace("_stock", "")
-    questions_file = f"{topic_key}_questions.html"
-    cards_file = f"{topic_key}_cards.html"
+    topic_key = output_path.parent.name
+    questions_file = "questions.html"
+    cards_file = "cards.html"
     has_cards = bool(analysis.get("cards"))
     cards_secondary = f'<a href="{cards_file}">Make cards</a>' if has_cards else ""
     nav_html = (
         f'<div class="nav-bar">'
         f'<div class="nav-links">'
-        f'<a href="../index.html" class="nav-home">&larr; Home</a>'
+        f'<a href="../../index.html" class="nav-home">&larr; Home</a>'
         f'<div class="nav-overflow-wrap">'
         f'<button class="nav-overflow-btn" title="More">&#9776;</button>'
         f'<div class="nav-secondary">'
@@ -847,9 +847,9 @@ h1 {{
 {works_html}
 {comp_summary_html}
 {links_html}
-<script src="../output/guides_data.js"></script>
-<script src="../lib/js/search_nav.js"></script>
-<script>initSearchNav('.nav-search', {{ prefix: '../', currentSlug: '{topic_key}' }});</script>
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', {{ prefix: '../../', currentSlug: '{topic_key}' }});</script>
 {f'''<script>
 // Render ABC notation for all score clips
 document.querySelectorAll('.score-clip').forEach(function(clip) {{

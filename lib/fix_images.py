@@ -39,7 +39,7 @@ def main():
 
     # Collect visual works needing images
     needs_fix = []
-    for f in sorted(output_dir.glob('*_analysis.json')):
+    for f in sorted(output_dir.glob('*/analysis.json')):
         with open(f) as fh:
             data = json.load(fh)
         if data.get('category') != 'Fine Arts':

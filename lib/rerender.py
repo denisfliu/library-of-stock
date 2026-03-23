@@ -153,8 +153,8 @@ def main():
     count = 0
     skipped_up_to_date = 0
     skipped_orphan = 0
-    for json_path in sorted(output_dir.glob("*_analysis.json")):
-        stock_path = output_dir / json_path.name.replace("_analysis.json", "_stock.html")
+    for json_path in sorted(output_dir.glob("*/analysis.json")):
+        stock_path = json_path.parent / "stock.html"
 
         # Incremental: skip if HTML is newer than JSON (unless --force)
         if not force and stock_path.exists() and stock_path.stat().st_mtime >= json_path.stat().st_mtime:
@@ -173,10 +173,10 @@ def main():
         count += 1
 
     # Warn about orphaned HTML files with no JSON
-    for html_path in sorted(output_dir.glob("*_stock.html")):
-        json_path = output_dir / html_path.name.replace("_stock.html", "_analysis.json")
+    for html_path in sorted(output_dir.glob("*/stock.html")):
+        json_path = html_path.parent / "analysis.json"
         if not json_path.exists():
-            print(f"  WARNING: {html_path.name} has no analysis JSON — skipped")
+            print(f"  WARNING: {html_path.parent.name}/stock.html has no analysis.json — skipped")
             skipped_orphan += 1
 
     parts = [f"Re-rendered {count} guides"]

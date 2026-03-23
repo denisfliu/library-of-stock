@@ -20,17 +20,17 @@ CACHE_DIR = Path("cache")
 def run_checks() -> list[str]:
     issues = []
 
-    analysis_files = sorted(OUTPUT_DIR.glob("*_analysis.json"))
+    analysis_files = sorted(OUTPUT_DIR.glob("*/analysis.json"))
 
     for f in analysis_files:
         try:
             analysis = json.load(open(f))
         except json.JSONDecodeError as e:
-            issues.append(f"[BROKEN JSON] {f.name}: {e}")
+            issues.append(f"[BROKEN JSON] {f.parent.name}/analysis.json: {e}")
             continue
 
-        topic = analysis.get("topic", f.stem)
-        topic_key = f.stem.replace("_analysis", "")
+        topic = analysis.get("topic", f.parent.name)
+        topic_key = f.parent.name
 
         # 1. Missing summary
         if not analysis.get("summary", "").strip():
@@ -51,17 +51,17 @@ def run_checks() -> list[str]:
         has_image_card = any(c.get("type") == "image" for c in cards)
         # After Tier 1, render_cards.py synthesizes these at render time — not a JSON-level issue.
         # Only flag if the cards.html is also missing (meaning render failed entirely).
-        cards_html = OUTPUT_DIR / f"{topic_key}_cards.html"
+        cards_html = f.parent / "cards.html"
         if has_image_work and not cards_html.exists():
             issues.append(f"[MISSING CARDS PAGE] {topic}")
 
         # 4. Missing questions page
-        questions_html = OUTPUT_DIR / f"{topic_key}_questions.html"
+        questions_html = f.parent / "questions.html"
         if not questions_html.exists():
             issues.append(f"[MISSING QUESTIONS PAGE] {topic}")
 
         # 5. Missing stock page
-        stock_html = OUTPUT_DIR / f"{topic_key}_stock.html"
+        stock_html = f.parent / "stock.html"
         if not stock_html.exists():
             issues.append(f"[MISSING STOCK PAGE] {topic}")
 
@@ -74,10 +74,13 @@ def run_checks() -> list[str]:
                 and topic not in _OFA_NO_GENRE_OK):
             issues.append(f"[EMPTY GENRE] {topic} (Fine Arts / Other Fine Arts)")
 
-        # 7. Stale recorded cache_file (file no longer exists)
+        # 7. Stale recorded cache_file (file no longer exists in topic dir or cache/)
         recorded_cache = analysis.get("cache_file")
-        if recorded_cache and not (CACHE_DIR / recorded_cache).exists():
-            issues.append(f"[STALE CACHE_FILE] {topic}: '{recorded_cache}' not found")
+        if recorded_cache:
+            topic_cache = f.parent / recorded_cache
+            fallback_cache = CACHE_DIR / recorded_cache
+            if not topic_cache.exists() and not fallback_cache.exists():
+                issues.append(f"[STALE CACHE_FILE] {topic}: '{recorded_cache}' not found")
 
         # 8. Score clues flagged for ABC notation review
         for clue in analysis.get("score_clues", []):

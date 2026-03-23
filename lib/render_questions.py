@@ -87,7 +87,7 @@ def render_questions_html(cache_data: dict, output_path: str | Path,
 
     back_link = ""
     if stock_link:
-        back_link = f'<div class="back-link"><a href="../index.html">&larr; Home</a> · <a href="{escape(stock_link)}">Study guide</a></div>'
+        back_link = f'<div class="back-link"><a href="../../index.html">&larr; Home</a> · <a href="{escape(stock_link)}">Study guide</a></div>'
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -308,22 +308,34 @@ def build_all(force: bool = False):
     output_dir = Path("output")
     count = 0
     skipped = 0
-    for analysis_file in sorted(output_dir.glob("*_analysis.json")):
-        topic_key = analysis_file.stem.replace("_analysis", "")
+    for analysis_file in sorted(output_dir.glob("*/analysis.json")):
+        topic_key = analysis_file.parent.name
 
         # Load topic display name
         with open(analysis_file) as f:
             analysis = json.load(f)
         topic_display = analysis.get("topic", topic_key.replace("_", " ").title())
 
-        # Tier 2: use recorded cache_file if present, else fuzzy-match
+        # Locate cache file: check topic directory first, then cache/ directory
         recorded = analysis.get("cache_file")
+        cache_file = None
         if recorded:
-            candidate = Path("cache") / recorded
-            cache_file = candidate if candidate.exists() else None
-            if not cache_file:
-                print(f"  Warning: recorded cache_file '{recorded}' not found for {topic_key}, falling back to fuzzy match")
-                cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
+            # Check topic directory first (post-migration location)
+            candidate_topic = analysis_file.parent / recorded
+            if candidate_topic.exists():
+                cache_file = candidate_topic
+            else:
+                # Fall back to cache/ directory
+                candidate_cache = Path("cache") / recorded
+                if candidate_cache.exists():
+                    cache_file = candidate_cache
+                    # Copy to topic directory for future builds
+                    import shutil
+                    shutil.copy2(candidate_cache, candidate_topic)
+                    cache_file = candidate_topic
+                else:
+                    print(f"  Warning: recorded cache_file '{recorded}' not found for {topic_key}, falling back to fuzzy match")
+                    cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
         else:
             cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
             # Write back the discovered cache filename so future builds use direct lookup
@@ -335,7 +347,7 @@ def build_all(force: bool = False):
             print(f"  Skipping {topic_key}: no cache file found")
             continue
 
-        questions_path = output_dir / f"{topic_key}_questions.html"
+        questions_path = analysis_file.parent / "questions.html"
 
         # Incremental: skip if questions HTML is newer than both JSON and cache file
         if not force and questions_path.exists():
@@ -348,7 +360,7 @@ def build_all(force: bool = False):
         with open(cache_file) as f:
             cache_data = json.load(f)
 
-        stock_link = f"{topic_key}_stock.html"
+        stock_link = "stock.html"
         render_questions_html(cache_data, questions_path,
                               topic_display=topic_display,
                               stock_link=stock_link)
