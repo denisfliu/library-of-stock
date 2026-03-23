@@ -16,7 +16,7 @@ import requests
 
 API_BASE = "https://www.qbreader.org/api"
 RATE_LIMIT = 20  # max requests per second
-CACHE_DIR = Path("cache")
+DEFAULT_CACHE_DIR = Path("cache")
 DEFAULT_MIN_YEAR = 2012
 
 # Minimum interval between requests to stay under rate limit.
@@ -109,6 +109,7 @@ def fetch_topic(
     categories: list[str] | None = None,
     min_year: int = DEFAULT_MIN_YEAR,
     use_cache: bool = True,
+    cache_dir: Path | None = None,
 ) -> dict:
     """
     Fetch answerline matches for a topic (single page).
@@ -118,8 +119,9 @@ def fetch_topic(
         - query_string, difficulties, min_year
         - answer_matches: {tossups, bonuses, tossups_found, bonuses_found}
     """
+    cache_dir = Path(cache_dir) if cache_dir else DEFAULT_CACHE_DIR
     key = _cache_key(query_string, difficulties, min_year, categories)
-    cache_path = CACHE_DIR / f"{key}.json"
+    cache_path = cache_dir / f"{key}.json"
 
     if use_cache and cache_path.exists():
         print(f"Loading cached data from {cache_path}")
@@ -143,7 +145,7 @@ def fetch_topic(
         "answer_matches": answer_data,
     }
 
-    CACHE_DIR.mkdir(exist_ok=True)
+    cache_dir.mkdir(parents=True, exist_ok=True)
     with open(cache_path, "w") as f:
         json.dump(result, f, indent=2)
     print(f"Cached to {cache_path}")
@@ -157,13 +159,15 @@ def fetch_text_mentions(
     categories: list[str] | None = None,
     min_year: int = DEFAULT_MIN_YEAR,
     use_cache: bool = True,
+    cache_dir: Path | None = None,
 ) -> dict:
     """
     Fetch questions where the topic appears in the text (but may not be
     the answer). Kept separate so we only call this when needed.
     """
+    cache_dir = Path(cache_dir) if cache_dir else DEFAULT_CACHE_DIR
     key = _cache_key(query_string, difficulties, min_year, categories) + "_mentions"
-    cache_path = CACHE_DIR / f"{key}.json"
+    cache_path = cache_dir / f"{key}.json"
 
     if use_cache and cache_path.exists():
         print(f"Loading cached mentions from {cache_path}")
@@ -187,7 +191,7 @@ def fetch_text_mentions(
         "text_mentions": question_data,
     }
 
-    CACHE_DIR.mkdir(exist_ok=True)
+    cache_dir.mkdir(parents=True, exist_ok=True)
     with open(cache_path, "w") as f:
         json.dump(result, f, indent=2)
     print(f"Cached to {cache_path}")
