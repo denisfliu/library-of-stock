@@ -444,7 +444,7 @@ h1 {
 <script>
 const TOPIC = "Francisco T\u00e1rrega";
 let cards = [{"type": "basic", "indicator": "Composer", "front": "Composer: Spanish guitarist considered the father of modern classical guitar technique; student of Julián Arcas; suffered a right-side paralysis at the peak of his career", "back": "Francisco Tárrega", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: transcribed many Albéniz works (including Asturias/Leyenda) and pieces by Bach and Mozart for guitar; wrote 14 preludes including named ones 'Lagrima,' 'Endecha,' and 'Oremus'", "back": "Francisco Tárrega", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Étude", "front": "Étude: tremolo guitar piece inspired by the Moorish Alhambra palace in Granada; i, m, and a fingers play the melody tremolo while the thumb plays a counter-melody", "back": "Recuerdos de la Alhambra (Tárrega)", "work": "Recuerdos de la Alhambra", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Étude", "front": "Étude: guitar waltz whose main theme became the Nokia mobile phone ringtone", "back": "Gran Vals (Tárrega)", "work": "Gran Vals", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Étude", "front": "Étude: guitar piece composed after travels in Andalusia and North Africa; opens with a D perfect-fifth chord played as a natural harmonic; calls for extensive portamento", "back": "Capricho Árabe (Tárrega)", "work": "Capricho Árabe", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Étude", "front": "Étude: short Moorish dance for guitar written the morning after the composer heard a repetitive drum rhythm in Algiers", "back": "Danza Mora (Tárrega)", "work": "Danza Mora", "frequency": 2, "tags": []}, {"type": "audio", "indicator": "high", "front": "Opening tremolo melody (ornamented, on E)", "back": "Recuerdos de la Alhambra (Francisco Tárrega)", "work": "Recuerdos de la Alhambra", "frequency": 0, "mp3": "audio/0.mp3", "abc": "X:1\nT:Recuerdos de la Alhambra – opening melody\n%%MIDI program 25\nM:3/4\nL:1/8\nK:C\n|E4 D2|C4 D2|E6||", "needs_review": true, "tags": []}];
-const SCORE_CLIPS = [{"work": "Recuerdos de la Alhambra", "indicator": "high", "description": "Opening tremolo melody (ornamented, on E)", "source_text": "The melody of one piece by this composer is an ornamented version of the following: half-note E, quarter note D, half note C, quarter note D, long E", "abc": "X:1\nT:Recuerdos de la Alhambra – opening melody\n%%MIDI program 25\nM:3/4\nL:1/8\nK:C\n|E4 D2|C4 D2|E6||", "needs_review": true, "mp3": "audio/0.mp3", "mp3_v": 1774247353}];
+const SCORE_CLIPS = [{"work": "Recuerdos de la Alhambra", "indicator": "high", "description": "Opening tremolo melody (ornamented, on E)", "source_text": "The melody of one piece by this composer is an ornamented version of the following: half-note E, quarter note D, half note C, quarter note D, long E", "abc": "X:1\nT:Recuerdos de la Alhambra – opening melody\n%%MIDI program 25\nM:3/4\nL:1/8\nK:C\n|E4 D2|C4 D2|E6||", "needs_review": true, "mp3": "audio/0.mp3", "mp3_v": 1774260953}];
 let editIndex = -1; // -1 = adding new
 
 // Populate work filter
@@ -780,10 +780,9 @@ let selectedPaletteIdx = -1;
 })();
 
 // --- Score Clips Palette ---
-let _clipSynths = {};
 
 function initClipsPalette() {
-    const clips = SCORE_CLIPS.filter(c => c.abc && (c.mp3 || c.abc));
+    const clips = SCORE_CLIPS.filter(c => c.mp3);
     if (!clips.length) return;
     const section = document.getElementById('clips-section');
     const grid = document.getElementById('clips-grid');
@@ -793,11 +792,7 @@ function initClipsPalette() {
             <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${escHtml(clip.work || '')}${clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}</div>
             <div id="clip-notation-${i}" style="max-width:100%;overflow:hidden;"></div>
             <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
-                ${clip.mp3
-                    ? `<audio controls preload="none" src="${escHtml(clip.mp3)}${clip.mp3_v ? '?v=' + clip.mp3_v : ''}" style="height:24px;width:120px;"></audio>`
-                    : `<button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="playClip(${i})">▶ Play</button>
-                       <button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="stopClip(${i})">■</button>`
-                }
+                <audio controls preload="none" src="${escHtml(clip.mp3)}${clip.mp3_v ? '?v=' + clip.mp3_v : ''}" style="height:24px;width:120px;"></audio>
             </div>
         </div>
     `).join('');
@@ -816,24 +811,6 @@ function initClipsPalette() {
             } catch(e) {}
         }
     });
-}
-
-async function playClip(i) {
-    const clip = SCORE_CLIPS.filter(c => c.abc)[i];
-    if (!clip || typeof ABCJS === 'undefined') return;
-    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} }
-    try {
-        const visualObjs = ABCJS.renderAbc('offscreen-render', clip.abc, {});
-        const synth = new ABCJS.synth.CreateSynth();
-        await synth.init({ visualObj: visualObjs[0] });
-        await synth.prime();
-        synth.start();
-        _clipSynths[i] = synth;
-    } catch(e) { console.warn('playClip error:', e); }
-}
-
-function stopClip(i) {
-    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} delete _clipSynths[i]; }
 }
 
 function renderPalette() {

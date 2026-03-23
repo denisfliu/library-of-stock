@@ -140,14 +140,12 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         abc_json = json.dumps(clip.get("abc", ""))
         mp3 = clip.get("mp3", "")
         review_badge = ' <span class="review-badge" title="ABC needs review">⚠</span>' if clip.get("needs_review") else ""
+        audio_el = ""
         if mp3:
             mp3_path = output_path.parent / mp3
             mtime = int(mp3_path.stat().st_mtime) if mp3_path.exists() else 0
             mp3_src = f"{escape(mp3)}?v={mtime}"
-        audio_el = (f'<audio controls preload="none" src="{mp3_src}" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio>'
-                    if mp3 else
-                    '<button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button>'
-                    '<button class="stop-abc-btn" onclick="stopAbc(this)">■</button>')
+            audio_el = f'<audio controls preload="none" src="{mp3_src}" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio>'
         return (f'<div class="score-clip" data-abc={abc_json}>'
                 f'<div class="score-clip-header">'
                 f'<span class="score-clip-label">Score clip{review_badge}</span>{audio_el}'
@@ -822,15 +820,6 @@ h1 {{
     font-size: 0.72rem;
     color: #f0a060;
 }}
-.play-abc-btn, .stop-abc-btn {{
-    font-size: 0.78rem;
-    padding: 0.1rem 0.45rem;
-    background: #1a1f25;
-    color: #6b9eff;
-    border: 1px solid #3a3f47;
-    border-radius: 3px;
-    cursor: pointer;
-}}
 .score-notation svg {{
     max-width: 100%;
 }}
@@ -862,27 +851,8 @@ document.querySelectorAll('.score-clip').forEach(function(clip) {{
     }}
 }});
 
-// Fallback abcjs synth for clips without mp3
-var _clipSynth = null;
-function playAbc(btn) {{
-    var clip = btn.closest('.score-clip');
-    var abc = clip.dataset.abc;
-    if (!abc || typeof ABCJS === 'undefined') return;
-    if (_clipSynth) {{ try {{ _clipSynth.stop(); }} catch(e) {{}} _clipSynth = null; }}
-    var visual = ABCJS.renderAbc('_offscreen', abc, {{}});
-    var synth = new ABCJS.synth.CreateSynth();
-    synth.init({{ visualObj: visual[0] }}).then(function() {{
-        return synth.prime();
-    }}).then(function() {{
-        synth.start();
-        _clipSynth = synth;
-    }}).catch(function(e) {{ console.warn('abcjs synth:', e); }});
-}}
-function stopAbc(btn) {{
-    if (_clipSynth) {{ try {{ _clipSynth.stop(); }} catch(e) {{}} _clipSynth = null; }}
-}}
-</script>
-<div id="_offscreen" style="display:none;position:absolute;"></div>''' if has_score_clips else ''}
+
+</script>''' if has_score_clips else ''}
 </body>
 </html>"""
 

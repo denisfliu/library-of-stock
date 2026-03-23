@@ -8,7 +8,7 @@ AFA topics come in four forms — adjust sectioning accordingly:
 
 **Composer (person):** Organize by major works, each getting its own section. Add `"General / Biographical"` for career-level clues (nationality, teachers, dedications, hearing loss, etc.) and `"Other Works"` for infrequently clued pieces.
 
-**Individual work:** Organize by movement or section (`"First Movement (Allegro con brio)"`, `"Adagio"`, `"Finale"`, etc.). Add a top-level section for the work as a whole (premiere, dedication, key, form).
+**Individual work:** Organize by movement or section (`"First Movement (Allegro con brio)"`, `"Adagio"`, `"Finale"`, etc.). Add a top-level section named after the work itself (e.g. `"Fanfare for the Common Man"`) for whole-work clues (premiere, dedication, key, form).
 
 **Genre or period:** Organize by key representative works or composers, with a section per major figure/work.
 
@@ -67,12 +67,12 @@ If the clue is not pitch-explicit, include it as a regular text clue in the work
 
 Add a top-level `"score_clues"` array to the analysis JSON. One entry per extractable musical excerpt:
 
-**Critical:** The `"work"` field must be an exact copy of the `"name"` field of the corresponding work section in the analysis JSON — character for character, including any em-dash suffix like `" – The Work as a Whole"`. If they don't match, the clip will not render on the study page.
+**Critical:** The `"work"` field must be an exact copy of the `"name"` field of the corresponding work section in the analysis JSON — character for character. If they don't match, the clip will not render on the study page.
 
 ```json
 "score_clues": [
   {
-    "work": "Fanfare for the Common Man – The Work as a Whole",
+    "work": "Fanfare for the Common Man",
     "indicator": "high",
     "description": "Opening brass gesture after percussion intro",
     "source_text": "trumpets playing the ascending notes F, B-flat, F",

@@ -345,7 +345,7 @@ h1 {
     <span style="color:#3a3f47">|</span>
     <input type="text" id="bulk-tag" placeholder="Tag to add..." list="tag-suggestions">
     <datalist id="tag-suggestions">
-        <option value="Overture in the French Style (Bach)"><option value="Overture in the French Style – The Work as a Whole"><option value="Baroque"><option value="Harpsichord"><option value="Bach">
+        <option value="Overture in the French Style (Bach)"><option value="Overture in the French Style"><option value="Baroque"><option value="Harpsichord"><option value="Bach">
     </datalist>
     <button onclick="addTagToSelected()">Add tag to selected</button>
     <span style="color:#3a3f47">|</span>
@@ -431,7 +431,7 @@ h1 {
         <label>Tags (comma separated)</label>
         <input type="text" id="m-tags">
         <div style="margin-top:0.3rem;display:flex;flex-wrap:wrap;gap:0.2rem;">
-            <span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Overture in the French Style (Bach)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Overture in the French Style – The Work as a Whole</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Baroque</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Harpsichord</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Bach</span>
+            <span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Overture in the French Style (Bach)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Overture in the French Style</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Baroque</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Harpsichord</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Bach</span>
         </div>
         <div class="modal-actions">
             <button onclick="closeModal()">Cancel</button>
@@ -443,7 +443,7 @@ h1 {
 
 <script>
 const TOPIC = "Overture in the French Style (Bach)";
-let cards = [{"type": "basic", "indicator": "Overture", "front": "Work: published in Bach's Clavier-Übung II alongside the Italian Concerto in F major", "back": "Overture in the French Style (Bach, BWV 831)", "work": "Overture in the French Style – The Work as a Whole", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Overture", "front": "Work: in B minor; originally composed in C minor, transposed to complete the collection's cycle of tonalities; concludes with an 'Echo' movement emphasizing dynamic contrasts", "back": "Overture in the French Style (Bach, BWV 831)", "work": "Overture in the French Style – The Work as a Whole", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Overture", "front": "Musical form: slow introduction with dotted rhythms followed by a fast fugal section; developed by Lully; first appeared in operas like Cambert's Pomone and Lully's Atys", "back": "French overture form", "work": "Overture in the French Style – The Work as a Whole", "frequency": 5, "tags": []}];
+let cards = [{"type": "basic", "indicator": "Overture", "front": "Work: published in Bach's Clavier-Übung II alongside the Italian Concerto in F major", "back": "Overture in the French Style (Bach, BWV 831)", "work": "Overture in the French Style", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Overture", "front": "Work: in B minor; originally composed in C minor, transposed to complete the collection's cycle of tonalities; concludes with an 'Echo' movement emphasizing dynamic contrasts", "back": "Overture in the French Style (Bach, BWV 831)", "work": "Overture in the French Style", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Overture", "front": "Musical form: slow introduction with dotted rhythms followed by a fast fugal section; developed by Lully; first appeared in operas like Cambert's Pomone and Lully's Atys", "back": "French overture form", "work": "Overture in the French Style", "frequency": 5, "tags": []}];
 const SCORE_CLIPS = [];
 let editIndex = -1; // -1 = adding new
 
@@ -780,10 +780,9 @@ let selectedPaletteIdx = -1;
 })();
 
 // --- Score Clips Palette ---
-let _clipSynths = {};
 
 function initClipsPalette() {
-    const clips = SCORE_CLIPS.filter(c => c.abc && (c.mp3 || c.abc));
+    const clips = SCORE_CLIPS.filter(c => c.mp3);
     if (!clips.length) return;
     const section = document.getElementById('clips-section');
     const grid = document.getElementById('clips-grid');
@@ -793,11 +792,7 @@ function initClipsPalette() {
             <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${escHtml(clip.work || '')}${clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}</div>
             <div id="clip-notation-${i}" style="max-width:100%;overflow:hidden;"></div>
             <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
-                ${clip.mp3
-                    ? `<audio controls preload="none" src="${escHtml(clip.mp3)}${clip.mp3_v ? '?v=' + clip.mp3_v : ''}" style="height:24px;width:120px;"></audio>`
-                    : `<button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="playClip(${i})">▶ Play</button>
-                       <button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="stopClip(${i})">■</button>`
-                }
+                <audio controls preload="none" src="${escHtml(clip.mp3)}${clip.mp3_v ? '?v=' + clip.mp3_v : ''}" style="height:24px;width:120px;"></audio>
             </div>
         </div>
     `).join('');
@@ -816,24 +811,6 @@ function initClipsPalette() {
             } catch(e) {}
         }
     });
-}
-
-async function playClip(i) {
-    const clip = SCORE_CLIPS.filter(c => c.abc)[i];
-    if (!clip || typeof ABCJS === 'undefined') return;
-    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} }
-    try {
-        const visualObjs = ABCJS.renderAbc('offscreen-render', clip.abc, {});
-        const synth = new ABCJS.synth.CreateSynth();
-        await synth.init({ visualObj: visualObjs[0] });
-        await synth.prime();
-        synth.start();
-        _clipSynths[i] = synth;
-    } catch(e) { console.warn('playClip error:', e); }
-}
-
-function stopClip(i) {
-    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} delete _clipSynths[i]; }
 }
 
 function renderPalette() {
