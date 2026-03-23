@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Duccio di Buoninsegna</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Duccio di Buoninsegna</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Sienese painter, foremost of the Sienese School. Known for the Maesta altarpiece (main altarpiece of the Siena Cathedral) and the Rucellai Madonna (misattributed by Vasari to <span class="crossref-inline-red" title="No page yet: Cimabue">Cimabue</span>). Teacher of Simone Martini and probably the Lorenzetti brothers. Influenced by Byzantine styles but his Maesta was the first major work to break from that tradition.</div>
+
+        <details class="work" id="maesta-1308-1311" open>
+            <summary class="work-title">Maesta (1308-1311)</summary>
+            <p class="work-desc">Main altarpiece of the Siena Cathedral. Front panel shows Madonna enthroned with child surrounded by 20 angels and 19 saints. Back depicts 26 scenes of the Passion of Christ under a golden sky (43 scenes total from the life of Mary and Jesus). Dismantled and sawn in half in 1771; fragments dispersed around the world. Installation celebrated with a holiday and parade in Siena. Inscription on the marble base beseeches 'bring Peace... and life to [the artist], as he painted you this way.' <a href="https://en.wikipedia.org/wiki/Maest%C3%A0_(Duccio)" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Maest_0_duccio_1308-11_siena_duomo.jpg/500px-Maest_0_duccio_1308-11_siena_duomo.jpg" alt="Maesta" loading="lazy">
+                        <figcaption>Maesta</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Main altarpiece of the Siena Cathedral; Madonna enthroned with child surrounded by angels and saints</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Maesta altarpiece in the Siena Cathedral | Madonna enthroned surrounded by twenty angels and nineteen saints | Finished in 1311, this artwork serves as the main altarpiece of the Siena Cathedral</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Front panel has 39 angels and saints surrounding Mary holding baby Jesus; heavy use of gold background</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">thirty-nine angels and saints surrounding Mary, who holds the baby Jesus on her lap | makes heavy use of a gold background</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Back depicts 26 scenes of the Passion of Christ under a golden sky; 43 total scenes from life of Mary and Jesus; front predella has childhood of Christ</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">twenty-six depictions of the Passion of Christ set under a golden sky | forty-three scenes from the life of Mary and the life of Jesus | Scenes from the childhood of Christ comprise the front predella</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dismantled/sawn in half in 1771; fragments dispersed worldwide (Frick has Temptation on the Mount; US National Gallery has Nativity)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">sawn up in the eighteenth century and many of the pieces are now dispersed around the world | When this artwork was dismantled in 1771, its backside lost some of its twenty-six depictions</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Temptation on the Mount (at Frick) -- gigantic Jesus stands on mountain rebuking a pure black-bodied/winged devil</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A gigantic Jesus stands on a mountain and rebukes a black, winged devil | Christ points his finger at a winged Satan, who is rendered in all black</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four local saints Sabinus, Ansanus, Crescentius, and Victor kneel in the front</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sabinus, Ansanus, Crescentius, and Victor kneeling | Saint Ansanus and Saint Sabinus as two haloed saints | Ansanus, Sabinian, Crescentius and Victor, the four patron saints of Siena, kneel towards the central figure</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Child martyr Crescentius in red robe kneeling to the Virgin (unusual)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Its largest section unusually features the child martyr Crescentius in a red robe kneeling to the Virgin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commissioned to replace a Madonna of the Large Eyes icon that helped Siena win a battle</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">commissioned to replace a Madonna of the Large Eyes icon that had helped its city win a violent battle</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Installation celebrated with a holiday and parade in Siena</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Vasari described a famous precession of a Madonna by this artist</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nativity fragment (with Isaiah and Ezekiel flanking 16 angels) at US National Gallery</span>
+                    <span class="badge badge-power">power</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Removed to make way for Francesco di Giorgio sculptures; Vasari couldn&#x27;t find it</span>
+                    <span class="badge badge-power">power</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Maesta and Rucellai Madonna are the only two dateable works by Duccio</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This painting and the Rucellai Madonna are the only two works of their artist that can be dated</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Writing on the marble base beseeches &#x27;bring Peace... and life to [the artist], as he painted you this way&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Writing on the base of a marble object in this painting beseeches the addressee to &#x27;bring Peace... and life to [the artist], as he painted you this way&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Zacchaeus climbs a tree in the Entry into Jerusalem scene; boisterous crowd spills out of city gate</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Zacchaeus climbs a tree to view a scene in which a boisterous crowd spills out of a city gate towards Jesus</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two versions of same blind man in Healing of the Blind Man panel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">depicts two versions of the same blind man, one of whom is standing before a fountain and seeing for the first time</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Christ kissed by Judas set against a yellow background (unlike other versions with dark blue sky)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Unlike another artist&#x27;s version, which has a dark blue sky, this work&#x27;s depiction of Christ being kissed by Judas is set against a yellow background</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Detailed patterns on the throne and curtain depicted in front of gold background</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">painted detailed patterns on the throne and curtain depicted in front of a gold background</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Described as first major work to break from Byzantine tradition</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first major work to break from Byzantine tradition was this gigantic 1306 altarpiece</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="rucellai-madonna" open>
+            <summary class="work-title">Rucellai Madonna</summary>
+            <p class="work-desc">Panel painting commissioned by the Laudesi confraternity. Three angels on each side hold up the Virgin's chair. Egg tempera and gold leaf. Originally housed in the Church of <a href="leon_battista_alberti_stock.html" class="crossref-inline">Santa Maria Novella</a>; now in the Uffizi in Florence. Misattributed by Vasari (and Frederic Leighton) to <span class="crossref-inline-red" title="No page yet: Cimabue">Cimabue</span>. Made in 1285 in Siena. Named for the Rucellai family of wool merchants. <a href="https://en.wikipedia.org/wiki/Rucellai_Madonna" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/Duccio_-_Rucellai_Madonna.jpg/500px-Duccio_-_Rucellai_Madonna.jpg" alt="Rucellai Madonna" loading="lazy">
+                        <figcaption>Rucellai Madonna</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Misattributed by Vasari to Cimabue (Duccio&#x27;s possible teacher); Leighton painted Cimabue&#x27;s Madonna Carried in Procession repeating this error</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">inaccurately attributed to Cimabue by Vasari | the Rucellai Madonna, was incorrectly attributed to his predecessor Cimabue | An artwork that is actually named for this family is &#x27;carried in procession&#x27; in a painting by Frederic Leighton, but is incorrectly attributed in the painting&#x27;s title</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Named for the Rucellai family of wool merchants; displayed in the Uffizi beside Giotto&#x27;s Ognissanti Madonna</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">displayed in the Uffizi beside Giotto&#x27;s Ognissanti Madonna | A panel painting named for this family uses gold leaf and egg tempera</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three angels on each side (six total) hold up the Virgin&#x27;s chair; uses egg tempera and gold leaf</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">used egg tempera and gold leaf to depict an enthroned Madonna with Child surrounded by six angels | depicts three angels on either side of the Virgin and Child</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commissioned by the Laudesi confraternity; made in 1285 in Siena</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Laudesi confraternity commissioned a Madonna by this artist | was made in 1285 in Siena</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Originally in the Church of Santa Maria Novella; now in Florence&#x27;s Uffizi</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mordant form of gold leaf was used to provide different texture for the throne</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The mordant form of applying this material was used to provide a different texture for the throne in the Rucellai Madonna</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Other attributed paintings.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stoclet Madonna -- sold in 2004; named for the Stoclet Palace in Brussels</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this late-medieval artist of the Stoclet Madonna | basically no one has been inside since a namesake Madonna by Duccio was sold in 2004</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Madonna of the Franciscans -- three small monks pray at feet of a black-robed Mary</span>
+                    <span class="badge badge-power">power</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Calling of Peter and Andrew -- man in teal robe on a boat holding a fishnet</span>
+                    <span class="badge badge-power">power</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Christ reaches to brush back the veil of the Virgin -- attribution doubted due to anachronistic placement of figures behind parapet</span>
+                    <span class="badge badge-power">power</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Common identifiers for Duccio.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sienese painter, foremost of the Sienese School; Siena was a rival of Florence</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Sienese artist | this foremost of the Sienese School artists | this rival city of Florence home to Duccio</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Influenced by Byzantine styles; medieval panel painting used egg tempera with gold-leaf backgrounds</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">influenced by Byzantine styles to create his Maesta | Medieval panel painting like the gold-leaf-adorned work of Duccio was painted in this medium</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Teacher of Simone Martini, and probably the Lorenzetti brothers</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He was the teacher of Simone Martini, and probably the Lorenzetti brothers</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Possible student of Cimabue; contemporary of Giotto</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">contemporary of Giotto and possible student of Cimabue | Rucellai Madonna is by this Sienese painter</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sienese artists had a more mystical tendency than Florentine artists</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Siena was also home to Ambrogio Lorenzetti (Good and Bad Government), Simone Martini, Il Sodoma (Bazzi), and Il Sassetta</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Simone Martini, a painter from this rival city of Florence | this city, which was home to Ambrogio Lorenzetti and Simone Martini</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Duccio di Buoninsegna was a Sienese painter and the foremost artist of the Sienese School. His art was influenced by Byzantine styles, using egg tempera and gold leaf, and he was a possible student of <span class="crossref-inline-red" title="No page yet: Cimabue">Cimabue</span> and contemporary of Giotto. He was the teacher of Simone Martini and probably the Lorenzetti brothers. Siena, his home city and rival of Florence, was also home to Ambrogio Lorenzetti, Il Sodoma, and Il Sassetta.</p><p>His masterpiece is the Maesta (1308-1311), the main altarpiece of the Siena Cathedral, described as the first major work to break from Byzantine tradition. Its front panel shows the Madonna enthroned with the child Jesus, surrounded by 20 angels and 19 saints (39 figures total), with four local patron saints -- Sabinus, Ansanus, Crescentius (unusually in a red robe), and Victor -- kneeling in the foreground. An inscription on the marble base beseeches &#x27;bring Peace... and life to [the artist], as he painted you this way.&#x27; The back depicts 26 scenes of the Passion of Christ under a golden sky, with 43 scenes total from the life of Mary and Jesus. Notable back panels include: the Temptation on the Mount (now at the Frick -- a gigantic Jesus rebukes a pure black-bodied winged devil), Christ kissed by Judas against a yellow background, Zacchaeus climbing a tree in the Entry into Jerusalem, and two versions of the same blind man in the Healing scene. The front predella has scenes from the childhood of Christ, including a Nativity fragment at the US National Gallery with Isaiah and Ezekiel flanking 16 angels. It was commissioned to replace a Madonna of the Large Eyes icon that had helped Siena win a battle, and its installation was celebrated with a parade. It was dismantled and sawn in half in 1771, with fragments now dispersed worldwide; it had been removed to make way for Francesco di Giorgio sculptures.</p><p>The Rucellai Madonna was commissioned by the Laudesi confraternity in 1285, named for the Rucellai family of wool merchants, and depicts three angels on each side holding up the Virgin&#x27;s chair, painted in egg tempera and gold leaf with mordant gilding on the throne. It was misattributed by Vasari to <span class="crossref-inline-red" title="No page yet: Cimabue">Cimabue</span>, an error repeated by Frederic Leighton in his painting Cimabue&#x27;s Madonna Carried in Procession Through the Streets of Florence. It is displayed in the Uffizi beside Giotto&#x27;s <a href="giotto_stock.html" class="crossref-inline">Ognissanti Madonna</a>. The Maesta and Rucellai Madonna are the only two dateable works by Duccio.</p><p>Other works include the Stoclet Madonna (sold in 2004, named for the Stoclet Palace in Brussels), Madonna of the Franciscans (three small monks at feet of black-robed Mary), and The Calling of Peter and Andrew (man in teal robe on a boat with fishnet).</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Duccio" target="_blank">Duccio -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Maest%C3%A0_(Duccio)" target="_blank">Maesta (Duccio) -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Rucellai_Madonna" target="_blank">Rucellai Madonna -- Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Maesta of Duccio</li><li>Simone Martini -- student of Duccio</li><li>Cimabue -- possible teacher</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'duccio_di_buoninsegna' });</script>
+
+</body>
+</html>

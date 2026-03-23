@@ -2,7 +2,7 @@
 run.py — Runner script for the stock knowledge pipeline.
 
 Usage:
-    python run.py <topic> [difficulties] [min_year] [category] [--mentions]
+    python run.py <topic> [difficulties] [min_year] [category] [--mentions] [--outdir <path>]
 
 Examples:
     python run.py "Smetana" "7,8,9,10"
@@ -10,6 +10,7 @@ Examples:
     python run.py "The Rite of Spring"
     python run.py "Indiana" "5,6,7,8,9,10" 2012 "Literature"
     python run.py "Smetana" "5,6,7,8,9,10" --mentions
+    python run.py "Beckett" "7,8,9,10" --outdir output/samuel_beckett
 """
 
 import sys
@@ -175,7 +176,25 @@ def main():
 
     # Parse flags
     mentions_mode = '--mentions' in sys.argv
+    raw_flags = [a for a in sys.argv[1:] if a.startswith('--')]
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
+
+    # --outdir <path>: save into an explicit directory (use simplified filenames)
+    outdir = None
+    for i, flag in enumerate(raw_flags):
+        if flag == '--outdir' and i + 1 < len(raw_flags):
+            outdir = raw_flags[i + 1]
+            break
+    # Also handle --outdir=<path> style or positional after flag
+    for arg in sys.argv[1:]:
+        if arg.startswith('--outdir='):
+            outdir = arg.split('=', 1)[1]
+            break
+        if arg == '--outdir':
+            idx = sys.argv.index('--outdir')
+            if idx + 1 < len(sys.argv):
+                outdir = sys.argv[idx + 1]
+            break
 
     topic = args[0]
     diffs = None
@@ -189,24 +208,32 @@ def main():
     if len(args) > 3:
         categories = [c.strip() for c in args[3].split(",")]
 
-    out_dir = Path("output")
-    out_dir.mkdir(exist_ok=True)
-    safe_name = topic.strip().lower().replace(" ", "_")
+    if outdir:
+        # Canonical slug directory provided — use simplified filenames
+        topic_dir = Path(outdir)
+        topic_dir.mkdir(parents=True, exist_ok=True)
+        clue_filename = "mentions_clues.txt" if mentions_mode else "clues.txt"
+    else:
+        # No outdir — derive directory from search term (legacy/work-subquery behavior)
+        safe_name = topic.strip().lower().replace(" ", "_")
+        topic_dir = Path("output") / safe_name
+        topic_dir.mkdir(parents=True, exist_ok=True)
+        clue_filename = f"{safe_name}_mentions_clues.txt" if mentions_mode else f"{safe_name}_clues.txt"
 
     if mentions_mode:
         # Text mention search
         data = fetch_text_mentions(topic, difficulties=diffs, categories=categories,
-                                   min_year=min_year)
+                                   min_year=min_year, cache_dir=topic_dir)
         parsed = parse_text_mention_clues(data)
         output = format_text_mentions_for_analysis(parsed)
-        out_path = out_dir / f"{safe_name}_mentions_clues.txt"
+        out_path = topic_dir / clue_filename
     else:
         # Standard answerline search
         data = fetch_topic(topic, difficulties=diffs, categories=categories,
-                           min_year=min_year)
+                           min_year=min_year, cache_dir=topic_dir)
         parsed = parse_answer_clues(data)
         output = format_clues_for_analysis(parsed)
-        out_path = out_dir / f"{safe_name}_clues.txt"
+        out_path = topic_dir / clue_filename
 
     with open(out_path, "w") as f:
         f.write(output)

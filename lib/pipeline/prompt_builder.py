@@ -6,9 +6,9 @@ Reads markdown blocks from docs/, concatenates them in the correct order,
 renumbers steps sequentially, and wraps in the agent loop template.
 
 Usage:
-    python3 lib/prompt_builder.py first --category Literature
-    python3 lib/prompt_builder.py second --category Philosophy
-    python3 lib/prompt_builder.py first --category "Fine Arts" --max-topics 5
+    python3 lib/pipeline/prompt_builder.py first --category Literature
+    python3 lib/pipeline/prompt_builder.py second --category Philosophy
+    python3 lib/pipeline/prompt_builder.py first --category "Fine Arts" --max-topics 5
 """
 import re
 import sys
@@ -88,19 +88,30 @@ def build_protocol(pass_type: str, category: str) -> str:
 FIRST_PASS_LOOP = """## LOOP: Pop and process topics (up to {max_topics})
 
 ### Pop next topic
-Run: `python3 lib/batch_worker.py pop first --category "{category}"`
+Run: `python3 lib/queue/batch_worker.py pop first --category "{category}"`
 If output is "EMPTY", you are done — exit.
-Parse the JSON output to get the topic name and metadata.
+Parse the JSON output to get the full topic name and metadata.
+
+### Derive slug
+Derive the canonical slug from the full proper name:
+`slug = full_topic_name.lower().replace(" ", "_")`
+Examples: "Samuel Beckett" → `samuel_beckett` | "Béla Bartók" → `béla_bartók` | "Bong Joon-ho" → `bong_joon-ho`
+
+The slug names the output directory. **Always use the slug directory, not the search term directory.**
 
 ### Fetch clues
-Use the minimally identifiable search term (usually last name or common name):
-`python3 lib/run.py "SEARCH TERM" "7,8,9,10"`
-Example: search "Falconet" not "Étienne Maurice Falconet"
+Use the minimally identifiable search term (usually last name or common name), passing `--outdir` to save into the canonical slug directory:
+```
+python3 lib/run.py "SEARCH TERM" "7,8,9,10" --outdir output/{{slug}}
+```
+Example: `python3 lib/run.py "Falconet" "7,8,9,10" --outdir output/étienne_maurice_falconet`
+This saves `output/{{slug}}/clues.txt`.
 
 ### Expand search if sparse
 If the initial fetch returned fewer than **10 total tossups + bonuses**, run two additional queries:
-1. Expanded difficulty: `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10"`
-2. Text mentions: `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions`
+1. Expanded difficulty: `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --outdir output/{{slug}}`
+2. Text mentions: `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{{slug}}`
+   Saves to `output/{{slug}}/mentions_clues.txt`
 Read all output files and incorporate into your analysis. Text mention clues should be labeled as contextual.
 
 ### Read clues and create analysis JSON
@@ -132,14 +143,14 @@ Required top-level fields:
 
 ### Render
 ```bash
-python3 -c "from lib.render import render_html; import json; f=open('output/{{slug}}/analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
-python3 lib/render_cards.py
+python3 -c "from lib.render.render import render_html; import json; f=open('output/{{slug}}/analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
+python3 lib/render/render_cards.py
 ```
 
 ### Mark complete
 ```bash
-python3 lib/batch_worker.py complete "FULL TOPIC NAME"
-python3 lib/topic_queue.py remove-first "FULL TOPIC NAME"
+python3 lib/queue/batch_worker.py complete "FULL TOPIC NAME"
+python3 lib/queue/topic_queue.py remove-first "FULL TOPIC NAME"
 ```
 
 Then go back to Pop and process the next topic. Stop after {max_topics} topics or when queue is empty.
@@ -153,7 +164,7 @@ Then go back to Pop and process the next topic. Stop after {max_topics} topics o
 SECOND_PASS_LOOP = """## LOOP: Pop and process topics (up to {max_topics})
 
 ### Pop next topic
-Run: `python3 lib/batch_worker.py pop second --category "{category}"`
+Run: `python3 lib/queue/batch_worker.py pop second --category "{category}"`
 If output is "EMPTY", you are done — exit.
 Parse the JSON output to get the topic name and slug.
 
@@ -162,14 +173,18 @@ Read `output/{{slug}}/analysis.json`. Note how many work sections, cards, and wh
 
 ### Fetch additional data
 If the page is sparse (<10 original tossups+bonuses or <4 work sections):
-`python3 lib/run.py "TOPIC" "5,6,7,8,9,10" --mentions`
+`python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{{slug}}`
+Saves to `output/{{slug}}/mentions_clues.txt`
 
 For each major work listed (skip "General / Biographical", "Other Works"):
 `python3 lib/run.py "WORK NAME" "7,8,9,10"`
+This creates `output/{{work_slug}}/` — derive {{work_slug}} as `work_name.lower().replace(" ", "_")`.
+Clue file will be at `output/{{work_slug}}/{{work_slug}}_clues.txt`.
 Strip dates and parentheticals from work names. If 0 results, skip.
 
 ### Merge and update analysis
-Read ALL new clue files. Follow the merge protocol in the analysis protocol above.
+Read ALL new clue files from their locations above.
+Follow the merge protocol in the analysis protocol above.
 Reference `output/emily_carr/analysis.json` for JSON formatting.
 
 ### Self-check (MANDATORY)
@@ -184,14 +199,14 @@ Reference `output/emily_carr/analysis.json` for JSON formatting.
 
 ### Render
 ```bash
-python3 -c "from lib.render import render_html; import json; f=open('output/{{slug}}/analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
-python3 lib/render_cards.py
+python3 -c "from lib.render.render import render_html; import json; f=open('output/{{slug}}/analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
+python3 lib/render/render_cards.py
 ```
 
 ### Mark complete
 ```bash
-python3 lib/batch_worker.py complete "FULL TOPIC NAME"
-python3 lib/topic_queue.py remove-second "FULL TOPIC NAME"
+python3 lib/queue/batch_worker.py complete "FULL TOPIC NAME"
+python3 lib/queue/topic_queue.py remove-second "FULL TOPIC NAME"
 ```
 
 Then go back to Pop and process the next topic. Stop after {max_topics} topics or when queue is empty.

@@ -2,6 +2,22 @@
 
 You are creating a **new analysis from scratch**.
 
+## Slug and Directory
+
+Two distinct identifiers exist for every topic:
+
+- **Slug** — the canonical directory name, derived from the full proper topic name (e.g., `samuel_beckett`, `étienne_maurice_falconet`, `béla_bartók`). This is `topic_full_name.lower().replace(" ", "_")`. The slug names the `output/{slug}/` directory, the page URL, and the `currentSlug` in the JavaScript.
+- **Search term** — the short query used with `run.py` (e.g., `"Beckett"`, `"Falconet"`). This is separate from the slug.
+
+**Always derive the slug from the full proper name before fetching**, and pass it as `--outdir`:
+```bash
+# Full name from batch queue: "Samuel Beckett"  →  slug: samuel_beckett
+python3 lib/run.py "Beckett" "7,8,9,10" --outdir output/samuel_beckett
+```
+This saves `output/samuel_beckett/clues.txt` — the clue file, cache files, and analysis all live in the canonical directory from the start.
+
+If you don't yet know the full proper name (e.g., the batch entry is just a last name), run the fetch without `--outdir` first, read the answerline from the clue file to learn the full name, then move the output into the correctly-named directory.
+
 ## Step 1: Expand Search if Sparse
 
 After the initial answerline fetch, check if the results are sparse — fewer than **10 total tossups + bonuses**. If so, run two additional queries:

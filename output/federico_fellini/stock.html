@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Federico Fellini</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Federico Fellini</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Italian film director, one of the towering figures of European cinema, best known for 8½, La Dolce Vita, La Strada, and Amarcord. Associated with the Italian Neorealist movement (early career) before developing a distinctly baroque and dreamlike personal style. Known for recurring motifs of circuses, memory, and the absurd. Many of his films draw on his own life in Rimini and Rome.</div>
+
+        <details class="work" id="8-1963" open>
+            <summary class="work-title">8½ (1963)</summary>
+            <p class="work-desc">Semi-autobiographical film about director Guido Anselmi struggling with creative block while trying to make a science-fiction film. Originally titled <em>The Beautiful Confusion</em>. Title refers to the total number of films Fellini had previously directed (six features + three shorts = 8½). The musical <em>Nine</em> is based on this film. <a href="https://en.wikipedia.org/wiki/8%C2%BD" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">About a director named Guido Anselmi struggling with writer&#x27;s/creative block while trying to make a science-fiction film</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a semi-autobiographical film about a creatively stalled science fiction director named Guido | this director&#x27;s film in which the director Guido suffers a creative block</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a dream sequence in which the protagonist suffocates in a car, then floats/rises up through the car&#x27;s roof and into the sky</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A man seemingly suffocates in a car before floating up through the car&#x27;s roof at the start of that film | another of his films opens with a dream sequence in which the main character rises out of his car and starts to fly</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the final scene, a circus-like procession dances on an incomplete spaceship/rocket film set</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this film&#x27;s final scene, a circus-like procession dances through an incomplete spaceship film set | builds a circus from the set of a rocket ship</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The protagonist imagines crawling under a table and shooting himself at a press conference</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a film by this director, the protagonist crawls under a table and shoots himself before a crowd dances at a rocket launching pad | In this film&#x27;s final scene...That scene follows a press conference in this film in which a director imagines crawling under a table and shooting himself</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The clairvoyant Maya writes the nonsense words &#x27;asa nisi masa&#x27; on a chalkboard, triggering a flashback to the protagonist&#x27;s childhood</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the clairvoyant Maya writes the nonsense words &#x27;asa nisi masa&#x27; on a chalkboard, triggering a flashback to the protagonist&#x27;s childhood</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A man quotes the catechism to Guido in a spa steam room</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">has a conversation with a man who quotes the catechism to him in a spa steam room</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Originally titled The Beautiful Confusion</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">that movie, which was originally titled The Beautiful Confusion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title refers to the number of films Fellini had previously directed; the musical Nine was based on it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Maury Yeston gave that musical the title Nine because he figured that the process of musical adaptation added &#x27;half a film&#x27; to the title of this director&#x27;s 8½</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A scene begins with the main character walking in from a snowstorm with nametags attached to gifts</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A scene by this director begins with the main character walking in from a snowstorm with nametags attached to gifts</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">While filming, Fellini stuck a note below his camera reminding himself &#x27;Remember, this is a comedy&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">while filming that movie, this director once stuck a note below his camera reminding himself &#x27;Remember, this is a comedy&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="la-dolce-vita-1960" open>
+            <summary class="work-title">La Dolce Vita (1960)</summary>
+            <p class="work-desc">Episodic film following gossip journalist Marcello Rubini across a week in Rome. Stars Marcello Mastroianni and Anita Ekberg as Sylvia. Features the iconic Trevi Fountain scene. The word 'paparazzi' derives from the character Paparazzo. <a href="https://en.wikipedia.org/wiki/La_dolce_vita" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features iconic scene of Sylvia (Anita Ekberg) and Marcello wading/dancing/cavorting in the Trevi Fountain</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In another scene by this director, the actress Sylvia and the gossip journalist Marcello wade into the Trevi Fountain | includes a famous scene of cavorting in the Trevi fountain with the actress Sylvia, played by Anita Ekberg</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The word &#x27;paparazzi&#x27; comes from the character Paparazzo in this film</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The word &#x27;paparazzi&#x27; is a reference to a character in a 1960 film by this director</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicts the life of gossip/celebrity journalist Marcello in Rome; his tense relationship with fiancée Emma</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this film which depicts the life of journalist Marcello in Rome, and his tense relationship with his fiancee, Emma | the story of the aimless journalist Marcello in La Dolce Vita</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a helicopter carrying a Christ statue over Rome</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">another of this director&#x27;s films opens with a scene in which the protagonist fails to get phone numbers from sunbathers while onboard a helicopter carrying a Christ statue</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also contains a leviathan/sea monster found by partygoers including Emma and Steiner at the end</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In another of this director&#x27;s films, a leviathan is found by a group of partygoers including Emma and Steiner</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stars Marcello Mastroianni; Anita Ekberg as Swedish-American actress Sylvia</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Marcello joins Paparazzo to cover the arrival of Swedish-American actress Sylvia</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A lead and a blond bearded man dance to &#x27;Ready Teddy&#x27; at the nightclub &#x27;Baths of Caracalla&#x27;; Nadia performs a striptease to &#x27;Patricia&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the lead actress and a blond, bearded man lead a dance to the song &#x27;Ready Teddy&#x27; at the nightclub &#x27;Baths of Caracalla.&#x27; Nadia performs a striptease to &#x27;Patricia&#x27; in that film</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Director inspired by the fashion for sack dresses because of what they could conceal</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The director of this film has stated that it was inspired by the fashion for sack dresses because of what they could conceal</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="la-strada-1954" open>
+            <summary class="work-title">La Strada (1954)</summary>
+            <p class="work-desc">A naive girl named Gelsomina travels with brutish street performer Zampano (Anthony Quinn). Their relationship breaks down when Zampano kills clown Il Matto. Gelsomina is played by Giulietta Masina. Circuses are a major motif. <a href="https://en.wikipedia.org/wiki/La_strada" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A naive girl named Gelsomina travels with a brutish street performer/strongman named Zampano (played by Anthony Quinn)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this Fellini film, a naive girl named Gelsomina travels around with a street performer named Zampano, played by Anthony Quinn | tells the story of Gelsomina&#x27;s journey with a traveling strongman in La Strada</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Zampano kills the clown Il Matto, breaking down the relationship with Gelsomina</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Their strained relationship reaches a breaking point when Zampano kills a clown named Il Matto</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A man tells Gelsomina &#x27;everything has a purpose, even this pebble&#x27; at a circus</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a 1954 film meets a man who tells her that &#x27;everything has a purpose, even this pebble.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Considered a neorealist film; Pastrone&#x27;s Maciste character influenced Zampano</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Pastrone&#x27;s strongman character Maciste influenced the brutish circus performer Zampano in La Strada</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="amarcord-1973" open>
+            <summary class="work-title">Amarcord (1973)</summary>
+            <p class="work-desc">Semi-autobiographical film about Titta's coming-of-age under Fascism in a small Italian town (based on Rimini). The title is a Romagnol dialect word meaning 'I remember.' <a href="https://en.wikipedia.org/wiki/Amarcord" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Semi-autobiographical film about Titta&#x27;s coming-of-age under fascism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A dialectal word meaning &#x27;I remember&#x27; provides the title of this director&#x27;s film about Titta&#x27;s coming-of-age under fascism | This director&#x27;s film Amarcord is a semi-autobiographical account of his own childhood in Fascist Italy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title is a Romagnol/dialectal word meaning &#x27;I remember&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A dialectal word meaning &#x27;I remember&#x27; provides the title of this director&#x27;s film</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The title now means &#x27;nostalgic memory&#x27; in Italian; the word &#x27;turtleneck&#x27; is also now named after one of his films</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A film by this director, in which a peacock perching on a fountain unfurls its tail during a snowfall, is the source of a word meaning &#x27;nostalgic memory&#x27; in that language | The title of one of this director&#x27;s films now means &#x27;turtleneck&#x27; in this director&#x27;s native language</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A peacock perches on a fountain and unfurls its tail during a snowfall</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in which a peacock perching on a fountain unfurls its tail during a snowfall</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="roma-1972" open>
+            <summary class="work-title">Roma (1972)</summary>
+            <p class="work-desc">Plotless semi-autobiographical film about Fellini's journey to Rome. Contains a famous scene where subway workers discover ancient frescoes that fade and disintegrate upon exposure to air. Also features an ecclesiastical fashion show. <a href="https://en.wikipedia.org/wiki/Roma_(1972_film)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Subway workers discover a room full of ancient frescoes that fade/are destroyed when exposed to fresh air</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In one film by this director, a series of frescoes are destroyed when exposed to fresh air during subway construction | In a plotless film named after a city by this director, subway workers discover a room full of ancient frescoes that fade away when exposed to air</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A semi-autobiographical film about Fellini&#x27;s journey to Rome; also contains an ecclesiastical fashion show</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That work, which also contains an ecclesiastical fashion show, is a semi-autobiographical film about this director&#x27;s journey to the title city</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="nights-of-cabiria-1957" open>
+            <summary class="work-title">Nights of Cabiria (1957)</summary>
+            <p class="work-desc">Film starring Giulietta Masina as Cabiria, a prostitute in Rome. At the end, Cabiria walks crying along a road and is surrounded by young musicians who make her smile. Loosely adapted into the musical <em>Sweet Charity</em>. Considered a neorealist work. <a href="https://en.wikipedia.org/wiki/Nights_of_Cabiria" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with Cabiria crying on a road surrounded by young musicians who cheer her up</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">At the end of a 1957 film starring Giulietta Masina, a group of young musicians surround a crying woman with this name walking along a road, causing her to smile</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Loosely adapted into the musical Sweet Charity (by Cy Coleman, Neil Simon, and Dorothy Fields)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Fellini&#x27;s Nights of Cabiria was loosely adapted into this musical by Cy Coleman, Neil Simon, and Dorothy Fields</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Considered a neorealist film; early Fellini work</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man&#x27;s early film Nights of Cabiria is considered a neorealist film, though he employed a more baroque and impressionistic style in films like 8 ½ and La Dolce Vita</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satyricon-fellini-satyricon-1969" open>
+            <summary class="work-title">Satyricon / Fellini Satyricon (1969) <a href="petronius_stock.html#satyricon" class="work-link-btn" title="Go to Petronius">&rarr;</a></summary>
+            <p class="work-desc">Adaptation of <a href="petronius_stock.html" class="crossref-inline">Petronius</a>'s <a href="petronius_stock.html#satyricon" class="crossref-inline">Satyricon</a>. Contains a scene where a huge pig stuffed with birds and sausages is cut open at a feast hosted by Trimalchio. <a href="https://en.wikipedia.org/wiki/Satyricon_(film)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains a scene where a huge pig stuffed with birds and sausages is cut open at a feast hosted by Trimalchio</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He directed a film in which the main character sees a huge pig stuffed with birds and sausages cut open at a feast hosted by Trimalchio</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="casanova-1976" open>
+            <summary class="work-title">Casanova (1976)</summary>
+            <p class="work-desc">Film about Casanova starring Donald Sutherland. Opens with a carnival at Venice. Filmed at Cinecittà, which now has the prop of a giant head of Venus that sinks into a canal from the film. <a href="https://en.wikipedia.org/wiki/Fellini%27s_Casanova" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stars Donald Sutherland as Casanova; opens with a carnival in Venice</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A carnival at Venice opens this director&#x27;s film about Casanova, where he is played by Donald Sutherland</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A giant head of Venus sinks into a canal in the film; the prop is now on Cinecittà&#x27;s grounds</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the prop for a giant head of Venus that sinks into a canal in a scene from a 1976 film starring Donald Sutherland</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="i-vitelloni-1953" open>
+            <summary class="work-title">I Vitelloni (1953)</summary>
+            <p class="work-desc">Film about five unemployed young men at a beachside resort. The camera moves through a 'Miss Mermaid' pageant to introduce the five protagonists. <a href="https://en.wikipedia.org/wiki/I_vitelloni" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Camera moves through a beachside &#x27;Miss Mermaid&#x27; pageant to introduce five unemployed young men</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the camera moves through a beachside &#x27;Miss Mermaid&#x27; pageant to introduce five unemployed young men</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A woman nicknamed &#x27;Sardine&#x27; dances a rumba for a group of boys on a beach before two priests barge in</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A woman nicknamed &#x27;Sardine&#x27; dances a rumba for a group of boys on a beach in a film by this director before two priests barge in</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A film by this director ends with a filmmaker joining a group dancing on a beachside film set</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A film by this director ends with a filmmaker joining a group dancing on a beachside film set</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Recurring clues about Fellini as a director — his career context, neorealism association, recurring motifs, and collaborators. <a href="https://en.wikipedia.org/wiki/Federico_Fellini" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Italian director; giveaway identification alongside 8½ and La Dolce Vita</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Italian director of 8½ and La Dolce Vita | name this director who portrayed Italy&#x27;s seasides in 8 ½ and La Dolce Vita</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Associated with Italian Neorealism in early career; later developed a baroque and impressionistic personal style</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">he employed a more baroque and impressionistic style in films like 8 ½ and La Dolce Vita | Like the director of Ossessione, Luchino Visconti, this director was a leader of the neorealist movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Circuses are a recurring motif in his films (La Strada, 8½, The Clowns)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Circuses are a recurring motif in films like The Clowns, La Strada, and 8½ by this director</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Final interviews by Canadian filmmaker Damian Pettigrew compiled into I&#x27;m a Born Liar</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director&#x27;s last interviews, conducted by Canadian filmmaker Damian Pettigrew, were spliced together into the book and film I&#x27;m a Born Liar | A 2002 documentary by Damian Pettigrew subtitled &#x27;I&#x27;m a Born Liar&#x27; records the final confessions of this filmmaker</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-wrote the screenplay for Roberto Rossellini&#x27;s Rome, Open City</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Fellini co-wrote the screenplay for Rome, Open City by this earlier Italian director</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Frequent collaborator Marcello Mastroianni starred in La Dolce Vita and 8½</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">stars Anita Ekberg and Marcello Mastroianni</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Anita Ekberg starred in La Dolce Vita; she cameoed as herself in The Clowns and Intervista</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This actress, who cameoed as herself in the films The Clowns and Intervista</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Federico Fellini is an Italian film director whose career spanned from Italian Neorealism to a highly personal, baroque, and impressionistic style. He is most frequently identified through his two signature films: 8½ (1963) and La Dolce Vita (1960). Fellini&#x27;s early career is associated with the neorealist movement, though clues note he moved to a more dream-laden personal style.</p><p>La Dolce Vita (1960) follows gossip journalist Marcello Rubini through a week in Rome. Its most iconic scene shows Marcello and the Swedish-American actress Sylvia (played by Anita Ekberg) wading in the Trevi Fountain at dawn, a moment described across nearly every clue. The film also features a helicopter opening carrying a Christ statue over Rome, the character Paparazzo (from whom the word &#x27;paparazzi&#x27; derives), and ends with a sea monster/leviathan washing ashore after a party. It stars Marcello Mastroianni and Anita Ekberg.</p><p>8½ (1963) is a semi-autobiographical film about director Guido Anselmi, who is creatively blocked while trying to make a science fiction film. It opens with the protagonist suffocating in a car and then floating up through the roof in a dream. Other key scenes include the clairvoyant Maya writing &#x27;asa nisi masa&#x27; on a chalkboard triggering a childhood flashback, a man quoting the catechism to Guido in a spa steam room, and a final circus-like procession dancing on an incomplete rocket-ship film set. Guido imagines shooting himself under a table at a press conference. The film was originally titled The Beautiful Confusion and its title refers to the number of films Fellini had directed up to that point. The musical Nine by Maury Yeston is based on this film.</p><p>La Strada (1954) follows naive Gelsomina (Giulietta Masina) as she travels with brutish street performer Zampano (Anthony Quinn). The relationship breaks down when Zampano kills the clown Il Matto. Zampano&#x27;s character was influenced by the Maciste figure from early Italian silent film. The film is considered neorealist.</p><p>Amarcord (1973) is a semi-autobiographical account of the coming-of-age of Titta under Fascism in a small Italian town. The title is a Romagnol dialect word meaning &#x27;I remember,&#x27; which has since come to mean &#x27;nostalgic memory&#x27; in Italian. The film contains a famous scene of a peacock unfurling its tail on a fountain during a snowfall.</p><p>Roma (1972) is a plotless semi-autobiographical film about Fellini&#x27;s journey to the city of Rome. Its most clued scene involves subway workers discovering ancient frescoes that immediately fade and disintegrate upon exposure to fresh air. The film also features an ecclesiastical fashion show.</p><p>Nights of Cabiria (1957) stars Giulietta Masina as the prostitute Cabiria. The film ends with Cabiria walking along a road in tears before young musicians surround and cheer her. It is considered a neorealist work and was loosely adapted into the musical Sweet Charity (Cy Coleman, <a href="neil_simon_stock.html" class="crossref-inline">Neil Simon</a>, Dorothy Fields).</p><p>Fellini&#x27;s Casanova (1976) stars Donald Sutherland and opens with a Venetian carnival. It was filmed at Cinecittà; a prop of a giant head of Venus sinking into a canal from the film is still on the studio&#x27;s grounds. I Vitelloni (1953) focuses on five unemployed young men and opens with a beachside &#x27;Miss Mermaid&#x27; pageant. <a href="petronius_stock.html#satyricon" class="crossref-inline">Satyricon</a> (1969) contains a famous scene of a pig stuffed with birds and sausages cut open at Trimalchio&#x27;s feast.</p><p>Biographically, Fellini&#x27;s final interviews were compiled by Canadian filmmaker Damian Pettigrew into the book and documentary I&#x27;m a Born Liar. He co-wrote the screenplay for Roberto Rossellini&#x27;s Rome, Open City. Circuses are a recurring motif across his career (La Strada, 8½, The Clowns). His frequent collaborators include Marcello Mastroianni and Anita Ekberg.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Federico_Fellini" target="_blank">Federico Fellini — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/8%C2%BD" target="_blank">8½ — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/La_dolce_vita" target="_blank">La Dolce Vita — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/La_strada" target="_blank">La Strada — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Amarcord" target="_blank">Amarcord — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Nights_of_Cabiria" target="_blank">Nights of Cabiria — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Roma_(1972_film)" target="_blank">Roma (1972) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>La Dolce Vita — 7+ clue hits with varied scene detail; Trevi Fountain, helicopter opening, Paparazzo etymology, cast details</li><li>8½ — 6+ clue hits with rich scene detail; dream opening, &#x27;asa nisi masa&#x27;, press conference shooting, final procession</li><li>Anita Ekberg — appeared as its own answerline (T2) with Fellini clues; biography and Boccaccio &#x27;70 segment</li><li>Cinecittà — appeared as its own answerline (T3) with Fellini-connected clues; a dedicated search would yield more</li><li>Sweet Charity (musical) — directly derived from Nights of Cabiria; substantial detail on Fosse choreography and the Beyoncé connection</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'federico_fellini' });</script>
+
+</body>
+</html>
