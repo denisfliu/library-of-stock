@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Albert Gleizes</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Albert Gleizes</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">French Cubist painter and theorist, best known for co-writing Du &quot;Cubisme&quot; (On Cubism) with Jean Metzinger — the first major theoretical treatise on Cubism. Associated with Crystal Cubism and the Section d&#x27;Or (Puteaux Group). Key paintings include The Bathers (reproduced in Du Cubisme), Portrait of Jacques Nayral, La Chasse (The Hunt), Woman with Phlox, and Harvest Threshing.</div>
+
+        <details class="work" id="du-cubisme-on-cubism-1912" open>
+            <summary class="work-title">Du &quot;Cubisme&quot; (On Cubism, 1912)</summary>
+            <p class="work-desc">The first major theoretical manifesto on Cubism, co-written with Jean Metzinger. Argues that Cubism is grounded in non-Euclidean/Riemannian geometry. Reproduces Gleizes's painting The Bathers. <a href="https://en.wikipedia.org/wiki/Du_%22Cubisme%22" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">13x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-written with Jean Metzinger</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist co-wrote the manifesto Du &quot;Cubisme&quot; with Jean Metzinger. | Jean Metzinger co-authored On Cubism with this other painter.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First/major theoretical treatise on Cubism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Jean Metzinger collaborated with this artist and philosopher on the first theoretical treatise on Cubism. | A key text by Jean Metzinger and Albert Gleizes is titled for a movement named in part after cubes.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Argues Cubism is based on non-Euclidean/Riemannian geometry; correlates more with Riemannian than Euclidean geometry</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This work argues that its subject correlates more with non-Euclidean geometry than Euclidean geometry; thus, it would be helpful to understand some Riemannian theorems. | Along with Albert Gleizes, Metzinger argued that this movement&#x27;s art was based in Riemannian geometry in their manifesto.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gleizes and Metzinger began collaborating after the Salon d&#x27;Automne</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Its authors, Albert Gleizes and Jean Metzinger, began collaborating after the Salon d&#x27;Automne.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Bathers by Gleizes was reproduced in this manifesto</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist reproduced The Bathers for his manifesto Du Cubisme, written alongside Jean Metzinger. | An Albert Gleizes painting titled for this activity, reproduced in Du &#x27;Cubisme,&#x27; depicts it in front of factories producing swirling smoke.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Apollinaire&#x27;s The Cubist Painters described Gleizes as representing the &#x27;scientific&#x27; branch; Delaunay&#x27;s as &#x27;orphic&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In one of his works, this critic describes artists such as Albert Gleizes and Robert Delaunay as practitioners of &#x27;a pure art,&#x27; which he termed Orphism. | This critic discusses works which borrow &#x27;not from the reality of sight, but from the reality of insight&#x27; in his essay &#x27;On Painting,&#x27; which examines the &#x27;scientific&#x27; work of Albert Gleizes and the &#x27;orphic&#x27; style of Robert Delaunay.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-bathers-les-baigneurs-1912" open>
+            <summary class="work-title">The Bathers (Les Baigneurs, 1912)</summary>
+            <p class="work-desc">A large Cubist painting depicting bathers in front of factories with swirling smoke in Clichy in the background. One of five Gleizes paintings depicting La Grande Jatte. Exhibited at the 1912 Salon des Independants. Reproduced in Du Cubisme. <a href="https://en.wikipedia.org/wiki/Les_Baigneurs_(Gleizes)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicts bathers in front of factories producing swirling smoke (Clichy factories in background)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Smoke from industrial factories in Clichy can be seen in the background of one painting of this location. | An Albert Gleizes painting titled for this activity, reproduced in Du &#x27;Cubisme,&#x27; depicts it in front of factories producing swirling smoke.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Exhibited at the 1912 Salon des Independants</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gleizes&#x27; painting The Bathers was exhibited at the 1912 edition of this salon, founded in 1884 in opposition to the government-sponsored Salon.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One of five Gleizes depictions of La Grande Jatte / set at La Grande Jatte</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Bathers was among five depictions of La Grand Jatte by this artist.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Reproduced in Du Cubisme</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist reproduced The Bathers for his manifesto Du Cubisme.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="portrait-of-jacques-nayral-1911" open>
+            <summary class="work-title">Portrait of Jacques Nayral (1911)</summary>
+            <p class="work-desc">A frequently cited identifying work of Gleizes. <a href="https://en.wikipedia.org/wiki/Portrait_of_Jacques_Nayral" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Common giveaway identifier for Gleizes</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this painter of a portrait of Jacques Nayral, the almost entirely grey Woman with Phlox, and a painting called La Chasse, or The Hunt. | This artist chronicled the fortunes of the Salon d&#x27;Automne in his The Epic: From Immobile Form to Mobile Form. This painter of Portrait of Jacques Nayral co-wrote the manifesto Du &#x27;Cubisme&#x27;.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="la-chasse-the-hunt-1911" open>
+            <summary class="work-title">La Chasse (The Hunt, 1911)</summary>
+            <p class="work-desc">A Cubist painting depicting a man with a golden hunting horn, with a group of hunting dogs to his right. <a href="https://en.wikipedia.org/wiki/Albert_Gleizes" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicts a man with a golden hunting horn, with a group of hunting dogs to his right</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s La Chasse depicts a man with a golden hunting horn, with a group of hunting dogs to his right.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Common giveaway identifier for Gleizes</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This advocate of &#x27;crystal cubism&#x27; painted works like The Hunt. | Name this painter of a portrait of Jacques Nayral, the almost entirely grey Woman with Phlox, and a painting called La Chasse, or The Hunt.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="harvest-threshing-1912" open>
+            <summary class="work-title">Harvest Threshing (1912)</summary>
+            <p class="work-desc">One of the largest Cubist paintings, equaled only by <a href="robert_delaunay_stock.html" class="crossref-inline">Robert Delaunay</a>'s La Ville de Paris. <a href="https://en.wikipedia.org/wiki/Albert_Gleizes" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Largest Cubist painting, alongside Delaunay&#x27;s La Ville de Paris</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gleizes paid homage to Seurat again in Harvest Threshing, the largest Cubist painting along with this artist&#x27;s La Ville de Paris.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="section-d-or-puteaux-group" open>
+            <summary class="work-title">Section d&#x27;Or (Puteaux Group)</summary>
+            <p class="work-desc">A Cubist collective associated with Cubism and Orphism, of which Gleizes was a founding member. Section d'Or meetings were held at Gleizes's home. The name 'Section d'Or' (Golden Section) was coined by Josephin Peladan due to fascination with phi. <a href="https://en.wikipedia.org/wiki/Section_d%27Or" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Meetings were held at Gleizes&#x27;s home</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This style was used by most members of the Section d&#x27;Or, which met at the home of Albert Gleizes, who collaborated on the first major text on this movement with Jean Metzinger.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Associated with Cubism and Orphism; Gleizes and Metzinger were members</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Lacking Braque and Picasso&#x27;s exclusive deal with Daniel Kahnweiler, this Cubist group exhibited their work in salons. Albert Gleizes and Jean Metzinger were part of this group with a colorful, geometrically inspired name. | Metzinger was a co-founder of this artist collective associated with Cubism and Orphism.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Named &#x27;Section d&#x27;Or&#x27; (Golden Section) by Josephin Peladan for fascination with phi</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Josephin Peladan coined the primary name for this group due to his fascination with the quantity phi.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Gleizes is identified and associated in quizbowl.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">French Cubist painter and theorist; advocate of Crystal Cubism</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This advocate of &#x27;crystal cubism&#x27; painted works like The Hunt. | This French painter co-wrote the manifesto Du Cubisme with Jean Metzinger.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">John Myatt began forging art after his painting of a mountain village imitating Gleizes was accepted by Christie&#x27;s</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">John Myatt began forging art after his painting of a mountain village imitating this artist was accepted by Christie&#x27;s.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Made money from the 1913 Armory Show (along with Jacques Villon)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Albert Gleizes and Jacques Villon both made money from this event [the 1913 Armory Show].</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chronicled fortunes of the Salon d&#x27;Automne in The Epic: From Immobile Form to Mobile Form</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist chronicled the fortunes of the Salon d&#x27;Automne in his The Epic: From Immobile Form to Mobile Form.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gleizes and Metzinger rejected Marcel Duchamp&#x27;s Nude Descending a Staircase No. 2 from the 1912 Salon des Independants, feeling the nude should be shown reclining</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This painting was rejected from the 1912 Salon des Independants, since Albert Gleizes and Jean Metzinger felt that its title subject should be shown reclining.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A woman with hair depicted as concentric black-and-white arcs holds a black glove in one painting</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In an Albert Gleizes painting, a woman whose hair is represented as a series of concentric black-and-white arcs has a black one of these objects [gloves].</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Albert Gleizes was a French Cubist painter and theorist, best known for co-writing Du &quot;Cubisme&quot; (On Cubism, 1912) with Jean Metzinger — the first major theoretical manifesto on Cubism. The text argues that Cubist art is grounded in non-Euclidean (Riemannian) geometry rather than Euclidean geometry, and Gleizes and Metzinger began collaborating after the Salon d&#x27;Automne. Guillaume Apollinaire, in his 1913 book The Cubist Painters: Aesthetic Meditations, described Gleizes as representing the &#x27;scientific&#x27; branch of Cubism, in contrast to <a href="robert_delaunay_stock.html" class="crossref-inline">Robert Delaunay</a>&#x27;s &#x27;orphic&#x27; style. The manifesto reproduced Gleizes&#x27;s large painting The Bathers, which depicts working-class bathers in front of factories with swirling smoke from Clichy in the background; it was set at La Grande Jatte (one of five Gleizes paintings of that location) and was exhibited at the 1912 Salon des Independants. Other key works include Portrait of Jacques Nayral (a frequent giveaway identifier), La Chasse (The Hunt) — depicting a man with a golden hunting horn and hunting dogs — Woman with Phlox (described as almost entirely grey), and Harvest Threshing, one of the largest Cubist paintings alongside Delaunay&#x27;s La Ville de Paris. Gleizes was an advocate of Crystal Cubism. He was a founding member of the Section d&#x27;Or (Golden Section, also known as the Puteaux Group), a Cubist collective associated with both Cubism and Orphism whose meetings were held at Gleizes&#x27;s home; the name was coined by Josephin Peladan for his fascination with the quantity phi. Gleizes and Metzinger infamously rejected Marcel Duchamp&#x27;s Nude Descending a Staircase No. 2 from the 1912 Salon des Independants, believing the nude should be shown reclining rather than in motion. Gleizes also chronicled the fortunes of the Salon d&#x27;Automne in a work called The Epic: From Immobile Form to Mobile Form. He and Jacques Villon made money from the 1913 Armory Show. The forger John Myatt began his career after his mountain village painting in Gleizes&#x27;s style was accepted by Christie&#x27;s. In one painting, Gleizes depicted a woman whose hair is rendered as concentric black-and-white arcs, and who holds a black glove.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Albert_Gleizes" target="_blank">Albert Gleizes — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Du_%22Cubisme%22" target="_blank">Du Cubisme — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Section_d%27Or" target="_blank">Section d&#x27;Or — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Portrait_of_Jacques_Nayral" target="_blank">Portrait of Jacques Nayral — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Jean Metzinger — co-author of Du Cubisme; closely associated in nearly all Gleizes clues</li><li>Section d&#x27;Or / Puteaux Group — appears 3+ times; Gleizes was a founding member</li><li>Du Cubisme (as a work) — if you want a standalone analysis of the manifesto itself</li><li>Guillaume Apollinaire — described Gleizes in The Cubist Painters; appears in text mentions</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'albert_gleizes' });</script>
+
+</body>
+</html>

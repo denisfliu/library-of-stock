@@ -15,7 +15,8 @@ from datetime import datetime
 import re
 
 ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(ROOT))
+PROJECT_ROOT = ROOT.parent
+sys.path.insert(0, str(PROJECT_ROOT))
 BATCH_FILE = ROOT / 'queue' / 'current_batch.json'
 LOCK_FILE = ROOT / 'queue' / '.batch.lock'
 
@@ -98,7 +99,7 @@ def complete(topic_name):
             print(f'Completed: {topic_name}')
             # Automatically enqueue for second pass
             if completed_item.get('pass_type') == 'first':
-                from lib.topic_queue import add_second
+                from lib.queue.topic_queue import add_second
                 add_second(topic_name, reason='first pass done')
         else:
             # Might not be in in_progress if agent didn't pop properly, just add to completed
@@ -118,7 +119,7 @@ def init(name, first_count=0, second_count=0, category=None):
 
     Pops items from the global queues and creates current_batch.json.
     """
-    from lib.topic_queue import pop_first, pop_second
+    from lib.queue.topic_queue import pop_first, pop_second
 
     batch_queue = []
 

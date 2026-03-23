@@ -16,8 +16,14 @@ Examples:
 import sys
 from pathlib import Path
 
-# Ensure project root is on sys.path so imports work from any cwd
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# Ensure project root is on sys.path so imports work from any cwd.
+# Also remove lib/ from sys.path — Python adds the script's own directory
+# automatically, but lib/queue/ would shadow the stdlib 'queue' module.
+_project_root = str(Path(__file__).resolve().parent.parent)
+_lib_dir = str(Path(__file__).resolve().parent)
+sys.path.insert(0, _project_root)
+if _lib_dir in sys.path:
+    sys.path.remove(_lib_dir)
 
 from lib.pipeline.fetch import fetch_topic, fetch_text_mentions
 from lib.pipeline.parse import parse_answer_clues, parse_text_mention_clues
@@ -195,6 +201,10 @@ def main():
             if idx + 1 < len(sys.argv):
                 outdir = sys.argv[idx + 1]
             break
+
+    # Remove outdir value from positional args if present
+    if outdir and outdir in args:
+        args = [a for a in args if a != outdir]
 
     topic = args[0]
     diffs = None

@@ -337,7 +337,13 @@ def build_all(force: bool = False):
                     print(f"  Warning: recorded cache_file '{recorded}' not found for {topic_key}, falling back to fuzzy match")
                     cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
         else:
-            cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
+            # Check topic dir first for cache files saved via --outdir
+            topic_jsons = [f for f in analysis_file.parent.glob("*.json")
+                           if f.name != "analysis.json" and "_mentions" not in f.name]
+            if topic_jsons:
+                cache_file = sorted(topic_jsons)[0]
+            else:
+                cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
             # Write back the discovered cache filename so future builds use direct lookup
             if cache_file:
                 analysis["cache_file"] = cache_file.name

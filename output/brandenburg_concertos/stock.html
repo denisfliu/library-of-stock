@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<title>Stock: Brandenburg Concertos</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Brandenburg Concertos</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">A set of six baroque concertos (BWV 1046–1051) by J.S. Bach, dedicated to Margrave Christian Ludwig of Brandenburg in 1721. Each concerto uses a different combination of solo instruments (concertino). The fifth — in D major, featuring flute, violin, and harpsichord — is famous for its lengthy harpsichord cadenza in the first movement. The third, in G major, has a famously minimal second movement of just two chords (a Phrygian half-cadence). The sixth omits violins entirely. The first derives from Bach&#x27;s Hunting Cantata and is the only one with four movements.</div>
+
+        <details class="work" id="brandenburg-concertos-the-set-as-a-whole" open>
+            <summary class="work-title">Brandenburg Concertos – The Set as a Whole</summary>
+            <p class="work-desc">Six concertos composed by J.S. Bach and dedicated in 1721 to Margrave Christian Ludwig of Brandenburg, to whom Bach had sent them as part of a (fruitless) job application. The French dedication makes them also known as 'Six Concerts à plusieurs instruments.' They span BWV 1046–1051 and represent the concerto grosso form, each using a different combination of solo (concertino) instruments. Nikolaus Harnoncourt's 1964 recording was the first to use period instruments. In 1979, Wendy Carlos released a Moog synthesizer realisation as a double album. The first concerto's first movement was later recycled by Bach in his cantata 'Ich liebe den Höchsten von ganzem Gemüte.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dedicated to Margrave Christian Ludwig of Brandenburg; Bach sent them as a failed job application</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">series of six baroque concertos dedicated to Margrave Christian Ludwig by JS Bach | fruitlessly composed for a job application, they included a French dedication to their eventual namesake</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Six concertos total, BWV 1046–1051; also called &#x27;Six Concerts à plusieurs instruments&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this set of six concerti grossi by J.S. Bach is scored for varying concertino instruments such as flutes, violins, recorders, trumpets, and horns | name this group of six pieces that J. S. Bach composed for Christian Ludwig, the margrave of the title German region</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nikolaus Harnoncourt&#x27;s 1964 recording was the first to use period instruments</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nikolaus Harnoncourt&#x27;s 1964 recording of these pieces was the first to use period instruments</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wendy Carlos realised them on the Moog synthesizer in a 1979 double-album</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a 1979 double-album recording, these pieces were realised on the Moog synthesiser by Wendy Carlos | Versions of the Brandenburg Concertos titled Switched-On Bach by Wendy Carlos brought this instrument into popular music</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bach recycled the first movement of one concerto into his cantata &#x27;Ich liebe den Höchsten von ganzem Gemüte&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The composer of one of these pieces recycled its first movement from the start of his &#x27;Ich liebe den Höchsten von ganzem Gemüte&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="brandenburg-concerto-no-5-d-major" open>
+            <summary class="work-title">Brandenburg Concerto No. 5 (D major)</summary>
+            <p class="work-desc">The fifth of the Brandenburg Concertos, in D major, features a concertino of flute, violin, and harpsichord. It is the first known instance of Bach using the transverse flute; an earlier version lacked both the flute and the cello part that appears in the final version. The most famous feature is a lengthy solo harpsichord cadenza (approximately 65 measures) in the first movement, occurring before the ritornello returns; the cadenza section is marked 'senza stromenti.' The harpsichord functions as part of both the ripieno and concertino groups — unusual for the time. The fifth concerto is thought to have been written to show off a new harpsichord delivered to Bach's court at Köthen by instrument maker Michael Mietke. It may also have been composed with a keyboard duel in mind against Louis Marchand, who reputedly fled Dresden rather than face Bach.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features a long solo harpsichord cadenza (~65 measures) in the first movement</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the harpsichord plays a 65 measure solo cadenza in the first movement of the fifth of these pieces | an extended demisemiquaver harpsichord solo closes the first movement of the fifth of these works</span></span><div class="score-clip" data-abc="X:1\nT:Brandenburg No. 5 ritornello\n%%MIDI program 40\nM:C\nL:1/16\nK:C\n|D2^F2A2d2||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Concertino consists of flute, violin, and harpsichord</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">its fifth entry features flute, violin, and harpsichord soloists | the flute joins the violin and the harpsichord in the concertino group of the fifth piece in this J.S. Bach set</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First known use of the transverse flute by Bach; earlier version lacked flute and cello part</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the fifth work in this collection was the first time that the composer used the transverse flute in composition and includes a part for cello whereas an earlier version did not</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">May have been written for a keyboard duel with Louis Marchand, who reportedly fled Dresden</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The fifth of these works may have been written for a keyboard duel with Louis Marchand, who is reputed to have fled Dresden rather than compete with its composer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The harpsichord was delivered to the court of Köthen by instrument maker Michael Mietke</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The fifth of these works was a show-piece for an instrument that Michael Mietke delivered to the court of Koethen</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Harpsichord functions as part of both ripieno and concertino groups; in D major</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The fifth of these pieces, in D major, features a harpsichord which functions as part of both the ripieno and concertino groups</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="brandenburg-concerto-no-3-g-major" open>
+            <summary class="work-title">Brandenburg Concerto No. 3 (G major)</summary>
+            <p class="work-desc">The third of the Brandenburg Concertos, in G major, is scored for three groups of string trios — three violins, three violas, and three cellos. Its most distinctive feature is the second movement, which consists of only a single bar containing two chords (an A minor chord and a B chord) forming a Phrygian half-cadence. Because the movement is so brief, performers typically improvise a keyboard cadenza over it, or substitute it with the slow movement of a Bach violin sonata. The first movement opens with a fast violin pickup motif of G–F-sharp–downbeat G.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Second movement consists of a single bar (two chords: A minor and B) forming a Phrygian half-cadence — effectively just two notes to improvise over</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the second movement of one of these works consists of just a single bar containing a Phrygian half-cadence, intended to be improvised over | that second movement adagio consists of two half-note chords, the latter of which is marked by a fermata and functions as major V chord at the end of a cadence</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Scored for three string trios (three violins, three violas, three cellos); in G major</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this piece that is scored for three string trios and is in G major</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a fast violin pickup motif: G–F-sharp–downbeat G</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the third of these pieces begins with the fast violin pickup &#x27;G, F-sharp, downbeat G&#x27; | A G-F sharp-G motif opens another of these pieces, which is bridged by merely two chords forming a half-cadence</span></span><div class="score-clip" data-abc="X:1\nT:Brandenburg No. 3 opening\n%%MIDI program 40\nM:C\nL:1/8\nK:C\n|G/ F>G|"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In performance, the second movement is often replaced by a movement from a Bach violin sonata</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Modern performers of the Third Brandenburg Concerto often substitute the third movement from one of these compositions with continuo from Bach in place of the two chords</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="brandenburg-concerto-no-4-g-major" open>
+            <summary class="work-title">Brandenburg Concerto No. 4 (G major)</summary>
+            <p class="work-desc">The fourth Brandenburg Concerto, in G major, is in 3/8 time and functions essentially as a triple concerto for violin and two 'flauti d'echo' (echo flutes). In performance, the echo flute parts are generally played by alto recorders or flageolets. The solo violin plays the bass line when the ripieno is unaccompanied in the E-minor andante (second movement). The concertino instruments play together in an 82-bar ritornello. The work leads into its fugal presto finale via a Phrygian cadence.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features &#x27;flauti d&#x27;echo&#x27; (echo flutes) — usually played by alto recorders or flageolets in performance</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">another of these pieces includes parts for two flauti d&#x27;echo, now normally played by alto recorders | a recorder or a flageolet generally plays the part scored for the &#x27;flauti d&#x27;echo&#x27; in the fourth of these pieces</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Solo violin plays bass line when ripieno is unaccompanied in the E-minor andante (second movement)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the solo violin provides the bass line when the ripieno is unaccompanied in the E-minor andante of this predominantly G-major work</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Concertino plays in an 82-bar ritornello; fugal presto finale preceded by Phrygian cadence</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the concertino consists of two flauti d&#x27;echo and a solo violin, which play in its massive 82 bar ritornello</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Begins in 3/8 time; essentially a triple concerto</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">one of these compositions begins in 3/8 time and is essentially a triple concerto for violin and two &#x27;flauti d&#x27;echo&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="brandenburg-concerto-no-6" open>
+            <summary class="work-title">Brandenburg Concerto No. 6</summary>
+            <p class="work-desc">The sixth and final Brandenburg Concerto is notably scored without any violins. The instruments are violas, cello, viola da gamba, violone, and harpsichord, with two viola soloists. The gamba players have an unusual supporting rather than solo role. The third movement is a gigue consisting of two repeated sections, the second of which is three times as long as the first; this gigue is effectively a set of variations on the ritornello theme introduced in the first movement.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Scored without violins — features violas, viola da gamba, violone, cello, and harpsichord</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the last piece in this collection features two viola soloists, while its ripieno group lacks violins | the sixth is scored for viola, cello, viola da gamba, violone, and harpsichord, notably omitting violins</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Third movement gigue = variations on the ritornello theme of the first movement</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the last of these compositions features a third movement gigue that turns out to be a set of variations on a ritornello theme presented in the first movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gamba players have an unusual supporting role; two viola soloists</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the gamba players are given an unusual supporting role in the last of these pieces, which is scored for no violins</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="brandenburg-concerto-no-1-f-major" open>
+            <summary class="work-title">Brandenburg Concerto No. 1 (F major)</summary>
+            <p class="work-desc">The first Brandenburg Concerto, in F major, is the only one of the six to have four movements. Its first movement lacks a tempo indication and opens in cut time with an eighth-beat pickup. The final movement consists of a polacca (polonaise) with two trios and a menuet repeated four times. The work features horn calls and may have been derived from, or is closely related to, Bach's Hunting Cantata ('Was mir behagt'). Bach later recycled this concerto's first movement in his cantata 'Ich liebe den Höchsten von ganzem Gemüte.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Only concerto in the set with four movements; final movement: polacca + two trios + menuet repeated four times</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the first is only one of these pieces in four movements | the final movement of the first of these works consists of a polacca, two trios and a menuet repeated four times</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Derived from or related to Bach&#x27;s Hunting Cantata; features horn calls</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the first of these compositions features horn calls and ends with a polacca and trio, and may have been derived from the composer&#x27;s Hunting Cantata | the first work in this collection borrows from the composer&#x27;s earlier Hunting Cantata</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First movement has no tempo marking and opens in cut-time with an eighth-beat pickup</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the first movement of that one lacks a tempo marking and opens in cut-time with an eighth beat pickup</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In F major</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the first of these works, in F major, is the only one to have four movements</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="brandenburg-concerto-no-2" open>
+            <summary class="work-title">Brandenburg Concerto No. 2</summary>
+            <p class="work-desc">The second Brandenburg Concerto is notable for its difficult high trumpet (tromba) part, which debates whether Bach intended trumpet or horn. Both Johann Altenburg and Johann Ludwig Schreiber have been proposed as the intended trumpet soloist, as both were known for their clarino playing technique. The trumpet part is described as reaching extreme high registers.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Debate over whether the &#x27;tromba&#x27; part was meant for trumpet or horn</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">debate exists as to whether the role assigned to the &#x27;tromba&#x27; in the second of these pieces was meant for trumpet or horn | the second of these Bach pieces has a difficult but important trumpet part</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Intended trumpet soloist was either Johann Altenburg or Johann Ludwig Schreiber — both known for clarino playing</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">either Johann Altenburg or Johann Ludwig Schreiber may have been the intended trumpet soloist in the second of these pieces, since both were known for their clarino playing</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>The Brandenburg Concertos are a set of six concertos (BWV 1046–1051) composed by Johann Sebastian Bach and dedicated in 1721 to Margrave Christian Ludwig of Brandenburg. Bach sent them as part of a job application to the Margrave&#x27;s court — an application that ultimately went nowhere, as he was already employed at Köthen. The French-language dedication gives the set an alternate title: &#x27;Six Concerts à plusieurs instruments.&#x27; Each concerto uses a different combination of solo (concertino) instruments, making the set a showcase for varied instrumental textures within the concerto grosso form.</p><p>The fifth concerto (D major) is the most heavily clued individual work. Its defining feature is a lengthy solo harpsichord cadenza — approximately 65 measures — in the first movement, marked &#x27;senza stromenti&#x27; (without other instruments). This was unprecedented: it is the first known instance of a keyboard instrument functioning as a true soloist rather than a continuo player. The concertino consists of flute, violin, and harpsichord, and the harpsichord uniquely participates in both the ripieno and concertino groups. The fifth concerto was also the first time Bach employed the transverse flute; an earlier version of the work lacked the flute and the cello part. The piece may have been composed to show off a new harpsichord delivered to the Köthen court by instrument maker Michael Mietke, and it may also have been connected to a proposed keyboard duel between Bach and Louis Marchand, who reputedly fled Dresden rather than compete.</p><p>The third concerto (G major) is scored for three groups of string trios — three violins, three violas, and three cellos. Its most distinctive trait is the second movement: just a single bar containing two chords (A minor and B major) forming a Phrygian half-cadence. Because the movement is so brief, performers typically improvise a keyboard cadenza over it or substitute a movement from a Bach violin sonata. The first movement opens with a fast violin pickup motif: G–F-sharp–downbeat G.</p><p>The fourth concerto (G major) begins in 3/8 time and is essentially a triple concerto for violin and two &#x27;flauti d&#x27;echo&#x27; (echo flutes), which are almost universally performed on alto recorders or flageolets in modern practice. The solo violin plays the bass line when the ripieno is unaccompanied in the E-minor andante. The concertino instruments share a massive 82-bar ritornello, and the work leads into its fugal presto finale through a Phrygian cadence.</p><p>The sixth and final concerto stands apart by completely omitting violins. Its scoring calls for two violas (as soloists), cello, viola da gamba, violone, and harpsichord. The gamba players take an unusual supporting rather than solo role. The third movement is a gigue structured as two repeated sections, with the second three times as long as the first; it functions as variations on the ritornello theme from the first movement.</p><p>The first concerto (F major) is the only one in the set with four movements. Its first movement opens in cut time with an eighth-beat pickup and lacks a tempo indication. The final movement is a polacca (polonaise), flanked by two trios and a menuet repeated four times. The work features prominent horn calls and is related to — or derived from — Bach&#x27;s Hunting Cantata (&#x27;Was mir behagt&#x27;). Bach later recycled the first movement&#x27;s material in his cantata &#x27;Ich liebe den Höchsten von ganzem Gemüte.&#x27;</p><p>The second concerto features a notoriously high and demanding &#x27;tromba&#x27; (trumpet/horn) part. Scholars debate whether Bach intended a natural trumpet or a horn; both Johann Altenburg and Johann Ludwig Schreiber have been proposed as the intended performer, as both were renowned clarino players.</p><p>Performance history includes Nikolaus Harnoncourt&#x27;s landmark 1964 recording, the first to use period instruments. In 1979, Wendy Carlos released a Moog synthesizer realization of the concertos as a double album (part of the &#x27;Switched-On Bach&#x27; series), which helped bring Baroque music to wider popular audiences.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Brandenburg_Concertos" target="_blank">Brandenburg Concertos – Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Johann_Sebastian_Bach" target="_blank">Johann Sebastian Bach – Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Johann Sebastian Bach (major composer underlying the entire set; Well-Tempered Clavier, St. Matthew Passion, Mass in B Minor, Musical Offering all clued)</li><li>Nikolaus Harnoncourt (conductor; 1964 period-instrument recording of Brandenburg Concertos was historically significant)</li><li>Wendy Carlos (Switched-On Bach; Moog synthesizer realizations of Brandenburg Concertos)</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'brandenburg_concertos' });</script>
+<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {
+        ABCJS.renderAbc(el, abc, { responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' });
+    }
+});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+    var visual = ABCJS.renderAbc('_offscreen', abc, {});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({ visualObj: visual[0] }).then(function() {
+        return synth.prime();
+    }).then(function() {
+        synth.start();
+        _clipSynth = synth;
+    }).catch(function(e) { console.warn('abcjs synth:', e); });
+}
+function stopAbc(btn) {
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>
+</body>
+</html>

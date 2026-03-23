@@ -88,14 +88,14 @@ def main():
 
     # Step 1: Rebuild cross-ref index
     print("\n[1/3] Rebuilding cross-reference index...")
-    result = subprocess.run("python3 lib/crossref.py", shell=True, cwd=ROOT)
+    result = subprocess.run("python3 lib/crossref/crossref.py", shell=True, cwd=ROOT)
     if result.returncode != 0:
         print("ERROR: crossref rebuild failed")
         sys.exit(1)
 
     # Step 2: Deterministic backfill (fast, no LLM needed)
-    print("\n[2/3] Running deterministic crossref backfill (lib/backfill_crossrefs.py)...")
-    result = subprocess.run("python3 lib/backfill_crossrefs.py", shell=True, cwd=ROOT)
+    print("\n[2/3] Running deterministic crossref backfill (lib/crossref/backfill_crossrefs.py)...")
+    result = subprocess.run("python3 lib/crossref/backfill_crossrefs.py", shell=True, cwd=ROOT)
     if result.returncode != 0:
         print("ERROR: backfill_crossrefs.py failed")
         sys.exit(1)

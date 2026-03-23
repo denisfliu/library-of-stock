@@ -12,7 +12,7 @@ Usage:
 import json, re, sys
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent.parent
 INDEX_FILE = ROOT / 'output' / 'topic_index.json'
 
 
