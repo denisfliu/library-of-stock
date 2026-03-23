@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<title>Stock: Ludwig van Beethoven</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Ludwig van Beethoven</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="ludwig_van_beethoven_questions.html">View source questions</a><a href="ludwig_van_beethoven_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">German composer (1770–1827) who spanned and defined the transition from the Classical to Romantic era. Best known for his nine symphonies (especially the 5th, 6th &#x27;Pastoral,&#x27; and 9th &#x27;Choral&#x27;), five piano concertos (the 5th is the &#x27;Emperor&#x27;), thirty-two piano sonatas (including &#x27;Moonlight,&#x27; &#x27;Pathetique,&#x27; &#x27;Appassionata,&#x27; &#x27;Hammerklavier&#x27;), the <a href="alban_berg_stock.html#violin-concerto" class="crossref-inline">Violin Concerto</a>, the opera Fidelio, the <a href="benjamin_britten_stock.html#war-requiem" class="crossref-inline">War Requiem</a>, <a href="philip_glass_stock.html#string-quartets" class="crossref-inline">String Quartets</a> (including the Grosse Fuge and the &#x27;Razumovsky&#x27; quartets), and a Missa solemnis. Wrote the song cycle An die ferne Geliebte. Famous for composing while deaf. The Beethoven Frieze by <a href="gustav_klimt_stock.html" class="crossref-inline">Gustav Klimt</a> is in the Vienna Secession Building.</div>
+
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">German composer (1770–1827), born in Bonn, worked in Vienna. Studied with Haydn among others. Composed while progressively losing hearing; wrote his 9th Symphony while deaf. Famous for tearing up his third symphony's dedication page to Napoleon. Originally dedicated the Kreutzer Sonata to George Bridgetower (a biracial British violinist who premiered it), then re-dedicated it to Rodolphe Kreutzer after Bridgetower insulted a friend. His Opus 1 consists of three piano trios dedicated to Prince Lichnowsky. He was an early adopter of the metronome (built by Johann Nepomuk Maelzel), leading to confusingly high tempo markings. Analysis of his hair revealed elevated lead levels (likely from lead acetate in cheap wine) and Hepatitis B infection. The Beethoven Frieze by <a href="gustav_klimt_stock.html" class="crossref-inline">Gustav Klimt</a> (covering three walls in the Vienna Secession Building) was inspired by his music; its central section features the giant Typhoeus and the Gorgon sisters.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tore up his Symphony No. 3&#x27;s dedication page to Napoleon; the symphony had been originally dedicated to him</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer... later went on to furiously tear up his third symphony&#x27;s dedication page to Napoleon. | this early Romantic symphony bears a retracted dedication to Napoleon</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Composed while deaf; had to be turned to face audience applause at premiere of the 9th Symphony</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The composer had to be turned to face the audience&#x27;s applause at the performance of the last of these pieces, which includes a setting of &#x27;Ode to Joy.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Originally dedicated the Kreutzer Sonata to George Bridgetower; re-dedicated it to Rodolphe Kreutzer after Bridgetower insulted a friend</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer, who originally dedicated the Kreutzer Sonata to George Bridgetower, later went on to furiously tear up his third symphony&#x27;s dedication page to Napoleon.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote An die ferne Geliebte — often described as the first song cycle; set six poems by Alois Isidor Jetteles; quoted in Schumann&#x27;s Fantasy in C</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer of Adelaide set six romantic poems by his friend Alois Isidor Jetteles in a work often described as the first song cycle, An die ferne Geliebte. | The end of the first movement of Schumann&#x27;s Fantasy in C Major cadences with a quote of a song by this composer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Beethoven Frieze by Gustav Klimt covers three walls of the Vienna Secession Building; central section features giant Typhoeus and the Gorgons</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Beethoven Frieze was created by this founding member of the Vienna Secession, whose more famous works include The Kiss. | This painting... covers three walls in the Secession Building in Vienna.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His Opus 1 consists of three piano trios dedicated to Prince Lichnowsky</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Beethoven&#x27;s (*) Opus 1 consists of pieces in this genre for Prince Lichnowsky.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote the Missa solemnis in D major, dedicated to Archduke Rudolf of Austria</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer of 32 piano sonatas... spanned the transition from the Classical to Romantic period. | This composer included a lengthy Credo concluding with a fugue in a D major sacred vocal piece he dedicated to Archduke Rudolf of Austria.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-3-eroica" open>
+            <summary class="work-title">Symphony No. 3 (Eroica)</summary>
+            <p class="work-desc">Symphony No. 3 in E-flat major, Op. 55. Often cited as the beginning of Beethoven's middle period. Originally dedicated to Napoleon; the dedication page was torn up. Opens with two isolated E-flat major forte chords; cellos then play eight notes outlining an E-flat major triad. Violins enter in bar 7 with syncopated G's floating above a sustained C-sharp resolving to D. The second movement is an unusually long funeral march in C minor. The finale is a set of variations on a theme from Beethoven's The Creatures of Prometheus. At rehearsal, Ferdinand Ries mistakenly berated a horn player for starting the recapitulation early. Tan Dun wrote an 'Internet Symphony' inspired by it using hubcaps and brake drums. Donald Tovey describes a 'vision of dry bones' in the finale. <a href="https://en.wikipedia.org/wiki/Symphony_No._3_(Beethoven)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dedicated to Napoleon; dedication was torn up; often marks beginning of Beethoven&#x27;s middle period; in E-flat major</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this early Romantic symphony that bears a retracted dedication to Napoleon | name these orchestral works that include ones nicknamed &#x27;Eroica&#x27; and &#x27;Choral&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with two isolated E-flat major forte chords; cellos play eight notes outlining an E-flat triad</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the cellos play eight notes outlining an E flat major triad after two tutti (*) forte chords</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Second movement is an unusually long C-minor funeral march</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two isolated E-flat major chords open this symphony, whose second movement is an unusually long funeral march.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Finale is a set of variations on a theme from The Creatures of Prometheus</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">ends with a set of variations on a theme from their composer&#x27;s The Creatures of Prometheus</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Violins enter in bar 7 with syncopated G&#x27;s above a sustained C-sharp resolving to D</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the seventh bar of this symphony, violins enter with syncopated G&#x27;s floating above a sustained C-sharp in the cellos resolving up to D.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-5-in-c-minor" open>
+            <summary class="work-title">Symphony No. 5 in C minor</summary>
+            <p class="work-desc">Symphony No. 5 in C minor, Op. 67. First movement (Allegro con brio) opens with the famous four-note 'fate' motif: 'G, G, G, long E-flat.' The first oboe plays an unexpected adagio cadenza in the recapitulation at a half cadence ending on G. C-minor scherzo includes a Mannheim rocket in low strings (pianissimo); a reprise of the scherzo interrupts the joyous C-major finale (<a href="e.m._forster_stock.html" class="crossref-inline">E.M. Forster</a> described this as a return of 'the goblins'). The first movement motif inspired Tchaikovsky's 4th Symphony. Winds and strings trade pianissimo B-diminished-seventh chords just before the retransition. Peter Schickele and Gifford Nielsen commentated over the first movement as if it were a football game in 'New Horizons in Music Appreciation.' <a href="https://en.wikipedia.org/wiki/Symphony_No._5_(Beethoven)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First movement opens with &#x27;G, G, G, long E-flat&#x27; — the famous &#x27;fate knocks at the door&#x27; motif</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Allegro con brio movement begins with strings and clarinets playing &#x27;G, G, G, long E-flat.&#x27; For 10 points, &#x27;fate knocks at the door&#x27; in what movement? | name these orchestral works that include ones nicknamed &#x27;Eroica&#x27; and &#x27;Choral&#x27;</span></span><div class="score-clip" data-abc="X:1\nT:Symphony No. 5 - fate motif\n%%MIDI program 40\nM:2/4\nL:1/4\nK:C\n|G G G G3/2E-|"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First oboe plays an unexpected adagio cadenza in the recapitulation at a half cadence ending on G</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">When this movement recapitulates a half cadence ending with a fermata on G, the first oboe plays an unexpected adagio cadenza.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The scherzo (pizzicato) reprises quietly in the middle of the C-major finale; E. M. Forster described this as a return of &#x27;the goblins&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The C major finale of what symphony is interrupted by a reprise of its scherzo in quiet, pizzicato strings? E. M. Forster described that moment as a return of &#x27;the goblins.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The opening motif inspired the start of Tchaikovsky&#x27;s Fourth Symphony</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A motif introduced in this movement, which inspired the start of (*) Tchaikovsky&#x27;s fourth symphony</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">C-minor scherzo opens with a pianissimo Mannheim rocket in low strings</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The C minor scherzo of this symphony opens with a pianissimo Mannheim rocket played by low strings.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-6-pastoral" open>
+            <summary class="work-title">Symphony No. 6 (Pastoral)</summary>
+            <p class="work-desc">Symphony No. 6 in F major, Op. 68, nicknamed 'Pastoral.' Five movements, with programmatic titles. A flute, oboe, and two clarinets imitate bird calls in the 'Scene by the brook.' The fourth movement depicts a storm: cellos and basses sustain a low tremolo; the piccolo and timpani appear for the first time in the work. The storm gives way to a shepherd's Thanksgiving hymn. <a href="wagner_stock.html" class="crossref-inline">Richard Wagner</a> called Symphony No. 7 'the apotheosis of dance' (not No. 6). <a href="https://en.wikipedia.org/wiki/Symphony_No._6_(Beethoven)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fifth symphony; has five movements with programmatic titles; includes &#x27;Scene by the brook&#x27; with bird calls by flute, oboe, and clarinets</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A flute, oboe, and two clarinets imitate bird calls in a movement of one of these pieces titled &#x27;Scene by the brook.&#x27; | Beethoven&#x27;s prior symphony, his sixth, has this nickname due to its evocations of the countryside.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fourth movement: storm (cellos and basses sustain low tremolo; piccolo and timpani appear for the first time); followed by Thanksgiving hymn</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the fourth movement of Beethoven&#x27;s &#x27;Pastoral&#x27; symphony depicts [a storm] | The cellos and basses sustain a low tremolo at the start of an F minor movement depicting one of these events that follows a &#x27;Merry Gathering of Peasant Folk&#x27; in an 1808 symphony.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-7-in-a-major" open>
+            <summary class="work-title">Symphony No. 7 in A major</summary>
+            <p class="work-desc">Symphony No. 7 in A major, Op. 92. <a href="wagner_stock.html" class="crossref-inline">Richard Wagner</a> called it 'the apotheosis of dance.' Second movement (Allegretto, but the slowest movement) features a famous long-short-short-long-long ostinato rhythm in A minor. Borrows from Beethoven's 12 Irish Songs. First movement: repeated E's from the flute transition the slow Poco Sostenuto introduction to a 6/8 Vivace dance. Fourth movement: basses play constant chromatic quarter notes in a chaotic finale; winds and strings trade an eighth note + six sixteenth note theme borrowed from 12 Irish Songs. <a href="robert_schumann_stock.html" class="crossref-inline">Robert Schumann</a> wrote variations on the Allegretto's main theme. <a href="https://en.wikipedia.org/wiki/Symphony_No._7_(Beethoven)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Richard Wagner called it &#x27;the apotheosis of dance&#x27;; second movement (Allegretto) in A minor has a long-short-short-long-long ostinato</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Richard Wagner called this A major symphony the &#x27;apotheosis of dance.&#x27; | a long, short short long, long ostinato permeates what slowest movement of a piece Wagner called &#x27;the apotheosis of dance?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Second movement is marked Allegretto but is the slowest movement; the opening minor chord fades in and out</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Though marked Allegretto, this symphony&#x27;s second movement is its slowest.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Borrows melodies from Beethoven&#x27;s 12 Irish Songs</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Beethoven&#x27;s Seventh borrows from melodies included in his 12 Songs from this country [Ireland].</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-9-choral" open>
+            <summary class="work-title">Symphony No. 9 (Choral)</summary>
+            <p class="work-desc">Symphony No. 9 in D minor, Op. 125 ('Choral'). Beethoven was deaf at the premiere and had to be turned to face the audience's applause. Finale features the '<a href="schiller_stock.html#ode-to-joy" class="crossref-inline">Ode to Joy</a>' theme adapted from <a href="schiller_stock.html" class="crossref-inline">Friedrich Schiller</a>'s poem praising the 'daughter of Elysium.' The finale opens with a 'terror fanfare' followed by a cello/bass recitative that 'tries out' and rejects previous themes. A 100-bar section imitates janissary bands (Turkish March), with prominent piccolo, triangle, and tenor solo. Third movement modulates up a fifth into 12/8 after a French horn solo. Opening: winds enter one-by-one as violins play descending fifths and fourths. Influenced Bruckner's unfinished symphony in D minor. Premiered alongside the Missa solemnis. The Choral Fantasy (Op. 80) is a precursor. <a href="https://en.wikipedia.org/wiki/Symphony_No._9_(Beethoven)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Finale includes the &#x27;Ode to Joy&#x27; from Schiller&#x27;s poem; Beethoven was deaf and had to be turned to face the applause at the premiere</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The composer had to be turned to face the audience&#x27;s applause at the performance of the last of these pieces, which includes a setting of &#x27;Ode to Joy.&#x27; | give this symphony whose finale features the &#x27;Ode to Joy&#x27; theme</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Finale opens with a &#x27;terror fanfare&#x27;; then cello/bass recitative &#x27;tries out&#x27; and rejects previous movements&#x27; themes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This symphony&#x27;s finale opens with a &#x27;terror fanfare&#x27; that is followed by a cello and bass recitative as the orchestra &#x27;tries out&#x27; and rejects previous themes. | Wagner described the start of this symphony&#x27;s D major finale as a &#x27;terror fanfare.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Turkish March variation: 100-bar section imitating janissary bands with piccolo, triangle, and tenor solo</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A 100-bar passage in this symphony&#x27;s finale features prominent piccolo and triangle solos imitating janissary bands in a (*) &#x27;Turkish March.&#x27; | These ensembles are imitated in the seventh &#x27;Ode to Joy&#x27; variation in Beethoven 9, which features triangle and a prominent tenor solo.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opening: violins play descending fifths and fourths as winds enter one by one</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Winds enter one-by-one as violins play descending fifths and fourths in this symphony&#x27;s opening, which influenced Bruckner&#x27;s uncompleted symphony in the same key.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="piano-sonatas" open>
+            <summary class="work-title">Piano Sonatas</summary>
+            <p class="work-desc">Beethoven wrote 32 piano sonatas. Key sonatas: Moonlight (No. 14, C-sharp minor, Op. 27 No. 2) — first movement has constant C-sharp minor triplet arpeggios; dedicated to student Julie Guicciardi; instruction to keep pedal down constantly; nicknamed by Ludwig Rellstab. Pathetique (No. 8, C minor, Op. 13) — slow introduction marked Grave; the development is interrupted by a return of the introduction; celebrated Adagio cantabile slow movement in A-flat inspired Elgar's 'Nimrod.' Appassionata (No. 23, F minor, Op. 57) — begins with arpeggios on the tonic and Neapolitan (G-flat major) chord. Hammerklavier (No. 29, B-flat major, Op. 106) — titled for the German name of the piano; has a three-voice Allegro risoluto fugue finale. Final sonata (No. 32, C minor, Op. 111) — finale is an arietta with variations in 9/16 time.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Moonlight Sonata (No. 14, C-sharp minor): first movement has C-sharp minor triplet arpeggios; dedicated to Julie Guicciardi; nicknamed by Rellstab; instruction to keep pedal constantly down</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this solo piano piece that got its nickname from Ludwig Rellstab&#x27;s interpretation of the right hand&#x27;s opening C-sharp minor triplet arpeggios | This piece was dedicated to the composer&#x27;s student Julie (*) Guicciardi.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pathetique Sonata (No. 8, C minor): slow Grave introduction; development interrupted by return of the slow introduction; Adagio cantabile in A-flat inspired Elgar&#x27;s &#x27;Nimrod&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This sonata&#x27;s adagio cantabile slow movement inspired &#x27;Nimrod&#x27; from the Enigma Variations, and the development of its first movement is interrupted by the return of its slow introduction, marked Grave. | This C minor piano sonata contains a celebrated Adagio cantabile in A-flat major.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Appassionata (No. 23, F minor): begins with arpeggios on the tonic and Neapolitan (G-flat major) chord</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Arpeggios on the tonic chord and this key&#x27;s Neapolitan chord of G flat major begin another piano sonata in this key, the &#x27;Appassionata.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hammerklavier (No. 29, B-flat major): named for the German word for the piano; has a three-voice Allegro risoluto fugue finale; second movement is an A-flat major melody over alternating sixteenth notes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That piece, the 29th by its composer in this genre, is titled for the German name of the instrument it was written for</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Final sonata (No. 32, C minor, Op. 111): finale is an arietta with variations in unusual 9/16 time</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The finale of this composer&#x27;s 32nd and last piano sonata is a set of variations on a theme that is in the unusual time signature of 9/16.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Piano Sonata No. 1 (F minor): begins with a Mannheim rocket from middle C to A-flat 5; Schoenberg used it as an example of a musical sentence</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Beethoven piece begins with a Mannheim rocket that ranges from middle C to A-flat 5 before resolving down to F. That phrase is then repeated over a dominant chord, leading Schoenberg to use this piece&#x27;s opening as an example of a musical sentence.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="string-quartets" open>
+            <summary class="work-title">String Quartets <a href="philip_glass_stock.html#string-quartets" class="work-link-btn" title="Go to Philip Glass">&rarr;</a></summary>
+            <p class="work-desc">Beethoven wrote 16 <a href="philip_glass_stock.html#string-quartets" class="crossref-inline">String Quartets</a>; the Grosse Fuge was originally the finale of No. 13 (B-flat major, Op. 130). Three quartets dedicated to Count Razumovsky. The final string quartet (No. 16, F major, Op. 135) contains a movement titled 'The Difficult Decision' with the inscribed question 'Must it be?' answered 'It must be!' His string quartet in F major (Op. 59 No. 1) begins with a 24-bar overture of unison G's. String Quartet No. 7 (Op. 59 No. 1) begins with the notes G-sharp, B-sharp, C-sharp, A. One late quartet (String Quartet in E-flat major, Op. 127) was played on Schubert's deathbed. The Beethoven Quartet (Moscow ensemble) premiered 13 of Shostakovich's 15 quartets.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Grosse Fuge was originally the finale of the String Quartet No. 13 (B-flat major, Op. 130); then published independently</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">one of these works, called &#x27;contemporary forever&#x27; by Igor Stravinsky, was originally the finale of the 13th of these works | Borodin&#x27;s First String Quartet is based on material from this late Beethoven chamber piece, from which the Grosse Fuge was extracted and independently published.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Final string quartet (No. 16, F major, Op. 135): final movement titled &#x27;The Difficult Decision&#x27;; inscribed &#x27;Must it be? It must be!&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The last movement of this chamber work contains the motifs... titled &#x27;The Difficult Decision.&#x27; This work&#x27;s composer wrote the question &#x27;Must it be?&#x27; in its manuscript, to which he himself responded &#x27;It must be!&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three string quartets dedicated to Count Razumovsky</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">three of which were dedicated to Count Razumovsky</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One of his late string quartets contains a &#x27;holy song of thanksgiving&#x27; in F Lydian; another was played on Schubert&#x27;s deathbed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Late in life, he wrote a string quartet centered around a &#x27;holy song of thanksgiving&#x27; in F Lydian. | One of these works with seven movements was played on Franz Schubert&#x27;s deathbed.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="violin-concerto-and-piano-concertos" open>
+            <summary class="work-title">Violin Concerto and Piano Concertos <a href="alban_berg_stock.html#violin-concerto" class="work-link-btn" title="Go to Alban Berg">&rarr;</a></summary>
+            <p class="work-desc"><a href="alban_berg_stock.html#violin-concerto" class="crossref-inline">Violin Concerto</a> (D major, Op. 61): opens with five timpani taps; dedicated to Franz Clement ('for Clement, with clemency'); soloist plays a 'hunting horn' theme on the G-string in the third movement rondo; Larghetto second movement in G major; premiered with soloist Franz Clement; characterized as 'the greatest, most uncompromising' by Joseph Joachim; Beethoven also arranged it as a Piano Concerto. Emperor Concerto (Piano Concerto No. 5, E-flat major): opens with a tutti E-flat chord followed by ascending arpeggios by the soloist; ends with an E-flat major rondo; finale is attacca from the second movement. Piano Concerto No. 4 (G major): opens with soft chordal theme repeated by strings in B major (mediant); second movement has staccato E-minor strings evoking Orpheus's pleas to the Furies (per A. B. Marx).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Violin Concerto: opens with five timpani taps; dedicated to Franz Clement; characterized as &#x27;greatest, most uncompromising&#x27; by Joseph Joachim</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Characterized as &#x27;the greatest, [the] most uncompromising&#x27; by Joseph Joachim, this piece begins with a rhythm-establishing, five-note phrase from the timpani. | The composer of this piece included the note &#x27;with clemency, for Clement&#x27; on its manuscript.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Emperor Concerto (No. 5, E-flat major): opens with tutti chord followed by arpeggios; finale is attacca from second movement</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A tutti chord in E-flat major is immediately followed by ascending arpeggios played by the soloist in one of these pieces | An E flat major rondo acts as the final movement of this composer&#x27;s fifth and final piano concerto, which is marked attacca</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Piano Concerto No. 4 (G major): opens with soft chordal theme repeated in B major; second movement strings evoke Orpheus&#x27;s pleas to the Furies</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After the initial statement in the tonic, strings repeat the soft chordal opening theme of one of these pieces in the mediant key of B major | staccato strings play dotted E minor figures that A. B. Marx claimed evoked Orpheus&#x27;s pleas to the Furies</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Other major works: Fidelio (only opera); Missa solemnis in D major (dedicated to Archduke Rudolf; premiered with the 9th Symphony); Choral Fantasy Op. 80 (a precursor to the 9th — repeats 'Divine grace is bestowed upon Man'; famously fell apart at premiere); Wellington's Victory (for which he worked with Maelzel on the metronome); Piano Trios including 'Archduke' (No. 11, for Archduke Rudolph) and 'Ghost' (Carl Czerny said its Largo evoked Hamlet's father); Septet in E-flat (for clarinet, bassoon, horn, and strings); 'Les Adieux' Sonata (Op. 81a, opens with the German translation of its nickname); Turkish March (Op. 76 in B-flat major, used for the play The Ruins of Athens).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Missa solemnis (D major): dedicated to Archduke Rudolf; premiered at same concert as the 9th Symphony; contains a lengthy Credo concluding with a fugue</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A symphony named for this adjective [choral] premiered in Vienna alongside its composer&#x27;s Missa Solemnis. | This composer included a lengthy Credo concluding with a fugue in a D major sacred vocal piece he dedicated to Archduke Rudolf of Austria.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Choral Fantasy (Op. 80): precursor to the 9th Symphony; famously fell apart and restarted at premiere; repeats &#x27;Divine grace is bestowed upon Man&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Anton Schindler noted how a piece titled for this adjective, its composer&#x27;s opus 80, &#x27;simply fell apart&#x27; at its premiere</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Piano Trios: &#x27;Archduke&#x27; (No. 11) for Archduke Rudolf; &#x27;Ghost&#x27; whose Largo evoked Hamlet&#x27;s father according to Carl Czerny</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">These pieces include an 1811 one nicknamed for Rudolph of Austria and one which inspired Carl Czerny to remark that its Largo second movement evoked Hamlet&#x27;s father.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Septet in E-flat major: for clarinet, bassoon, horn, violin, viola, cello, and bass</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s Septet in E-flat is scored for clarinet, bassoon, horn, and one of each string instrument.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Ludwig van Beethoven (1770–1827) was a German composer who spanned the transition from the Classical to Romantic era, working primarily in Vienna. He composed nine symphonies, five piano concertos, thirty-two piano sonatas, a <a href="alban_berg_stock.html#violin-concerto" class="crossref-inline">Violin Concerto</a>, seventeen <a href="philip_glass_stock.html#string-quartets" class="crossref-inline">String Quartets</a>, one opera (Fidelio), and a Missa solemnis, among many other works. He famously composed while progressively losing his hearing, writing his Ninth Symphony while completely deaf — he had to be turned to face the audience&#x27;s applause at the premiere.</p><p>His Third Symphony (&#x27;Eroica,&#x27; E-flat major, Op. 55) is often cited as the beginning of his middle period. Originally dedicated to Napoleon, the dedication was furiously torn up. It opens with two isolated E-flat forte chords; in the seventh bar, violins enter with syncopated G&#x27;s above a sustained C-sharp resolving to D. The second movement is an unusually long C-minor funeral march, and the finale is a set of variations on a theme from his ballet The Creatures of Prometheus. Symphony No. 5 (C minor, Op. 67) opens with the famous four-note &#x27;fate knocks at the door&#x27; motif (G, G, G, long E-flat). At the recapitulation, the first oboe plays an unexpected adagio cadenza on a half cadence. The C-minor scherzo opens with a pianissimo Mannheim rocket; a quiet pizzicato reprise of the scherzo interrupts the joyous C-major finale — <a href="e.m._forster_stock.html" class="crossref-inline">E.M. Forster</a> described this as a return of &#x27;the goblins.&#x27; The motif inspired Tchaikovsky&#x27;s Fourth Symphony. Symphony No. 6 (&#x27;Pastoral,&#x27; F major, Op. 68) has five programmatic movements, including bird calls from flute, oboe, and clarinets in the &#x27;Scene by the brook,&#x27; and a storm movement (cellos and basses sustain a low tremolo; piccolo and timpani appear for the first time) giving way to a Thanksgiving hymn. Symphony No. 7 (A major, Op. 92) was called &#x27;the apotheosis of dance&#x27; by Wagner; its second movement (marked Allegretto but the symphony&#x27;s slowest) features a famous long-short-short-long-long ostinato in A minor; it borrows from Beethoven&#x27;s 12 Irish Songs. Symphony No. 9 (D minor, Op. 125, &#x27;Choral&#x27;) has a finale featuring the &#x27;<a href="schiller_stock.html#ode-to-joy" class="crossref-inline">Ode to Joy</a>&#x27; from Schiller&#x27;s poem. The finale opens with a &#x27;terror fanfare&#x27; followed by a cello/bass recitative that rejects previous themes; a 100-bar Turkish March section imitates janissary bands with piccolo, triangle, and a tenor solo.</p><p>Key piano sonatas: the Moonlight Sonata (No. 14, C-sharp minor, Op. 27 No. 2) opens with constant triplet arpeggios; the instruction requires the pedal to be held down constantly; dedicated to student Julie Guicciardi; nicknamed by Ludwig Rellstab. The Pathetique Sonata (No. 8, C minor, Op. 13) features a slow Grave introduction interrupted again in the development section; its Adagio cantabile in A-flat inspired Elgar&#x27;s &#x27;Nimrod.&#x27; The Appassionata (No. 23, F minor) begins with arpeggios on the tonic and G-flat Neapolitan chord. The Hammerklavier (No. 29, B-flat major) is titled for the German name of the piano and ends with a three-voice Allegro risoluto fugue. His final sonata (No. 32, C minor) ends with an arietta with variations in 9/16 time.</p><p>The <a href="alban_berg_stock.html#violin-concerto" class="crossref-inline">Violin Concerto</a> (D major, Op. 61) opens with five timpani taps and was dedicated to Franz Clement; characterized as &#x27;the greatest, most uncompromising&#x27; by Joachim. The Emperor Concerto (Piano Concerto No. 5, E-flat major) opens with a tutti chord immediately followed by arpeggios from the soloist. His <a href="philip_glass_stock.html#string-quartets" class="crossref-inline">String Quartets</a> include the Grosse Fuge (originally the finale of String Quartet No. 13, Op. 130) and three Razumovsky quartets; the final string quartet (No. 16, F major, Op. 135) contains &#x27;The Difficult Decision&#x27; movement with the inscription &#x27;Must it be? It must be!&#x27;</p><p>Beethoven originally dedicated the Kreutzer Sonata to the biracial British violinist George Bridgetower, who premiered it, then re-dedicated it to Rodolphe Kreutzer after a quarrel. His Opus 1 consists of three piano trios for Prince Lichnowsky; the Archduke Trio was for Archduke Rudolf. He wrote An die ferne Geliebte (often called the first song cycle, six poems by Alois Isidor Jetteles), quoted in Schumann&#x27;s Fantasy in C. The Beethoven Frieze by <a href="gustav_klimt_stock.html" class="crossref-inline">Gustav Klimt</a> covers three walls of the Vienna Secession Building. His Missa solemnis in D major was dedicated to Archduke Rudolf and premiered at the same concert as the Ninth Symphony. Analysis of his hair revealed elevated lead levels (likely from lead acetate in cheap wine) and Hepatitis B.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Ludwig_van_Beethoven" target="_blank">Ludwig van Beethoven (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Symphonies_of_Beethoven" target="_blank">Beethoven&#x27;s symphonies (Wikipedia)</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Symphony No. 5 (Beethoven) — appears as an answerline; richly detailed clues about first movement</li><li>Symphony No. 9 (Beethoven) — appears as an answerline; Ode to Joy, terror fanfare</li><li>Eroica Symphony (Beethoven) — appears as its own answerline</li><li>Moonlight Sonata (Beethoven) — appears as its own answerline</li><li>Pathetique Sonata (Beethoven) — appears as its own answerline</li><li>Violin Concerto (Beethoven) — appears as its own answerline</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'ludwig_van_beethoven' });</script>
+<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {
+        ABCJS.renderAbc(el, abc, { responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' });
+    }
+});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+    var visual = ABCJS.renderAbc('_offscreen', abc, {});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({ visualObj: visual[0] }).then(function() {
+        return synth.prime();
+    }).then(function() {
+        synth.start();
+        _clipSynth = synth;
+    }).catch(function(e) { console.warn('abcjs synth:', e); });
+}
+function stopAbc(btn) {
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>
+</body>
+</html>

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<title>Stock: Tosca</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Tosca</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="tosca_questions.html">View source questions</a><a href="tosca_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Opera by <a href="puccini_stock.html" class="crossref-inline">Giacomo Puccini</a>, premiered in 1900. A melodramatic work set in Rome, following the soprano Floria Tosca, her lover the painter Mario Cavaradossi, and the villainous police chief Baron Scarpia. Known for its arias &#x27;Vissi d&#x27;arte&#x27; and &#x27;E lucevan le stelle,&#x27; its shocking plot of betrayal and death, and its climax atop the Castel Sant&#x27;Angelo.</div>
+
+        <details class="work" id="tosca-the-opera-as-a-whole" open>
+            <summary class="work-title">Tosca – The Opera as a Whole</summary>
+            <p class="work-desc">Melodramatic opera by <a href="puccini_stock.html" class="crossref-inline">Giacomo Puccini</a>, set in Rome. Described as a 'shabby little shocker' by musicologist Joseph Kerman in his 1956 book Opera as Drama, a remark that conductor Thomas Beecham said could be safely ignored. Features soprano Floria Tosca, her lover the painter Mario Cavaradossi, and the villain Baron Scarpia, chief of police. <a href='https://en.wikipedia.org/wiki/Tosca' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Composed by Giacomo Puccini</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this opera about the title singer by Giacomo Puccini | name this opera about the title diva by Giacomo Puccini</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called a &#x27;shabby little shocker&#x27; by musicologist Joseph Kerman in his 1956 book Opera as Drama</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This opera was controversially referred to as a &#x27;shabby little shocker&#x27; by musicologist Joseph Kerman in his 1956 book Opera as Drama. | After Kerman&#x27;s scathing remarks, the conductor Thomas Beecham responded by saying that anything Kerman says about this opera&#x27;s composer &#x27;can safely be ignored.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The title character believes Cavaradossi will be subject to a mock execution, but it turns out to be real</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character believes her lover Mario Cavaradossi will merely be subject to a mock execution in this opera by Puccini. | That character later stabs and kills Scarpia, reneging on an agreed plan; Mario Cavaradossi is then killed via firing squad.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tosca kills herself by jumping off the Castel Sant&#x27;Angelo after learning Cavaradossi&#x27;s execution was real</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this melodramatic opera by Giacomo Puccini which ends with its title character jumping off the Castel Sant&#x27;Angelo | a character who sings &#x27;Vissi d&#x27;arte&#x27; in this opera jumps to her death after Cavaradossi is killed</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A famous &#x27;bouncing&#x27; version: story goes Tosca reappears after jumping due to replacement of a mattress with a trampoline (never corroborated)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The naturalist Gerald Durrell is one of a number of people who refer to a &#x27;bouncing&#x27; version of this opera, though none have ever been corroborated.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a recurring motif of three loud, brassy major chords on B-flat, A-flat, and E</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This opera opens with the recurring motif of three loud, spooky, brassy major chords on B-flat, A-flat, and E.</span></span><div class="score-clip" data-abc="X:1\nT:Tosca opening motif\n%%MIDI program 57\nM:4/4\nL:1/4\nK:C\n|_B4||_A4||E4||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Puccini considered casting Enrico Caruso as Cavaradossi for the premiere but chose the older Emilio De Marchi instead — a decision he later regretted</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Puccini considered casting this young operatic tenor as Cavaradossi for the premiere of Tosca, but selected the older Emilio De Marchi instead, which he later regretted.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="floria-tosca-the-title-character" open>
+            <summary class="work-title">Floria Tosca – The Title Character</summary>
+            <p class="work-desc">The soprano title character of the opera. An opera diva and devout Catholic who loves the painter Cavaradossi. Jealous by nature. Subject of multiple major arias and the opera's tragic arc. <a href='https://en.wikipedia.org/wiki/Tosca_(character)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Becomes jealous after noticing that the eyes in Cavaradossi&#x27;s painting of Mary Magdalene are modeled on those of the Marchesa Attavanti</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This character becomes jealous after noticing that the eyes in her lover&#x27;s painting of Mary Magdalene are modeled on those of the Marchesa Attavanti. | In the aria &#x27;Recondita armonia,&#x27; a blonde model for Mary Magdalene is contrasted with this dark-haired character.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Betrays the hiding place of Angelotti (the former consul of the Roman Republic)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this dark-haired character, who betrays the hiding place of Angelotti | after his hiding place in a den in a wall is discovered, the former consul of the Roman Republic, Angelotti, kills himself to avoid being captured</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Scarpia offers her lover&#x27;s freedom in exchange for sex; she agrees, then kills Scarpia with his own knife</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Vissi d&#x27;arte&#x27; is sung by the title character after she has been offered her lover&#x27;s freedom in exchange for sex with Baron Scarpia. | That character later stabs and kills Scarpia, reneging on an agreed plan.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sings &#x27;Non la sospiri, la nostra casetta&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This character, who sings the aria &#x27;Non la sospiri, la nostra casetta,&#x27; claims that she always decorated altars with flowers...</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Leaps off a wall/parapet after learning Cavaradossi is dead and Scarpia has betrayed her</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this opera character who leaps off of a wall after finding out that Cavaradossi is dead and that Baron Scarpia has betrayed her. | After this soprano finds out that her lover Cavaradossi&#x27;s fake execution was actually real, she commits suicide by jumping off the Castel Sant&#x27;Angelo.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="vissi-d-arte-i-lived-for-art" open>
+            <summary class="work-title">&quot;Vissi d&#x27;arte&quot; (I Lived for Art)</summary>
+            <p class="work-desc">The famous aria sung by Tosca in the second act, during her deliberation over whether to sleep with Scarpia to save Cavaradossi. Begins in E-flat minor (opening phrase: E-flat, D-flat, B-flat, A-flat) before shifting to E-flat major. Sometimes performed lying down. <a href='https://en.wikipedia.org/wiki/Vissi_d%27arte' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sung by Tosca after Scarpia attempts to blackmail her (offers lover&#x27;s freedom in exchange for sex)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character who sings &#x27;Vissi d&#x27;arte&#x27; in this opera jumps to her death after Cavaradossi is killed. | &#x27;Vissi d&#x27;arte&#x27; is sung by the title character after she has been offered her lover&#x27;s freedom in exchange for sex with Baron Scarpia.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tosca sings she &#x27;donated jewels to the Madonna&#x27;s mantle&#x27; and &#x27;never harmed a living soul&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That lover later sings an aria in which &#x27;I donated jewels to the Madonna&#x27;s mantle&#x27; and &#x27;I never harmed a living soul,&#x27; &#x27;Vissi d&#x27;Arte,&#x27; after she feels abandoned.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with the descending phrase E-flat, D-flat, B-flat, A-flat, beginning in E-flat minor then shifting to E-flat major</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One aria in this opera begins in E-flat minor, starting with a descending Eb-Db-Bb-Ab phrase, before shifting to E-flat major. | This character...claims that she always decorated altars with flowers in an aria beginning E-flat, D-flat, B-flat, A-flat.</span></span><div class="score-clip" data-abc="X:1\nT:Vissi d'arte opening\n%%MIDI program 40\nM:4/4\nL:1/4\nK:C\n|_E2 _D2|_B,2 _A,2||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Giulio Gatti-Casazza said the longest ovation at the Met was when Maria Jeritza sang this aria while entirely lying prone</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Giulio Gatti-Casazza claimed that the longest ovation he had seen at the Met was when Maria Jeritza sang this character&#x27;s most famous aria while entirely lying prone. | This opera&#x27;s most celebrated aria is often performed lying down.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="e-lucevan-le-stelle-and-the-stars-were-shining" open>
+            <summary class="work-title">&quot;E lucevan le stelle&quot; (And the Stars Were Shining)</summary>
+            <p class="work-desc">Aria sung by the painter Cavaradossi in Act III as he awaits execution in a prison cell at the Castel Sant'Angelo. He recalls 'sweet kisses and languorous caresses' and laments dying. Introduced by a clarinet solo; begins with repeated C-sharp and F-sharp notes. <a href='https://en.wikipedia.org/wiki/E_lucevan_le_stelle' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sung by Cavaradossi as he awaits execution in a prison cell at Castel Sant&#x27;Angelo</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this aria sung by a painter as he awaits execution in a prison cell at the Castel Sant&#x27;Angelo. | Cavaradossi sings &#x27;E lucevan le stelle&#x27; in the third act of this Puccini opera.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A character trades his last possession — a ring — to deliver a letter to Tosca, then sings about how &#x27;the Earth was scented&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in this opera trades his last possession of a ring to deliver a letter to the title character, leading him to sing about how &#x27;the Earth was scented&#x27; in the aria &#x27;E lucevan le stelle&#x27;.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Introduced by a clarinet solo; begins with repeated C-sharp and F-sharp notes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An aria signifying a letter written to this woman is introduced by a clarinet solo and begins with repeated C sharp and F sharp notes: that aria is &#x27;E lucevan le stelle&#x27;.</span></span><div class="score-clip" data-abc="X:1\nT:E lucevan le stelle opening\n%%MIDI program 71\nM:4/4\nL:1/4\nK:C\n|^C2 ^C2|^F2 ^F2||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Singer recalls &#x27;sweet kisses and languorous caresses&#x27; and sobs &#x27;I die in desperation / And I never before loved life so much&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The singer of this aria recalls &#x27;sweet kisses and languorous caresses&#x27; before sobbing, &#x27;I die in desperation / And I never before loved life so much.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="recondita-armonia-hidden-harmony" open>
+            <summary class="work-title">&quot;Recondita armonia&quot; (Hidden Harmony)</summary>
+            <p class="work-desc">Aria sung by Cavaradossi in Act I while painting a portrait of Mary Magdalene modeled on the Marchesa Attavanti. He contrasts Attavanti's blonde hair and blue eyes with Tosca's dark features. <a href='https://en.wikipedia.org/wiki/Tosca#Act_1' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cavaradossi sings while comparing a blonde model for Mary Magdalene (Attavanti&#x27;s blue eyes) with Tosca&#x27;s dark hair</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the aria &#x27;Recondita armonia,&#x27; a blonde model for Mary Magdalene is contrasted with this dark-haired character. | In the first act of this opera, choir boys... in that same act, &#x27;Recondita armonia&#x27; is sung comparing a lover to a painting.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">This is the aria Cavaradossi sings while discussing combining Tosca&#x27;s dark hair and Attavanti&#x27;s blue eyes for the painting of Mary Magdalene</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This is the aria that Cavaradossi sings while discussing combining Tosca&#x27;s dark hair and Attavanti&#x27;s blue eyes in the features of his painting of Mary Magdalene.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="act-i-the-church-te-deum-scene" open>
+            <summary class="work-title">Act I – The Church / Te Deum Scene</summary>
+            <p class="work-desc">The first act is set in the church of Sant'Andrea della Valle in Rome. Key events include: Cavaradossi hiding the escaped prisoner Angelotti; the choir boys celebrating the presumed defeat at the Battle of Marengo by singing a Te Deum; and the villain Scarpia exclaiming 'You make me forget even God.' The first act opens with a character searching for a key hidden in the feet of a statue of the Virgin Mary.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A character looks for a key hidden in the feet of a statue of the Virgin Mary at the start of the opera</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">At the start of this opera, a character looks for a key hidden in the feet of a statue of the Virgin Mary.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A church choir celebrates the presumed defeat of a general at the Battle of Marengo by singing the Te Deum; Scarpia exclaims &#x27;You make me forget even God&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A church choir in this opera, directed by the sacristan, celebrates a general&#x27;s presumed defeat at the Battle of Marengo by singing the Te Deum while this opera&#x27;s villain exclaims, &#x27;You make me forget even God.&#x27; | In the first act of this opera, choir boys who mistakenly believe Michael von Melas has won a battle sing a &#x27;Te Deum&#x27; chorus.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Angelotti, the former consul of the Roman Republic, hides in a den in a wall and kills himself to avoid capture when discovered</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">after his hiding place in a den in a wall is discovered, the former consul of the Roman Republic, Angelotti, kills himself to avoid being captured by agents</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The tenor sings &#x27;Vittoria! Vittoria!&#x27; with the notes C-sharp, F-sharp, F-sharp and F-sharp, A-sharp, A-sharp in the same rhythm</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The tenor character in this opera blasts the notes &#x27;C-sharp, F-sharp, F-sharp&#x27; and &#x27;F-sharp, A-sharp, A-sharp&#x27; in the same rhythm during a scene in which the words &#x27;Vittoria! Vittoria!&#x27; are sung out of excitement.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="famous-performances-and-performers" open>
+            <summary class="work-title">Famous Performances and Performers</summary>
+            <p class="work-desc">Tosca has been associated with a number of legendary performances and performers, including <a href="maria_callas_stock.html" class="crossref-inline">Maria Callas</a>, Maria Jeritza, Renata Tebaldi, and Tito Gobbi. Performance anecdotes and mishaps are frequently clued.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">During one performance, Maria Callas&#x27;s hair caught on fire; baritone Tito Gobbi leaped on her to put it out</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">During a performance of this opera, Maria Callas&#x27;s hair caught on fire, leading Tito Gobbi to leap onto her to put it out.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Both Maria Callas and Renata Tebaldi gave significant performances of the title role</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Tebaldi and her rival Maria Callas both gave significant performances of this Puccini role, the lover of the painter Mario Cavaradossi and killer of Baron Scarpia.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Maria Jeritza sang &#x27;Vissi d&#x27;arte&#x27; entirely prone, earning the longest ovation seen at the Met (according to Gatti-Casazza)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Giulio Gatti-Casazza claimed that the longest ovation he had seen at the Met was when Maria Jeritza sang this character&#x27;s most famous aria while entirely lying prone.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Tosca is a melodramatic opera by <a href="puccini_stock.html" class="crossref-inline">Giacomo Puccini</a>, set in Rome, centering on the soprano diva Floria Tosca, her lover the painter Mario Cavaradossi, and the corrupt police chief Baron Scarpia. The opera was described as a &#x27;shabby little shocker&#x27; by musicologist Joseph Kerman in his 1956 book Opera as Drama — a characterization that conductor Thomas Beecham dismissed, saying anything Kerman said about the composer &#x27;can safely be ignored.&#x27;</p><p>The opera opens with a recurring motif of three loud brass chords on B-flat, A-flat, and E. Act I is set in the church of Sant&#x27;Andrea della Valle: Cavaradossi is painting a portrait of Mary Magdalene modeled on the Marchesa Attavanti, and he sings the aria &#x27;Recondita armonia&#x27; comparing Attavanti&#x27;s blonde features with Tosca&#x27;s dark ones. Tosca grows jealous when she notices the resemblance. Cavaradossi hides the escaped prisoner Angelotti (former consul of the Roman Republic), who ultimately kills himself when his hiding place is discovered. A church choir sings the Te Deum celebrating the supposed defeat of Napoleon at the Battle of Marengo, while the villain Scarpia exclaims &#x27;You make me forget even God.&#x27; The tenor also sings &#x27;Vittoria! Vittoria!&#x27; on the notes C-sharp, F-sharp, F-sharp and F-sharp, A-sharp, A-sharp.</p><p>In Act II, Scarpia blackmails Tosca: he will spare Cavaradossi&#x27;s life if she sleeps with him. Tosca sings &#x27;Vissi d&#x27;arte&#x27; — an aria beginning with the descending phrase E-flat, D-flat, B-flat, A-flat, moving from E-flat minor to major — in which she laments her fate, having &#x27;donated jewels to the Madonna&#x27;s mantle&#x27; and &#x27;never harmed a living soul.&#x27; Tosca ultimately agrees to the bargain, then stabs Scarpia with his own knife.</p><p>In Act III, Cavaradossi sings &#x27;E lucevan le stelle&#x27; (introduced by a clarinet solo with repeated C-sharp and F-sharp notes), recalling &#x27;sweet kisses and languorous caresses&#x27; as he awaits execution and lamenting &#x27;I die in desperation / And I never before loved life so much.&#x27; Tosca believes the execution will be a mock one, but Cavaradossi is really shot. Tosca, discovering the betrayal, leaps to her death off the Castel Sant&#x27;Angelo.</p><p>Puccini regretted not casting the young <a href="enrico_caruso_stock.html" class="crossref-inline">Enrico Caruso</a> as Cavaradossi for the premiere, having chosen the older Emilio De Marchi instead. Famous performers of the title role include <a href="maria_callas_stock.html" class="crossref-inline">Maria Callas</a> (during whose performance Tito Gobbi had to leap on her to extinguish her hair catching fire), Renata Tebaldi, and Maria Jeritza (who famously performed &#x27;Vissi d&#x27;arte&#x27; entirely prone, prompting, according to impresario Giulio Gatti-Casazza, the longest ovation ever seen at the Met). A supposed &#x27;bouncing Tosca&#x27; anecdote — that a mattress was once replaced with a trampoline — has been recounted by Gerald Durrell and others but never corroborated.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Tosca" target="_blank">Tosca (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Giacomo_Puccini" target="_blank">Giacomo Puccini (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Tosca_(character)" target="_blank">Floria Tosca (Wikipedia)</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Giacomo Puccini (composer of Tosca; also La Boheme, Madama Butterfly, Turandot)</li><li>Arturo Toscanini (conductor — many bonus clues in this set; NBC Symphony Orchestra, Barber&#x27;s Adagio, premiere of La Boheme)</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'tosca' });</script>
+<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {
+        ABCJS.renderAbc(el, abc, { responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' });
+    }
+});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+    var visual = ABCJS.renderAbc('_offscreen', abc, {});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({ visualObj: visual[0] }).then(function() {
+        return synth.prime();
+    }).then(function() {
+        synth.start();
+        _clipSynth = synth;
+    }).catch(function(e) { console.warn('abcjs synth:', e); });
+}
+function stopAbc(btn) {
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>
+</body>
+</html>

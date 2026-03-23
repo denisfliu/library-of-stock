@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Benjamin Britten</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Benjamin Britten</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="benjamin_britten_questions.html">View source questions</a><a href="benjamin_britten_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">English composer (1913–1976), co-founder of the Aldeburgh Festival. Best known for the operas Peter Grimes, <a href="henry_james_stock.html#the-turn-of-the-screw" class="crossref-inline">The Turn of the Screw</a>, Billy Budd, and the War Requiem. His longtime partner, tenor Peter Pears, premiered most of his tenor roles. Other important works include The Young Person&#x27;s Guide to the Orchestra (based on Purcell&#x27;s Abdelazer) and A Ceremony of Carols. A key figure in 20th-century British music, he also revived interest in Purcell&#x27;s operas. Arvo Pärt composed a Cantus in Memoriam Benjamin Britten after his death.</div>
+
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">English composer (1913–1976), born in Suffolk. His longtime partner, tenor Peter Pears, premiered most of his tenor roles; together they co-founded the Aldeburgh Festival (at the Snape Maltings Concert Hall). He befriended <a href="wh_auden_stock.html" class="crossref-inline">W. H. Auden</a> while both worked on GPO Film Unit documentaries; Auden wrote the libretto for his operetta Paul Bunyan. He was commissioned by the Japanese government to write a piece for the 2600-year anniversary of the Mikado (Sinfonia da Requiem). He extensively revised Purcell's Dido and Aeneas with Imogen Holst, reviving Purcell's operas for the public. Arvo Pärt composed Cantus in Memoriam Benjamin Britten after his death. His style inspired Alexandre Desplat's score for <a href="wes_anderson_stock.html" class="crossref-inline">Wes Anderson</a>'s Moonrise Kingdom.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His partner was tenor Peter Pears, who premiered most of his tenor roles; they co-founded the Aldeburgh Festival at the Snape Maltings Concert Hall</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The composer&#x27;s partner, Peter Pears (peers), premiered the lead role in an opera that features the Four Sea Interludes | Name these two men who co-founded a festival that takes place in the Snape Maltings Concert Hall.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Befriended W. H. Auden while working on GPO Film Unit films; Auden wrote the libretto for Paul Bunyan</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer befriended an author while the two worked on Alberto Cavalcanti&#x27;s films for the GPO Film Unit. | Auden&#x27;s first full operatic libretto was for this English composer&#x27;s operetta Paul Bunyan.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arvo Pärt composed Cantus in Memoriam Benjamin Britten — a mensuration canon for string orchestra opening with tubular bells and descending A-minor scales</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another piece that Arvo Part wrote in his trademark tintinnabuli style is his Cantus in Memoriam of this English composer of Peter Grimes | Cantus in Memoriam Benjamin Britten... opens with three notes on the tubular bells before the strings enter to play descending A-minor scales in octaves at varying speeds.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Extensively revised Purcell&#x27;s Dido and Aeneas with Imogen Holst; widely credited for popularizing Purcell&#x27;s operas</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This twentieth-century composer extensively revised Dido and Aeneas, together with Imogen Holst, and is thus widely credited for popularising Purcell&#x27;s operas with the public.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commissioned by the Japanese government for the 2600-year anniversary of the Mikado; wrote Sinfonia da Requiem</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer was commissioned by the Japanese government to write a piece for the 2600-year anniversary of the Mikado, resulting in his (*) Sinfonia da Requiem.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His &#x27;corpses&#x27; (boy sopranos he was obsessed with) included Blow-Up star David Hemmings; never spoke to him again after his voice broke</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s so-called &#x27;corpses&#x27; included Blow-Up star David Hemmings, to whom this composer never spoke again after Hemmings&#x27;s voice broke as a boy soprano.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="peter-grimes" open>
+            <summary class="work-title">Peter Grimes</summary>
+            <p class="work-desc">Opera based on George Crabbe's poem 'The Borough.' The title character, a fisherman who is an outcast of his community, is blamed for the deaths of two apprentices. Ellen Orford defends him and sings the 'Embroidery Aria' after Balstrode shows her a bloodied jersey belonging to John (the apprentice who fell off a cliff). The protagonist sings 'What harbor shelters peace' and 'Now the Great Bear and Pleiades.' At the opera's end, Captain Balstrode advises Peter to sail out to sea and drown himself. Four Sea Interludes ('Dawn,' '<a href="wallace_stevens_stock.html#sunday-morning" class="crossref-inline">Sunday Morning</a>,' 'Moonlight,' 'Storm') are excerpted for concert performance. The four is the fourth a passacaglia. A Ned Keene leads the pub in a round during a storm. <a href="https://en.wikipedia.org/wiki/Peter_Grimes" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The title fisherman drowns himself (sinks his own boat) after being blamed for the deaths of two apprentices</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title fisherman is blamed for the deaths of his two apprentices in an opera by this composer that includes four Sea Interludes. | this opera ends with that title fisherman drowning himself on the advice of Captain Balstrode</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four Sea Interludes (&#x27;Dawn,&#x27; &#x27;Sunday Morning,&#x27; &#x27;Moonlight,&#x27; &#x27;Storm&#x27;) excerpted for concert performance; a passacaglia is also excerpted</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer excerpted his pieces &#x27;Dawn,&#x27; &#x27;Sunday Morning,&#x27; &#x27;Moonlight,&#x27; and &#x27;Storm&#x27; as a set of &#x27;sea&#x27; interludes from an opera about a disgraced fisherman. | Four Sea Interludes is a suite of orchestral excerpts from this opera.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ellen Orford sings the &#x27;Embroidery Aria&#x27; after recognizing a jersey she knitted for John (the apprentice who fell off a cliff)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That opera by this composer contains an &#x27;Embroidery Aria&#x27; in which Ellen recognizes a jersey she knitted for John. | A schoolteacher in that opera laments the &#x27;clue whose meaning we avoid&#x27; in her &#x27;Embroidery Aria&#x27; after Balstrode shows her a bloodied jersey from John</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Peter sings &#x27;Now the Great Bear and Pleiades&#x27;; also &#x27;What harbor shelters peace&#x27; and &#x27;Who can turn skies back and begin again?&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another one of this composer&#x27;s protagonists asks &#x27;Who can turn skies back and begin again?&#x27; in &#x27;Now the Great Bear and Pleiades&#x27;.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ned Keene leads the pub in singing a round during a storm; an ominous passacaglia in Act II plays while a non-speaking boy is led to a hut</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ned Keene calms a pub crowd by singing a round after a town outcast arrives during this kind of event. | He wrote an opera in which an ominous passacaglia in Act II plays while a non-speaking boy is led to a hut.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Peter&#x27;s final monologue is punctuated by the chorus shouting his name; the tuba imitates a foghorn by playing two notes a semitone apart</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In that monologue, Britten has the tuba imitate a foghorn by playing two notes separated by this musical interval [a semitone].</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on a section of George Crabbe&#x27;s poem The Borough</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Pears premiered the role of the title fisherman in this Britten opera, which is named after a section of George Crabbe&#x27;s poem The Borough.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="war-requiem" open>
+            <summary class="work-title">War Requiem</summary>
+            <p class="work-desc">Commissioned for the consecration of the rebuilt Coventry Cathedral (bombed in WWII). Interweaves traditional Latin Mass text with poems by <a href="wilfred_owen_stock.html" class="crossref-inline">Wilfred Owen</a> sung by the tenor and baritone soloists. Unified by a C–F-sharp tritone motif. Premiered in 1962 with Peter Pears and Dietrich Fischer-Dieskau as soloists; Heather Harper replaced Galina Vishnevskaya as the soprano ten days before the premiere. Features a boys' choir performing offstage accompanied by portable organ. Concludes with an eight-part choral canon 'in paradisum deducant.' The tenor sings '<a href="wilfred_owen_stock.html#strange-meeting" class="crossref-inline">Strange Meeting</a>' (Wilfred Owen poem), addressing another person with the words 'strange friend.' <a href="https://en.wikipedia.org/wiki/War_Requiem" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commissioned for the consecration of the new Coventry Cathedral; interweaves Latin Mass with Wilfred Owen poems</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer wrote a piece that makes heavy use of the C-F-sharp tritone... written for the consecration of the rebuilt Coventry Cathedral and includes settings of poems by Wilfred Owen. | This work premiered for the consecration of the current Coventry Cathedral.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Unified by a C–F-sharp tritone motif</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Unified by the interval of a tritone between C and F sharp, name this work | That piece by this composer was commissioned for the new Coventry Cathedral and used a C-F-sharp tritone motif</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Premiere featured Pears and Dietrich Fischer-Dieskau; Heather Harper replaced Galina Vishnevskaya as soprano ten days before</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Pears performed with Dietrich Fischer-Dieskau in the premiere of this Britten vocal work... Ten days before this work&#x27;s 1962 premiere, Heather Harper replaced Galina Vishnevskaya as the solo soprano.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The tenor sings &#x27;Strange Meeting&#x27; by Wilfred Owen; also sets &#x27;Futility&#x27;; concludes with eight-part choral canon &#x27;in paradisum deducant&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In that work, this composer used a tritone motif from C to F-sharp throughout the work as the tenor addresses another person with the words &#x27;strange friend&#x27;, in a setting of &#x27;Strange Meeting&#x27; by Wilfred Owen.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Boys&#x27; choir performs offstage accompanied by portable organ</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the War Requiem, this kind of ensemble [boys&#x27; choir] performs from offstage accompanied by a portable organ.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-turn-of-the-screw" open>
+            <summary class="work-title">The Turn of the Screw <a href="henry_james_stock.html#the-turn-of-the-screw" class="work-link-btn" title="Go to Henry James">&rarr;</a></summary>
+            <p class="work-desc">Chamber opera based on <a href="henry_james_stock.html" class="crossref-inline">Henry James</a>'s novella. Each of its 16 scenes opens with a variation on a twelve-tone theme (beginning A, D, B, E) played during a coach journey to a country house. The ghosts Peter Quint and Miss Jessel sing 'the ceremony of innocence is drowned' while haunting the Governess and the children Miles and Flora. Miles sings the trancelike Latin word 'Malo'; the character is said to sing a rhyme 'Malo, malo, malo I would rather be / malo in an apple tree.' Miles also sings a list of masculine Latin nouns with homosexual innuendos. <a href="https://en.wikipedia.org/wiki/The_Turn_of_the_Screw_(opera)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Each of 16 scenes opens with a variation on a twelve-tone theme (A-D-B-E) representing the title object; theme first plays during a coach ride</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another opera by this composer opens each of its 16 scenes with a variation on a serial 12-note theme named for the title object. | the twelve-tone theme that first appears in an opera by this composer during a coach ride to a country house</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ghosts Peter Quint and Miss Jessel sing &#x27;the ceremony of innocence is drowned&#x27; while haunting the Governess and the children Miles and Flora</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this composer&#x27;s characters sings &#x27;the ceremony of innocence is drowned&#x27; with Miss Jessel and haunts Miles and the Governess. | Miss Jessel and Peter Quint sing &#x27;The ceremony of innocence is drowned&#x27; before haunting The Governess, and the children Miles and Flora.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Miles sings the trancelike aria on &#x27;Malo&#x27;; also sings a list of masculine Latin nouns with homosexual innuendos</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a boy sings a trancelike aria on the word &#x27;Malo&#x27; | Miles appears in The Turn of the Screw... [and] sings a rhyme beginning &#x27;Malo, malo, malo I would rather be, malo, malo in an apple tree.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-young-person-s-guide-to-the-orchestra" open>
+            <summary class="work-title">The Young Person&#x27;s Guide to the Orchestra</summary>
+            <p class="work-desc">Educational work commissioned for a documentary. Subtitled 'Variations and Fugue on a Theme of Purcell'; based on the Rondeau from Purcell's incidental music to <a href="aphra_behn_stock.html" class="crossref-inline">Aphra Behn</a>'s play Abdelazer. Each variation features different instruments or instrument families in turn; Variations E through H each feature a string instrument. The Rondeau is played by the full orchestra, then different woodwind, brass, percussion, and string groups in turn. <a href="https://en.wikipedia.org/wiki/The_Young_Person%27s_Guide_to_the_Orchestra" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on Purcell&#x27;s Rondeau from Abdelazer; subtitled &#x27;Variations and Fugue on a Theme of Purcell&#x27;; an educational commission</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a piece written for this [educational] purpose, each instrument plays a variation on the Rondeau from Purcell&#x27;s Abdelazer Suite. | Give the name of this piece whose subtitle is &#x27;Variations and Fugue on a Theme of Purcell&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commissioned for a documentary directed by Muir Mathieson featuring Malcolm Sargent conducting the London Symphony Orchestra</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This piece was commissioned for a documentary directed by Muir Mathieson featuring Malcolm Sargent conducting London Symphony Orchestra.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Variations E through H each feature a string instrument in turn</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer featured each of the string instruments in turn during Variations E through H of a piece based on Henry Purcell&#x27;s Rondeau from Abdelazer.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-ceremony-of-carols" open>
+            <summary class="work-title">A Ceremony of Carols</summary>
+            <p class="work-desc">Choral work for treble choir (originally SSA) and harp. Opens with the processional 'Hodie Christus natus est'; a C-flat major harp interlude quotes this opening. Includes movements like 'Adam lay i-bounden,' 'Balulalow,' and others. Toward the end of the penultimate movement, the choir sings 'Deo Gracias' in quick, overlapping succession (stretto).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with processional &#x27;Hodie Christus natus est&#x27;; C-flat major harp interlude quotes the opening</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">that piece by this composer opens with the procession &#x27;Hodie Christus natus est&#x27; and was originally scored for SSA children&#x27;s choir and harp | whose C-flat major harp interlude quotes the opening processional, &#x27;Hodie Christus.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Includes movements &#x27;Adam lay i-bounden,&#x27; &#x27;Balulalow&#x27;; toward end of penultimate movement, choir sings &#x27;Deo Gracias&#x27; in stretto</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer used a stretto effect as the choir sings &#x27;Deo Gracias&#x27; in quick and overlapping succession... that piece by this composer opens with the procession &#x27;Hodie Christus natus est&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Other works mentioned in clues: Simple Symphony (for string orchestra; includes 'Boisterous Bourree' and 'Playful Pizzicato'; based on youthful piano pieces); Billy Budd (opera in which a stammering sailor murders master-at-arms Claggart); Albert Herring (comic opera in which the male protagonist is declared May Queen/King); Gloriana (opera about Elizabeth I and the Earl of Essex; Courtly Dances frequently extracted); Noye's Fludde (opera based on a medieval mystery play; rain depicted by striking mugs; for young performers); Rejoice in the Lamb (cantata setting Christopher Smart poetry, includes 'For I Will Consider My Cat Jeoffrey'); Serenade for Tenor, Horn, and Strings (for Peter Pears; Prologue and Epilogue for solo horn bookend settings of Blake and Tennyson); Nocturnal after John Dowland (for guitar/Julian Bream, reverse variation form); Six Metamorphoses after Ovid (for unaccompanied solo oboe); Lachrymae (based on Dowland's 'Flow My Tears'); Cello Symphony and three solo cello suites (for Rostropovich); Second String Quartet (ends with dotted 'Chacony' theme reprised).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Billy Budd: opera; stammering sailor murders master-at-arms Claggart</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">His most famous operatic character, a stammering sailor, murders his master-at-arms Claggart.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Albert Herring: comic opera; the protagonist is declared May King (since there are no virgins to be May Queen); ends with his crushed wreath of white flowers found in a well</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In one of this man&#x27;s operas, the title character is elected May King because there are no virgins in town to be the May Queen. | Later in that opera, a crushed wreath of white flowers is found in a well, and that opera ends with the title greengrocer treating some children to fruit.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Simple Symphony: movements include &#x27;Boisterous Bourree&#x27; and &#x27;Playful Pizzicato&#x27;; based on Britten&#x27;s youthful piano pieces</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A &#x27;Boisterous Bourree&#x27; is followed by a &#x27;Playful Pizzicato&#x27; in this composer&#x27;s Simple Symphony. | this composer turned his youthful piano pieces into his alliterative Simple Symphony for string orchestra</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gloriana: opera about Elizabeth I and the Earl of Essex; Courtly Dances frequently extracted</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Courtly Dances are frequently extracted for performance from this Britten opera about the relationship between Elizabeth I and the Earl of Essex.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Noye&#x27;s Fludde: opera for young performers based on medieval mystery play; rain depicted by striking mugs with wooden spoon</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer depicted drops of rain by striking mugs with a wooden spoon in an opera inspired by a medieval mystery play.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Serenade for Tenor, Horn, and Strings: Prologue and Epilogue for solo horn; settings of Blake and Tennyson; written for Peter Pears</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer wrote a piece for that collaborator in which a Prologue and Epilogue for solo horn bookend settings of poets such as Blake and Tennyson.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Church parables: The Burning Fiery Furnace, The Prodigal Son, Curlew River — semi-operatic genre based on Japanese noh, librettist William Plomer</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He created the semi-operatic genre of &#x27;church parable&#x27; in The Burning Fiery Furnace, The Prodigal Son, and Curlew River, based on Japanese noh, with librettist William Plomer.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Benjamin Britten (1913–1976) was England&#x27;s leading 20th-century composer and a central figure in the revival of British opera. His longtime romantic partner was tenor Peter Pears, who premiered most of his tenor roles; together they co-founded the Aldeburgh Festival, held at the Snape Maltings Concert Hall. He befriended <a href="wh_auden_stock.html" class="crossref-inline">W. H. Auden</a> while working on GPO Film Unit documentaries; Auden later wrote the libretto for his operetta Paul Bunyan. He was commissioned by the Japanese government to write a piece for the 2600-year anniversary of the Mikado, producing the Sinfonia da Requiem. He also extensively revised Purcell&#x27;s Dido and Aeneas with Imogen Holst, widely credited with reviving Purcell&#x27;s operas for modern audiences. After Britten&#x27;s death, Arvo Pärt composed Cantus in Memoriam Benjamin Britten — a mensuration canon for string orchestra opening with tubular bells followed by descending A-minor scales at varying speeds.</p><p>Britten&#x27;s most performed opera is Peter Grimes (1945), based on George Crabbe&#x27;s poem &#x27;The Borough.&#x27; The title character, a fisherman ostracized by the Borough community, is blamed for the deaths of two apprentices. Ellen Orford sings the &#x27;Embroidery Aria&#x27; after Balstrode shows her a bloodied jersey belonging to the apprentice John, who fell from a cliff. Peter sings &#x27;Now the Great Bear and Pleiades&#x27; and eventually sails out to drown himself on Balstrode&#x27;s advice. Ned Keene leads the pub in a round during a storm. An ominous passacaglia in Act II plays while a non-speaking boy is led to Peter&#x27;s hut. In his final monologue, Britten has the tuba imitate a foghorn by playing two notes a semitone apart. Four Sea Interludes (&#x27;Dawn,&#x27; &#x27;<a href="wallace_stevens_stock.html#sunday-morning" class="crossref-inline">Sunday Morning</a>,&#x27; &#x27;Moonlight,&#x27; &#x27;Storm&#x27;) have been excerpted for concert performance.</p><p>The War Requiem (1962) was commissioned for the consecration of the rebuilt Coventry Cathedral. It interweaves traditional Latin Mass text with nine poems by <a href="wilfred_owen_stock.html" class="crossref-inline">Wilfred Owen</a> (including &#x27;<a href="wilfred_owen_stock.html#strange-meeting" class="crossref-inline">Strange Meeting</a>&#x27; and &#x27;Futility&#x27;) sung by the tenor and baritone soloists, and is unified throughout by a C–F-sharp tritone motif. The premiere featured Pears and Dietrich Fischer-Dieskau; Heather Harper replaced Galina Vishnevskaya as soprano ten days before the premiere. A boys&#x27; choir performs offstage accompanied by portable organ. The work concludes with an eight-part choral canon &#x27;in paradisum deducant.&#x27;</p><p><a href="henry_james_stock.html#the-turn-of-the-screw" class="crossref-inline">The Turn of the Screw</a> is a chamber opera based on <a href="henry_james_stock.html" class="crossref-inline">Henry James</a>, in which each of 16 scenes is preceded by a variation on a twelve-tone theme (beginning A-D-B-E) that first appears during a coach journey to a country house. The ghosts Peter Quint and Miss Jessel sing &#x27;the ceremony of innocence is drowned&#x27; while haunting the Governess and the children Miles and Flora. Miles sings the trancelike Latin word &#x27;Malo&#x27; and a list of masculine Latin nouns with homosexual innuendos.</p><p>The Young Person&#x27;s Guide to the Orchestra is an educational work commissioned for a documentary (directed by Muir Mathieson, featuring Malcolm Sargent), subtitled &#x27;Variations and Fugue on a Theme of Purcell,&#x27; based on the Rondeau from Purcell&#x27;s Abdelazer. Variations E through H feature string instruments. A Ceremony of Carols is scored for treble choir and harp; it opens with the processional &#x27;Hodie Christus natus est&#x27; and includes movements like &#x27;Adam lay i-bounden&#x27; and &#x27;Balulalow.&#x27;</p><p>Other important works include: Simple Symphony (for string orchestra, movements &#x27;Boisterous Bourree&#x27; and &#x27;Playful Pizzicato,&#x27; based on youthful piano pieces); Billy Budd (opera, stammering sailor murders master-at-arms Claggart); Albert Herring (comic opera, protagonist declared May King since there are no virgins for May Queen; crushed wreath found in a well); Gloriana (opera about Elizabeth I and the Earl of Essex, Courtly Dances frequently excerpted); Noye&#x27;s Fludde (opera for young performers based on a medieval mystery play, rain depicted by striking mugs with a wooden spoon); Serenade for Tenor, Horn, and Strings (for Pears, Prologue and Epilogue for solo horn, settings of Blake and Tennyson); and the church parables Curlew River, The Burning Fiery Furnace, and The Prodigal Son (based on Japanese noh, librettist William Plomer).</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Benjamin_Britten" target="_blank">Benjamin Britten (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Peter_Grimes" target="_blank">Peter Grimes (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/War_Requiem" target="_blank">War Requiem (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/The_Turn_of_the_Screw_(opera)" target="_blank">The Turn of the Screw (Britten, Wikipedia)</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Peter Grimes (Britten) — may appear as its own answerline with detailed plot clues</li><li>War Requiem (Britten) — may appear as its own answerline; richly detailed in clues</li><li>The Turn of the Screw (Britten) — appears as an answerline with its own detailed clues</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'benjamin_britten' });</script>
+
+</body>
+</html>

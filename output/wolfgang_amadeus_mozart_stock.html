@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<title>Stock: Wolfgang Amadeus Mozart</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Wolfgang Amadeus Mozart</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="wolfgang_amadeus_mozart_questions.html">View source questions</a><a href="wolfgang_amadeus_mozart_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Austrian composer (1756–1791), prodigious child who toured Europe with his father Leopold and sister Nannerl. Composed in all major genres: opera, symphony, concerto, chamber music, and sacred music. Key works include the Jupiter Symphony, Requiem (unfinished), <a href="don_giovanni_stock.html" class="crossref-inline">Don Giovanni</a>, The Marriage of Figaro, <a href="magic_flute_stock.html" class="crossref-inline">The Magic Flute</a>, and the Clarinet Concerto. Died at 35 leaving the Requiem unfinished, completed by Franz Xaver Süssmayr.</div>
+
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Austrian composer (1756–1791), born in Salzburg. Child prodigy who toured Europe as a pianist with his father Leopold and sister Nannerl (Maria Anna). At age six allegedly promised to marry Marie Antoinette after performing for her. At age 14 legendarily transcribed Allegri's Miserere after two hearings. Patron rivals included Antonio Salieri. Died at 35 in Vienna, leaving his Requiem unfinished; it was completed by Franz Xaver Süssmayr. Apocryphally described by Emperor Joseph II as having 'too many notes.' The 'Mozart effect' paper (Rascher et al, 1993) claimed listening to his Sonata for Two Pianos K. 448 temporarily improved spatial reasoning. <a href="https://en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Austrian composer; child prodigy who toured Europe with his father Leopold and sister Nannerl</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He is best known for accompanying a more notable composer on a grand tour through Europe after leaving their home of Salzburg. | A composer with this surname took his daughter Nannerl and his prodigious young son on tours of Europe as a pianist.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">At age 14, legendarily transcribed Allegri&#x27;s Miserere from two hearings</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">At age 14, this composer legendarily went to two performances of the Miserere and immediately transcribed the entire piece.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Apocryphally promised to marry Marie Antoinette after performing for her at age 6</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Apocryphally, this composer promised to marry Marie Antoinette after he performed for her at age six.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Died at 35 leaving the Requiem unfinished; completed by Franz Xaver Süssmayr</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Salzburg-born prodigy died in 1791, leaving his Requiem unfinished. | Franz Sussmayr completed a piece in this genre left unfinished at its composer&#x27;s death, including its Lacrimosa movement.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The &#x27;Mozart effect&#x27; — Rascher et al (1993) found that listening to his Sonata for Two Pianos in D major (K. 448) temporarily improved spatial reasoning; media exaggerated this as a magical IQ booster</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">When a 1993 paper by Rascher et al found that listening to this composer&#x27;s music temporarily improved spatial reasoning, the media exaggerated the result as a magical IQ booster.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Main rival was Antonio Salieri (depicted in Peter Shaffer&#x27;s play Amadeus and Milos Forman&#x27;s film)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Salieri confesses to killing another with arsenic in a play by the author of Equus. | A Pushkin play in which this composer is the second title character inspired an opera by Nikolai Rimsky-Korsakov.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Part of the First Viennese School with Haydn and Beethoven</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A work for two violins and orchestra by Schnittke puns on the name of these two composers, the most prominent of the Classical era. Along with Beethoven, they made up the First Viennese School.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Collaborated with librettist Lorenzo Da Ponte on Don Giovanni, The Marriage of Figaro, and Così fan tutte</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cosi fan tutte is the last of three collaborations between its composer and the librettist Lorenzo Da Ponte.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Works include Eine kleine Nachtmusik; A Musical Joke (parodies amateur composers with whole-tone scales and polytonality); and Divertimento in E-flat major</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A composer with this surname wrote a piece for two horns and string quartet that parodies amateur composers. | For 10 points, name this Austrian composer of Eine Kleine Nachtmusik.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote 4 horn concertos dedicated to Joseph Leutgeb; wrote a bassoon concerto in B-flat (most performed in the repertoire); wrote a Concerto for Flute and Harp (K. 299) for a father and daughter he met in Paris</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer dedicated his four horn concertos to Joseph Leutgeb. | While a composer with this surname was staying in Paris, a father-daughter pair commissioned his concerto for flute and harp.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-41-in-c-major-jupiter-k-551" open>
+            <summary class="work-title">Symphony No. 41 in C major (&quot;Jupiter&quot;) – K. 551</summary>
+            <p class="work-desc">Mozart's final symphony. The finale uses the whole notes C–D–F–E as one of five melodies combined in a culminating five-voice fugato in cut time. The first movement quotes the aria 'Un bacio di mano.' Nickname probably given by Johann Peter Salomon. The finale may have been inspired by Michael Haydn's Symphony No. 28/39. Written in summer 1788 along with symphonies No. 39 (E-flat) and No. 40 (G minor). <a href="https://en.wikipedia.org/wiki/Symphony_No._41_(Mozart)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Finale: five themes combined in a culminating fugato; the first theme is the whole notes C–D–F–E</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The whole notes &#x27;C, D, F, E&#x27; start the last movement of one of this composer&#x27;s symphonies which culminates in a five-voice fugato. | In this symphony&#x27;s finale, the C-D-F-E theme joins previous motifs in a five-voice cut time fugato.</span></span><div class="score-clip" data-abc="X:1\nT:Jupiter finale fugato theme\n%%MIDI program 40\nM:4/4\nL:1/4\nK:C\n|C4 D4|F4 E4||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First movement quotes the aria &#x27;Un bacio di mano&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This piece opens with a unison C, followed by two quick flourishes up from G to C, and that opening movement later quotes its composer&#x27;s aria &#x27;Un bacio di mano.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nickname &#x27;Jupiter&#x27; probably given by Johann Peter Salomon</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">With a mythic nickname probably given by Johann Peter Salomon — for 10 points — give this final symphony by Mozart.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written in summer 1788 alongside Symphony No. 39 (E-flat) and Symphony No. 40 (Great G minor)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This symphony in C major was written during the summer of 1788 along with its predecessor, the Great G minor Symphony. | This E-flat major symphony is catalogued after the &#x27;Prague&#x27; symphony, and it was composed in the summer of 1788 alongside symphonies in G minor and C major.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Elaine Sisman wrote a book-length study of this piece; describes a subsection that &#x27;makes vivid the mathematical sublime&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In her book-length study of this piece, Elaine Sisman describes how a subsection of this piece &#x27;makes vivid the mathematical sublime.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Finale was probably inspired by Michael Haydn&#x27;s Symphony No. 39/28</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The structure of this piece&#x27;s final movement may have been inspired by Michael Haydn&#x27;s Symphony No. 39, which was written in the same year.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="requiem-in-d-minor-k-626" open>
+            <summary class="work-title">Requiem in D minor – K. 626</summary>
+            <p class="work-desc">Mozart's final and unfinished work. Completed by Franz Xaver Süssmayr after Mozart's death. The Lacrimosa is the last movement partly by Mozart. The Pie Jesu and Hostias movements share a fugue theme ('Quam olim Abrahae'). The 'Confutatis maledictis' precedes the Lacrimosa. The seven-measure intro opens with bassoons. The famous 'double-fugue Kyrie' references a German arrangement of Handel's Messiah. <a href="https://en.wikipedia.org/wiki/Requiem_(Mozart)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Left unfinished; completed by Franz Xaver Süssmayr</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Franz Sussmayr completed a piece in this genre left unfinished at its composer&#x27;s death, including its Lacrimosa movement. | The Requiem&#x27;s Lacrimosa is described in the 12/8 final section of a mass by this composer, all but the first eight bars written by Franz Xavier Sussmayr.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The &#x27;Confutatis maledictis&#x27; movement immediately precedes the Lacrimosa; opens with loud A minor melody over fast strings in the lower voices</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The lower voices open this movement from Mozart&#x27;s Requiem with a loud A minor melody over fast strings. This movement, which repeats the words &#x27;fiammis acribus addictis,&#x27; immediately precedes the Lacrymosa.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Pie Jesu and Hostias movements share a fugue (&#x27;Quam olim Abrahae&#x27;); basses open the Pie Jesu with forte eighth notes &#x27;G, G, G, dotted G, 16th F-sharp, quarter F-sharp&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the Pie Jesu of a mass by this composer, the basses start a fugue with the forte eighth notes &#x27;G, G, G,&#x27; dotted eighth &#x27;G&#x27; and sixteenth &#x27;F-sharp,&#x27; and quarter &#x27;F-sharp,&#x27; which repeat in the next movement.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Seven-measure introduction opens with bassoons playing D, C-sharp, D, E, F before the basset horns join</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The seven-measure introduction of a piece in this genre opens with bassoons playing D, C sharp D E F before they are joined by the basset horns.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The double-fugue Kyrie references a German arrangement of Handel&#x27;s Messiah that Mozart made</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer of an &#x27;Ave verum corpus&#x27; and a &#x27;Great&#x27; Mass in C minor made a German arrangement of the Messiah, which he referenced in the double-fugue &#x27;Kyrie&#x27; of his last work.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicted in Milos Forman&#x27;s film Amadeus: a bedridden composer dictates to his rival (Salieri), who writes down the score</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this piece, whose various parts for different instruments can be heard as a bedridden composer dictates to his erstwhile rival, who writes down the score, in a film by Milos Forman.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="piano-sonata-no-11-in-a-major-k-331" open>
+            <summary class="work-title">Piano Sonata No. 11 in A major – K. 331</summary>
+            <p class="work-desc">Best known for its third-movement Rondo alla Turca ('Turkish March'). The opening first movement provides the theme for Max Reger's Variations and Fugue. The fourth variation of the first movement has the left hand crossing over to play a high melody. <a href="https://en.wikipedia.org/wiki/Piano_Sonata_No._11_(Mozart)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Best known for the third-movement Rondo alla Turca (Turkish March); opens with the fast pickups B, A, G-sharp, A, landing on C</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">For 10 points, what solo piano work is best known for its third-movement Rondo Alla turca? | That most famous movement of this piece opens with the fast pickups B, A, G-sharp, A, landing on C.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The first-movement theme (andante grazioso, A major, opens with dotted eighth, sixteenth, eighth, quarter, eighth rhythm) is the basis for Max Reger&#x27;s Variations and Fugue</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The theme from that first movement of this piece provides the basis for the most famous orchestral piece by Max Reger; that andante grazioso theme opens with two repetitions of the rhythm dotted eighth note, sixteenth note, eighth note, quarter note, eighth note.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Discovery of the autograph corrected an incorrect C-sharp in measure 3 of the minuet</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The discovery of this piece&#x27;s autograph demonstrated the incorrectness of a C-sharp in the third measure of this piece&#x27;s minuet.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="clarinet-concerto-in-a-major-k-622" open>
+            <summary class="work-title">Clarinet Concerto in A major – K. 622</summary>
+            <p class="work-desc">Mozart's last completed work. Written for Anton Stadler, a Freemason nicknamed 'Notschibinitschibi,' who played a basset clarinet (an extended-range instrument built by Theodor Lotz). Published posthumously by Johann André, who transposed low notes upward. The adagio has the soloist dip from G-sharp to G, then reprise rising notes A, long D, F-sharp. <a href="https://en.wikipedia.org/wiki/Clarinet_Concerto_(Mozart)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Last completed work by Mozart; written for Anton Stadler and his extended-range basset clarinet (built by Theodor Lotz)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This last completed work by its debt-ridden composer... was written for an instrument that Theodor Lotz built for a Freemason nicknamed &#x27;Notschibinitschibi&#x27; with an extended range and bent Liebesfuss. | For 10 points, what woodwind concerto by the composer of La clemenza di Tito was written for Anton Stadler?</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Published posthumously by Johann André, who transposed low notes upward; an &#x27;obsolete&#x27; basset instrument was revived to play it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Johann Andre posthumously published this concerto, transposing low notes upward since it was written for an instrument that Theodor Lotz built for a Freemason nicknamed Notschibinitschibi.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with same two notes (long E and C-sharp) as the A-major Clarinet Quintet (K. 581)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This concerto opens with the same two notes, long E and C-sharp, as the composer&#x27;s earlier quintet featuring the same instrument and key.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the adagio, the soloist dips from G-sharp to G, then reprises the opening rising notes A, long D, F-sharp</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this concerto&#x27;s adagio, the soloist dips from G-sharp to G, embellishes a brief Eingang over an A dominant 7th, then reprises its opening rising notes: A, long D, F-sharp.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="don-giovanni-k-527" open>
+            <summary class="work-title">Don Giovanni – K. 527 <a href="don_giovanni_stock.html" class="work-link-btn" title="Go to Don Giovanni">&rarr;</a></summary>
+            <p class="work-desc">Opera buffa with libretto by Lorenzo Da Ponte. A promiscuous nobleman is dragged to hell by the statue of the Commendatore at a feast. <a href="don_giovanni_stock.html" class="crossref-inline">Don Giovanni</a> hosts a ball in which the pit orchestra and two onstage ensembles play three different dances simultaneously. Bass character. Sellars staged it as a blaxploitation story in the South Bronx with a boombox. <a href="https://en.wikipedia.org/wiki/Don_Giovanni" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A statue of the Commendatore drags Don Giovanni to hell at a feast</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">During a feast, a statue of the Commendatore drags this character to hell. | This composer depicted a promiscuous nobleman sent to hell at the end of his opera Don Giovanni.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The ball scene has the pit orchestra and two onstage ensembles playing three different dances simultaneously</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Mozart character hosts a ball in which the pit orchestra and two onstage ensembles play three different dances simultaneously.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Peter Sellars staged it as a blaxploitation story in the South Bronx with a boombox replacing the wind ensemble</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A boombox replaces the wind ensemble in this man&#x27;s production of Don Giovanni told as a blaxploitation story in the South Bronx.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-marriage-of-figaro-k-492-le-nozze-di-figaro" open>
+            <summary class="work-title">The Marriage of Figaro – K. 492 (Le nozze di Figaro)</summary>
+            <p class="work-desc">Opera buffa with libretto by Lorenzo Da Ponte. The bass title character schemes with his fiancee Susanna to expose the infidelity of Count Almaviva. Contains the bass aria 'Se vuol ballare' (Figaro mocks his employer by imitating the upper-class minuet) and the trouser role of Cherubino, who sings 'Voi che sapete.' <a href="peter_sellars_stock.html" class="crossref-inline">Peter Sellars</a> set his production at a penthouse on the 52nd floor of Trump Tower. <a href="https://en.wikipedia.org/wiki/The_Marriage_of_Figaro_(opera)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Figaro schemes with Susanna to expose Count Almaviva&#x27;s infidelity; Figaro sings &#x27;Se vuol ballare&#x27; mocking the count with a minuet imitation</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A bass character in an opera by this composer schemes with his fiancee Susanna to expose the infidelity of Count Almaviva. | Name this opera whose title character mocks his employer by imitating the upper-class minuet in his cavatina &#x27;Se vuol ballare.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cherubino is a trouser role (page boy); sings &#x27;Voi che sapete&#x27; describing his feelings of love for the Countess while Susanna accompanies on guitar</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Likely the most famous of Mozart&#x27;s trouser roles is the page Cherubino from The Marriage of Figaro, who sings this aria that describes his feelings of love for the Countess while Susanna accompanies him on guitar.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Peter Sellars staged it at a penthouse on the 52nd floor of Trump Tower (1988); influenced by Wye Allanbrook&#x27;s Rhythmic Gesture in Mozart</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Wye Jamison Allanbrook&#x27;s analysis of dance rhythms and social class in this opera influenced Peter Sellars&#x27;s 1988 production of it set in Trump Tower.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In &#x27;Non più andrai,&#x27; Figaro teases Cherubino; a servant complains in a later opera that this bass aria was overplayed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An opera by this composer features a meta joke in which a servant complains about his earlier opera&#x27;s bass aria &#x27;Non piu andrai&#x27; being overplayed.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-magic-flute-k-620-die-zauberfl-te" open>
+            <summary class="work-title">The Magic Flute – K. 620 (Die Zauberflöte) <a href="magic_flute_stock.html" class="work-link-btn" title="Go to The Magic Flute">&rarr;</a></summary>
+            <p class="work-desc">Singspiel in German. Libretto by Emanuel Schikaneder, who also played Papageno at the premiere. Schikaneder also helped design the Theater an der Wien. <a href="magic_flute_stock.html" class="crossref-inline">The Magic Flute</a> was a Jungian-influenced inspiration for Michael Tippett's The Midsummer Marriage. <a href="https://en.wikipedia.org/wiki/The_Magic_Flute" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Libretto by Emanuel Schikaneder, who also played the comic role Papageno at the premiere; Schikaneder also helped design the Theater an der Wien</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The libretto for The Magic Flute was written by this man, who portrayed the comic character Papageno at its premiere. This man also helped design and build the Theater an der Wien.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired Michael Tippett&#x27;s Jungian opera The Midsummer Marriage, which includes the &#x27;Ritual Dances&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The &#x27;Ritual Dances&#x27; appear in Michael Tippett&#x27;s The Midsummer Marriage, which is a Jungian-influenced reworking of this composer&#x27;s opera The Magic Flute.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The theme &#x27;Das klinget so herrlich&#x27; was used by Fernando Sor for his Introduction and Variations on a Theme by Mozart</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer of Variations on Marlborough Goes to War also composed an introduction and variations on the theme &#x27;Das klinget so herrlich.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="cos-fan-tutte-k-588" open>
+            <summary class="work-title">Così fan tutte – K. 588</summary>
+            <p class="work-desc">Opera buffa, the third Da Ponte opera. Ferrando and Guglielmo disguise themselves as Albanians to test the virtue of their fiancées. Despina, the maid, crossdresses as a male doctor using a large magnet. The sextet 'Alla bella Despinetta' is sung when the men enter in Albanian disguise. <a href="https://en.wikipedia.org/wiki/Cos%C3%AC_fan_tutte" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ferrando and Guglielmo disguise themselves as Albanians to test their fiancées; Despina disguises as a doctor and uses a large magnet to &#x27;revive&#x27; them from imitation poison</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ferrando and Guglielmo disguise themselves as Albanians to test the virtue of their fiancees in this opera buffa, the last of three collaborations between its composer and the librettist Lorenzo Da Ponte. | This composer created the maid Despina, who crossdresses as a male doctor as part of a plan to test the fidelity of two men&#x27;s fiancees in Cosi fan tutte.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-40-in-g-minor-k-550-great-g-minor" open>
+            <summary class="work-title">Symphony No. 40 in G minor – K. 550 (&quot;Great G minor&quot;)</summary>
+            <p class="work-desc">One of Mozart's only two minor-key symphonies (with No. 25, the 'Little G minor'). Written in summer 1788. The scherzo of Beethoven's Fifth Symphony opens by transforming a Mannheim rocket in this symphony. <a href="https://en.wikipedia.org/wiki/Symphony_No._40_(Mozart)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One of Mozart&#x27;s only two minor-key symphonies; written in summer 1788 alongside No. 39 and No. 41</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s only two minor-key symphonies are the &#x27;Little&#x27; and &#x27;Great&#x27; G minor. | This symphony in C major was written during the summer of 1788 along with its predecessor, the Great G minor Symphony.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The scherzo of Beethoven&#x27;s Fifth Symphony opens by transforming a Mannheim rocket from the penultimate Mozart symphony (No. 40)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The scherzo of Beethoven&#x27;s Fifth Symphony opens by transforming a Mannheim rocket in the penultimate one of these pieces.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-25-in-g-minor-k-183-little-g-minor" open>
+            <summary class="work-title">Symphony No. 25 in G minor – K. 183 (&quot;Little G minor&quot;)</summary>
+            <p class="work-desc">Mozart's earlier of two G minor symphonies; opens with the Sturm und Drang movement that opens the film Amadeus. Opens with syncopated repeated notes: G, down to D, up to E-flat, down to F-sharp. The Sturm und Drang first movement may have been inspired by Haydn's Symphony No. 39 (same key). <a href="https://en.wikipedia.org/wiki/Symphony_No._25_(Mozart)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a Sturm und Drang first movement: syncopated G, down to D, up to E-flat, down to F-sharp; opens the film Amadeus</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This symphony opens with the syncopated repeated notes G, down to D, up to E-flat, down to F-sharp. | This symphony&#x27;s Sturm und Drang first movement opens the film version of Amadeus.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="great-mass-in-c-minor-k-427" open>
+            <summary class="work-title">Great Mass in C minor – K. 427</summary>
+            <p class="work-desc">Mozart's unfinished large-scale mass. 'Et incarnatus est' is the last section Mozart wrote. In 2019, Ulrich Leisinger published a complete reconstruction. The mass was reused in the cantata Davide penitente. Written partially for his wife Constanze Weber, including an E-flat 'Christe Eleison' with a near-two octave jump. <a href="https://en.wikipedia.org/wiki/Mass_in_C_minor_(Mozart)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Et incarnatus est&#x27; is the last section Mozart wrote; the mass was reused in the cantata Davide penitente</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Et incarnatus est&#x27; is the last section that this composer wrote for his Great Mass in C minor. | In 2019, Ulrich Leisinger published a complete reconstruction of a mass that this composer reused in his cantata Davide penitente.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Includes the E-flat &#x27;Christe Eleison&#x27; with a near-two octave jump and the F major &#x27;Et incarnatus est,&#x27; both written for his wife Constanze</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Music written for this singer includes an E-flat major &#x27;Christe Eleison&#x27; with a near-two octave jump on the final cadential chord and an F major &#x27;Et incarnatus est,&#x27; both in an incomplete C minor mass.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="piano-concertos" open>
+            <summary class="work-title">Piano Concertos</summary>
+            <p class="work-desc">Mozart wrote 27 piano concertos. Key named ones: 'Elvira Madigan' (No. 21), 'Coronation' (No. 26), 'Jeunehomme' (No. 9, written for Victoire Jenamy), 'Durnitz' (Sonata K. 284). Nicknames also include 'Facile' for Piano Sonata K. 545 (opens with C, E, G above Alberti bass). Cuthbert Girdlestone's study of the piano concertos categorizes slow movements as 'galant, romance, dream, meditative, and minor.' <a href="https://en.wikipedia.org/wiki/Mozart%27s_piano_concertos" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">27 piano concertos; famous nicknames include &#x27;Elvira Madigan,&#x27; &#x27;Coronation,&#x27; and &#x27;Jeunehomme&#x27; (written for Victoire Jenamy)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Jeunehomme, Coronation, and Elvira Madigan are among this composer&#x27;s 27 piano concerti. | He wrote one concerto for Victoire Jenamy, and another nicknamed for its performance at Leopold II&#x27;s crowning.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cuthbert Girdlestone&#x27;s study categorizes slow movements as &#x27;galant, romance, dream, meditative, and minor&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The slow movements of these pieces were placed into the categories of galant, romance, dream, meditative, and minor in a study by Cuthbert Girdlestone.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Piano Concerto No. 24 in C minor (K. 491) opens with a unison melody: long C, long E-flat, A-flat–G–F-sharp, up to E-flat</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of these pieces by this composer opens with a unison melody in the strings and bassoons beginning long C, long E-flat, A-flat-G-F-sharp, up to E-flat.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Wolfgang Amadeus Mozart (1756–1791) was an Austrian composer born in Salzburg, widely considered one of the greatest musical geniuses in Western history. As a child prodigy, he toured Europe extensively with his father Leopold (himself a composer and violin pedagogue) and his sister Nannerl (Maria Anna). At six he allegedly promised to marry Marie Antoinette after performing for her; at 14, he legendarily transcribed Allegri&#x27;s Miserere in its entirety from just two hearings. He spent much of his adult career in Vienna, where he collaborated with the librettist Lorenzo Da Ponte on three great operas: The Marriage of Figaro, <a href="don_giovanni_stock.html" class="crossref-inline">Don Giovanni</a>, and Così fan tutte. His main rival was Antonio Salieri, memorably depicted in Peter Shaffer&#x27;s play Amadeus and Milos Forman&#x27;s film adaptation. He died at 35 in 1791, leaving his Requiem in D minor unfinished; it was completed by Franz Xaver Süssmayr.</p><p>His final symphony, Symphony No. 41 in C major (&#x27;Jupiter&#x27;), written in summer 1788, is his most frequently clued orchestral work. Its finale is famous for combining five themes in a culminating five-voice fugato; the first of those themes is the whole notes C–D–F–E. The first movement quotes his aria &#x27;Un bacio di mano.&#x27; The nickname &#x27;Jupiter&#x27; was probably given by Johann Peter Salomon. The symphony was written simultaneously with Symphony No. 39 (E-flat, which substitutes clarinets for oboes) and Symphony No. 40 (the &#x27;Great G minor&#x27;). Elaine Sisman wrote a book-length study of the Jupiter. An earlier G minor symphony (No. 25, the &#x27;Little G minor&#x27;) opens with a Sturm und Drang first movement — G, down to D, up to E-flat, down to F-sharp — and opens the film Amadeus.</p><p>Mozart&#x27;s unfinished Requiem in D minor (K. 626) is his other most frequently clued work. The Lacrimosa is the last movement partly in his own hand; Süssmayr completed the rest. The &#x27;Confutatis maledictis&#x27; immediately precedes the Lacrimosa. The seven-measure introduction opens with bassoons playing D–C-sharp–D–E–F before the basset horns join. The Pie Jesu and Hostias movements share a fugue theme. The double-fugue Kyrie references a German arrangement of Handel&#x27;s Messiah that Mozart made. His Great Mass in C minor (K. 427) is another unfinished large-scale mass: &#x27;Et incarnatus est&#x27; is the last section he wrote; it was later reused in the cantata Davide penitente.</p><p>His last completed work is the Clarinet Concerto in A major (K. 622), written for Anton Stadler (&#x27;Notschibinitschibi&#x27;), a Freemason who played a basset clarinet with an extended range built by Theodor Lotz. Published posthumously by Johann André, who had to transpose low notes upward. The adagio dips from G-sharp to G, then reprises the rising notes A–D–F-sharp.</p><p>His piano sonatas are anchored by No. 11 in A major (K. 331), famous for the Rondo alla Turca that opens with B–A–G-sharp–A landing on C. The first-movement andante grazioso theme (dotted eighth, sixteenth, eighth, quarter, eighth) was borrowed by Max Reger for his Variations and Fugue. The &#x27;Facile&#x27; sonata is K. 545 (opens with C–E–G above an Alberti bass). He wrote 27 piano concertos, among them the &#x27;Jeunehomme&#x27; (for Victoire Jenamy), the &#x27;Coronation,&#x27; and the &#x27;Elvira Madigan&#x27;; Cuthbert Girdlestone&#x27;s study categorizes their slow movements as &#x27;galant, romance, dream, meditative, and minor.&#x27;</p><p>His operatic output includes The Marriage of Figaro (Figaro schemes with Susanna against Count Almaviva; the page Cherubino sings &#x27;Voi che sapete&#x27;; <a href="peter_sellars_stock.html" class="crossref-inline">Peter Sellars</a>&#x27;s 1988 production was set at Trump Tower), <a href="don_giovanni_stock.html" class="crossref-inline">Don Giovanni</a> (the statue of the Commendatore drags the title character to hell; Sellars staged it as a blaxploitation story in the South Bronx), <a href="magic_flute_stock.html" class="crossref-inline">The Magic Flute</a> (singspiel with libretto by Emanuel Schikaneder, who also played Papageno; inspired Tippett&#x27;s Midsummer Marriage), and Così fan tutte (Ferrando and Guglielmo disguise as Albanians; the maid Despina uses a large magnet). Works like Eine kleine Nachtmusik and A Musical Joke (a parody of incompetent composers featuring out-of-place whole-tone scales) remain among his most popular pieces. His four horn concertos were dedicated to Joseph Leutgeb; the bassoon concerto in B-flat is the most performed in the repertoire; the Concerto for Flute and Harp (K. 299) was written for a father–daughter pair he met in Paris.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Wolfgang_Amadeus_Mozart" target="_blank">Wolfgang Amadeus Mozart — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Symphony_No._41_(Mozart)" target="_blank">Jupiter Symphony — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Requiem_(Mozart)" target="_blank">Requiem (Mozart) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Don_Giovanni" target="_blank">Don Giovanni — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Marriage_of_Figaro_(opera)" target="_blank">The Marriage of Figaro — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Magic_Flute" target="_blank">The Magic Flute — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Jupiter Symphony (Mozart) — extensively clued with specific pitch content; merits its own dedicated analysis (search: &#x27;Jupiter Symphony&#x27;, category: Fine Arts)</li><li>Mozart Requiem — frequently clued with specific movement details (search: &#x27;Mozart Requiem&#x27;, category: Fine Arts)</li><li>Don Giovanni — deeply clued Mozart opera (search: &#x27;Don Giovanni&#x27;, category: Fine Arts)</li><li>The Marriage of Figaro — deeply clued Mozart opera (search: &#x27;Marriage of Figaro&#x27;, category: Fine Arts)</li><li>The Magic Flute — frequently clued Mozart singspiel (search: &#x27;Magic Flute&#x27;, category: Fine Arts)</li><li>Leopold Mozart — frequently clued as a figure in his own right (search: &#x27;Leopold Mozart&#x27;, category: Fine Arts)</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'wolfgang_amadeus_mozart' });</script>
+<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {
+        ABCJS.renderAbc(el, abc, { responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' });
+    }
+});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+    var visual = ABCJS.renderAbc('_offscreen', abc, {});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({ visualObj: visual[0] }).then(function() {
+        return synth.prime();
+    }).then(function() {
+        synth.start();
+        _clipSynth = synth;
+    }).catch(function(e) { console.warn('abcjs synth:', e); });
+}
+function stopAbc(btn) {
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>
+</body>
+</html>

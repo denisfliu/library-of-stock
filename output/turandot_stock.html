@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<title>Stock: Turandot</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Turandot</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="turandot_questions.html">View source questions</a><a href="turandot_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Puccini&#x27;s final and unfinished opera, set in legendary China. Centers on the cold princess Turandot and her suitor Prince Calaf, who must solve three riddles to win her hand. Famous for the tenor aria &#x27;Nessun dorma,&#x27; whose climactic cry of &#x27;Vincerò!&#x27; has become one of opera&#x27;s most iconic moments. Completed after Puccini&#x27;s death by Franco Alfano; premiered in 1926 under Toscanini.</div>
+
+        <details class="work" id="turandot-the-opera-as-a-whole" open>
+            <summary class="work-title">Turandot – The Opera as a Whole</summary>
+            <p class="work-desc"><a href="puccini_stock.html" class="crossref-inline">Giacomo Puccini</a>'s last opera, left unfinished at his death from throat cancer in 1924. The most commonly performed ending was completed by Franco Alfano. The premiere at La Scala in 1926 was conducted by Arturo Toscanini, who famously stopped at the point where Puccini's manuscript ended, reportedly saying 'at this point the maestro died.' Set in legendary Beijing, it follows Prince Calaf's pursuit of the icy Princess Turandot through a riddle contest. The opera is based on a play by Carlo Gozzi and incorporates Chinese folk melodies, most prominently 'Mo Li Hua' (Jasmine Flower). Luciano Berio composed an alternative ending in 2002. A chapter on it appears in Andrew C. Davis's 2010 book on Puccini's 'Late Style.' <a href='https://en.wikipedia.org/wiki/Turandot' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Puccini&#x27;s final (unfinished) opera about a Chinese princess</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this opera about a Chinese princess, the final work of Giacomo Puccini | name this unfinished opera about a Chinese princess by Giacomo Puccini</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Completed by Franco Alfano after Puccini&#x27;s death</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this opera was completed by Franco Alfano two years after the death of its composer | Franco Alfano composed the most commonly performed ending of this opera</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Premiered under Arturo Toscanini; Toscanini stopped at the point where Puccini&#x27;s manuscript ended, reportedly saying &#x27;at this point the maestro died&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">during this opera&#x27;s premiere, the words &#x27;at this point the maestro died&#x27; were reportedly spoken by Arturo Toscanini | at its premiere, the conductor Toscanini ended the performance where that composer had left off</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Puccini was dying of throat cancer when he begged Toscanini &#x27;don&#x27;t let [this opera] die!&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">as he was dying of throat cancer, the composer of this opera approached Arturo Toscanini and begged him &#x27;don&#x27;t let [this opera] die!&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set in Beijing/China; based on a Carlo Gozzi play</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Puccini opera set in China about Prince Calaf and his efforts to marry the titular princess | a Carlo Gozzi work about a Chinese princess with this name was made into an opera by Puccini</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Prince Calaf solves three riddles to win Turandot&#x27;s hand in marriage</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this opera features three riddles that a suitor must answer for the titular character&#x27;s hand in marriage | Calaf correctly answers three riddles to win the hand of the title princess</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Calaf then poses a Rumpelstiltskin-like counter-challenge: Turandot must discover his name by morning</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a Rumpelstiltskin-like challenge posed by a successful suitor | he in turn challenges her to discover his name by the next morning</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The servants Ping, Pang, and Pong torture the slave girl Liu to find out Calaf&#x27;s name</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in this opera, a gong is struck three times, and the servants Ping, Pang and Pong torture the slave girl Liu to try to find out a man&#x27;s name</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Incorporates the Chinese folk melody &#x27;Mo Li Hua&#x27; (Jasmine Flower); Puccini received a music box with Chinese melodies</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the crowd of this opera sings &#x27;there on the Eastern mountains a stork sang,&#x27; with a melody taken from the folksong &#x27;Jasmine Flower&#x27; | after he was gifted a music box with Chinese melodies, Giacomo Puccini based the musical theme for this character on &#x27;Mo Li Hua&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Luciano Berio composed an alternative ending in 2002, attempting to correct dramaturgical flaws of the Alfano ending</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Luciano Berio composed a new ending for this opera in 2002, attempting to correct the dramaturgical flaws of the standard ending written by Franco Alfano</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The first notes of the opera consist of four octave doubles of A, E-sharp, low B, C-sharp</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the first notes in this opera consist of four octave doubles of A, E-sharp, low B, C-sharp</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Discussed in Andrew C. Davis&#x27;s 2010 book on Puccini&#x27;s &#x27;Late Style,&#x27; as the latest opera discussed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a chapter on this opera titled for its composer&#x27;s &#x27;Solution: Integrating the Conventional and Unconventional&#x27; appears in Andrew C. Davis&#x27;s 2010 book on its composer&#x27;s &#x27;Late Style&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="nessun-dorma" open>
+            <summary class="work-title">&quot;Nessun dorma&quot;</summary>
+            <p class="work-desc">The most famous tenor aria from Act 3 of Turandot, sung by Prince Calaf. The title translates as 'Let no one sleep.' The aria ends with three cries of 'Vincerò!' ('I will win!'), sustained on A4. It begins in G major with a melody starting on D4 in a double-dotted 'LONG, short, LONG, LONG' rhythm, repeated an octave below. Calaf sings it because he knows Turandot cannot learn his name before dawn. A staple of Luciano Pavarotti's repertoire; famously performed at multiple World Cup finals. In 2020 a video of tenor Maurizio Marchini singing it from a Florentine balcony went viral during the Italian COVID lockdown. <a href='https://en.wikipedia.org/wiki/Nessun_dorma' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with three cries of &#x27;Vincerò!&#x27; (&#x27;I will win!&#x27;) on a sustained A4</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Vincero! Vincero!&#x27; are the final words of an aria sung by Calaf in this opera | whose most famous tenor aria concludes with three cries of the word &#x27;vincero!&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sung because Calaf knows Turandot cannot learn his name before dawn</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this piece is sung because Calaf knows that the Princess cannot name him | a tenor aria from the final act of Giacomo Puccini&#x27;s Turandot translated as &#x27;Let no one sleep&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Begins in G major; the melody starts on D4 in a double-dotted &#x27;LONG, short, LONG, LONG&#x27; rhythm, repeated an octave below</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this G major work begins with four Ds, and then the same one octave lower | a tenor aria from this opera begins with the note D sung in a double-dotted &#x27;LONG, short, LONG, LONG&#x27; rhythm, after which the same melody is repeated an octave below</span></span><div class="score-clip" data-abc="X:1\nT:Nessun dorma opening\n%%MIDI program 71\nM:4/4\nL:1/4\nK:C\n|D3/2 D/ D2|d3/2 d/ d2||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Staple of Luciano Pavarotti&#x27;s repertoire; performed at World Cup finals</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this staple of Luciano Pavarotti&#x27;s repertoire | a famous tenor aria from this opera has been performed at several World Cup finals</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In 2020, tenor Maurizio Marchini sang it from a Florentine balcony during the Italian COVID lockdown, going viral</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a video of this aria sung on a Florentine balcony went viral during the 2020 Italian lockdown due to coronavirus, and performed by tenor Maurizio Marchini</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The penultimate note (high B) is often held much longer than the semiquaver indicated on the score</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in many performances of one aria in this opera, the penultimate note, a high B, is held for much longer than the semiquaver indicated on the score</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="in-questa-reggia" open>
+            <summary class="work-title">&quot;In questa reggia&quot;</summary>
+            <p class="work-desc">Soprano aria from Act 2, sung by Princess Turandot herself. She explains the fate of her ancestor Princess Lo-u-Ling — who was raped and murdered — and uses this to justify her hatred of men and her deadly riddle contest. The title translates as 'In this palace.' An ostinato alternates between F-sharp sus2 sus4 and F-sharp minor add9 chords. It repeats the exclamation 'No one will ever possess me!' A soprano aria from this opera describes a king who 'unfurled' seven banners, conquered a rival kingdom, and 'stifled' the voice of its ruler. <a href='https://en.wikipedia.org/wiki/In_questa_reggia' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Turandot explains the fate of her ancestor Princess Lo-u-Ling, who was raped and murdered</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the aria &#x27;In Questa Reggia&#x27; is sung by the title character of this opera and explains how Lo-U-Ling was raped and murdered | in this aria from Act 2, Turandot bemoans the death of Princess Lo-u-Ling and introduces Calaf to the challenge of the three riddles</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes a king who &#x27;unfurled&#x27; seven banners, conquered a rival kingdom, and &#x27;stifled&#x27; the voice of its ruler</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a soprano aria from this opera describes a king that &#x27;unfurled&#x27; seven banners, conquered a rival kingdom, and &#x27;stifled&#x27; the voice of its ruler</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Repeats &#x27;No one will ever possess me!&#x27;; ostinato between F-sharp sus2 sus4 and F-sharp minor add9 chords</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a soprano aria in this opera&#x27;s second act has an ostinato alternating between F-sharp sus2 sus4 and F-sharp minor add9 chords | that aria from this opera repeats the exclamation &#x27;No one will ever possess me!&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title translates as &#x27;In this palace&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the title of this aria translates as &#x27;In this palace&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="tu-che-di-gel-sei-cinta" open>
+            <summary class="work-title">&quot;Tu che di gel sei cinta&quot;</summary>
+            <p class="work-desc">Aria from the final act, sung by the slave girl Liu, who describes Princess Turandot as being 'encircled in ice.' Puccini himself wrote the words for this aria rather than the librettists. Liu stabs herself to death after proclaiming the title character to be 'encircled in ice.' <a href='https://en.wikipedia.org/wiki/Tu_che_di_gel_sei_cinta' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Liu describes Turandot as being &#x27;encircled in ice&#x27; in this aria</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a slave girl describes the title character of this opera as being encircled in ice in the aria &#x27;Tu che di gel sei cinta&#x27; | a slave girl in this opera stabs herself to death after proclaiming the title character to be &#x27;encircled in ice&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Puccini himself wrote the words for this aria (not the librettist)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the composer rather than the librettist wrote the words for one aria in this opera, &#x27;Tu che di gel sei cinta&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc"><a href="puccini_stock.html" class="crossref-inline">Giacomo Puccini</a> (1858–1924), Italian opera composer. Turandot was his final and unfinished work. His other operas include <a href="la_boheme_stock.html" class="crossref-inline">La Bohème</a> and <a href="puccini_stock.html#la-fanciulla-del-west-the-girl-of-the-golden-west" class="crossref-inline">La fanciulla del West</a>, both also premiered by Toscanini. He received a music box with Chinese melodies that inspired the score. Puccini died of throat cancer while composing Turandot.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Toscanini also premiered other Puccini operas: La Fanciulla del West and La Bohème</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in addition to Turandot, Toscanini premiered other operas by this composer like La Fanciulla del West and La Boheme</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Puccini died of throat cancer; left Turandot unfinished</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">as he was dying of throat cancer, the composer of this opera approached Arturo Toscanini | the composer of this opera [Puccini] died before completing it</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Turandot is the final opera by <a href="puccini_stock.html" class="crossref-inline">Giacomo Puccini</a>, left unfinished at his death from throat cancer in 1924. The most commonly performed completion was written by Franco Alfano. The opera premiered at La Scala in Milan in 1926 under conductor Arturo Toscanini, who famously stopped the performance at the point where Puccini&#x27;s manuscript ended, reportedly announcing to the audience &#x27;at this point the maestro died.&#x27; Before his death, Puccini had begged Toscanini not to let the opera die. In 2002, Luciano Berio composed a second alternative ending intended to correct dramaturgical flaws in the Alfano version.</p><p>Set in legendary Beijing, the opera follows Prince Calaf, who falls in love with the icy Princess Turandot. She challenges all suitors to answer three riddles on pain of death; Calaf succeeds and wins the right to marry her. He then issues a counter-challenge in the spirit of the Rumpelstiltskin tale: if Turandot can discover his name before dawn, he will forfeit his life. The servants Ping, Pang, and Pong torture the slave girl Liu to extract Calaf&#x27;s name. Liu, declaring Turandot to be &#x27;encircled in ice,&#x27; stabs herself rather than betray him.</p><p>The opera incorporates the Chinese folk song &#x27;Mo Li Hua&#x27; (Jasmine Flower) — Puccini had received a music box with Chinese melodies which inspired him. The crowd sings a version of this tune. The score was discussed as the latest work in Andrew C. Davis&#x27;s 2010 book on Puccini&#x27;s &#x27;Late Style.&#x27;</p><p>The opera contains several celebrated arias. &#x27;Nessun dorma&#x27; (&#x27;Let no one sleep&#x27;), sung by Calaf in Act 3, is one of the most famous tenor arias in the repertoire. It begins in G major with a melody on D4 in a double-dotted &#x27;LONG, short, LONG, LONG&#x27; rhythm, then repeated an octave below, and ends with three sustained cries of &#x27;Vincerò!&#x27; (&#x27;I will win!&#x27;). Calaf sings it because he knows Turandot cannot learn his name before dawn. It became a signature piece for Luciano Pavarotti and has been performed at multiple FIFA World Cup finals. During the 2020 Italian COVID lockdown, a video of tenor Maurizio Marchini performing it from a Florentine balcony went viral. Performance tradition often holds the penultimate high B much longer than the semiquaver notated in the score.</p><p>&#x27;In questa reggia&#x27; (&#x27;In this palace&#x27;) is the Act 2 aria in which Turandot herself explains her motivations: she describes the fate of her ancestor Princess Lo-u-Ling, who was raped and murdered by a foreign conqueror, and vows that no man will ever possess her. It features an ostinato alternating between F-sharp sus2 sus4 and F-sharp minor add9 chords, and repeats the exclamation &#x27;No one will ever possess me!&#x27; A soprano aria also describes a king who &#x27;unfurled&#x27; seven banners and conquered a rival kingdom.</p><p>&#x27;Tu che di gel sei cinta&#x27; is the aria in which the slave girl Liu describes Turandot as &#x27;encircled in ice&#x27; before stabbing herself. Uniquely, Puccini wrote the text for this aria himself rather than leaving it to his librettists. The opera is based on a play of the same name by Carlo Gozzi. Toscanini had also conducted the premieres of other Puccini operas, including <a href="la_boheme_stock.html" class="crossref-inline">La Bohème</a> and <a href="puccini_stock.html#la-fanciulla-del-west-the-girl-of-the-golden-west" class="crossref-inline">La fanciulla del West</a>.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Turandot" target="_blank">Turandot — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Nessun_dorma" target="_blank">Nessun dorma — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/In_questa_reggia" target="_blank">In questa reggia — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Giacomo_Puccini" target="_blank">Giacomo Puccini — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Mo_Li_Hua" target="_blank">Mo Li Hua (Jasmine Flower) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Giacomo Puccini — the composer appears in many AFA questions; a full composer analysis would be valuable</li><li>Arturo Toscanini — figures heavily in Puccini premiere clues</li><li>Nessun dorma — could be its own answerline search (T4 was specifically about it)</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'turandot' });</script>
+<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {
+        ABCJS.renderAbc(el, abc, { responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' });
+    }
+});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+    var visual = ABCJS.renderAbc('_offscreen', abc, {});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({ visualObj: visual[0] }).then(function() {
+        return synth.prime();
+    }).then(function() {
+        synth.start();
+        _clipSynth = synth;
+    }).catch(function(e) { console.warn('abcjs synth:', e); });
+}
+function stopAbc(btn) {
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>
+</body>
+</html>

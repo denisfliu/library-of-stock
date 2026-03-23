@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<title>Stock: Richard Strauss</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Richard Strauss</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="richard_strauss_questions.html">View source questions</a><a href="richard_strauss_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">German Late Romantic composer (1864–1949), known above all for his tone poems and operas. Major tone poems include Also Sprach Zarathustra, Ein Heldenleben, Till Eulenspiegel&#x27;s Merry Pranks, Death and Transfiguration, Don Quixote, and An Alpine Symphony. Operas include Salome, Elektra, Der Rosenkavalier, and Ariadne auf Naxos, several written with librettist Hugo von Hofmannsthal. Late works include Metamorphosen and Four Last Songs.</div>
+
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">German Late Romantic composer (1864–1949). Began career at the Meiningen Court Orchestra as assistant to Hans von Bülow. Co-founded the Salzburg Festival with Hugo von Hofmannsthal and Max Reinhardt. His wife was soprano Pauline de Ahna. Served as president of the Reichsmusikkammer under the Nazis (partly to protect his Jewish daughter-in-law Alice) but was later dismissed after an intercepted letter to Stefan Zweig. Wrote Olympic Hymn for the 1936 Berlin Olympics. Known as a famously relaxed conductor — George Szell said he conducted 'as if he were waiting for the card game that came after.' Called himself 'the last mountain of a large mountain range.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">15x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Giveaway identifiers: German composer of Also Sprach Zarathustra, Salome, Der Rosenkavalier, Elektra, and tone poems like Ein Heldenleben and Till Eulenspiegel&#x27;s Merry Pranks</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this German composer of Der Rosenkavalier and Salome | name this German composer of tone poems like An Alpine Symphony and Also Sprach Zarathustra</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Began career at the Meiningen Court Orchestra as assistant to Hans von Bülow</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This conductor&#x27;s career began at the Meiningen Court Orchestra, where he served as an assistant to Hans von Bulow</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-founded the Salzburg Festival with Hugo von Hofmannsthal and Max Reinhardt</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer-librettist duo co-founded the annual Salzburg Festival with Max Reinhardt | he conducted a 1922 performance of Don Giovanni at an annual music festival he created with Max Reinhardt and Hugo von Hofmannsthal, the Salzburg Festival</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Served as president of the Reichsmusikkammer under the Nazis (partly to protect his Jewish daughter-in-law Alice), but was dismissed after an intercepted letter to Stefan Zweig asking &#x27;if he or Mozart consciously wrote Aryan music&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In part to protect his Jewish daughter-in-law Alice, this composer served as president of the Reichsmusikkammer | He was fired from a post he held for a letter sent to a frequent collaborator that said &#x27;For me there are only two kinds of people, those with talent and those with none&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote his Olympic Hymn for the 1936 Berlin Summer Olympics</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer wrote his Olympic Hymn for the 1936 Summer Olympics | This composer&#x27;s works for the Nazi government include a hymn written for the 1936 Summer Olympics in Berlin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called himself &#x27;the last mountain of a large mountain range. After me come the flatlands&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Seeing himself as the last of one tradition, this composer said &#x27;I am the last mountain of a large mountain range. After me come the flatlands&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">George Szell described him as conducting &#x27;as if he were waiting for the card game that came after the performance&#x27; — he checked his watch while conducting the Fidelio Overture</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">George Szell once described how this man conducted &#x27;as if he were waiting for the card game that came after the performance,&#x27; and noted that he checked his watch while conducting the Fidelio Overture</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sued by Luigi Denza for incorporating Denza&#x27;s song &#x27;Funiculi, Funicula&#x27; in the last movement of Aus Italien (thinking it was a folk song)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Luigi Denza successfully sued this composer for incorporating Denza&#x27;s song &#x27;Funiculi, Funicula&#x27; in the last movement of one of his tone poems | Strauss also thought &#x27;Funiculi, Funicula&#x27; was a folk song when he used it for Aus Italien, for which Denza sued him</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His wife was soprano Pauline de Ahna, who sang Elisabeth in Tannhäuser at his first Bayreuth appearance</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man&#x27;s wife, Pauline de Ahna, sang the role of Tannhuaser&#x27;s Elisabeth at his first conducting appearance at the Bayreuth Festival</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Introduced himself to occupying Allied soldiers as &#x27;the composer of Salome and Der Rosenkavalier&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer who introduced himself to occupying Allied soldiers as &#x27;the composer of Salome and Der Rosenkavalier&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Long collaboration with librettist Hugo von Hofmannsthal — six operas including Elektra, Der Rosenkavalier, Ariadne auf Naxos, Die Frau ohne Schatten, Die ägyptische Helena, and Arabella</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Hugo von Hofmannsthal often collaborated with, for 10 points, what composer of Der Rosenkavalier? | what composer and poet collaborated on six operas including Arabella and Ariadne auf Naxos?</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Collaborated with Stefan Zweig on Die schweigsame Frau (based on a Ben Jonson play), which led to his Reichsmusikkammer dismissal</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Nazis attacked this man for writing an opera based on a play by the questionably Jewish Ben Jonson, and the librettist for Die Schweigsame Frau was Stefan Zweig | Austrian-Jewish writer Stefan Zweig wrote the libretto for this composer&#x27;s opera The Silent Woman</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote an E-flat major violin sonata and Burleske for piano and orchestra in D minor among his chamber/concerto works</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s E-flat major violin sonata contains some cyclical elements</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote his oboe concerto after an encounter with American soldier John de Lancie; also wrote a duet-concertino for clarinet, bassoon, and strings</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A wartime encounter with the American soldier John de Lancie inspired Strauss to write a concerto for this instrument | A fairy tale inspired one of this composer&#x27;s very last pieces, an F-major &#x27;duet-concertino&#x27; for clarinet, bassoon, and strings</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="also-sprach-zarathustra-thus-spoke-zarathustra" open>
+            <summary class="work-title">Also Sprach Zarathustra (Thus Spoke Zarathustra)</summary>
+            <p class="work-desc">Richard Strauss's 1896 tone poem based on Nietzsche's philosophical work. Famous for its opening 'Sunrise' section (C-G-C brass fanfare used to open <a href="kubrick_stock.html" class="crossref-inline">Stanley Kubrick</a>'s <em>2001: A Space Odyssey</em> and Elvis Presley concerts). Contains the movements 'Of Science' (fully chromatic fugue), 'The Convalescent,' and 'Song of the Night Wanderer.' Ends with the unresolved juxtaposition of B major (high winds) and C major (low strings). <a href="https://en.wikipedia.org/wiki/Also_sprach_Zarathustra_(Richard_Strauss)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with an ascending &#x27;C-G-C&#x27; (root, fifth, octave) brass fanfare depicting sunrise</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A more famous one ends with the &#x27;Song of the Night Wanderer&#x27; and begins with the trumpet playing the motif of C-G-C | Its initial &#x27;Sunrise&#x27; section features a rising C-G-C brass fanfare</span></span><div class="score-clip" data-abc="X:1\nT:Also Sprach Zarathustra \u2013 Sunrise fanfare\n%%MIDI program 56\nM:4/4\nL:1/4\nK:C\n|C2 G2|c4||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on Nietzsche&#x27;s philosophical work of the same name</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another piece by this composer has a fully chromatic fugue in its &#x27;Of Science&#x27; movement and opens with a C-G-C motif depicting sunrise. That tone poem is based on a work of Friedrich Nietzsche&#x27;s</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Its &#x27;Of Science&#x27; (&#x27;Von der Wissenschaft&#x27;) movement contains a fully chromatic fugue</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This piece&#x27;s section &#x27;Of Science&#x27; features a chromatic fugue played by the cellos and double basses | This composition whose initial &#x27;Sunrise&#x27; section features a rising C-G-C brass fanfare ... contains &#x27;Of Science&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with &#x27;Song of the Night Wanderer&#x27;; closes with a bitonal clash: B major (high winds/strings) against C major (low strings)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Also sprach Zarathustra ends with the high winds and strings playing a chord in one of these two keys, which is juxtaposed with the low strings plucking the other key&#x27;s tonic | A more famous one ends with the &#x27;Song of the Night Wanderer&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Used as the opening fanfare in Stanley Kubrick&#x27;s 2001: A Space Odyssey and Elvis Presley concerts</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the years before his death, Elvis Presley used the beginning of this piece to open his concerts | Ligeti&#x27;s Atmospheres and Lux Aeterna were featured in 2001: A Space Odyssey along with a rising &#x27;C-G-C&#x27; brass motif from this German Romantic composer&#x27;s tone poem Also Sprach Zarathustra</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Other movements include &#x27;The Convalescent&#x27;; has 22 total sections in Herbert von Karajan&#x27;s recording — the first CD ever pressed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Herbert von Karajan&#x27;s recording of a massive, 22-section work by this composer was the first to be pressed on CD</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="ein-heldenleben-a-hero-s-life" open>
+            <summary class="work-title">Ein Heldenleben (A Hero&#x27;s Life)</summary>
+            <p class="work-desc">Strauss's 1898 autobiographical tone poem. Composed in E-flat major (the 'heroic' key of Beethoven's Eroica and Emperor Concerto). The six-section work depicts 'The Hero,' 'The Hero's Adversaries' (critics, portrayed by snarling woodwinds/consecutive fifths in winds), 'The Hero's Companion' (solo violin for wife Pauline), 'The Hero's Works of Peace' (quoting earlier Strauss works including Till Eulenspiegel), and 'The Hero's Retirement From This World and Completion.' Tubas in parallel fifths represent the critics. <a href="https://en.wikipedia.org/wiki/Ein_Heldenleben" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Six-section autobiographical tone poem; tubas (or woodwinds) playing in consecutive/parallel fifths represent Strauss&#x27;s critics (&#x27;adversaries&#x27;)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Tubas playing in parallel fifths represent critics of this composer in the &#x27;adversaries&#x27; movement of an orchestral work that ends with &#x27;The Hero&#x27;s Retirement From This World and Completion&#x27; | He depicts the Munich critic Doktor Dehring with ominous consecutive fifths in the lower wind and brass</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the &#x27;Works of Peace&#x27; section, Strauss quotes from his earlier works (including Till Eulenspiegel and Don Juan)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Strauss copiously quotes his earlier works in the &#x27;Works of Peace&#x27; movement of this massive tone poem | Strauss quotes from Till Eulenspiegel in the Works of Peace section of this autobiographical tone poem</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Composed in E-flat major — same heroic key as Beethoven&#x27;s Eroica symphony</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Strauss used this &#x27;heroic&#x27; key for Ein Heldenleben, as it is the same key Beethoven used for his Eroica symphony and Emperor Piano Concerto</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Quotes his own Death and Transfiguration in the tone poem</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">what late Romantic German composer of Aus Italien quoted his Death and Transfiguration in the tone poem A Hero&#x27;s Life?</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="also-sprach-zarathustra-an-alpine-symphony-general-tone-poems" open>
+            <summary class="work-title">Also Sprach Zarathustra / An Alpine Symphony – General Tone Poems</summary>
+            <p class="work-desc">An Alpine Symphony (Eine Alpensinfonie, 1915) is Strauss's 22-section tone poem depicting a day in the Alps — including a Sunrise (similar opening to Zarathustra), The Ascent, On the Summit, and a Thunderstorm and Descent. Despite its name it is a tone poem, not a symphony. Requires wind machine, thunder machine/thundersheet, 12 offstage horns, heckelphone, cowbells, and organ. Herbert von Karajan's recording was the first CD ever pressed. <a href="https://en.wikipedia.org/wiki/An_Alpine_Symphony" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">22-section tone poem depicting a day climbing the Alps; includes &#x27;The Ascent,&#x27; &#x27;On the Summit,&#x27; &#x27;Thunderstorm and Tempest, Descent&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A work with sections like &#x27;On Flowering Meadows&#x27; and &#x27;On the Summit.&#x27; ... An Alpine Symphony | This symphonic poem in which four trombones playing in fourths and fifths present a &#x27;peak motif&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Unusual instrumentation: wind machine, thunder machine/thundersheet, 12 offstage horns, heckelphone, cowbells, organ</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This work depicts a hunting party using 12 offstage horns, and its score also calls for a heckelphone, a wind machine and a thunder machine | The cowbell gets its time to shine again in this tone poem, which also calls for a &#x27;wind machine&#x27; and &#x27;thundersheet&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Herbert von Karajan&#x27;s recording was the first CD ever pressed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Herbert von Karajan&#x27;s recording of a massive, 22-section work by this composer was the first to be pressed on CD | The first-ever test pressing of a compact disc was of a Herbert von Karajan-conducted recording of this piece</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Its first section opens with a descending B-flat minor scale in which each note is held by the strings until the entire scale is heard simultaneously</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This work&#x27;s first section opens with a descending B-flat minor scale in which each note is held by the strings until the entire scale is heard simultaneously</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In &#x27;Sheep on the Meadow,&#x27; the oboe and E-flat clarinet flutter-tongue to depict sheep (as in Don Quixote)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Like its composer&#x27;s Op. 35, this piece has the oboe and E-flat clarinet flutter-tongue to depict sheep grazing in a pasture</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="till-eulenspiegel-s-merry-pranks" open>
+            <summary class="work-title">Till Eulenspiegel&#x27;s Merry Pranks</summary>
+            <p class="work-desc">Strauss's 1895 tone poem depicting the medieval prankster Till Eulenspiegel. Opens with a 'once upon a time' theme, then presents Till's theme in 6/8 in F major for solo horn. A death sentence by descending seventh in the trombones/tuba is followed by a D clarinet squeal and flute trill as Till is hanged. A solo violin cantilena ends the work, quoting the opening fanfare from Also Sprach Zarathustra. <a href="https://en.wikipedia.org/wiki/Till_Eulenspiegels_lustige_Streiche" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a &#x27;once upon a time&#x27; theme; Till&#x27;s main theme is in F major in 6/8 for solo horn</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That piece by this composer of Aus Italien depicts the title character with a lilting theme in F major in 6/8 for solo horn, and opens with a &#x27;once upon a time&#x27; theme</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Till&#x27;s death: a descending seventh in trombones and tuba pronounces his death sentence; then D clarinet squeals and flute trills as he is hanged</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a descending seventh in the trombones and tuba pronounce the death sentence of the title character, after which the D clarinet squeals and a flute trills as he is hanged | the D clarinet&#x27;s theme is distorted as Till is hauled off to the gallows, representing his death-wails</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A horn and D clarinet represent the title prankster</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in Strauss&#x27;s tone poem Till Eulenspiegel&#x27;s Merry Pranks, a horn and a clarinet tuned to this key represent the title prankster</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="death-and-transfiguration-tod-und-verkl-rung" open>
+            <summary class="work-title">Death and Transfiguration (Tod und Verklärung)</summary>
+            <p class="work-desc">Strauss's 1889 tone poem depicting a dying man's experience. Opens with a 'heartbeat' theme — triplets on the dyad E-flat/G marked by frequent gaps, representing a faltering heartbeat. A prominent 'transfiguration motif' (F – B-flat – C – D – high D – C) is introduced first by the brass. The motif is quoted in the Four Last Songs. Premiered along with the Burleske for piano and orchestra. Strauss reportedly said on his deathbed that the piece had accurately depicted death. <a href="https://en.wikipedia.org/wiki/Tod_und_Verkl%C3%A4rung" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a &#x27;heartbeat&#x27; theme — triplets on the dyad E-flat/G with frequent gaps, depicting a faltering heartbeat</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The rhythm &#x27;8th rest, 8th note, then a rest-note-note triplet,&#x27; first heard in thirds by muted strings and then by timpani, represents a faltering heartbeat in a piece by this composer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The &#x27;transfiguration motif&#x27; (F – B-flat – C – D – high D – C) is introduced first by the brass; later quoted in the Four Last Songs</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A prominent motif in this work, &#x27;F - B-flat - C - D - high D - C,&#x27; is introduced first by the brass | The composer of this work quoted the aforementioned motif in his Four Last Songs</span></span><div class="score-clip" data-abc="X:1\nT:Death and Transfiguration \u2013 transfiguration motif\n%%MIDI program 56\nM:4/4\nL:1/4\nK:C\n|F _B c d|d2 c4||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Strauss said on his deathbed that the piece had accurately depicted his death</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In his dying moments, this composer is said to have praised the accuracy of his Tod und Verklarung in depicting death</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Premiered with the Burleske for piano and orchestra in D minor</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">it forms a chromatic bass line in its opening four chords ... a piece by this composer that premiered with his Burleske for piano and orchestra in D minor</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="don-quixote" open>
+            <summary class="work-title">Don Quixote</summary>
+            <p class="work-desc">Strauss's 1897 tone poem ('fantastic variations on a theme of knightly character'), Op. 35. Depicts Cervantes's Don Quixote via a theme-and-variations structure. Famous for flutter-tongued horns representing bleating sheep. Also uses oboe and E-flat clarinet flutter-tongue. Leonard Bernstein learned difficult passages from Bruno Walter's sickbed before his breakthrough 1943 Carnegie Hall debut. <a href="https://en.wikipedia.org/wiki/Don_Quixote_(Strauss)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bleating sheep represented by flutter-tongued horns (and E-flat clarinet/oboe)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bleating sheep are represented using flutter-tongued horns in this tone poem | Like its composer&#x27;s Op. 35, this piece has the oboe and E-flat clarinet flutter-tongue to depict sheep</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Leonard Bernstein learned difficult passages from sick Bruno Walter&#x27;s sickbed before his 1943 Carnegie Hall debut conducting this piece</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Before the concert, Walter briefly explained a few difficult passages of this set of &#x27;fantastic variations&#x27; to Bernstein from his sickbed</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="metamorphosen" open>
+            <summary class="work-title">Metamorphosen</summary>
+            <p class="work-desc">Strauss's 1945 work for 23 solo strings, composed after the bombing of the Vienna Opera House. Quotes the funeral march from Beethoven's Eroica Symphony, with 'In Memoriam' written over it in the score. Karl Böhm and Paul Sacher commissioned it so Strauss could afford a spa visit near Zurich. <a href="https://en.wikipedia.org/wiki/Metamorphosen" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written for 23 solo strings; quotes the funeral march from Beethoven&#x27;s Eroica Symphony, with &#x27;In Memoriam&#x27; written over it in the score</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Near the end of a work written for 23 strings, this composer quotes the funeral march from the Eroica Symphony | He wrote &#x27;In Memoriam&#x27; over a quotation from Eroica&#x27;s Funeral March in that piece, Metamorphosen</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Composed after the bombing of Dresden (or Vienna Opera House)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The bombing of Dresden inspired this composer&#x27;s Metamorphosen | The day after the Vienna Opera House was bombed, this composer began writing Metamorphosen</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Karl Böhm and Paul Sacher commissioned the work so Strauss could go to a spa near Zurich</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Karl Bohm and Paul Sacher commissioned a 23-string suite from this composer so he could go to a spa near Zurich</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="four-last-songs-vier-letzte-lieder" open>
+            <summary class="work-title">Four Last Songs (Vier letzte Lieder)</summary>
+            <p class="work-desc">Strauss's late song cycle for soprano and orchestra (1948), primarily to texts by <a href="hermann_hesse_stock.html" class="crossref-inline">Hermann Hesse</a>. Despite its name, it was not the last piece he wrote. Quotes the 'transfiguration motif' from Death and Transfiguration after the soprano sings 'Is this, perhaps, death?' at the end of the final song. Jessye Norman made a heralded recording with Kurt Masur and the Leipzig Gewandhaus Orchestra. <a href="https://en.wikipedia.org/wiki/Four_Last_Songs" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Song cycle primarily to texts by Hermann Hesse; composed shortly before Strauss&#x27;s death</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer wrote a set of Four Last Songs primarily to texts by Hermann Hesse shortly before he died | This song cycle that quotes a motif from its composer&#x27;s tone poem Death and Transfiguration after the soprano sings its final words, &#x27;Is this, perhaps, death?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Quotes the &#x27;transfiguration motif&#x27; from Death and Transfiguration after the soprano sings &#x27;Is this, perhaps, death?&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this song cycle that quotes a motif from its composer&#x27;s tone poem Death and Transfiguration after the soprano sings its final words, &#x27;Is this, perhaps, death?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jessye Norman made a famous recording with Kurt Masur and the Leipzig Gewandhaus Orchestra</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This recently-deceased Black soprano won a Gramophone Award for her recording of Four Last Songs | she made a heralded recording of Strauss&#x27;s Four Last Songs, performing with Kurt Masur and the Leipzig Gewandhaus Orchestra</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Despite its name, not actually his last work — he wrote and dedicated a piece to soprano Maria Jeritza two months later</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Despite its name, this work is not its composer&#x27;s final work, as he wrote and dedicated a piece that he called his &#x27;last rose&#x27; to the Moravian soprano Maria Jeritza two months later</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="salome" open>
+            <summary class="work-title">Salome</summary>
+            <p class="work-desc">Strauss's 1905 opera based on <a href="oscar_wilde_stock.html" class="crossref-inline">Oscar Wilde</a>'s play, for which Strauss wrote his own libretto. Depicts the biblical story of Salome, stepdaughter of Herod, who demands the head of John the Baptist (Jochanaan). Famous for the 'Dance of the Seven Veils' striptease and the 'sickening chord' — a polytonal F-sharp major over A dominant 7th — that sounds as Salome kisses the severed head. Opens with a clarinet scale ambiguous between C-sharp major and G major. <a href="https://en.wikipedia.org/wiki/Salome_(opera)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The title character performs the &#x27;Dance of the Seven Veils&#x27; then demands the head of John the Baptist (Jochanaan) on a silver platter</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer shocked audiences by having a woman demand that an executioner use a silver platter to bring her a dead man&#x27;s head before she performs the erotic &#x27;Dance of the Seven Veils&#x27; | The title character of an opera by this composer performs the &#x27;Dance of the Seven Veils&#x27; before kissing the head of John the Baptist</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A polytonal &#x27;sickening chord&#x27; (F-sharp major over A dominant 7th) sounds as Salome kisses the severed head; she is then crushed to death on Herod&#x27;s orders</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A polytonal chord made up of an F-sharp major chord over an A dominant 7th chord plays as the title character kisses a freshly severed head, after which they are crushed to death | ends with a &#x27;sickening chord&#x27; framed by C-sharp major</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a clarinet scale ambiguous between C-sharp major and G major, followed by Salome&#x27;s leitmotif</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Salome opens with an ambiguous scale moving between C-sharp major and G major played on this instrument | It opens with a rising clarinet scale and the &#x27;obsessed&#x27; title character&#x27;s leitmotif</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on Oscar Wilde&#x27;s play of the same name; Strauss wrote his own libretto (unlike most of his operas)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer collaborated with Hugo von Hoffmansthal on Elektra and Der Rosenkavalier, but wrote his own libretto after an Oscar Wilde play for his opera Salome</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The title role was created by soprano Marie Wittich; Aino Ackte was described by Strauss as &#x27;the one and only&#x27; interpreter</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This opera&#x27;s composer described Aino Ackte as &#x27;the one and only&#x27; interpreter of the title role, though it was created by Marie Wittich</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Several Jews argue about the nature of God within the opera</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer wrote the then-salacious opera Salome, in which several Jews argue about the nature of God</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="elektra" open>
+            <summary class="work-title">Elektra</summary>
+            <p class="work-desc">Strauss's 1909 opera (libretto by Hugo von Hofmannsthal), based on <a href="sophocles_stock.html" class="crossref-inline">Sophocles</a>' tragedy. Begins with four notes 'D, down to A, up to long F, D' representing Agamemnon (Elektra's murdered father). Features the 'Elektra chord' — a dissonant bitonal chord implying both E major and C-sharp major. Ends with Elektra triumphantly dancing herself to death. Patrice Chéreau's final production was for the 2013 Aix-en-Provence Festival, later revived at the Met with Nina Stemme and Lise Davidsen. <a href="https://en.wikipedia.org/wiki/Elektra_(opera)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with four notes &#x27;D, down to A, up to long F, D&#x27; representing Agamemnon; ends with Elektra dancing herself to death</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this opera that begins with the four notes &#x27;D, down to A, up to long F, D,&#x27; representing the title character&#x27;s father, and ends as she triumphantly dances herself to death</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Uses a dissonant bitonal &#x27;Elektra chord&#x27; implying both E major and C-sharp major</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character of this opera names a dissonant bitonal chord that implies both E major and C# major | An unseen character is represented by a broken D minor chord in an opera by this composer that uses a motif built from a polytonal E major and C-sharp major chord</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Patrice Chéreau&#x27;s last production was for the 2013 Aix-en-Provence Festival (revived at the Met 2022 with Nina Stemme and Lise Davidsen)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Patrice Chereau&#x27;s last work was a production of this opera for the 2013 Aix-en-Provence Festival, which the Met revived in 2022 with Nina Stemme and Lise Davidsen</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Act I, the fifth maid is taken to be flogged after showing sympathy for Elektra</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the first scene of this work, the fifth maid is taken to be flogged after she shows sympathy for the wild-looking title character</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="der-rosenkavalier" open>
+            <summary class="work-title">Der Rosenkavalier</summary>
+            <p class="work-desc">Strauss's 1911 comic opera (libretto by Hofmannsthal), set in 18th-century Vienna. Centers on the Marschallin (a married noblewoman afraid of aging), her young lover Octavian (a 'breeches role'), the boorish Baron Ochs, and Sophie. In Act II Octavian presents a silver rose to Sophie on behalf of Ochs; they fall in love. The lovers' trio 'Ha mir's gelobt' is sung by three female voices. Act II's duet 'Mit ihren Augen voll Tränen' is interrupted by Baron Ochs. Ends with Octavian and Sophie singing 'Ist ein Traum' after the Marschallin releases Octavian. <a href="https://en.wikipedia.org/wiki/Der_Rosenkavalier" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Marschallin stops clocks at night out of fear of aging; the opera opens with wide horn arpeggios and sighing strings representing lovemaking</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The opening of an opera by this composer uses wide horn arpeggios and sighing string figures to represent lovemaking between two characters, one of whom stops clocks in the night because of her fear of aging</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The lecherous Baron Ochs interrupts a love duet in Act II; Octavian (Mariandl/breeches role) is allowed by the Marschallin to pursue Sophie</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two lovers sing the duet &#x27;Mit ihren augen voll Tranen&#x27; in act two of an opera by this composer before being interrupted by the lecherous Baron Ochs | The title breeches-role character of another opera by this composer is allowed by the Marschallin to pursue the hand of Sophie</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three female voices sing the trio &#x27;Ha mir&#x27;s gelobt&#x27; (Octavian, Sophie, Marschallin); Octavian and Sophie sing &#x27;Ist ein Traum&#x27; as the Marschallin bids farewell</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A love affair first introduced in Act II with an oboe and horn duet in one of this composer&#x27;s operas is later celebrated by a trio of female voices that sing &#x27;Ha mirs gelob&#x27;t&#x27; | Octavian and Sophie sing the love duet &#x27;Ist ein traum&#x27; after the Marschallin bids Octavian farewell</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="ariadne-auf-naxos" open>
+            <summary class="work-title">Ariadne auf Naxos</summary>
+            <p class="work-desc">Strauss's 1912/1916 opera (libretto by Hofmannsthal). Its prologue (frame story) presents a wealthy host who orders that both a serious opera seria and a comedy troupe must perform simultaneously — an argument about whether music or words matter more (Flamand vs. Olivier). The coloratura soprano Zerbinetta sings the 12-minute aria 'Grossmächtige Prinzessin' advising Ariadne to get over heartbreak. Strauss and Hofmannsthal co-authored a Le Bourgeois Gentilhomme incidental music suite (with a recomposed Lully minuet) that originally preceded the opera. <a href="https://en.wikipedia.org/wiki/Ariadne_auf_Naxos" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">An opera seria and a commedia dell&#x27;arte play must be performed simultaneously in its frame story (prologue); the host demands both be compressed to allow time for fireworks</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An opera seria and a commedia dell&#x27;arte play must be performed simultaneously in the frame story to his opera Ariadne auf Naxos | In the prologue to this opera, two pieces of entertainment are ordered to be performed simultaneously to leave time for fireworks</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Flamand (musician) argues against Olivier (poet) that music is more powerful than words in an opening rehearsal scene</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An opera by this composer begins with a rehearsal of a string sextet by Flamand, who argues against Olivier that music is more powerful than words</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Zerbinetta sings the 12-minute coloratura aria &#x27;Grossmächtige Prinzessin,&#x27; advising Ariadne about getting over heartbreak, ending with a rondo beginning &#x27;Als ein Gott&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer wrote a rondo beginning with the words &#x27;Als ein Gott&#x27; to conclude a 12-minute-long coloratura aria in which Zerbinetta advises another woman about getting over heartbreak; that aria is &#x27;Grossmachtige Prinzessin&#x27; | the flirty singer of &#x27;Grossmachtige Prinzessin,&#x27; Zerbinetta, whose comedy troupe interrupts an opera-within-an-opera</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Preceded by Strauss&#x27;s incidental music for Le Bourgeois Gentilhomme (featuring a recomposed Lully minuet)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A &#x27;recomposed&#x27; Lully minuet appears in a set of music in this genre that premiered with Ariadne auf Naxos</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphonia-domestica" open>
+            <summary class="work-title">Symphonia Domestica</summary>
+            <p class="work-desc">Strauss's 1904 four-movement tone poem depicting domestic life, with three themes representing a father, mother, and child. Wind trills represent a clock striking 7 a.m. in the triple fugue. Criticized savagely by César Cui. <a href="https://en.wikipedia.org/wiki/Symphonia_Domestica" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four-movement tone poem built from three themes depicting the moods of a mother, father, and child; wind trills represent a clock striking 7 a.m. at the start of the triple fugue</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Wind trills representing a clock striking 7 a.m. introduce a triple fugue in a piece by this composer built from themes depicting the moods of a mother, father, and child | Cui said that giving musicians blank paper and letting them play whatever they wish would be better than this four-movement tone poem, whose three opening themes represent a father, mother, and child</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Richard Strauss (1864–1949) was a German Late Romantic composer best known for his orchestral tone poems and operas. He began his conducting career at the Meiningen Court Orchestra as Hans von Bülow&#x27;s assistant. With librettist Hugo von Hofmannsthal (whom he called a collaborator of genius despite frequent friction) he produced six major operas: Elektra, Der Rosenkavalier, Ariadne auf Naxos, Die Frau ohne Schatten, Die ägyptische Helena, and Arabella. He also co-founded the Salzburg Festival with Hofmannsthal and director Max Reinhardt. His wife was soprano Pauline de Ahna.</p><p>His tone poems — a genre he essentially defined — include Also Sprach Zarathustra (1896, based on Nietzsche; famous for the C-G-C sunrise fanfare used in <a href="kubrick_stock.html#2001-a-space-odyssey-1968" class="crossref-inline">2001: A Space Odyssey</a> and Elvis Presley concerts; ends with an unresolved clash between B major and C major), Till Eulenspiegel&#x27;s Merry Pranks (1895; features Till&#x27;s F major 6/8 solo horn theme and a death-scene with descending trombone seventh and D clarinet squeal), Don Juan, Death and Transfiguration (1889; heartbeat-triplet opening; &#x27;transfiguration motif&#x27; F–Bb–C–D–high D–C later quoted in Four Last Songs), Don Quixote (1897; flutter-tongued horns for bleating sheep; the piece Bernstein learned from a sickbed before his 1943 Carnegie Hall debut), Ein Heldenleben (1898; autobiographical, E-flat major; tubas in parallel fifths for critics; &#x27;Works of Peace&#x27; quoting earlier Strauss works), An Alpine Symphony (1915; 22 sections; wind machine, thundersheet, 12 offstage horns, heckelphone, cowbells; Karajan&#x27;s recording was the first CD pressed), and Symphonia Domestica (1904; three themes for father, mother, child; wind-trill clock at 7 a.m.).</p><p>Late works include Metamorphosen (1945; 23 solo strings; quotes Eroica funeral march with &#x27;In Memoriam&#x27; written in the score; inspired by the bombing of the Vienna Opera House) and Four Last Songs (1948; soprano and orchestra; primarily Hesse texts; quotes &#x27;transfiguration motif&#x27; at &#x27;Is this, perhaps, death?&#x27;; Jessye Norman&#x27;s recording with Masur and the Leipzig Gewandhaus is landmark).</p><p>His operas: Salome (1905; his own libretto after Wilde; Dance of the Seven Veils; polytonal &#x27;sickening chord&#x27; as Salome kisses Jochanaan&#x27;s head; opens with ambiguous clarinet scale), Elektra (1909; Hofmannsthal libretto; opens D–A–F–D for Agamemnon; &#x27;Elektra chord&#x27; polytonal E/C-sharp; Elektra dances herself to death; Chéreau&#x27;s 2013 Aix-en-Provence production his last work), Der Rosenkavalier (1911; Marschallin fears aging, stops clocks; Octavian breeches role; Baron Ochs; trio &#x27;Ha mir&#x27;s gelobt&#x27;; Octavian and Sophie sing &#x27;Ist ein Traum&#x27;), and Ariadne auf Naxos (opera seria + commedia dell&#x27;arte performed simultaneously; Zerbinetta&#x27;s 12-minute coloratura aria &#x27;Grossmächtige Prinzessin&#x27;).</p><p>During the Nazi era Strauss served as Reichsmusikkammer president partly to protect his Jewish daughter-in-law Alice, but was dismissed when his letter to Zweig asking &#x27;if he or Mozart consciously wrote Aryan music&#x27; was intercepted. He still wrote the Olympic Hymn for the 1936 Berlin Games. He was sued by Luigi Denza for using &#x27;Funiculi, Funicula&#x27; in Aus Italien under the mistaken belief it was a folk song. He once described himself as &#x27;the last mountain of a large mountain range.&#x27; George Szell said he conducted as if waiting for the card game that followed the performance.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Richard_Strauss" target="_blank">Wikipedia: Richard Strauss</a></li><li><a href="https://en.wikipedia.org/wiki/Also_sprach_Zarathustra_(Richard_Strauss)" target="_blank">Wikipedia: Also sprach Zarathustra (Strauss)</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Salome (Auditory Fine Arts) — rich enough for its own entry with extended clue sets about the Dance of the Seven Veils and the sickening chord</li><li>Der Rosenkavalier (Auditory Fine Arts) — major Strauss opera with its own question set</li><li>Also Sprach Zarathustra (Auditory Fine Arts) — Strauss&#x27;s most famous tone poem, appears as independent answerline</li><li>Hugo von Hofmannsthal (Literature or Fine Arts) — Strauss&#x27;s principal librettist for six operas; clued in many Richard Strauss questions</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'richard_strauss' });</script>
+<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {
+        ABCJS.renderAbc(el, abc, { responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' });
+    }
+});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+    var visual = ABCJS.renderAbc('_offscreen', abc, {});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({ visualObj: visual[0] }).then(function() {
+        return synth.prime();
+    }).then(function() {
+        synth.start();
+        _clipSynth = synth;
+    }).catch(function(e) { console.warn('abcjs synth:', e); });
+}
+function stopAbc(btn) {
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>
+</body>
+</html>

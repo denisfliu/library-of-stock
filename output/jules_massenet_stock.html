@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Jules Massenet</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Jules Massenet</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="jules_massenet_questions.html">View source questions</a><a href="jules_massenet_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">French Romantic opera composer best known for Manon, Thais (featuring the &#x27;Meditation&#x27; for solo violin), and Werther. Student of Ambroise Thomas, he wrote over two dozen operas marked by lyrical melody and emotional warmth, bridging grand opera and opera comique traditions.</div>
+
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Jules Massenet (1842–1912) was a prolific French opera composer and student of Ambroise Thomas. His style was characterized by lyrical melody and emotional warmth, bridging grand opera and the lighter opera comique tradition. His use of the saxophone (e.g., in Herodiade and Le roi de Lahore) may have been influenced by Thomas's use of the instrument in Hamlet. Gabriel Fauré criticized Massenet's 'vulgar and passionate writhings.' He cast soprano Sibyl Sanderson to sing the high 'Eiffel Tower note' G6 in Esclarmonde.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Student of Ambroise Thomas</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ambroise Thomas&#x27;s use of the saxophone in Hamlet may have influenced this student of his | Sibyl Sanderson made her professional debut playing the title Byzantine sorceress in this composer&#x27;s opera Esclarmonde</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fauré criticized his &#x27;vulgar and passionate writhings&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Faure lamented this man&#x27;s &#x27;vulgar and passionate writhings,&#x27; such as Chevalier des Grieux&#x27;s aria &#x27;En fermant les yeux.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Featured saxophone solos in multiple operas (Herodiade, Le roi de Lahore)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this student of his, who featured saxophone solos in his operas Herodiade and Le roi de Lahore | an unusual alto saxophone solo opens the mezzo-soprano aria &#x27;Va! Laisse couler mes larmes&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cast Sibyl Sanderson for the &#x27;Eiffel Tower note&#x27; G6 in Esclarmonde</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He cast Sybil Sanderson to sing the &#x27;Eiffel Tower note&#x27; G6 in &#x27;Ah Roland!... Regarde-les ces yeux&#x27; in his opera Esclarmonde.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote a comic opera Cherubin as a sequel to Mozart&#x27;s The Marriage of Figaro (the page character)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Late in life, this composer wrote a comic opera continuing the story of the page from The Marriage of Figaro. | A lyric soprano sings the role of the title male soldier, who announces that he is drunk, in an aria from this composer&#x27;s sequel to Mozart&#x27;s The Marriage of Figaro.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote the oratorio La Vierge, with libretto by Charles Grandmougin</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Charles Grandmougin wrote the libretto for this composer&#x27;s oratorio La Vierge.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His aria from Le Cid inspired Laurie Anderson&#x27;s &#x27;O Superman&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An aria by this composer was the inspiration for the lyrics of &#x27;O Superman&#x27; by Laurie Anderson. | This work was inspired by an aria from its dedicatee&#x27;s opera Le Cid, which resulted in its being subtitled &#x27;For Massenet&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote Le Cid (opera) and Esclarmonde among his lesser-known works</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">For 10 points, name this French composer of Le Cid, Manon, and Thais. | this other opera by Massenet, the title character, the daughter of Phorcas, Emperor of Byzantium, is refused the hand of Roland until he wins a tournament</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His style illustrates lyric opera bridging grand opera and opera comique traditions</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This French composer&#x27;s operas Werther and Manon illustrate a more lyric style of opera that grew out of both the rich texture of grand opera and the light subject matter of competing opera comique.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="thais" open>
+            <summary class="work-title">Thais</summary>
+            <p class="work-desc">Massenet's opera about the monk Athanael who attempts to convert the title courtesan Thais to Christianity, only to discover his attraction to her is of a sexual nature. The opera includes the famous 'Meditation' — a D-major entr'acte for violin and orchestra that plays as Thais contemplates conversion. At the opera's end, Thais joins a convent and is praised as a saint, while Athanael is undone by his own desire. <a href="https://en.wikipedia.org/wiki/Tha%C3%AFs_(opera)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Meditation&#x27; — D-major intermezzo/entr&#x27;acte for solo violin and orchestra, marked Andante Religioso, plays as Thais contemplates converting to Christianity</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In an opera by this composer, a D-major entr&#x27;acte for orchestra and solo violin plays as the title courtesan thinks about converting to Christianity. | One notable piece from this opera is a &#x27;Meditation&#x27; in D major often performed by violin soloists. | Name this D major piece for solo violin and orchestra, marked Andante Religioso, that precedes the title character&#x27;s journey to the desert in the opera in which it appears.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Monk Athanael tries to convince Thais (title courtesan) to follow him to the desert and find God</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Athanael tries to convince the title courtesan to follow him into the desert to find God in an opera by this composer. | This Massenet opera sees the monk Athanael try to convert the title character to Christianity, but finds out his attraction to her is of a sexual nature.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Athanael argues with Thais before the Meditation plays; it is played after their argument</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This work is played after Athanael argues with the protagonist of the opera in which it appears to urge her to follow the path of God.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title character asks to spare her statue of Eros despite agreeing to destroy all her possessions</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In one of this composer&#x27;s operas, a man demands that the protagonist dispose of a statuette of Eros before they are nearly stoned to death. | The title character of an opera by this composer asks to spare her statue of Eros despite agreeing to destroy all her possessions.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Thais joins a convent and is praised as a saint at the opera&#x27;s end</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title courtesan joins a convent and is praised as a saint by the nuns in this composer&#x27;s opera Thais.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="manon" open>
+            <summary class="work-title">Manon</summary>
+            <p class="work-desc">Massenet's opera based on the Abbé Prévost novel about Manon Lescaut. Manon sings 'Adieu, notre petite table' when she decides to leave her lover for Monsieur de Bretigny. She ultimately dies in the arms of Chevalier des Grieux, before being deported to Le Havre. Des Grieux's dream aria 'En fermant les yeux' is also known as the 'Dream Song.' The opera is seen as a precursor to operas with <a href="georges_bizet_stock.html#carmen" class="crossref-inline">Carmen</a>-like female leads, and Puccini also set the same novel as Manon Lescaut. <a href="https://en.wikipedia.org/wiki/Manon_(opera)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Adieu, notre petite table&#x27; — Manon&#x27;s aria when she decides to leave her lover for Monsieur de Bretigny</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer of Cherubin wrote an opera in which a protagonist sings &#x27;Adieu, notre petite table&#x27; when she decides to go with Monsieur de Bretigny. | The protagonist of that opera sings &#x27;Adieu, notre petite table&#x27; when she decides to betray her lover.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Manon dies in the arms of Chevalier des Grieux before she is to be deported</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That protagonist of an opera by this composer dies in the arms of Chevalier des Grieux and was based on a novel by the Abbe Prevost. | That opera by this man ends with the death of a young woman in the arms of her former lover, des Grieux, before she is to be deported.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Des Grieux sings &#x27;En fermant les yeux&#x27; (the &#x27;Dream Song&#x27;)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Faure lamented this man&#x27;s &#x27;vulgar and passionate writhings,&#x27; such as Chevalier des Grieux&#x27;s aria &#x27;En fermant les yeux.&#x27; | Name this composer, who also composed an opera featuring &#x27;En fermant les yeux,&#x27; known as the &#x27;Dream Song,&#x27; and the soprano aria &#x27;Adieu, notre petite table.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on a novel by the Abbé Prévost (same source as Puccini&#x27;s Manon Lescaut)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This French opera was based on a novel by the Abbe Prevost. | Massenet&#x27;s Manon was based on the same novel that inspired this composer&#x27;s 1893 opera Manon Lescaut.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Seen as a precursor to operas with Carmen-like female leads</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Carmen is seen as a precursor to such characters as the title woman of this opera, who sings &#x27;Adieu, notre petite table.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three actresses reappear in various scenes, including a night of gambling that goes awry</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In another of this man&#x27;s operas, three actresses reappear in various scenes, including a night of gambling that goes awry.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="werther" open>
+            <summary class="work-title">Werther</summary>
+            <p class="work-desc">Massenet's adaptation of Goethe's <a href="goethe_stock.html#the-sorrows-of-young-werther" class="crossref-inline">The Sorrows of Young Werther</a>. The title character (tenor) recites poetry by Ossian in front of his married love interest Charlotte (Lotte), and sings the aria 'Pourquoi me reveiller?' Act III opens with a letter scene in which Charlotte reads Werther's letters and sings the alto saxophone-accompanied aria 'Va! Laisse couler mes larmes.' Werther borrows two pistols from Albert (Charlotte's husband) before shooting himself. The opera begins and ends with a Christmas carol ('Noel! Jesus vient de naitre') sung by the bailiff's children. The role was adjusted from tenor to baritone for Mattia Battistini. <a href="https://en.wikipedia.org/wiki/Werther_(opera)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Pourquoi me reveiller?&#x27; — Werther&#x27;s aria reciting Ossian&#x27;s poetry to Charlotte</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character recites Ossian&#x27;s poetry in front of his married love interest, Gretchen, in this composer&#x27;s adaptation of Goethe&#x27;s Sorrows of Young Werther. | The title character of an opera by this composer sings &#x27;Pourquoi me reveiller?&#x27; during a recitation of poetry by Ossian, soon before asking Albert to borrow two pistols.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Va! Laisse couler mes larmes&#x27; — Act III letter scene aria for mezzo-soprano (Charlotte), accompanied by alto saxophone solo</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">an unusual alto saxophone solo opens the mezzo-soprano aria &#x27;Va! Laisse couler mes larmes&#x27;; that opera by this composer begins and ends with the bailiff&#x27;s children performing the Christmas carol &#x27;Noel! Jesus vient de naitre&#x27; | This other opera&#x27;s third act opens with a letter scene in which a woman reads letters from her love interest before singing the aria &#x27;Va! Laisse couler mes larmes&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Begins and ends with the Christmas carol &#x27;Noel! Jesus vient de naitre&#x27; sung by the bailiff&#x27;s children</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">that opera by this composer begins and ends with the bailiff&#x27;s children performing the Christmas carol &#x27;Noel! Jesus vient de naitre&#x27; | This composer adjusted a tenor role to a baritone one for a performance by Mattia Battistini of one of his operas, which begins and ends with a Christmas carol sung to, and by, six children.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Werther asks Albert to borrow two pistols (with which he shoots himself)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character of an opera by this composer sings &#x27;Pourquoi me reveiller?&#x27; during a recitation of poetry by Ossian, soon before asking Albert to borrow two pistols.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Charlotte reads Werther&#x27;s letters in the Act III letter scene</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This other opera&#x27;s third act opens with a letter scene in which a woman reads letters from her love interest before singing the aria &#x27;Va! Laisse couler mes larmes&#x27; | This Goethe protagonist is the title character of another Massenet opera, which features the &#x27;Letter Aria.&#x27; It is based on a German epistolary novel.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tenor role adjusted to baritone for Mattia Battistini</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer adjusted a tenor role to a baritone one for a performance by Mattia Battistini of one of his operas</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on Goethe&#x27;s The Sorrows of Young Werther (a German epistolary novel)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Goethe protagonist is the title character of another Massenet opera, which features the &#x27;Letter Aria.&#x27; It is based on a German epistolary novel.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="esclarmonde" open>
+            <summary class="work-title">Esclarmonde</summary>
+            <p class="work-desc">A lesser-known Massenet opera in which the title character, Esclarmonde — daughter of Phorcas, Emperor of Byzantium — falls in love with Roland. She gives him a sword to defeat her empire's enemies but never reveals her face to him. Roland refuses the hand of the King of France's daughter and wins a tournament to marry Esclarmonde. Sibyl Sanderson made her professional debut in the title role, singing the high G6 'Eiffel Tower note.' <a href="https://en.wikipedia.org/wiki/Esclarmonde_(opera)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title character is the daughter of Phorcas, Emperor of Byzantium; Roland refuses to reveal her face</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the title character, the daughter of Phorcas, Emperor of Byzantium, is refused the hand of Roland until he wins a tournament | The title character of this opera falls in love with Roland and gives him a sword to defeat her empire&#x27;s enemies, but never reveals her face to him.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Roland wins a tournament to become married to the titular princess</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this opera, Roland refuses the hand of the King of France&#x27;s daughter and wins a tournament to become married to the titular princess.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sibyl Sanderson made her debut in the title role, singing the high G6 &#x27;Eiffel Tower note&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sibyl Sanderson made her professional debut playing the title Byzantine sorceress in this composer&#x27;s opera Esclarmonde. | He cast Sybil Sanderson to sing the &#x27;Eiffel Tower note&#x27; G6 in &#x27;Ah Roland!... Regarde-les ces yeux&#x27; in his opera Esclarmonde.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Other operas by Massenet include <a href="pierre_corneille_stock.html#le-cid" class="crossref-inline">Le Cid</a> (whose aria inspired Laurie Anderson's 'O Superman'), Le roi de Lahore (which featured alto saxophone solos), Herodiade (in which Rodrigue sings 'O souverain, o juge, o pere'), and the comic opera Cherubin (a sequel to Mozart's Marriage of Figaro following the page character). He also wrote the oratorio La Vierge with libretto by Charles Grandmougin.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Le Cid — aria inspired Laurie Anderson&#x27;s &#x27;O Superman (For Massenet)&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An aria by this composer was the inspiration for the lyrics of &#x27;O Superman&#x27; by Laurie Anderson. | This work was inspired by an aria from its dedicatee&#x27;s opera Le Cid</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Herodiade — Rodrigue sings &#x27;O souverain, o juge, o pere&#x27; before a victory in battle; also features alto saxophone</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In an opera by this composer, Rodrigue sings the aria &#x27;O souverain, o juge, o pere&#x27; before a victory in battle. | who featured saxophone solos in his operas Herodiade and Le roi de Lahore</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cherubin — comic opera sequel to Mozart&#x27;s Marriage of Figaro, with lyric soprano as the male page</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Late in life, this composer wrote a comic opera continuing the story of the page from The Marriage of Figaro. | A lyric soprano sings the role of the title male soldier, who announces that he is drunk, in an aria from this composer&#x27;s sequel to Mozart&#x27;s The Marriage of Figaro.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">La Vierge — oratorio with libretto by Charles Grandmougin</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Charles Grandmougin wrote the libretto for this composer&#x27;s oratorio La Vierge.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Jules Massenet was a prolific French opera composer and student of Ambroise Thomas (who had himself used the saxophone in Hamlet). Massenet&#x27;s own use of the saxophone in operas like Herodiade and Le roi de Lahore may reflect this influence. Gabriel Fauré criticized Massenet&#x27;s style as exhibiting &#x27;vulgar and passionate writhings.&#x27; He wrote over two dozen operas representing a lyric style that bridged the elaborate grandeur of French grand opera with the lighter opera comique tradition.</p><p>Massenet&#x27;s best-known opera is Thais, in which the monk Athanael attempts to convert the title courtesan to Christianity but discovers his attraction to her is sexual. The opera&#x27;s most famous excerpt is the &#x27;Meditation,&#x27; a D-major entr&#x27;acte for solo violin and orchestra marked Andante Religioso, which plays as Thais contemplates conversion. At the opera&#x27;s end, Thais joins a convent and is sainted. In the opera, Thais asks to spare her statue of Eros even as she agrees to destroy her other possessions.</p><p>Manon, based on the Abbé Prévost novel (the same source as Puccini&#x27;s Manon Lescaut), is another major opera. The heroine sings &#x27;Adieu, notre petite table&#x27; when she decides to leave Chevalier des Grieux for the wealthier Monsieur de Bretigny. She ultimately dies in des Grieux&#x27;s arms before being deported to Le Havre. Des Grieux&#x27;s &#x27;Dream Song&#x27; (&#x27;En fermant les yeux&#x27;) also appears in the opera.</p><p>Werther adapts Goethe&#x27;s epistolary novel <a href="goethe_stock.html#the-sorrows-of-young-werther" class="crossref-inline">The Sorrows of Young Werther</a>. The title tenor sings &#x27;Pourquoi me reveiller?&#x27; while reciting Ossian&#x27;s poetry to the married Charlotte (Lotte), before asking her husband Albert to lend him two pistols. Act III opens with a letter scene in which Charlotte reads Werther&#x27;s letters and sings &#x27;Va! Laisse couler mes larmes,&#x27; accompanied by a prominent alto saxophone solo. The opera famously begins and ends with the Christmas carol &#x27;Noel! Jesus vient de naitre&#x27; sung by the bailiff&#x27;s children. Massenet adjusted the tenor role to baritone for a performance by Mattia Battistini.</p><p>Esclarmonde is a lesser-known Massenet opera in which the title character, daughter of Byzantine Emperor Phorcas, loves Roland and gives him a sword, but conceals her face from him. Roland wins a tournament for the right to marry her. Soprano Sibyl Sanderson — who made her professional debut in the role — was cast specifically so Massenet could feature the high G6 &#x27;Eiffel Tower note.&#x27;</p><p>Among his other works, the aria from <a href="pierre_corneille_stock.html#le-cid" class="crossref-inline">Le Cid</a> inspired Laurie Anderson&#x27;s performance art piece &#x27;O Superman (For Massenet),&#x27; which opens with the looped syllable &#x27;Ah&#x27; and addresses &#x27;mom and dad,&#x27; a judge, and the postal service motto. Massenet also wrote Cherubin, a late comic opera that continues the story of the page character from Mozart&#x27;s Marriage of Figaro, and the oratorio La Vierge with libretto by Charles Grandmougin.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Jules_Massenet" target="_blank">Jules Massenet — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Manon_(opera)" target="_blank">Manon — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Tha%C3%AFs_(opera)" target="_blank">Thaïs — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Werther_(opera)" target="_blank">Werther — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Manon (Massenet) — multiple specific clues about arias and plot; contrast with Puccini&#x27;s Manon Lescaut</li><li>Werther (Massenet) — rich clue set: letter scene, saxophone aria, Christmas carol framing, Ossian poetry, pistols</li><li>O Superman (Laurie Anderson) — referenced in multiple tossups as inspired by Massenet&#x27;s Le Cid</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'jules_massenet' });</script>
+
+</body>
+</html>

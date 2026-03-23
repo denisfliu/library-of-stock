@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cards: Neil Simon</title>
+
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -362,7 +363,7 @@ h1 {
 </div>
 
 <details class="img-palette" open>
-    <summary>Image Palette <span id="palette-count"></span></summary>
+    <summary>Media Palette <span id="palette-count"></span></summary>
     <div class="palette-grid" id="palette-grid"></div>
     <div class="palette-actions">
         <input type="text" id="palette-url" placeholder="Add image URL...">
@@ -378,6 +379,7 @@ h1 {
         <button onclick="applyPaletteToSelected()">Apply to selected cards</button>
         <button onclick="clearPaletteSelection()" style="background:#1a1f25;">Cancel</button>
     </div>
+    
 </details>
 
 <table class="card-table">
@@ -442,6 +444,7 @@ h1 {
 <script>
 const TOPIC = "Neil Simon";
 let cards = [{"type": "basic", "indicator": "Play", "front": "Play: a note left on a pillow says 'We're all out of Corn Flakes. F.U.' — signed by the neat-freak roommate", "back": "The Odd Couple (Neil Simon)", "work": "The Odd Couple", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: a poker game breaks up after one of the players disinfects the playing cards", "back": "The Odd Couple (Neil Simon)", "work": "The Odd Couple", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: one roommate throws a plate of linguini (not spaghetti) at the wall", "back": "The Odd Couple (Neil Simon)", "work": "The Odd Couple", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the title characters try double-dating with the British Pigeon sisters", "back": "The Odd Couple (Neil Simon)", "work": "The Odd Couple", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: one character takes green pills; his roommate jokes 'Maybe they were vitamins. He could be the healthiest one in the room!'", "back": "The Odd Couple (Neil Simon)", "work": "The Odd Couple", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Private Arnold Epstein forces the abusive Sergeant Toomey to do 200 push-ups in front of the platoon", "back": "Biloxi Blues (Neil Simon)", "work": "Eugene Jerome Trilogy (Brighton Beach Memoirs / Biloxi Blues / Broadway Bound)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: a bride complains her husband won't walk in the title fashion in Washington Square Park; he protests it was 17 degrees", "back": "Barefoot in the Park (Neil Simon)", "work": "Barefoot in the Park", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: a leaking skylight and the intrusions of the eccentric neighbor Victor Velasco disturb a pair of newlyweds", "back": "Barefoot in the Park (Neil Simon)", "work": "Barefoot in the Park", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the fish-restaurant owner Barney Cashman tries and fails to seduce three women in his mother's apartment", "back": "The Last of the Red-Hot Lovers (Neil Simon)", "work": "The Last of the Red-Hot Lovers", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Deputy Mayor Charlie shoots himself in the earlobe while on Valium; the song 'La Bamba' is required in all productions", "back": "Rumors (Neil Simon)", "work": "Rumors", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: elderly vaudeville team Lewis and Clark reunite to do a 'Doctor's office' sketch but keep poking and spitting on each other", "back": "The Sunshine Boys (Neil Simon)", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: fifteen-and-a-half-year-old Jay and his brother Arty stay with their mentally challenged Aunt Bella and cruel grandmother", "back": "Lost in Yonkers (Neil Simon)", "work": "Lost in Yonkers", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote a musical based on Fellini's Nights of Cabiria; Bob Fosse choreographed 'Big Spender' for the film version", "back": "Neil Simon", "work": "Other Works", "frequency": 1, "tags": []}];
+const SCORE_CLIPS = [];
 let editIndex = -1; // -1 = adding new
 
 // Populate work filter
@@ -776,6 +779,63 @@ let selectedPaletteIdx = -1;
     });
 })();
 
+// --- Score Clips Palette ---
+let _clipSynths = {};
+
+function initClipsPalette() {
+    const clips = SCORE_CLIPS.filter(c => c.abc && (c.mp3 || c.abc));
+    if (!clips.length) return;
+    const section = document.getElementById('clips-section');
+    const grid = document.getElementById('clips-grid');
+    section.style.display = '';
+    grid.innerHTML = clips.map((clip, i) => `
+        <div style="background:#1a1f25;border:1px solid #3a3f47;border-radius:4px;padding:0.4rem 0.6rem;min-width:180px;max-width:280px;">
+            <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${escHtml(clip.work || '')}${clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}</div>
+            <div id="clip-notation-${i}" style="max-width:100%;overflow:hidden;"></div>
+            <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
+                ${clip.mp3
+                    ? `<audio controls preload="none" src="${escHtml(clip.mp3)}${clip.mp3_v ? '?v=' + clip.mp3_v : ''}" style="height:24px;width:120px;"></audio>`
+                    : `<button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="playClip(${i})">▶ Play</button>
+                       <button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="stopClip(${i})">■</button>`
+                }
+            </div>
+        </div>
+    `).join('');
+
+    // Render ABC notation for each clip
+    clips.forEach((clip, i) => {
+        if (clip.abc && typeof ABCJS !== 'undefined') {
+            try {
+                ABCJS.renderAbc(`clip-notation-${i}`, clip.abc, {
+                    responsive: 'resize',
+                    staffwidth: 240,
+                    scale: 0.7,
+                    paddingright: 0,
+                    paddingleft: 0,
+                });
+            } catch(e) {}
+        }
+    });
+}
+
+async function playClip(i) {
+    const clip = SCORE_CLIPS.filter(c => c.abc)[i];
+    if (!clip || typeof ABCJS === 'undefined') return;
+    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} }
+    try {
+        const visualObjs = ABCJS.renderAbc('offscreen-render', clip.abc, {});
+        const synth = new ABCJS.synth.CreateSynth();
+        await synth.init({ visualObj: visualObjs[0] });
+        await synth.prime();
+        synth.start();
+        _clipSynths[i] = synth;
+    } catch(e) { console.warn('playClip error:', e); }
+}
+
+function stopClip(i) {
+    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} delete _clipSynths[i]; }
+}
+
 function renderPalette() {
     const grid = document.getElementById('palette-grid');
     const countEl = document.getElementById('palette-count');
@@ -863,7 +923,9 @@ document.querySelector('.img-palette')?.addEventListener('paste', e => {
 
 renderPalette();
 renderTable();
+
 </script>
+
 <script src="../lib/js/anki_export.js"></script>
 <script>
 async function exportApkgBtn() {

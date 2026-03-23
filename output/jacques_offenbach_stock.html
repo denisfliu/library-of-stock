@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Jacques Offenbach</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Jacques Offenbach</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="jacques_offenbach_questions.html">View source questions</a><a href="jacques_offenbach_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">German-born French composer (1819–1880) best known for the operetta Orpheus in the Underworld and the posthumously completed opera The Tales of Hoffmann. The &#x27;Infernal Galop&#x27; from Orpheus in the Underworld became the definitive can-can tune. His final opera, The Tales of Hoffmann, was completed by Ernest Guiraud and features the famous barcarolle &#x27;Belle nuit, o nuit d&#x27;amour.&#x27;</div>
+
+        <details class="work" id="orpheus-in-the-underworld-orph-e-aux-enfers" open>
+            <summary class="work-title">Orpheus in the Underworld (Orphée aux enfers)</summary>
+            <p class="work-desc">Offenbach's comic operetta (1858), a satirical parody of Gluck's opera Orpheus and Eurydice. In this version, Eurydice actually hates Orpheus and runs away to elope with Jupiter instead. Public Opinion is a mezzo-soprano role who forces Orpheus to rescue Eurydice. The Act II finale 'Infernal Galop' (Galop Infernal) became famous as the can-can tune, danced by the Greek gods in the underworld. Jupiter appears in the 'Fly Duet' ('Duo de la mouche') disguised as a fly. Libretto by Ludovic Halévy (Fromental Halévy's nephew). The US Marines' Hymn is based on the 'Gendarmes' Duet' from Genevieve de Brabant. <a href='https://en.wikipedia.org/wiki/Orpheus_in_the_Underworld' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The &#x27;Infernal Galop&#x27; (Galop Infernal) became the most famous can-can tune; Greek gods dance the can-can in the underworld</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this man is most famous for composing an &#x27;Infernal Galop&#x27; that accompanied a dance popular in nightclubs where women stand in a line and perform high kicks | the main melody of the movement &#x27;Tortoises&#x27; is an extremely slowed-down version of the cancan from this French composer&#x27;s comic opera, Orpheus in the Underworld</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A satirical parody of Gluck&#x27;s Orpheus and Eurydice; Eurydice hates Orpheus and elopes with Jupiter instead</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer&#x27;s satirical operetta Orpheus in the Underworld rewrites Eurydice as a woman who hates Orpheus and runs away to elope with Jupiter instead | this character disappears after Jupiter&#x27;s thunderbolt shocks her lover into looking at her in a parodic opera by Jacques Offenbach</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The mezzo-soprano role Public Opinion forces Orpheus to rescue his wife</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the character of Public Opinion introduces his most famous operetta, a Christoph Willibald Gluck parody which closes with the &#x27;Galop Infernal&#x27; | a &#x27;Galop Infernal&#x27; ends an operetta by this man whose title character is forced to rescue his wife by Public Opinion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jupiter appears in the &#x27;Duo de la mouche&#x27; (Fly Duet) disguised as a fly, singing only buzzing noises</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in one work by this composer, &#x27;Duo de la mouche&#x27; is sung by Jupiter, who is disguised as a fly | in one opera by this composer, one character does nothing but make buzzing noises when courting a woman in the &#x27;Fly Duet&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Libretto by Ludovic Halévy (his uncle Fromental wrote The Jewess); their collaboration was long and productive</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this French-Jewish author wrote the libretto for Orpheus in the Underworld, the highlight of his long and productive partnership with Offenbach. His uncle Fromental wrote the opera The Jewess</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Saint-Saëns parodied the Infernal Galop by slowing it down greatly for the &#x27;Tortoises&#x27; movement of Carnival of the Animals</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the main melody of the movement &#x27;Tortoises&#x27; is an extremely slowed-down version of the cancan from this French composer&#x27;s comic opera | this section from the Carnival of the Animals parodies Offenbach&#x27;s Orpheus in the Underworld by slowing it down immensely to depict the title animals</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The US Marines&#x27; Hymn is based on the &#x27;Gendarmes&#x27; Duet&#x27; from Offenbach&#x27;s Genevieve de Brabant</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the US &#x27;Marines&#x27; Hymn&#x27; is based on the &#x27;Gendarmes&#x27; Duet&#x27; from this composer&#x27;s operetta Genevieve de Brabant</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-tales-of-hoffmann-les-contes-d-hoffmann" open>
+            <summary class="work-title">The Tales of Hoffmann (Les contes d&#x27;Hoffmann)</summary>
+            <p class="work-desc">Offenbach's final opera, left unfinished at his death and completed by Ernest Guiraud. Based on three tales by E.T.A. Hoffmann. The opera has three acts named after the protagonist's three loves: Olympia, Antonia, and Giulietta, plus a Prologue and Epilogue set in Luther's Tavern. Hoffmann recounts his loves while drinking with his friend Nicklausse. Giulietta steals Hoffmann's reflection. Dr. Miracle causes Antonia to sing herself to death. A 1951 Powell and Pressburger film adaptation starred Robert Rounseville and Moira Shearer. <a href='https://en.wikipedia.org/wiki/The_Tales_of_Hoffmann' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three acts named after Hoffmann&#x27;s three loves: Olympia (the doll), Antonia, and Giulietta; frame story/prologue set in Luther&#x27;s Tavern</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">his final opera is divided into three acts named &#x27;Olympia&#x27;, &#x27;Antonia&#x27;, and &#x27;Giulietta&#x27; | this opera&#x27;s prologue sets the frame story of the title character telling about his three great loves: Olympia, Antonia, and Giulietta</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Left unfinished; completed by Ernest Guiraud</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">an unfinished opera by him is partially set in Luther&#x27;s tavern | this French composer whose opera The Tales of Hoffmann was completed by Ernest Guiraud</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on three tales by German author E.T.A. Hoffmann (including &#x27;The Sandman&#x27; for the Olympia act)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer adapted three tales by a German author into The Tales of Hoffmann | that opera&#x27;s title character recounts how he fell in love with Spalanzani&#x27;s mechanical maiden Olympia in a segment inspired by &#x27;The Sandman&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">1951 Powell and Pressburger film starred Robert Rounseville and Moira Shearer (the last major Powell-Pressburger film)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Robert Rounseville and Moira Shearer star in a 1951 film adaptation of an opera by this composer, the last major film of Powell and Pressburger</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Act 3 (Giulietta&#x27;s act, set in Venice), Giulietta seduces Hoffmann and steals his reflection</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in this opera&#x27;s third act, Giulietta seduces the protagonist in order to steal his reflection</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Act 2 (Antonia&#x27;s act), Dr. Miracle causes Antonia&#x27;s death by encouraging her to sing</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in the second act of The Tales of Hoffmann, Dr. Miracle causes the death of Antonia by encouraging her to perform this action [singing]</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="belle-nuit-o-nuit-d-amour-barcarolle" open>
+            <summary class="work-title">&quot;Belle nuit, o nuit d&#x27;amour&quot; (Barcarolle)</summary>
+            <p class="work-desc">The famous Venetian barcarolle from Act 3 of The Tales of Hoffmann, sung by Giulietta and the breeches role Nicklausse. One of the most recognized melodies in opera. <a href='https://en.wikipedia.org/wiki/Belle_nuit,_o_nuit_d%27amour' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Venetian barcarolle from Act 3 of The Tales of Hoffmann, sung by Giulietta and Nicklausse</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in that opera by this composer, the aria &#x27;Belle nuit, o nuit d&#x27;amour,&#x27; a venetian barcarolle, is sung by Giulietta and Nicklausse | the barcarolle &#x27;Belle nuit, o nuit d&#x27;amour&#x27; appears in this opera, which also features a coloratura showcase for Olympia</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="les-oiseaux-dans-la-charmille-doll-song-doll-aria" open>
+            <summary class="work-title">&quot;Les oiseaux dans la charmille&quot; (Doll Song / Doll Aria)</summary>
+            <p class="work-desc">The coloratura soprano aria sung by Olympia, a mechanical doll, in Act 1 of The Tales of Hoffmann. As a clockwork doll, she periodically slows down and needs to be re-wound before picking up tempo again. Its French title translates to 'The birds in the arbor.' <a href='https://en.wikipedia.org/wiki/Les_oiseaux_dans_la_charmille' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coloratura soprano aria sung by Olympia (the mechanical doll); she periodically slows to a halt and needs to be re-wound; French title = &#x27;The birds in the arbor&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer wrote a coloratura soprano aria in which the singer periodically slows to a halt before picking up tempo again. Olympia sings that aria, known as the &#x27;Doll Song&#x27; | Olympia sings this coloratura soprano aria from The Tales of Hoffmann, during which she repeatedly runs down and needs to be re-wound. Its French title roughly translates to &#x27;The birds in the arbor&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Jacques Offenbach (1819–1880), German-born French composer. His operettas and operas were hugely popular in Second Empire France. Many title roles were created by soprano Hortense Schneider. Manuel Rosenthal arranged his pieces for the ballet Gaîté Parisienne. He also wrote a Grand Concerto for cello nicknamed 'Concerto Militaire.' Other operettas include La Vie Parisienne, La Périchole, La Grande-Duchesse de Gerolstein (where Fritz receives a sabre), and La Belle Hélène. Josephine Baker starred in a 1934 revival of his opera La Créole. Karl Kraus frequently performed his operetta about a spoiled title character who makes Fritz a general on a whim. Franz von Suppé modeled his operettas on Offenbach's style.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">German-born French composer; most famous for the can-can from Orpheus and The Tales of Hoffmann</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this French composer of The Tales of Hoffmann whose operetta Orpheus in the Underworld contains a &#x27;can-can&#x27; | name this German-born French composer of The Tales of Hoffmann and Orpheus in the Underworld</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Manuel Rosenthal arranged various pieces for the ballet Gaîté Parisienne (overture drawn from La Vie Parisienne)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">various pieces by this composer were arranged by Manuel Rosenthal for the ballet &#x27;Gaite Parisienne&#x27; | Manuel Rosenthal drew from this composer&#x27;s music to orchestrate the ballet Gaite Parisienne, whose overture draws from this composer&#x27;s operetta La Vie Parisienne</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Many title roles were created by soprano Hortense Schneider</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">many of the title roles of this composer&#x27;s operas were created by the soprano Hortense Schneider</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Josephine Baker starred in a 1934 revival of his opera La Créole (also in La Périchole)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Josephine Baker starred in a 1934 revival of this composer&#x27;s opera La creole | Josephine Baker starred in a later hit performance of this man&#x27;s opera La Creole</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His Tales of Hoffmann overture is normally performed in an arrangement made by Carl Bier for the Vienna premiere</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">one of this man&#x27;s overtures is normally performed in an arrangement made by Carl Bier for the Vienna premiere of the opera that it precedes</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Jacques Offenbach (1819–1880) was a German-born French composer who became the dominant figure of Second Empire French operetta. He is best known for Orpheus in the Underworld (Orphée aux enfers, 1858) and his final opera The Tales of Hoffmann (Les contes d&#x27;Hoffmann), left unfinished at his death and completed by Ernest Guiraud.</p><p>Orpheus in the Underworld is a satirical operetta that parodies Gluck&#x27;s Orpheus and Eurydice. In this version, Eurydice hates Orpheus and runs away to elope with Jupiter instead; she is eventually lost when Jupiter&#x27;s thunderbolt shocks Orpheus into looking back at her. The mezzo-soprano role Public Opinion forces Orpheus to attempt the rescue. Jupiter appears in the &#x27;Fly Duet&#x27; (&#x27;Duo de la mouche&#x27;), disguised as a fly and making only buzzing noises while courting Eurydice. The libretto was written by Ludovic Halévy, whose uncle Fromental Halévy wrote the opera The Jewess; the Offenbach-Halévy partnership was long and productive. The Act II &#x27;Infernal Galop&#x27; (Galop Infernal) became famous as the definitive can-can tune, with the Greek gods dancing the can-can in the underworld. Saint-Saëns parodied it by slowing it down enormously for the &#x27;Tortoises&#x27; movement of Carnival of the Animals. The US Marines&#x27; Hymn is based on the &#x27;Gendarmes&#x27; Duet&#x27; from another Offenbach operetta, Geneviève de Brabant.</p><p>The Tales of Hoffmann has a Prologue and Epilogue set in Luther&#x27;s Tavern, where Hoffmann recounts his three great loves. Act 1 (Olympia) is based on E.T.A. Hoffmann&#x27;s &#x27;The Sandman&#x27;: Hoffmann falls in love with Spalanzani&#x27;s mechanical doll Olympia, who sings the coloratura &#x27;Doll Song&#x27; (&#x27;Les oiseaux dans la charmille&#x27; — &#x27;The birds in the arbor&#x27;), periodically slowing to a halt and needing to be re-wound. Act 2 (Antonia) features Dr. Miracle causing Antonia&#x27;s death by encouraging her to sing. Act 3 (Giulietta) is set in Venice: Giulietta seduces Hoffmann to steal his reflection. The act features the famous Venetian barcarolle &#x27;Belle nuit, o nuit d&#x27;amour,&#x27; sung by Giulietta and Nicklausse. A 1951 film adaptation by Powell and Pressburger (their last major film) starred Robert Rounseville and Moira Shearer.</p><p>Offenbach&#x27;s other works include La Vie Parisienne, La Périchole, and La Grande-Duchesse de Gerolstein (in which the title character gives Fritz a sabre). Josephine Baker starred in a 1934 revival of his opera La Créole. Manuel Rosenthal arranged various Offenbach pieces for the ballet Gaîté Parisienne (the overture drawn from La Vie Parisienne). Many of Offenbach&#x27;s title roles were created by soprano Hortense Schneider. The overture to The Tales of Hoffmann is normally performed in an arrangement made by Carl Bier for the Vienna premiere.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Jacques_Offenbach" target="_blank">Jacques Offenbach — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Orpheus_in_the_Underworld" target="_blank">Orpheus in the Underworld — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Tales_of_Hoffmann" target="_blank">The Tales of Hoffmann — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Belle_nuit,_o_nuit_d%27amour" target="_blank">Barcarolle (Belle nuit) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Ga%C3%AEt%C3%A9_Parisienne" target="_blank">Gaîté Parisienne — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>The Tales of Hoffmann — Offenbach&#x27;s most-clued opera deserves its own answerline search</li><li>Orpheus in the Underworld — the can-can / Infernal Galop could be its own search</li><li>Ernest Guiraud — completed both Tales of Hoffmann and arranged L&#x27;Arlésienne Suite 2; appears in multiple AFA topics</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'jacques_offenbach' });</script>
+
+</body>
+</html>

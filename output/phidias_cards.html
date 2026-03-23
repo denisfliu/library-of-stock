@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cards: Phidias</title>
+
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -362,7 +363,7 @@ h1 {
 </div>
 
 <details class="img-palette" open>
-    <summary>Image Palette <span id="palette-count"></span></summary>
+    <summary>Media Palette <span id="palette-count"></span></summary>
     <div class="palette-grid" id="palette-grid"></div>
     <div class="palette-actions">
         <input type="text" id="palette-url" placeholder="Add image URL...">
@@ -378,6 +379,7 @@ h1 {
         <button onclick="applyPaletteToSelected()">Apply to selected cards</button>
         <button onclick="clearPaletteSelection()" style="background:#1a1f25;">Cancel</button>
     </div>
+    
 </details>
 
 <table class="card-table">
@@ -442,6 +444,7 @@ h1 {
 <script>
 const TOPIC = "Phidias";
 let cards = [{"type": "basic", "indicator": "Sculpture", "front": "Sculpture: chryselephantine seated statue of Zeus at Olympia, enthroned holding a scepter; one of the Seven Wonders of the Ancient World", "back": "Statue of Zeus at Olympia (Phidias)", "work": "Statue of Zeus at Olympia", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: Pausanias says this work wore a glass robe and held a Nike figurine", "back": "Statue of Zeus at Olympia (Phidias)", "work": "Statue of Zeus at Olympia", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: Napoleon's pose in Ingres's Napoleon I on His Imperial Throne was modeled on descriptions of this statue", "back": "Statue of Zeus at Olympia (Phidias)", "work": "Statue of Zeus at Olympia", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: Phidias was apocryphally murdered after completing it; it was repeatedly rubbed with olive oil due to the marsh", "back": "Statue of Zeus at Olympia (Phidias)", "work": "Statue of Zeus at Olympia", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: chryselephantine Athena in the naos of the Parthenon; ~41 feet tall; holds a Nike", "back": "Athena Parthenos (Phidias)", "work": "Athena Parthenos", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: Phidias himself (as a bald old man throwing a stone) and Pericles appear on the circular shield alongside an Amazonomachy", "back": "Athena Parthenos (Phidias)", "work": "Athena Parthenos", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: triple-crested helmet with sphinx flanked by two pegasi; coiled snake between the shield and feet; Aegis with snake tassels", "back": "Athena Parthenos (Phidias)", "work": "Athena Parthenos", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: Pericles' enemies accused Phidias of embezzling gold meant for this statue", "back": "Athena Parthenos (Phidias)", "work": "Athena Parthenos", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: supervised the creation of the Elgin Marbles, including the Panathenaic frieze; Lawrence Alma-Tadema depicted him presenting the frieze to his friends", "back": "Parthenon sculptures (Phidias)", "work": "Elgin Marbles / Parthenon Sculptures", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Sculptor", "front": "Sculptor: Mark Barr used the Greek letter phi — chosen to honor this sculptor's name — as the symbol for the golden ratio", "back": "Phidias", "work": "Other Sculptures / General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Sculptor", "front": "Sculptor: created the Athena Promachos — a giant bronze statue of Athena on the Acropolis", "back": "Phidias", "work": "Other Sculptures / General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Sculptor", "front": "Sculptor: came second to Polykleitos in the contest to sculpt a wounded Amazon for the Temple of Artemis", "back": "Phidias", "work": "Other Sculptures / General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculptor", "front": "Sculptor: an inscription calling a wrestler beautiful appears on the little finger of one of his statues", "back": "Phidias", "work": "Other Sculptures / General", "frequency": 1, "tags": []}, {"type": "image", "indicator": "Sculpture", "front": "", "back": "Elgin Marbles / Parthenon Sculptures (Phidias)", "work": "Elgin Marbles / Parthenon Sculptures", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/West_pediment_A_Parthenon_BM.jpg/500px-West_pediment_A_Parthenon_BM.jpg", "tags": [], "image_side": "front"}];
+const SCORE_CLIPS = [];
 let editIndex = -1; // -1 = adding new
 
 // Populate work filter
@@ -776,6 +779,63 @@ let selectedPaletteIdx = -1;
     });
 })();
 
+// --- Score Clips Palette ---
+let _clipSynths = {};
+
+function initClipsPalette() {
+    const clips = SCORE_CLIPS.filter(c => c.abc && (c.mp3 || c.abc));
+    if (!clips.length) return;
+    const section = document.getElementById('clips-section');
+    const grid = document.getElementById('clips-grid');
+    section.style.display = '';
+    grid.innerHTML = clips.map((clip, i) => `
+        <div style="background:#1a1f25;border:1px solid #3a3f47;border-radius:4px;padding:0.4rem 0.6rem;min-width:180px;max-width:280px;">
+            <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${escHtml(clip.work || '')}${clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}</div>
+            <div id="clip-notation-${i}" style="max-width:100%;overflow:hidden;"></div>
+            <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
+                ${clip.mp3
+                    ? `<audio controls preload="none" src="${escHtml(clip.mp3)}${clip.mp3_v ? '?v=' + clip.mp3_v : ''}" style="height:24px;width:120px;"></audio>`
+                    : `<button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="playClip(${i})">▶ Play</button>
+                       <button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="stopClip(${i})">■</button>`
+                }
+            </div>
+        </div>
+    `).join('');
+
+    // Render ABC notation for each clip
+    clips.forEach((clip, i) => {
+        if (clip.abc && typeof ABCJS !== 'undefined') {
+            try {
+                ABCJS.renderAbc(`clip-notation-${i}`, clip.abc, {
+                    responsive: 'resize',
+                    staffwidth: 240,
+                    scale: 0.7,
+                    paddingright: 0,
+                    paddingleft: 0,
+                });
+            } catch(e) {}
+        }
+    });
+}
+
+async function playClip(i) {
+    const clip = SCORE_CLIPS.filter(c => c.abc)[i];
+    if (!clip || typeof ABCJS === 'undefined') return;
+    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} }
+    try {
+        const visualObjs = ABCJS.renderAbc('offscreen-render', clip.abc, {});
+        const synth = new ABCJS.synth.CreateSynth();
+        await synth.init({ visualObj: visualObjs[0] });
+        await synth.prime();
+        synth.start();
+        _clipSynths[i] = synth;
+    } catch(e) { console.warn('playClip error:', e); }
+}
+
+function stopClip(i) {
+    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} delete _clipSynths[i]; }
+}
+
 function renderPalette() {
     const grid = document.getElementById('palette-grid');
     const countEl = document.getElementById('palette-count');
@@ -863,7 +923,9 @@ document.querySelector('.img-palette')?.addEventListener('paste', e => {
 
 renderPalette();
 renderTable();
+
 </script>
+
 <script src="../lib/js/anki_export.js"></script>
 <script>
 async function exportApkgBtn() {

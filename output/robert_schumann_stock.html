@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Robert Schumann</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Robert Schumann</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="robert_schumann_questions.html">View source questions</a><a href="robert_schumann_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">German Romantic composer and music critic (1810–1856), married to pianist Clara Wieck. Known for his piano music (Carnaval, Kinderszenen, Kreisleriana, Fantasie in C, Davidsbündlertänze), song cycles (Dichterliebe, the two Liederkreis, A Woman&#x27;s Love and Life), four symphonies (including the &#x27;Spring&#x27; No. 1 and &#x27;Rhenish&#x27; No. 3), and chamber works (Piano Quintet in E-flat, Piano Quartet). He expressed himself through the fictional alter egos Florestan (fiery) and Eusebius (lyrical). Founded the Neue Zeitschrift für Musik. Suffered a mental breakdown and died in an asylum in Endenich.</div>
+
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Robert Schumann (1810–1856) was a German Romantic composer, pianist, and critic. He married Clara Wieck in 1840 (the year of his famous 'Year of Song'). He ruined his right hand by using a finger-strengthening mechanism, ending his concert career. He co-founded the music journal <em>Neue Zeitschrift für Musik</em>, in which he wrote under the fictional personas of Florestan (fiery) and Eusebius (lyrical), along with Master Raro (representing his father-in-law Friedrich Wieck). He used these alter egos throughout his music, most famously in Carnaval and Davidsbündlertänze. He published 'New Paths' in 1853, championing the young Johannes Brahms. He suffered a mental breakdown, attempted suicide by jumping into the Rhine, and died in the asylum at Endenich. His Ghost Variations were his final composition; he thought the melody was dictated to him by ghosts (it was actually from his own D minor <a href="alban_berg_stock.html#violin-concerto" class="crossref-inline">Violin Concerto</a>). <a href="https://en.wikipedia.org/wiki/Robert_Schumann" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">15x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Married Clara Wieck in 1840 (his &#x27;Year of Song&#x27;); she premiered many of his works including the Piano Concerto and Piano Quintet</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this German composer who married Clara Wieck and also wrote the piano suite Carnaval and the Rhenish Symphony | This composer of Dichterliebe who married Clara Wieck and also wrote the piano suite Carnaval</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fictional alter egos Florestan (fiery) and Eusebius (lyrical); appear in Carnaval, Davidsbündlertänze, and his writing</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer cultivated the alter egos of Florestan and Eusebius, who make appearances in a set of piano pieces depicting masked revelers before Lent | This man created the characters Eusebius and Florestan</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-founded the Neue Zeitschrift für Musik; wrote criticism under Florestan and Eusebius pseudonyms; championed Brahms in &#x27;New Paths&#x27; (1853)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He promoted a young Johannes Brahms in his essay &#x27;New Paths&#x27; for his New Journal of Music | This man often blasted other critics for &#x27;philistinism&#x27; in his publication, the New Journal for Music</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Schumann&#x27;s famous review of Chopin&#x27;s variations on &#x27;Là ci darem la mano&#x27; includes Eusebius exclaiming &#x27;Hats off, gentlemen, a genius!&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a review written by one of these composers about the other composer&#x27;s variations on &#x27;La ci darem la mano&#x27;, the character Eusebius exclaims &#x27;Hats off gentlemen, a genius!&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Attempted suicide by jumping into the Rhine; died in the asylum at Endenich (1856); possibly from syphilitic psychosis</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer died in Endenich shortly after attempting suicide by jumping in the Rhine, which may have been brought about by syphilitic psychosis | This composer&#x27;s work on his Ghost Variations was interrupted by a suicide attempt in the Rhine</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ghost Variations were his last composition; he thought the melody was dictated by ghosts but it came from his own D minor Violin Concerto; his great-niece Jelly d&#x27;Aranyi supposedly heard his ghost ask her to recover the Violin Concerto</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer claimed that a melody was dictated to him by a ghost, resulting in his final completed composition, Ghost Variations | About 80 years after his death, this composer&#x27;s great-niece Jelly d&#x27;Aranyi supposedly heard the ghost of this man request that she recover and perform a never-performed concerto by him</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ruined his right hand with a finger-strengthening mechanism, ending his performing career</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man&#x27;s ambitions as a pianist were dashed when the use of a mechanism meant to separate his fingers left him with a permanent injury</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cryptogram technique: used letter-note ciphers in many works (ASCH for Carnaval, ABEGG for Op. 1, &#x27;Chiara&#x27; in Piano Concerto, Gade cryptogram in Album for the Young)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Several permutations of an ASCH cryptogram run throughout that set of 21 piano miniatures by this composer | This composer wrote Variations on the name Abegg, using the notes A, B, E, G, G to open the piece</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">1840 was his &#x27;Year of Song&#x27; (Liederjahr): Dichterliebe, Liederkreis Op. 24 (Heine), Liederkreis Op. 39 (Eichendorff), A Woman&#x27;s Love and Life</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man set poems by Heine and Eichendorff in two works titled Liederkreis during his &#x27;year of song&#x27; | This man wrote over a hundred love songs to Clara Wieck</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="carnaval-op-9" open>
+            <summary class="work-title">Carnaval (Op. 9)</summary>
+            <p class="work-desc">Schumann's 1835 set of 21 piano miniatures (Op. 9) depicting a masked pre-Lent carnival. Uses permutations of the ASCH cryptogram (A-Eb-C-B or A-C-B, the letters of a town in Bohemia) throughout. Depicts commedia dell'arte characters (Pierrot, Arlequin, Pantaloon, Columbine) alongside real persons (Chiarina = Clara Wieck, Estrella = Ernestine von Fricken, Paganini, Chopin). Includes a section called 'Sphinxes' (three bars with no key signature or tempo — never meant to be played) and ends with a 'March of the Davidsbündler against the Philistines.' Florestan and Eusebius are both represented. <a href="https://en.wikipedia.org/wiki/Carnaval_(Schumann)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set of 21 piano miniatures depicting a masked pre-Lent carnival; uses permutations of the ASCH cryptogram throughout</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Several permutations of an ASCH cryptogram run throughout that set of 21 piano miniatures by this composer | This set of pieces for solo piano. Individual sections are titled for commedia dell&#x27;arte characters and contemporaries of the composer such as Chopin and Paganini</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicts commedia dell&#x27;arte characters alongside real persons: &#x27;Chiarina&#x27; (Clara Wieck), &#x27;Estrella&#x27; (Ernestine von Fricken), Paganini, Chopin</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">depictions of Pierrot and Arlequino and quoted his Opus 2 Papillons in the &#x27;Florestan&#x27; section | Chiarina in a collection of piano miniatures</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Sphinxes&#x27; section — three bars with no key signature or tempo marking, never meant to be played; ends with &#x27;March of the Davidsbündler against the Philistines&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">It includes a three-bar long section with no key signature or tempo marking, which was never meant to be played; that section is called &#x27;Sphinxes&#x27; | ends with a movement that is labeled as the &#x27;march of&#x27; a fictional organization but is in 3/4 time</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Florestan and Eusebius are both movements in the suite</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">contrasted the &#x27;Florestan&#x27; and &#x27;Eusebius&#x27; sides of his personality in a piece with movements such as &#x27;Chiarina&#x27; and &#x27;Paganini&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="dichterliebe-op-48" open>
+            <summary class="work-title">Dichterliebe (Op. 48)</summary>
+            <p class="work-desc">Schumann's 1840 song cycle of 16 songs setting poems from <a href="heinrich_heine_stock.html" class="crossref-inline">Heinrich Heine</a>'s <em>Lyrisches Intermezzo</em>. Composed during his 'Year of Song.' The cycle opens with 'Im wunderschönen Monat Mai' (ending with an unresolved dominant 7th chord in F-sharp minor). Includes 'Ich grolle nicht' ('I bear no grudge'). The last song ('Die alten, bösen Lieder') has the poet imagining putting his songs and dreams in a huge coffin to be cast into the sea. <a href="https://en.wikipedia.org/wiki/Dichterliebe" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">16 songs setting Heine poems; composed in 1840 (Year of Song); opens with &#x27;Im wunderschönen Monat Mai&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This 1840 song cycle that sets sixteen poems by Heinrich Heine | This composer also set Heine poems in his most famous song cycle, Dichterliebe, composed during his &#x27;year of song&#x27; in 1840</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Im wunderschönen Monat Mai&#x27; ends with an unresolved dominant 7th chord (in F-sharp minor/A major) — suggesting the story continues</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The unresolved chord at the end of this composer&#x27;s song &#x27;Im wunderschonen Monat Mai&#x27; suggests that there is more to come in the story | An unresolved C-sharp dominant 7 chord, which ends the first song of one of this composer&#x27;s cycles, has an ambiguous A-major or F-sharp-minor tonality</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Ich grolle nicht&#x27; (&#x27;I bear no grudge&#x27;) — singer states it while accompanied by nonstop C major chords; optional high A at &#x27;die dir am Herzen frisst&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In another song by this composer, the singer painedly states &#x27;I bear no grudge&#x27; while accompanied by nonstop C major chords | The singer can reach for an optional high A during the words &#x27;die dir am Herzen frisst&#x27; at the climax of this cycle&#x27;s seventh song, &#x27;Ich grolle nicht&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Last song has poet imagining putting his songs, dreams, and love in a huge coffin cast into the sea</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In its last song, the narrator imagines putting his songs and his dreams in a coffin to be tossed into the sea | This composer&#x27;s choral masterwork is a collection that ends with the poet declaring that he will put his suffering, love, dreams, and bad poems in a huge coffin and cast it out to sea</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="kinderszenen-scenes-from-childhood-op-15" open>
+            <summary class="work-title">Kinderszenen (Scenes from Childhood, Op. 15)</summary>
+            <p class="work-desc">Schumann's 1838 set of 13 short piano pieces depicting a child's world. Most famous movement is 'Träumerei' ('Dreaming/Reverie'), depicting a child's dream. Also contains 'Of Foreign Lands and Peoples,' 'Blind Man's Bluff,' and 'The Happy Farmer' (actually in Album for the Young, Op. 68). The suite is often associated with 'The Happy Farmer,' though that piece is technically from the Album for the Young. <a href="https://en.wikipedia.org/wiki/Kinderszenen" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Träumerei&#x27; (&#x27;Dreaming&#x27;) — most famous movement, depicting a child&#x27;s dream</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer of Carnaval depicted a young child dreaming in the &#x27;Traumerei&#x27; movement of his Kinderszenen | The dream of a young child is the subject of the &#x27;Traumerei&#x27; movement of his Kinderszenen</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also contains &#x27;Of Foreign Lands and Peoples,&#x27; &#x27;Blind Man&#x27;s Bluff&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another of his piano works includes a depiction of people playing Blind Man&#x27;s Bluff, and begins with the movement &#x27;Of Foreign Lands and Peoples&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="fantasie-in-c-op-17" open>
+            <summary class="work-title">Fantasie in C (Op. 17)</summary>
+            <p class="work-desc">Schumann's 1838 three-movement piano fantasy. Originally titled 'Ruins'; the first movement opens with a C major theme and contains a mysterious 'Im Legenden-ton' middle section, followed by a coda quoting Beethoven's song cycle An die ferne Geliebte. Dedicated to Liszt. <a href="https://en.wikipedia.org/wiki/Fantasie_in_C_major_(Schumann)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First movement contains a &#x27;Im Legenden-ton&#x27; section and ends with a coda quoting Beethoven&#x27;s An die ferne Geliebte; originally titled &#x27;Ruins&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A coda that quotes An die ferne geliebte follows a mysterious Im Legenden-ton section in a musical love letter that this composer once titled Ruins, which opens his Fantasie in C | This composer included a minor-key episode marked &#x27;Im Legendenton&#x27;, or &#x27;in the style of a legend&#x27;, in the first movement of a three-movement piano fantasy in C major</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="piano-concerto-in-a-minor-op-54" open>
+            <summary class="work-title">Piano Concerto in A minor (Op. 54)</summary>
+            <p class="work-desc">Schumann's only piano concerto, premiered by Clara Schumann in 1845. Began as a Concert Phantasie and was expanded into a full concerto. In A minor (same key as Clara's concerto and Grieg's concerto). Begins with a tutti chord, three bars of solo piano, two more tutti chords, and a woodwind chorale led by the oboe. First movement contains an andante espressivo section in A-flat major and 6/4 time. The main theme of the first movement contains a cipher for 'Chiara' (the Italian spelling of Clara). Often paired with Grieg's Piano Concerto. <a href="https://en.wikipedia.org/wiki/Piano_Concerto_(Schumann)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In A minor; premiered by Clara Wieck; often paired with Grieg&#x27;s A minor Piano Concerto</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s piano concerto is often paired on recordings with a later piano concerto in the same key by Edvard Grieg | This composer&#x27;s piano concerto was premiered by his wife, Clara Wieck</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Begins with a tutti chord, three bars of solo piano, two more tutti chords, and a woodwind chorale from the oboe; first movement interrupted by an andante espressivo in A-flat major, 6/4</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That piano concerto by this composer begins with a tutti chord, three bars of solo piano, two more tutti chords, and then a woodwind chorale led by the oboe | The first movement of this composer&#x27;s piano concerto is interrupted by a nocturne-like section in A-flat major and 6/4 time, marked &#x27;andante espressivo&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Main theme contains a cipher for &#x27;Chiara&#x27; (Italian for Clara)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One composer turned a failed Concert Phantasie into a concerto in this key in which a woodwind chorale introduces a theme based on the Italian spelling of its soloist&#x27;s name</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="piano-quintet-in-e-flat-major-op-44" open>
+            <summary class="work-title">Piano Quintet in E-flat major (Op. 44)</summary>
+            <p class="work-desc">Schumann's 1842 Piano Quintet in E-flat major, his most innovative chamber work. Premiered by Clara at the Leipzig Gewandhaus. First movement opens with the piano leaping up a minor seventh from E-flat to D-flat. Second movement is a funeral march in C minor with rapid descending scales. Last movement contains a double fugue integrating the opening theme of the first movement. Its use of two violins instead of a cello was innovative; Brahms's Piano Quintet was influenced by it. <a href="https://en.wikipedia.org/wiki/Piano_Quintet_(Schumann)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First movement opens with the piano leaping a minor seventh from E-flat to D-flat; last movement has a double fugue integrating the first movement&#x27;s opening theme</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The allegro brillante first movement of this piece begins with the melody in the first violin leaping up a minor seventh, from E-flat to D-flat | This 1842 piece of chamber music whose last movement includes a double fugue integrating the opening theme of the first movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Second movement begins as a funeral march in C minor, then transitions into rapid descending scales doubled by the violin</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This piece&#x27;s second movement begins as a funeral march in C minor before transitioning into a series of rapid descending scales which are doubled by the violin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Premiered at the Leipzig Gewandhaus by Clara; Mendelssohn sight-read the first private performance; the quintet uses two violins instead of a cello (innovative); Brahms&#x27;s Piano Quintet was influenced by it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this touch was likely inspired by the String Quartet No. 1 in the same key by Felix Mendelssohn, who sight-read this piece&#x27;s first private performance | He included a funeral march second movement in his Piano Quintet in E-flat major, whose instrumentation inspired the piano quintet of his protege Johannes Brahms</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-3-in-e-flat-major-rhenish" open>
+            <summary class="work-title">Symphony No. 3 in E-flat major (&quot;Rhenish&quot;)</summary>
+            <p class="work-desc">Schumann's third symphony (1850), though numbered before the earlier D minor <a href="charles_ives_stock.html#symphony-no-4" class="crossref-inline">Symphony No. 4</a>. Inspired by a trip with Clara to the Rhineland and witnessing the coronation of a cardinal at Cologne Cathedral. Five movements: the fourth movement features a solemn brass chorale in E-flat minor for trombones and horns (their first appearance in the symphony). Second movement is a Ländler (though does not actually quote folk songs). <a href="https://en.wikipedia.org/wiki/Symphony_No._3_(Schumann)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by the Rhine/Rhineland; five movements; fourth movement has a solemn trombone chorale in E-flat minor (trombones&#x27; first entrance) inspired by Cologne Cathedral</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">trombones enter for the first time at the start of the fourth movement, where they play a slow chorale in E-flat minor, the parallel key | A symphony titled for this location has a solemn trombone choir in its fourth movement, which was inspired by a ceremony Schumann witnessed at Cologne Cathedral</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Five movements — unusual; second movement is a Ländler (no actual folk song quotes); numbered before the earlier D minor Symphony No. 4</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Although it was composed in 1850, this symphony is numbered before an earlier D-minor symphony | Although it does not actually quote any folk songs, the second of this symphony&#x27;s five movements is titled Landler for a German folk dance</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Other major Schumann works: Symphony No. 1 ("Spring", B-flat major); <a href="charles_ives_stock.html#symphony-no-2" class="crossref-inline">Symphony No. 2</a> (C major — only homotonal 19th-century symphony, Mendelssohn conducted premiere, unusual scherzo with two trios); <a href="charles_ives_stock.html#symphony-no-4" class="crossref-inline">Symphony No. 4</a> (D minor, originally written before No. 2 and 3); Kreisleriana (8-movement piano suite after E.T.A. Hoffmann's character); Davidsbündlertänze (18 piano pieces); Album for the Young (Op. 68, includes 'The Happy Farmer'); Frauenliebe und -leben (A Woman's Love and Life, Chamisso poems); the two Liederkreis cycles (Op. 24 Heine, Op. 39 Eichendorff); Piano Quartet in E-flat; Manfred Overture.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Symphony No. 1 (&#x27;Spring&#x27;) in B-flat; modeled on Beethoven&#x27;s 4th</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">his first symphony, which is nicknamed &#x27;Spring&#x27; | This German composer modeled his Spring Symphony on Beethoven&#x27;s Fourth</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Symphony No. 2 in C major — the only homotonal 19th-century symphony (all movements have C as tonic); Mendelssohn conducted the premiere; scherzo has two trios (unusual)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This symphony in C major, composed in 1846, is the only homotonal 19th-century symphony in the standard repertoire. Felix Mendelssohn conducted the premiere</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kreisleriana — 8-movement piano suite inspired by E.T.A. Hoffmann&#x27;s Kapellmeister Johannes Kreisler; Schumann and Chopin dedicated Kreisleriana and second ballade to each other</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">These two composers respectively dedicated their Kreisleriana and second ballade to each other</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Liederkreis Op. 24 (Heine) and Op. 39 (Eichendorff) — two different cycles both called Liederkreis, composed during Year of Song 1840</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Poems by Joseph von Eichendorff and Heinrich Heine were set in this composer&#x27;s two Liederkreis cycles | This man set poems by Heine and Eichendorff in two works titled Liederkreis during his &#x27;year of song&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A Woman&#x27;s Love and Life (Frauenliebe und -leben) — sets Adalbert von Chamisso poems; also the subject of Dominick Argento&#x27;s From the Diary of Virginia Woolf</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Dominick Argento modeled From the Diary of Virginia Woolf on one of this composer&#x27;s song cycles, which sets eight poems by Adalbert von Chamisso</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Album for the Young (Op. 68) — includes &#x27;The Happy Farmer,&#x27; &#x27;Knecht Ruprecht,&#x27; and a Gade cryptogram in &#x27;Nordisches Lied&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Easy pieces such as &#x27;Knecht Ruprecht&#x27; and &#x27;The Merry Farmer&#x27; are found in his Album for the Young | In Nordisches Lied from his Album for the Young, Schumann employed another four note cryptogram which spelled the surname of this Danish composer [Gade]</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Toccata in C, originally called &#x27;Fantastic Study in Double Notes&#x27; — Schumann called it &#x27;the hardest piece ever written&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer originally called his Toccata in C a &#x27;Fantastic Study in Double Notes&#x27; and claimed it was the &#x27;hardest piece ever written&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Manfred Overture — the first piece on the program of Bernstein&#x27;s famous 1943 Carnegie Hall debut</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first piece on the program was this German composer&#x27;s Manfred overture</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Myrtles (Op. 25) — 26 songs, one for each letter of the alphabet; dedicated to Clara Wieck for their wedding</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer wrote twenty-six songs, one for each letter of the alphabet, in his collection Myrtles</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Paradise and the Peri — oratorio partly inspired by Thomas Moore&#x27;s Lalla-Rookh (a Persian mythical creature called the Peri)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An orientalist Thomas Moore book inspired an oratorio by this composer partially titled for a Persian mythical creature called the Peri</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Robert Schumann (1810–1856) was a German Romantic composer, pianist, and music critic. He married the pianist Clara Wieck in 1840, the same year he composed over 130 songs during his famous &#x27;Year of Song&#x27; (Liederjahr). His performing career was ended when a finger-strengthening mechanism permanently injured his right hand. He co-founded the Neue Zeitschrift für Musik, writing criticism under the fictional personas of Florestan (fiery) and Eusebius (lyrical), with Master Raro representing his father-in-law Friedrich Wieck. He famously championed Chopin (Eusebius exclaims &#x27;Hats off, gentlemen, a genius!&#x27; in a review of Chopin&#x27;s variations on &#x27;Là ci darem la mano&#x27;) and later Brahms (in the 1853 essay &#x27;New Paths&#x27;). He suffered from mental illness, attempted suicide by jumping into the Rhine, and died in the asylum at Endenich in 1856.</p><p>His piano music includes: Carnaval (Op. 9, 1835) — 21 miniatures on an ASCH cryptogram, depicting commedia dell&#x27;arte characters alongside &#x27;Chiarina&#x27; (Clara), &#x27;Estrella&#x27; (Ernestine von Fricken), Paganini, and Chopin; a &#x27;Sphinxes&#x27; section (three bars with no markings, never played); ending with a &#x27;March of the Davidsbündler&#x27;; Kinderszenen (Op. 15, 1838) — 13 children&#x27;s pieces, most famous for &#x27;Träumerei&#x27;; Fantasie in C (Op. 17, 1838) — three movements, &#x27;Im Legenden-ton&#x27; section, coda quoting Beethoven&#x27;s An die ferne Geliebte, originally titled &#x27;Ruins&#x27;; Kreisleriana (Op. 16) — 8 pieces after E.T.A. Hoffmann&#x27;s Kreisler character; the Toccata in C (called &#x27;the hardest piece ever written&#x27;); and Ghost Variations (his last composition, melody unknowingly transposed from his own D minor <a href="alban_berg_stock.html#violin-concerto" class="crossref-inline">Violin Concerto</a>).</p><p>His Dichterliebe (Op. 48, 1840) sets 16 Heine poems: the opening &#x27;Im wunderschönen Monat Mai&#x27; ends on an unresolved dominant 7th; &#x27;Ich grolle nicht&#x27; has the singer expressing &#x27;I bear no grudge&#x27; over nonstop C major chords; the final song imagines a giant coffin thrown into the sea. His two Liederkreis cycles set Heine (Op. 24) and Eichendorff (Op. 39) poems. A Woman&#x27;s Love and Life (Op. 42) sets Chamisso poems.</p><p>His Piano Concerto in A minor (Op. 54) was premiered by Clara; it began as a Concert Phantasie, begins with a distinctive tutti-chord/solo piano/tutti-chord/woodwind-chorale opening, and contains a cipher for &#x27;Chiara&#x27; in the main theme. It is routinely paired with Grieg&#x27;s A minor concerto. His Piano Quintet in E-flat (Op. 44, 1842) — premiered by Clara at the Leipzig Gewandhaus — opens with a minor-seventh leap (E-flat to D-flat), has a funeral march second movement, and a finale with a double fugue; it influenced Brahms&#x27;s Piano Quintet.</p><p>Among his four symphonies: the &#x27;Spring&#x27; Symphony No. 1 (B-flat, modeled on Beethoven&#x27;s 4th); <a href="charles_ives_stock.html#symphony-no-2" class="crossref-inline">Symphony No. 2</a> (C major — the only homotonal 19th-century symphony, Mendelssohn conducted the premiere, unusual scherzo with two trios); the &#x27;Rhenish&#x27; Symphony No. 3 (E-flat, five movements, inspired by Cologne Cathedral, trombone chorale in E-flat minor in the fourth movement); and <a href="charles_ives_stock.html#symphony-no-4" class="crossref-inline">Symphony No. 4</a> (D minor, actually written earlier but numbered later). He also wrote the Album for the Young (Op. 68, &#x27;The Happy Farmer,&#x27; &#x27;Knecht Ruprecht&#x27;) and the Manfred Overture (first piece at Bernstein&#x27;s 1943 Carnegie Hall debut).</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Robert_Schumann" target="_blank">Wikipedia: Robert Schumann</a></li><li><a href="https://en.wikipedia.org/wiki/Dichterliebe" target="_blank">Wikipedia: Dichterliebe</a></li><li><a href="https://en.wikipedia.org/wiki/Carnaval_(Schumann)" target="_blank">Wikipedia: Carnaval (Schumann)</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Carnaval (Auditory Fine Arts) — rich enough for its own deep-dive as an independent answerline</li><li>Dichterliebe (Auditory Fine Arts) — same; frequently clued independently</li><li>Clara Schumann (Auditory Fine Arts) — Robert&#x27;s wife and pianist; appears in many Schumann clues and has her own significant compositional output</li><li>Rhenish Symphony (Auditory Fine Arts) — may appear as an independent answerline at higher difficulties</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'robert_schumann' });</script>
+
+</body>
+</html>

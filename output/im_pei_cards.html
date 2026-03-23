@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cards: I.M. Pei</title>
+
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -362,7 +363,7 @@ h1 {
 </div>
 
 <details class="img-palette" open>
-    <summary>Image Palette <span id="palette-count"></span></summary>
+    <summary>Media Palette <span id="palette-count"></span></summary>
     <div class="palette-grid" id="palette-grid"></div>
     <div class="palette-actions">
         <input type="text" id="palette-url" placeholder="Add image URL...">
@@ -378,6 +379,7 @@ h1 {
         <button onclick="applyPaletteToSelected()">Apply to selected cards</button>
         <button onclick="clearPaletteSelection()" style="background:#1a1f25;">Cancel</button>
     </div>
+    
 </details>
 
 <table class="card-table">
@@ -442,6 +444,7 @@ h1 {
 <script>
 const TOPIC = "I.M. Pei";
 let cards = [{"type": "Building", "indicator": "Glass pyramid entrance to the Louvre; between Sully, Denon, and Richelieu wings", "front": "Louvre entrance: This architect's glass pyramid in the Cour Napoleon serves as the main entrance to the Louvre, positioned between the Sully, Denon, and Richelieu wings.", "back": "Louvre Pyramid (I.M. Pei)", "work": "Louvre Pyramid", "frequency": "very common", "tags": []}, {"type": "Building", "indicator": "Urban legend of 666 panes of glass — false", "front": "666 panes: An urban legend falsely claims this Paris museum entrance pyramid has exactly 666 panes of glass.", "back": "Louvre Pyramid (I.M. Pei)", "work": "Louvre Pyramid", "frequency": "common", "tags": []}, {"type": "Building", "indicator": "Glass tent of two triangles leaning against a white tower on Lake Erie; Cleveland", "front": "Lake Erie tent: This architect designed a building on the shores of Lake Erie in which a glass tent made of two triangles leans against a white rectangular tower.", "back": "Rock and Roll Hall of Fame (I.M. Pei)", "work": "Rock and Roll Hall of Fame", "frequency": "very common", "tags": []}, {"type": "Building", "indicator": "Cylindrical segment supported by a single column rising from the water of Lake Erie", "front": "Column from water: This Cleveland museum's lakeshore side features a roughly cylindrical segment supported by a single column that rises from the water of Lake Erie.", "back": "Rock and Roll Hall of Fame (I.M. Pei)", "work": "Rock and Roll Hall of Fame", "frequency": "common", "tags": []}, {"type": "Building", "indicator": "East Building of the National Gallery of Art; Washington DC; angular modernist", "front": "NGA East: This architect designed the angular modernist East Building of the National Gallery of Art in Washington DC.", "back": "East Building, National Gallery of Art (I.M. Pei)", "work": "East Building, National Gallery of Art", "frequency": "very common", "tags": []}, {"type": "Building", "indicator": "Museum of Islamic Art in Doha, Qatar — built on an offshore island", "front": "Doha museum: This architect designed the Museum of Islamic Art in Doha, Qatar, situated on an offshore island in the harbor.", "back": "Museum of Islamic Art, Doha (I.M. Pei)", "work": "Museum of Islamic Art", "frequency": "common", "tags": []}, {"type": "Architect", "indicator": "Bank of China Tower in Hong Kong", "front": "Bank of China: This Chinese-American architect designed the Bank of China Tower in Hong Kong.", "back": "I.M. Pei", "work": "Other Works", "frequency": "common", "tags": []}, {"type": "Architect", "indicator": "JFK Presidential Library and Museum in Boston", "front": "JFK Library: This architect put his Harvard degree to use designing the John F. Kennedy Presidential Library and Museum in Boston.", "back": "I.M. Pei", "work": "Other Works", "frequency": "common", "tags": []}, {"type": "Architect", "indicator": "John Hancock Tower in Boston — designed by firm member Henry N. Cobb; notoriously lost windowpanes in strong winds", "front": "Plywood Palace: Firm member Henry N. Cobb designed the John Hancock Tower in Boston for this architect's firm; the building notoriously lost windowpanes in strong winds, earning the nickname 'Plywood Palace.'", "back": "I.M. Pei", "work": "Other Works", "frequency": "common", "tags": []}, {"type": "Building", "indicator": "NCAR Mesa Laboratory in Boulder, Colorado — Pueblo-inspired; criticized as 'just a bunch of towers'", "front": "Pueblo laboratory: Walter Roberts criticized this architect's Pueblo-inspired NCAR Mesa Laboratory in Boulder, Colorado as 'just a bunch of towers.'", "back": "NCAR Mesa Laboratory (I.M. Pei)", "work": "Other Works", "frequency": "common", "tags": []}, {"type": "Building", "indicator": "Fragrant Hills Hotel outside Beijing — low-slung, white stucco, grey tiles", "front": "Fragrant Hills: Rather than build a high-rise in Beijing, this architect designed a low-slung Fragrant Hills Hotel with white stucco walls and grey tiles.", "back": "Fragrant Hills Hotel (I.M. Pei)", "work": "Other Works", "frequency": "common", "tags": []}, {"type": "Architect", "indicator": "Chinese-American; died at age 102; trained at Harvard Graduate School of Design", "front": "Harvard architect: This Chinese-American architect trained at the Harvard University Graduate School of Design and died at age 102.", "back": "I.M. Pei", "work": "Other Works", "frequency": "common", "tags": []}];
+const SCORE_CLIPS = [];
 let editIndex = -1; // -1 = adding new
 
 // Populate work filter
@@ -776,6 +779,63 @@ let selectedPaletteIdx = -1;
     });
 })();
 
+// --- Score Clips Palette ---
+let _clipSynths = {};
+
+function initClipsPalette() {
+    const clips = SCORE_CLIPS.filter(c => c.abc && (c.mp3 || c.abc));
+    if (!clips.length) return;
+    const section = document.getElementById('clips-section');
+    const grid = document.getElementById('clips-grid');
+    section.style.display = '';
+    grid.innerHTML = clips.map((clip, i) => `
+        <div style="background:#1a1f25;border:1px solid #3a3f47;border-radius:4px;padding:0.4rem 0.6rem;min-width:180px;max-width:280px;">
+            <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${escHtml(clip.work || '')}${clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}</div>
+            <div id="clip-notation-${i}" style="max-width:100%;overflow:hidden;"></div>
+            <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
+                ${clip.mp3
+                    ? `<audio controls preload="none" src="${escHtml(clip.mp3)}${clip.mp3_v ? '?v=' + clip.mp3_v : ''}" style="height:24px;width:120px;"></audio>`
+                    : `<button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="playClip(${i})">▶ Play</button>
+                       <button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="stopClip(${i})">■</button>`
+                }
+            </div>
+        </div>
+    `).join('');
+
+    // Render ABC notation for each clip
+    clips.forEach((clip, i) => {
+        if (clip.abc && typeof ABCJS !== 'undefined') {
+            try {
+                ABCJS.renderAbc(`clip-notation-${i}`, clip.abc, {
+                    responsive: 'resize',
+                    staffwidth: 240,
+                    scale: 0.7,
+                    paddingright: 0,
+                    paddingleft: 0,
+                });
+            } catch(e) {}
+        }
+    });
+}
+
+async function playClip(i) {
+    const clip = SCORE_CLIPS.filter(c => c.abc)[i];
+    if (!clip || typeof ABCJS === 'undefined') return;
+    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} }
+    try {
+        const visualObjs = ABCJS.renderAbc('offscreen-render', clip.abc, {});
+        const synth = new ABCJS.synth.CreateSynth();
+        await synth.init({ visualObj: visualObjs[0] });
+        await synth.prime();
+        synth.start();
+        _clipSynths[i] = synth;
+    } catch(e) { console.warn('playClip error:', e); }
+}
+
+function stopClip(i) {
+    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} delete _clipSynths[i]; }
+}
+
 function renderPalette() {
     const grid = document.getElementById('palette-grid');
     const countEl = document.getElementById('palette-count');
@@ -863,7 +923,9 @@ document.querySelector('.img-palette')?.addEventListener('paste', e => {
 
 renderPalette();
 renderTable();
+
 </script>
+
 <script src="../lib/js/anki_export.js"></script>
 <script>
 async function exportApkgBtn() {

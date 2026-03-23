@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<title>Stock: Béla Bartók</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Béla Bartók</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="bela_bartok_questions.html">View source questions</a><a href="bela_bartok_cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Hungarian composer and ethnomusicologist (1881–1945). Pioneer in field recording of folk music alongside Zoltán Kodály. Known for integrating folk idioms with modernist techniques, including his &#x27;night music&#x27; style and arch form. Major works include the Concerto for Orchestra, six <a href="philip_glass_stock.html#string-quartets" class="crossref-inline">String Quartets</a>, Duke Bluebeard&#x27;s Castle, The Miraculous Mandarin, Mikrokosmos, and Music for Strings, Percussion and Celesta. Died of leukemia in New York.</div>
+
+        <details class="work" id="concerto-for-orchestra-the-work-as-a-whole" open>
+            <summary class="work-title">Concerto for Orchestra – The Work as a Whole</summary>
+            <p class="work-desc">Bartók's most frequently performed work (Sz. 116, BB 123, 1943). Commissioned by Serge Koussevitzky and premiered by the Boston Symphony Orchestra. Five movements: 1. Introduzione; 2. 'Game of Pairs' (Giuoco delle coppie); 3. 'Elegia'; 4. 'Intermezzo interrotto'; 5. Finale. 'Game of Pairs' opens with a solo side drum rhythm, followed by pairs of instruments playing the same melody in parallel intervals (bassoons in sixths, oboes in thirds, etc.). 'Intermezzo interrotto' (fourth movement) quotes Franz Lehár's The Merry Widow and parodies Shostakovich's 'invasion theme' from the Leningrad Symphony; it also includes a B–F glissando for bass trombone that is unplayable on modern B-flat bass trombones (requiring a custom instrument or an F bass trombone). Title is 'paradoxical' — each instrument is treated as a soloist. Based partly on Croatian part-singing. <a href="https://en.wikipedia.org/wiki/Concerto_for_Orchestra_(Bart%C3%B3k)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Giveaway identifier for Bartók in most tossups</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">For 10 points, name this Hungarian composer of a Concerto for Orchestra | this composer of Concerto for Orchestra and Music for Strings, Percussion, and Celesta</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Game of Pairs&#x27; second movement: opens with solo side drum, followed by pairs of instruments playing in parallel intervals (bassoons in sixths)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The &#x27;Game of Pairs&#x27; movement begins with a rhythmic figure for solo side drum, followed by a melody in sixths for two bassoons above pizzicato accompaniment | a piece whose second movement assigns different intervals to pairs of instruments</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Intermezzo interrotto&#x27; fourth movement quotes Shostakovich&#x27;s Leningrad Symphony invasion theme and Lehár&#x27;s The Merry Widow (parodying Shostakovich&#x27;s earlier quote)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer quoted Shostakovich&#x27;s Leningrad Symphony in the intermezzo interrotto fourth movement | whose fourth movement also includes a quote from Franz Lehar&#x27;s The Merry Widow as a parody of Shostakovich&#x27;s earlier quote of the work in his Leningrad Symphony</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commissioned by Sergei Koussevitzky; premiered by Boston Symphony Orchestra</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bartok&#x27;s Concerto for Orchestra was premiered by this city&#x27;s Symphony Orchestra, whose director Sergei Koussevitzky had commissioned the piece</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Intermezzo interrotto&#x27; bass trombone B–F glissando is unplayable on modern B-flat bass trombones</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Many performances of this piece use a custom bass trombone with a second slide to play a B-F glissando in its fourth movement | This piece&#x27;s &#x27;Intermezzo interrotto&#x27; fourth movement features a trombone glissando that is not possible on modern instruments since it was originally written for a bass trombone pitched in F</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title is &#x27;paradoxical&#x27; — the work showcases each instrument as a soloist</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bassoons open the &#x27;Game of Pairs&#x27; movement of this Bartok piece, whose paradoxical title originates from his desire to showcase each instrument of the title ensemble</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="string-quartets-overview" open>
+            <summary class="work-title">String Quartets – Overview <a href="philip_glass_stock.html#string-quartets" class="work-link-btn" title="Go to Philip Glass">&rarr;</a></summary>
+            <p class="work-desc">Bartók wrote six <a href="philip_glass_stock.html#string-quartets" class="crossref-inline">String Quartets</a> spanning his career. They are among the most important contributions to the genre in the 20th century. Key features: arch form (used in quartets 2, 4, 5); 'Bartók pizzicato' (snap pizzicato) — strings snapped against the fingerboard, especially prominent in String Quartet No. 4's finale; aksak/Bulgarian rhythms in the fifth quartet's scherzo (4+2+3)/8 time 'alla bulgarese'; each movement of the sixth quartet marked Mesto (melancholy); String Quartet No. 1's first movement is a 'funeral dirge' Lento fugue referencing Bartók's unrequited love for violinist Stefi Geyer; String Quartet No. 3 structured as Prima Parte / Seconda Parte / recapitulation / coda; fourth and fifth quartets premiered by the Kolisch Quartet. The third and fourth quartets heavily inspired Ligeti's first string quartet Metamorphoses nocturnes (sometimes called Bartók's 'seventh quartet'). <a href="https://en.wikipedia.org/wiki/String_Quartets_(Bart%C3%B3k)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Snap pizzicato (&#x27;Bartók pizzicato&#x27;): strings snapped against fingerboard; especially in String Quartet No. 4 finale</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A movement in the fourth of these works is performed entirely in its composer&#x27;s namesake &#x27;snap pizzicato&#x27; | Bela Bartok pioneered and names a version of this technique that is so percussive, it produces a &#x27;snap&#x27; sound</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sixth (final) quartet: all four movements begin with a slow Mesto introduction</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">All four movements of the last of these pieces have a slow Mesto introduction | This composer used the expression marking mesto in each movement of his sixth and final string quartet</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fifth quartet scherzo: &#x27;alla bulgarese,&#x27; (4+2+3)/8 time, influenced by Bulgarian aksak rhythms</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of these works uses the time signature &#x27;four plus two plus three&#x27; in its scherzo and &#x27;three plus two plus two plus three&#x27; in its trio, which its composer borrowed from Bulgarian aksak | The &#x27;alla bulgarese&#x27; scherzo of the fifth of is in (4+2+3)/8 time</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arch form used in quartets 2, 4, 5 (ABCBA structure)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The fourth of these works uses the &#x27;arch form&#x27; favored by its composer | Aksak time signatures like 4+3+2 over 8 feature in a string quartet by this composer that characteristically uses an arch form</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">String Quartet No. 1: first movement is a &#x27;funeral dirge&#x27; Lento fugue referencing unrequited love for violinist Stefi Geyer</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first of these works opens with a Lento fugue that its composer referred to as &#x27;funeral dirge&#x27; in a letter to Stefi Geyer | a chamber piece whose &#x27;funeral dirge&#x27; first movement references his unrequited love for the violinist Stefi Geyer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Third and fourth quartets inspired Ligeti&#x27;s Metamorphoses nocturnes (dubbed &#x27;Bartók&#x27;s seventh quartet&#x27;)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The third and fourth of these works heavily inspired a different composer&#x27;s piece Metamorphoses nocturnes to the extent that it was dubbed as the next of these works</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fourth and fifth quartets premiered by the Kolisch Quartet</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The last two of these works...were premiered by an ensemble led by Rudolf Kolisch</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">String Quartet No. 3: structured as Prima Parte / Seconda Parte / recapitulation / coda</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The third is divided into &#x27;Prima Parte,&#x27; &#x27;Seconda Parte,&#x27; recapitulation of &#x27;Prima Parte,&#x27; and a coda</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="duke-bluebeard-s-castle-the-work-as-a-whole" open>
+            <summary class="work-title">Duke Bluebeard&#x27;s Castle – The Work as a Whole</summary>
+            <p class="work-desc">Bartók's only opera (Kékszakállú herceg vára, 1911). Two characters only: Bluebeard and his new wife Judith. Behind the seven doors of the title location, Judith discovers a bloody torture chamber, a lake of tears, and ultimately Bluebeard's three previous wives. The prologue opens with a pentatonic 'Darkness' motif (F#–A–B–C#–E). The minor second interval is known as the 'blood motif.' The leitmotif for Bluebeard is a modal form of the theme Bartók used to represent Stefi Geyer in his first <a href="alban_berg_stock.html#violin-concerto" class="crossref-inline">Violin Concerto</a>. <a href="https://en.wikipedia.org/wiki/Duke_Bluebeard%27s_Castle" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bartók&#x27;s only opera; two roles: Bluebeard and Judith; seven doors reveal torture chamber, lake of tears, three previous wives</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In his only opera the soprano encounters a lake of tears, a bloody torture chamber, and the title character&#x27;s three other wives behind the seventh door of the title location | This Hungarian composer&#x27;s opera Duke Bluebeard&#x27;s Castle features a much larger cast of two roles: the title character and his new wife Judith</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Prologue opens with &#x27;Darkness&#x27; motif from pentatonic collection F#–A–B–C#–E; minor second is the &#x27;blood motif&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The prologue of an opera by this composer opens with a motif drawn from the pentatonic collection &#x27;F#-A-B-C#-E&#x27; that&#x27;s referred to as that opera&#x27;s &#x27;Darkness&#x27; motif | In an opera by this composer, the minor second interval is known as the &#x27;blood motif&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-miraculous-mandarin-the-work-as-a-whole" open>
+            <summary class="work-title">The Miraculous Mandarin – The Work as a Whole</summary>
+            <p class="work-desc">A one-act pantomime ballet (A csodálatos mandarin, 1918–1924). Thieves force a girl to lure passing men with 'lure dances' (lockspiels). Three men arrive; after the mandarin arrives, the thieves try to kill him (stabbing, hanging from a lamp hook) but he refuses to die until the girl accepts his love. The title character's love/desire is represented by trombone glissandi playing a descending minor third. The death scene features an offstage women's chorus singing a wordless minor third. <a href="https://en.wikipedia.org/wiki/The_Miraculous_Mandarin" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ballet: thieves force a girl to lure men; the mandarin refuses to die despite being stabbed and hanged from a lamp hook until she accepts his love</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In one ballet by this composer, tramps force a girl to seduce the wealthy title character, who refuses to die after being repeatedly stabbed and hanged from a lamp hook | Thieves force a girl to attract passing men by dancing &#x27;lockspiels&#x27; or &#x27;decoy dances.&#x27; The title character proves impossible for the thieves to kill until the girl accepts his love</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Trombone glissandi on a descending minor third represent the mandarin&#x27;s desire; offstage women&#x27;s chorus sings a wordless minor third in the death scene</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in one of this composer&#x27;s ballets is represented by trombone glissandi playing the interval of a descending minor third | In the death scene from this stage work, an offstage women&#x27;s chorus sings a wordless minor third</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="mikrokosmos-the-work-as-a-whole" open>
+            <summary class="work-title">Mikrokosmos – The Work as a Whole</summary>
+            <p class="work-desc">A pedagogical piano collection of 153 pieces arranged in order of increasing difficulty (Sz. 107, BB 105, 1926–1939), dedicated to Bartók's son Péter. Six volumes; Volume VI concludes with 'Six Dances in Bulgarian Rhythm.' The first book contains 'Six Unison Melodies' and 'Parallel Motion' pieces. Square noteheads indicate harmonics. Volume IV includes a piece with three staves: two interspersed with chromatic tone clusters and one slipping in and out of C-sharp Dorian mode. Inspired George Crumb's Makrokosmos. Also inspired Anna Thorvaldsdóttir's Metacosmos. <a href="https://en.wikipedia.org/wiki/Mikrokosmos_(Bart%C3%B3k)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">153 piano pieces arranged in order of increasing difficulty; dedicated to Bartók&#x27;s son Péter</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He wrote &#x27;Six Dances in Bulgarian Rhythm&#x27; to cap off 153 pieces of increasing difficulty called Mikrokosmos | a collection of piano pieces by this composer, which he dedicated to his son Peter</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Volume VI ends with &#x27;Six Dances in Bulgarian Rhythm&#x27;; inspired by Bulgarian asymmetric aksak rhythms</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Six dances written in rhythms from this country appear at the end of Volume VI of Mikrokosmos | He wrote &#x27;Six Dances in Bulgarian Rhythm&#x27; to cap off 153 pieces of increasing difficulty</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired George Crumb&#x27;s Makrokosmos</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Crumb&#x27;s Makrokosmos was inspired by the Mikrokosmos of this Hungarian composer | Bartok&#x27;s Mikrokosmos and the constellations of the zodiac inspired Makrokosmos, a collection of piano pieces by this American composer</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="piano-concertos-overview" open>
+            <summary class="work-title">Piano Concertos – Overview</summary>
+            <p class="work-desc">Bartók wrote three piano concertos. Piano Concerto No. 1 (1926, 'piano year'): begins with low B-naturals pounded out by the soloist, then by horns and trombones at the bottom of their range, with timpani playing alternating Bs. Piano Concerto No. 2 (1930–31): begins with soloist playing a quick scale up to a trill under a trumpet fanfare; slow movement features outer Adagio for piano, muted strings, and timpani interrupted by a dizzying Presto; built in arch form; described as 'finger-breaking' and 'the single most difficult piece' by András Schiff. Piano Concerto No. 3 (1945): includes a chorale-like 'Adagio religioso' central movement; last 17 measures finished by student Tibor Serly after Bartók died; uses polymodal chromaticism; first movement analyzed as a mixture of E-Mixolydian and E-Dorian modes. <a href="https://en.wikipedia.org/wiki/Piano_Concerto_No._1_(Bart%C3%B3k)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Piano Concerto No. 1: opens with low B-naturals from the soloist and timpani, followed by menacing brass fanfare</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s Piano Concerto No. 1 begins with timpani beats over the soloist&#x27;s low B-naturals, after which a menacing brass fanfare enters | His first piano concerto begins with low Bs pounded out by the timpani and then by the soloist, horns, and trombones, at the bottom of their ranges</span></span><div class="score-clip" data-abc="X:1\nT:Piano Concerto No. 1 opening\n%%MIDI program 0\nM:4/4\nL:1/4\nK:C\n|B,,4|B,,4||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><button class="play-abc-btn" onclick="playAbc(this)" style="margin-left:0.4rem;">▶</button><button class="stop-abc-btn" onclick="stopAbc(this)">■</button></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Piano Concerto No. 2: arch form; slow movement Adagio interrupted by Presto; notoriously difficult (&#x27;finger-breaking&#x27;)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s second piano concerto exemplifies his &#x27;arch form,&#x27; and its slow movement is in his &#x27;night music&#x27; style | This composer&#x27;s Second Piano Concerto&#x27;s slow movement includes an outer Adagio for piano, muted strings, and timpani, which is interrupted by a dizzying Presto in which the winds join</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Piano Concerto No. 3: last 17 measures finished by student Tibor Serly; &#x27;Adagio religioso&#x27; central movement; polymodal chromaticism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The last seventeen measures of this composer&#x27;s third piano concerto were finished along with his viola concerto by his student Tibor Serly | Piano Concerto No. 3 includes a chorale-like &#x27;Adagio religioso&#x27; as its central movement</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="music-for-strings-percussion-and-celesta-the-work-as-a-whole" open>
+            <summary class="work-title">Music for Strings, Percussion and Celesta – The Work as a Whole</summary>
+            <p class="work-desc">Orchestral work (Sz. 106, BB 114, 1936). Two string groups placed on opposite sides of the stage. The third movement invokes Bartók's 'night music' style using timpani glissandi and xylophone. A xylophone solo in one of Bartók's compositions exemplifies his night music style. <a href="https://en.wikipedia.org/wiki/Music_for_Strings,_Percussion_and_Celesta_(Bart%C3%B3k)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two string groups on opposite sides of the stage; third movement uses timpani glissandi and xylophone for &#x27;night music&#x27; effect</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">another features two string groups on both sides of the stage and has a third movement that uses timpani glissandi and the xylophone to invoke this composer&#x27;s &#x27;night music&#x27; style | A xylophone solo in one of his compositions exemplifies his style of &#x27;night music&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Béla Bartók (1881–1945) was a Hungarian composer and pioneering ethnomusicologist. He used an Edison machine to collect field recordings of folk music alongside Zoltán Kodály, including 'rain-begging' songs in Turkey; he later brought this collection to Columbia University as a professor. Called the 'father of ethnomusicology.' He wrote Contrasts for clarinet trio (for Benny Goodman) — its first movement is a verbunkos dance. Died of leukemia in New York, leaving an unfinished viola concerto (completed by student Tibor Serly; another version by son Péter). 'Night music' style: spooky ambient textures in slow movements evoking natural sounds — notably in Out of Doors fourth movement, Music for Strings third movement. 'Arch form' (ABCBA): used in <a href="philip_glass_stock.html#string-quartets" class="crossref-inline">String Quartets</a> 2, 4, 5 and Piano Concerto No. 2. 'Bartók pizzicato' (snap pizzicato): strings snapped against fingerboard. 'Piano year' of 1926: Piano Sonata, Out of Doors, Nine Little Piano Pieces, Piano Concerto No. 1. Romanian Folk Dances: six short pieces based on authentic tunes collected near the Hungarian-Transylvanian border. Rhapsody No. 1: includes a cimbalom in its violin/orchestra version. Allegro barbaro uses Hungarian scales.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Father of ethnomusicology&#x27;; used Edison machine to collect folk music recordings with Zoltán Kodály</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This &#x27;father of ethnomusicology&#x27; used an Edison machine to collect field recordings with his compatriot Zoltan Kodaly | This composer and Kodaly made many phonograph recordings of folk music</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Night music&#x27; style: spooky ambient dissonances in slow movements, evoking natural sounds</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s slow movements often employ atmospheric imitations of natural sound in a &#x27;night music&#x27; style | This Hungarian ethnomusicologist who developed a style of spooky &#x27;night music&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arch form (ABCBA) characteristic of his works — used in Piano Concerto No. 2, String Quartets 4 and 5</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bartok&#x27;s second piano concerto, like his fourth and fifth string quartets, uses this form exemplified by sections ordered &#x27;ABCBA&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contrasts (clarinet trio) written for Benny Goodman; first movement is a verbunkos recruiting dance</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer included a &#x27;recruiting dance&#x27; and a slow movement titled &#x27;relaxation&#x27; in his Contrasts for clarinet trio, written for Benny Goodman | The first movement of this composer&#x27;s clarinet-piano-violin trio Contrasts is a verbunkos, a dance which he determined was Romani in origin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Died of leukemia; left unfinished viola concerto and last 17 bars of Piano Concerto No. 3, both completed by Tibor Serly</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He also left sketches of a concerto for William Primrose that was completed by his student Tibor Serly | He included an &#x27;Andante religioso&#x27; in his third piano concerto, which he wrote alongside his unfinished viola concerto while dying of leukemia</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Piano year&#x27; of 1926: wrote Piano Sonata, Out of Doors, Nine Little Piano Pieces, Piano Concerto No. 1 — all percussive</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer wrote Allegro barbaro and Out of Doors | This composer&#x27;s percussive piano sonata, as well as his Out of Doors, Nine Little Piano Pieces, and first piano concerto, were all written in his &#x27;piano year&#x27; of 1926</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Romanian Folk Dances: six short pieces based on tunes collected near the Hungarian-Transylvanian border; &#x27;Stick Dance&#x27; and &#x27;Sash Dance&#x27; are first two movements</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The &#x27;Stick Dance&#x27; recorded by two gypsy fiddlers and the popular &#x27;Braul&#x27; or &#x27;Sash Dance&#x27; are the first two of the authentic tunes | This oft-orchestrated six-movement piano suite by this composer begins with two movements depicting &#x27;stick&#x27; and &#x27;sash&#x27; dances</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Béla Bartók (1881–1945) was a Hungarian composer and pioneering ethnomusicologist, considered one of the most important composers of the 20th century. Known as the &#x27;father of ethnomusicology,&#x27; he used an Edison machine alongside his compatriot Zoltán Kodály to collect field recordings of folk music throughout Eastern Europe, the Balkans, Turkey, and North Africa; he later brought these collections to Columbia University when he emigrated to the United States. His music integrates folk idioms with modernist techniques, including his distinctive &#x27;night music&#x27; style — spooky, ambient dissonances in slow movements that evoke natural sounds — and &#x27;arch form&#x27; (ABCBA), used in his Piano Concerto No. 2 and <a href="philip_glass_stock.html#string-quartets" class="crossref-inline">String Quartets</a> Nos. 2, 4, and 5. He also pioneered &#x27;snap pizzicato&#x27; (&#x27;Bartók pizzicato&#x27;), in which strings are snapped against the fingerboard.</p><p>His best-known work is the Concerto for Orchestra (1943), commissioned by Sergei Koussevitzky and premiered by the Boston Symphony Orchestra. Its five movements include: the &#x27;Game of Pairs&#x27; (second movement), which opens with a solo side drum rhythm followed by pairs of instruments playing parallel intervals (bassoons in sixths, oboes in thirds, etc.); the &#x27;Elegia&#x27; (third movement) in his night music style; and the &#x27;Intermezzo interrotto&#x27; (fourth movement), which quotes and parodies Shostakovich&#x27;s &#x27;invasion theme&#x27; from the Leningrad Symphony alongside a quote from Lehár&#x27;s The Merry Widow. The Intermezzo also contains a B–F glissando written for an F bass trombone that is unplayable on modern B-flat bass trombones, requiring special equipment.</p><p>Bartók&#x27;s six <a href="philip_glass_stock.html#string-quartets" class="crossref-inline">String Quartets</a> are landmarks of the genre. The first quartet&#x27;s opening Lento fugue is described as a &#x27;funeral dirge&#x27; in Bartók&#x27;s letters to violinist Stefi Geyer (his unrequited love). The fourth quartet&#x27;s finale is characterized by snap pizzicato. The fifth quartet&#x27;s scherzo is in (4+2+3)/8 time &#x27;alla bulgarese,&#x27; drawing on Bulgarian aksak rhythms. All four movements of the sixth (final) quartet begin with a Mesto introduction. Bartók&#x27;s third and fourth quartets heavily influenced György Ligeti&#x27;s Metamorphoses nocturnes, sometimes called &#x27;Bartók&#x27;s seventh quartet.&#x27;</p><p>Duke Bluebeard&#x27;s Castle is Bartók&#x27;s only opera (1911), featuring just two roles: Bluebeard and his new wife Judith. Judith discovers seven doors; behind them lie a torture chamber, a lake of tears, and three previous wives. The prologue opens with the pentatonic &#x27;Darkness&#x27; motif (F#–A–B–C#–E); the minor second interval is the &#x27;blood motif.&#x27; The Miraculous Mandarin is a one-act pantomime ballet (1918–24) in which thieves force a girl to lure men; the title mandarin refuses to die despite being stabbed and hanged until the girl accepts his love. The mandarin&#x27;s desire is represented by trombone glissandi descending a minor third.</p><p>Mikrokosmos (1926–1939) is a pedagogical collection of 153 piano pieces in order of increasing difficulty, dedicated to Bartók&#x27;s son Péter. Volume VI ends with &#x27;Six Dances in Bulgarian Rhythm.&#x27; It inspired George Crumb&#x27;s Makrokosmos. Bartók&#x27;s &#x27;piano year&#x27; of 1926 produced the Piano Sonata, Out of Doors, Nine Little Piano Pieces, and Piano Concerto No. 1 — all in a percussive style. Piano Concerto No. 1 opens with low B-naturals from the soloist and timpani. Piano Concerto No. 2, built in arch form, is notoriously difficult. Piano Concerto No. 3 includes an &#x27;Adagio religioso&#x27; central movement and was left unfinished (last 17 bars completed by his student Tibor Serly); Bartók also left an unfinished viola concerto (for William Primrose, also completed by Serly) when he died of leukemia. Music for Strings, Percussion and Celesta places two string groups on opposite sides of the stage and uses xylophone and timpani glissandi for night music effects in the third movement. His Contrasts trio for clarinet, violin, and piano was written for Benny Goodman and begins with a verbunkos (Hungarian recruiting dance).</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/B%C3%A9la_Bart%C3%B3k" target="_blank">Béla Bartók (Wikipedia)</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Concerto for Orchestra (Bartók) — dedicated tossup topic warranted; Game of Pairs and Intermezzo interrotto have many specific clues</li><li>String Quartets (Bartók) — frequent dedicated tossups; individual quartet details merit deeper pass</li><li>Duke Bluebeard&#x27;s Castle — Bartók&#x27;s only opera; motivic detail (blood motif, Darkness motif) could support dedicated analysis</li></ul>
+        
+        </section>
+        
+<script src="../output/guides_data.js"></script>
+<script src="../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../', currentSlug: 'bela_bartok' });</script>
+<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {
+        ABCJS.renderAbc(el, abc, { responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' });
+    }
+});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+    var visual = ABCJS.renderAbc('_offscreen', abc, {});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({ visualObj: visual[0] }).then(function() {
+        return synth.prime();
+    }).then(function() {
+        synth.start();
+        _clipSynth = synth;
+    }).catch(function(e) { console.warn('abcjs synth:', e); });
+}
+function stopAbc(btn) {
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>
+</body>
+</html>
