@@ -14,7 +14,7 @@ import re
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent.parent  # project root
 DOCS_DIR = ROOT / 'docs'
 
 CATEGORY_SUPPLEMENTS = {
@@ -159,7 +159,8 @@ Then go back to Pop and process the next topic. Stop after {max_topics} topics o
 - Do NOT search for images. Images are handled separately after analysis.
 - Do NOT use WebSearch for images or construct Wikimedia URLs.
 - Process ALL steps for each topic before popping the next.
-- If 0 results, mark complete with "(no results)" and move on."""
+- If 0 results, mark complete with "(no results)" and move on.
+- ALWAYS run `python3 lib/run.py` to fetch clues — NEVER write clues.txt manually. The run.py call saves the raw API cache JSON to the output dir, which is required for the questions page renderer."""
 
 SECOND_PASS_LOOP = """## LOOP: Pop and process topics (up to {max_topics})
 
