@@ -889,10 +889,9 @@ let selectedPaletteIdx = -1;
 }})();
 
 // --- Score Clips Palette ---
-let _clipSynths = {{}};
 
 function initClipsPalette() {{
-    const clips = SCORE_CLIPS.filter(c => c.abc && (c.mp3 || c.abc));
+    const clips = SCORE_CLIPS.filter(c => c.mp3);
     if (!clips.length) return;
     const section = document.getElementById('clips-section');
     const grid = document.getElementById('clips-grid');
@@ -902,11 +901,7 @@ function initClipsPalette() {{
             <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${{escHtml(clip.work || '')}}${{clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}}</div>
             <div id="clip-notation-${{i}}" style="max-width:100%;overflow:hidden;"></div>
             <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
-                ${{clip.mp3
-                    ? `<audio controls preload="none" src="${{escHtml(clip.mp3)}}${{clip.mp3_v ? '?v=' + clip.mp3_v : ''}}" style="height:24px;width:120px;"></audio>`
-                    : `<button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="playClip(${{i}})">▶ Play</button>
-                       <button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="stopClip(${{i}})">■</button>`
-                }}
+                <audio controls preload="none" src="${{escHtml(clip.mp3)}}${{clip.mp3_v ? '?v=' + clip.mp3_v : ''}}" style="height:24px;width:120px;"></audio>
             </div>
         </div>
     `).join('');
@@ -925,24 +920,6 @@ function initClipsPalette() {{
             }} catch(e) {{}}
         }}
     }});
-}}
-
-async function playClip(i) {{
-    const clip = SCORE_CLIPS.filter(c => c.abc)[i];
-    if (!clip || typeof ABCJS === 'undefined') return;
-    if (_clipSynths[i]) {{ try {{ _clipSynths[i].stop(); }} catch(e) {{}} }}
-    try {{
-        const visualObjs = ABCJS.renderAbc('offscreen-render', clip.abc, {{}});
-        const synth = new ABCJS.synth.CreateSynth();
-        await synth.init({{ visualObj: visualObjs[0] }});
-        await synth.prime();
-        synth.start();
-        _clipSynths[i] = synth;
-    }} catch(e) {{ console.warn('playClip error:', e); }}
-}}
-
-function stopClip(i) {{
-    if (_clipSynths[i]) {{ try {{ _clipSynths[i].stop(); }} catch(e) {{}} delete _clipSynths[i]; }}
 }}
 
 function renderPalette() {{
