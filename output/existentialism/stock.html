@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Existentialism</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Existentialism</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">A philosophical movement associated primarily with Jean-Paul <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a>, characterized by the claim that &#x27;existence precedes essence,&#x27; an emphasis on subjectivity, and concepts such as abandonment, anguish, and bad faith. It is often equated with humanism and contrasted with nihilism and quietism.</div>
+
+        <details class="work" id="existentialism-is-a-humanism-sartre" open>
+            <summary class="work-title">Existentialism Is a Humanism (Sartre) <a href="jean-paul_sartre_stock.html" class="work-link-btn" title="Go to Jean-Paul Sartre">&rarr;</a></summary>
+            <p class="work-desc"><a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a>'s 1946 lecture, originally delivered at the Club Maintenant, is the single most-clued text associated with existentialism. It coined the phrase 'existence precedes essence,' defended the movement against Communist accusations of quietism, and named Karl Jaspers and Gabriel Marcel as its Christian proponents. It uses the example of a paper-knife to illustrate essence preceding existence in objects, and a student choosing between war and caring for his mother to illustrate abandonment. <a href="heidegger_stock.html" class="crossref-inline">Heidegger</a> responded to it in his 'Letter on Humanism' to Jean Beaufret.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coined the phrase &#x27;existence precedes essence&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">claims its central subject &#x27;precedes essence&#x27; | coined the phrase &#x27;existence precedes essence&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Declared existentialism to be &#x27;a Humanism&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">equated to &#x27;a Humanism&#x27; in an essay by Jean-Paul Sartre | declares it to be &#x27;a Humanism&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Responded to Communist accusations of quietism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Communist reproach that this movement is &#x27;an invitation to...dwell in quietism&#x27; | begins by responding to the Communists&#x27; accusations of quietism</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Uses a student choosing between war and caring for his mother to illustrate &#x27;abandonment&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">uses a student who must choose between going to war and caring for his mother to illustrate &#x27;abandonment&#x27; | considers a young man whose brother is killed by enemy forces, concluding that Kantian and Christian ethics cannot help him</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Heidegger responded to it in his &#x27;Letter on Humanism&#x27; to Jean Beaufret</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Martin Heidegger responded to this work in a famous letter to his student Jean Beaufret | Heidegger claimed that an essay promoting this philosophy misunderstood his work</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Paper-knife example contrasts essence preceding existence in objects</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">contrasts a central thesis with the example of a paper-knife, for which a sum of &#x27;formulae and qualities&#x27; makes &#x27;definition possible&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Defends the &#x27;subjectivity&#x27; of the atheistic type of existentialism; &#x27;in fashioning myself, I fashion man&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">defends this movement&#x27;s emphasis on &#x27;pure subjectivity&#x27; | &#x27;in fashioning myself, I fashion man&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Names Karl Jaspers and Gabriel Marcel as Christian existentialists</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">names its major Christian proponents as Karl Jaspers and Gabriel Marcel | Marcel got a shoutout in Sartre&#x27;s work</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rehabilitates the ideas of &#x27;abandonment&#x27; and &#x27;anguish&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">goes on to rehabilitate the ideas of &#x27;abandonment&#x27; and &#x27;anguish&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Originally delivered as a lecture at the Club Maintenant</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">originally delivered as a lecture at the Club Maintenant</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">References Maggie Tulliver in The Mill on the Floss and La Sanseverina in The Charterhouse of Parma</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">claims that the morality of Maggie Tulliver in The Mill on the Floss has the same origin as the desire of La Sanseverina in The Charterhouse of Parma</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="christian-existentialism" open>
+            <summary class="work-title">Christian Existentialism</summary>
+            <p class="work-desc">A branch of existentialism that uses religious thought to address the anxiety of being in a seemingly absurd world. Key figures include Paul Tillich (who contrasted 'spiritual,' 'ontic,' and 'moral' anxiety across eras), Karl Jaspers, Gabriel Marcel (who called himself a 'philosopher of existence' and wrote The Mystery of Being), and Soren <a href="søren_kierkegaard_stock.html" class="crossref-inline">Kierkegaard</a> (author of Repetition and Three Upbuilding Discourses, known for the 'leap of faith'). Jakob Bohme's concept of the Ungrund influenced later Christian existentialists like Nikolai Berdyaev and Lev Shestov.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Paul Tillich is a major figure; contrasted &#x27;spiritual&#x27; anxiety of emptiness (modern era), &#x27;ontic&#x27; anxiety of death (late antiquity), and &#x27;moral&#x27; anxiety of damnation (late Middle Ages)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Paul Tillich is considered part of this broad movement | contrasted the &#x27;spiritual&#x27; anxiety of emptiness and loss of meaning felt in the modern era with the &#x27;ontic&#x27; anxiety of death</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Karl Jaspers and Gabriel Marcel named as Christian proponents by Sartre</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">names its major Christian proponents as Karl Jaspers and Gabriel Marcel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gabriel Marcel described himself as a &#x27;philosopher of existence&#x27;; wrote The Mystery of Being; claimed &#x27;we live in a broken world and require transcendence&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">described himself as a &#x27;philosopher of existence&#x27; and claimed that we live in a broken world</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kierkegaard (author of Repetition and Three Upbuilding Discourses) is usually considered part of this movement</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The author of Repetition and Three Upbuilding Discourses is usually considered part of this movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kierkegaard&#x27;s &#x27;leap of faith&#x27; — holding beliefs without rational support</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Søren Kierkegaard proposed taking a &#x27;leap&#x27; of this thing to hold beliefs without rational support</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bohme&#x27;s Ungrund influenced Berdyaev and Shestov in this tradition</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Ungrund influenced members of this philosophical tradition like Nikolai Berdyaev and Lev Shestov</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="heidegger-s-letter-on-humanism" open>
+            <summary class="work-title">Heidegger&#x27;s Letter on Humanism <a href="heidegger_stock.html" class="work-link-btn" title="Go to Heidegger">&rarr;</a></summary>
+            <p class="work-desc"><a href="heidegger_stock.html" class="crossref-inline">Heidegger</a>'s 1946 response to <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a>'s 'Existentialism Is a Humanism,' written as a letter to his student Jean Beaufret. Heidegger claimed Sartre misunderstood his work, distanced himself from humanism, and modified the word 'existence' by making the second letter a K followed by a hyphen ('ek-sistenz'), referring to man's 'standing out' into the truth of 'being' and his 'dwelling' in language. The letter opens with the claim 'We are far from understanding...the essence of action.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Heidegger responded to Sartre&#x27;s essay in a letter to student Jean Beaufret</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Martin Heidegger responded to this work in a famous letter to his student Jean Beaufret</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Modifies root word with second letter K and hyphen (&#x27;ek-sistenz&#x27;), referring to &#x27;standing out&#x27; into truth of being and &#x27;dwelling&#x27; in language</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">modifies its root word by making its second letter a K followed by a hyphen, referring to man&#x27;s &#x27;standing out&#x27; into the truth of &#x27;being&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with &#x27;We are far from understanding...the essence of action&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The claim that &#x27;We are far from understanding...the essence of action&#x27; opens a 1946 letter</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="black-existentialism" open>
+            <summary class="work-title">Black Existentialism</summary>
+            <p class="work-desc">A branch of existentialist thought focusing on the liberation of Black people amid oppression. Lewis Gordon wrote a book pairing <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a>'s concept of bad faith with Antiblack Racism. Cornel West's Race Matters includes the chapter 'Nihilism in Black America,' which analyzes Black existentialism.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lewis Gordon wrote on bad faith and Antiblack Racism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Black existentialist scholar Lewis Gordon wrote a book that pairs this concept with Antiblack Racism</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cornel West&#x27;s Race Matters analyzes it in &#x27;Nihilism in Black America&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Black existentialism is analyzed in the chapter &#x27;Nihilism in Black America&#x27; in this Cornel West book</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Named for a &#x27;Black&#x27; form of existentialism focusing on liberation amid oppression</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A philosophical school named for a &#x27;Black&#x27; form of this school of thought focuses on the liberation of Black people</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-key-associations" open>
+            <summary class="work-title">General / Key Associations</summary>
+            <p class="work-desc">Existentialism as a movement is most strongly associated with Jean-Paul <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a> and his work Being and Nothingness. It deals with feelings of nothingness and angst, alienation from society, and the human condition in an absurd world. The movement asserts there is no intrinsic meaning to life and individuals must create their own. Key histories of the movement include Walter Kaufmann's Existentialism from <span class="crossref-inline-red" title="No page yet: Fyodor Dostoevsky">Dostoevsky</span> to Sartre (which examines 'What is Transcendence?') and William Barrett's Irrational Man (which concludes with an analysis of the 'place of the furies'). R.D. Laing derived his concept of ontological security from existentialist readings. Hubert Dreyfus drew on existentialism to criticize AI in What Computers Can't Do. <span class="crossref-inline-red" title="No page yet: Roland Barthes">Roland Barthes</span>'s Writing Degree Zero responds to Sartre's application of existentialism to literature.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jean-Paul Sartre is the primary figure; Being and Nothingness advances this philosophy</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The book Being and Nothingness advances, for 10 points, what philosophy of Jean-Paul Sartre? | this school of philosophy embodied by Jean-Paul Sartre</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Deals with nothingness, angst, alienation, and absurdity</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">facets of which deal with feelings of nothingness and angst, alienation from society, and man&#x27;s place in a seemingly absurd world</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Asserts no intrinsic meaning to life; individuals must create their own meaning</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">asserts that there is no intrinsic meaning to life and that individuals must create their own meaning</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Walter Kaufmann&#x27;s Existentialism from Dostoevsky to Sartre examines &#x27;What is Transcendence?&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A history of it by Walter Kaufmann examines its core question of &#x27;What is Transcendence?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">William Barrett&#x27;s Irrational Man: analysis of &#x27;the place of the furies&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An analysis of the &#x27;place of the furies&#x27; concludes a &#x27;study&#x27; of this philosophical movement by William Barrett</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bad faith (mauvaise foi): illustrated by cafe waiter with &#x27;too precise&#x27; movement in Being and Nothingness</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the example of a cafe waiter with &#x27;too precise&#x27; movement illustrates this two-word concept</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">R.D. Laing derived concept of ontological security from existentialist readings</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">R.D. Laing&#x27;s concept of a person&#x27;s ontological security was derived from his readings of this philosophical movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hubert Dreyfus drew on it to criticize AI in What Computers Can&#x27;t Do</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Hubert Dreyfus called upon this philosophy to criticize artificial intelligence in What Computers Can&#x27;t Do</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Barthes&#x27;s Writing Degree Zero responds to Sartre&#x27;s application of existentialism to literature</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Barthes&#x27;s debut book, Writing Degree Zero, is usually seen as a response to Jean-Paul Sartre&#x27;s application of this philosophy to literature</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Often compared to nihilism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This philosophy, often compared to nihilism</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Existentialism is a philosophical movement most closely associated with Jean-Paul <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a>, whose Being and Nothingness is its foundational text. The movement deals with themes of nothingness, angst, alienation from society, and the human condition in a seemingly absurd world. It asserts that there is no intrinsic meaning to life, and individuals must create their own meaning.</p><p>The single most important text for understanding existentialism in quizbowl is <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a>&#x27;s 1946 lecture &#x27;Existentialism Is a Humanism,&#x27; originally delivered at the Club Maintenant. This essay coined the famous slogan &#x27;existence precedes essence,&#x27; a reversal of traditional philosophical views implying that humans do not have inherent value but must create it themselves. The essay uses the example of a paper-knife (whose essence is defined before its existence by a craftsman&#x27;s formulae) to contrast with human existence, where no such predetermined essence exists. It also uses the example of a student who must choose between going to war and caring for his bereaved mother to illustrate the concept of &#x27;abandonment&#x27; — the idea that no ethical system (Kantian or Christian) can make such decisions for us. The essay defends existentialism against Communist accusations of quietism, rehabilitates the concepts of &#x27;abandonment&#x27; and &#x27;anguish,&#x27; and defends the &#x27;pure subjectivity&#x27; of its atheistic variant. It names Karl Jaspers and Gabriel Marcel as the movement&#x27;s Christian proponents. The essay also references Maggie Tulliver from The Mill on the Floss and La Sanseverina from The Charterhouse of Parma.</p><p>Martin <a href="heidegger_stock.html" class="crossref-inline">Heidegger</a> responded to <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a>&#x27;s lecture in his &#x27;Letter on Humanism,&#x27; addressed to his student Jean Beaufret. Heidegger claimed Sartre had misunderstood his work and distanced himself from humanism. In this letter, Heidegger modified the word &#x27;existence&#x27; by spelling it &#x27;ek-sistenz&#x27; (making the second letter a K followed by a hyphen), referring to man&#x27;s &#x27;standing out&#x27; into the truth of &#x27;being&#x27; and his &#x27;dwelling&#x27; in language. The letter opens with the claim that &#x27;We are far from understanding...the essence of action.&#x27;</p><p>Christian existentialism is a significant branch that uses religious thought to address the anxiety of being in an absurd world. Paul Tillich contrasted three types of anxiety across historical eras: the &#x27;ontic&#x27; anxiety of death in late antiquity, the &#x27;moral&#x27; anxiety of damnation in the late Middle Ages, and the &#x27;spiritual&#x27; anxiety of emptiness and loss of meaning in the modern era. Gabriel Marcel described himself as a &#x27;philosopher of existence,&#x27; claimed that &#x27;we live in a broken world and require transcendence,&#x27; and wrote The Mystery of Being. Soren <a href="søren_kierkegaard_stock.html" class="crossref-inline">Kierkegaard</a>, the author of Repetition and Three Upbuilding Discourses, is usually considered part of this movement and is known for proposing a &#x27;leap of faith.&#x27; Jakob Bohme&#x27;s concept of the Ungrund influenced later Christian existentialists like Nikolai Berdyaev and Lev Shestov.</p><p>Black existentialism focuses on the liberation of Black people amid oppression. Lewis Gordon wrote on bad faith and Antiblack Racism, and Cornel West&#x27;s Race Matters includes a chapter on &#x27;Nihilism in Black America&#x27; that analyzes Black existentialism. <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a>&#x27;s concept of bad faith (mauvaise foi), illustrated in Being and Nothingness by the example of a cafe waiter whose movements are &#x27;too precise,&#x27; is central to this tradition.</p><p>Key histories of the movement include Walter Kaufmann&#x27;s Existentialism from <span class="crossref-inline-red" title="No page yet: Fyodor Dostoevsky">Dostoevsky</span> to <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a>, which examines the question &#x27;What is Transcendence?,&#x27; and William Barrett&#x27;s Irrational Man, which concludes with an analysis of &#x27;the place of the furies.&#x27; Existentialism has influenced fields beyond philosophy: R.D. Laing derived his concept of ontological security from existentialist readings, Hubert Dreyfus drew on it to criticize artificial intelligence in What Computers Can&#x27;t Do, and <span class="crossref-inline-red" title="No page yet: Roland Barthes">Roland Barthes</span>&#x27;s debut book Writing Degree Zero is seen as a response to Sartre&#x27;s application of existentialism to literature.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Existentialism" target="_blank">Existentialism</a></li><li><a href="https://en.wikipedia.org/wiki/Existentialism_Is_a_Humanism" target="_blank">Existentialism Is a Humanism</a></li><li><a href="https://en.wikipedia.org/wiki/Letter_on_Humanism" target="_blank">Letter on Humanism</a></li><li><a href="https://en.wikipedia.org/wiki/Christian_existentialism" target="_blank">Christian existentialism</a></li><li><a href="https://en.wikipedia.org/wiki/Africana_philosophy#Black_existentialism" target="_blank">Black existentialism</a></li><li><a href="https://en.wikipedia.org/wiki/Being_and_Nothingness" target="_blank">Being and Nothingness</a></li><li><a href="https://en.wikipedia.org/wiki/Bad_faith_(existentialism)" target="_blank">Bad faith (existentialism)</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Jean-Paul Sartre (extensive clue material across these results)</li><li>Søren Kierkegaard (appears as a Christian existentialist)</li><li>Being and Nothingness (Sartre) — if enough clues exist as separate answerline</li><li>Paul Tillich (appears with specific clues about anxiety types)</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'existentialism' });</script>
+
+</body>
+</html>

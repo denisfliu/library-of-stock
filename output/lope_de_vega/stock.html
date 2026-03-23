@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Lope de Vega</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Lope de Vega</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Extremely prolific Spanish Golden Age playwright (wrote some 1,500 plays). Best known for Fuenteovejuna (The Sheep Well) and The Dog in the Manger. Nicknamed &#x27;The Phoenix of Wits&#x27; by <a href="cervantes_stock.html" class="crossref-inline">Cervantes</a>, who also called him a &#x27;Monster of Nature.&#x27; Contemporary of Cervantes and friend of Quevedo. Believed all tragedies should be three acts long. Also wrote poetry, including &#x27;Sonnet Impromptu&#x27; and religious sonnets. Called his lover Elena Osorio &#x27;Filis&#x27; in his poems. His plays belong to the comedia de capa y espada (cloak and sword) genre.</div>
+
+        <details class="work" id="fuenteovejuna-the-sheep-well" open>
+            <summary class="work-title">Fuenteovejuna (The Sheep Well)</summary>
+            <p class="work-desc">Lope de Vega's most famous play, set during the reign of Ferdinand and Isabella. The tyrannical Commander Gomez de Guzman of the Order of Calatrava terrorizes the village of Fuenteovejuna. He attempts to rape Laurencia and orders the arrest of Esteban and hanging of Frondoso. A disheveled Laurencia delivers a rousing monologue calling men 'spinning women' and telling them to wear 'headdresses and petticoats,' urging them to revolt. The peasants storm the citadel and kill the Commander. When a judge arrives and tortures 300 villagers, every single one insists that 'Fuenteovejuna did it.' The play ends with King Ferdinand and Queen Isabella pardoning the entire village. Mengo explains that poetry is like a baker making doughnuts. A peasant steals the Commander's crossbow to prevent him from raping Laurencia. Laurencia says her ideal life would be eating food instead of being annoyed by men. <a href="https://en.wikipedia.org/wiki/Fuenteovejuna_(play)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">When tortured/questioned about who killed the Commander, all villagers say &#x27;Fuenteovejuna did it&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">all the villagers say the name of the title town | every villager says, while being tortured, that a cruel commander was killed by the town of fuenteovejuna | all 300 of those people proclaim that &#x27;[this play&#x27;s title location] did it&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A peasant steals the Commander&#x27;s crossbow to prevent him from raping Laurencia</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a peasant steals a crossbow from a womanizing commander attempting to rape the beautiful Laurencia | a young man who steals a crossbow from a commander to prevent the commander from raping the woman he loves</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laurencia delivers a rousing monologue calling men &#x27;spinning women&#x27; and telling them to wear &#x27;headdresses and petticoats&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A group of men are called &#x27;spinning women&#x27; and told to wear &#x27;headdresses and petticoats&#x27; in a monologue written by this author</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set during Ferdinand and Isabella&#x27;s reign; they pardon the entire village at the end</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">King Ferdinand and Queen Isabella appearing to pardon an entire village | set during Ferdinand and Isabella&#x27;s reign</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Commander (Gomez de Guzman) is from the Order of Calatrava</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">opens with the entrance of a knight from the Order of Calatrava | ends with the murder of a commander of the Order of Calatrava</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commander orders the arrest of Esteban and hanging of Frondoso to have his way with Laurencia</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That man orders the arrest of Esteban and hanging of Frondoso so that he may have his way with Laurencia</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mengo explains that poetry is like a baker making doughnuts</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mengo explains that poetry is like a baker making doughnuts; some poems turn out fluffy, others get burnt</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laurencia says her ideal life would be eating food instead of being annoyed by men</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Laurencia says that her ideal life would consist of eating a lot of food instead of being annoyed by men</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The title refers to a town meaning &#x27;Sheep Well&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a work set in the town of &#x27;Sheep Well&#x27; | villagers blame the death of a cruel Commander on a water fixture</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-dog-in-the-manger" open>
+            <summary class="work-title">The Dog in the Manger</summary>
+            <p class="work-desc">Also known as El Perro del Hortelano (The Gardener's Dog). Based on an Aesop fable about a dog that prevents others from using something it cannot use itself. The Countess Diana falls in love with her socially inferior secretary Teodoro but refuses to let him marry her lady-in-waiting Marcela, while also refusing to marry him herself. The gracioso (comic servant) Tristan resolves the point of honor by fabricating a noble Byzantine lineage for Teodoro. Diana asks an aggressive suitor whether he isn't satisfied with the flesh he already has (referring to gifts of meat). This is a comedia de capa y espada (cloak and sword play). <a href="https://en.wikipedia.org/wiki/The_Dog_in_the_Manger_(play)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Countess Diana falls in love with secretary Teodoro but refuses to let him marry her maid/lady-in-waiting Marcela</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Countess Diana lusts after her secretary Teodoro | Diana prevents the marriage of Teodoro to her maid in a nod to an Aesop fable | a countess falls in love with her servant and prevents him from marrying his lover but also refuses to marry him herself</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title alludes to an Aesop fable about a dog that prevents others from using what it cannot use</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">takes its title from Aesop | like a grain-hoarding canine in an Aesop fable, refuses to let anyone have that which she does not take | titled for a Greek fable</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The servant Tristan fabricates a noble (Byzantine) lineage for Teodoro to resolve the point of honor</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the servant Tristan fabricates a noble lineage for a secretary | Tristan, resolves the central point of honor by making up a string of nonsense Greek names and claiming that his master is actually from a family of Byzantine nobles</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Diana asks a suitor if he isn&#x27;t satisfied with the flesh (meat) he already has</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">asks an aggressive suitor whether he isn&#x27;t satisfied with the flesh he already has, referring to copious gifts of meat he recently received</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">An example of the comedia de capa y espada (cloak and sword) genre</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Dog in the Manger is one of Lope de Vega&#x27;s many entries in this Golden Age genre</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="punishment-without-revenge-justice-without-revenge" open>
+            <summary class="work-title">Punishment Without Revenge (Justice Without Revenge)</summary>
+            <p class="work-desc">A villainous duke discovers his bastard son's tryst with Casandra (his new wife). He ties Casandra under a white veil and tricks his son into stabbing her, after the affair began when the son rescued her from an overturned coach. In one scene, a servant snuffs out a candle with the toss of a hat to cover up his master's affair. <a href="https://en.wikipedia.org/wiki/Punishment_Without_Revenge" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A duke ties his wife under a white veil and tricks his son into stabbing her after discovering their affair</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a villainous duke ties his new wife up under a white veil and tricks his son into stabbing her after finding out about the affair they had begun when he rescued her from an overturned coach</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Duke discovers his bastard son&#x27;s tryst with Casandra</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Duke discovers his bastard son&#x27;s tryst with Casandra in this author&#x27;s play Justice without Revenge</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A servant snuffs out a candle with the toss of a hat to cover up his master&#x27;s affair</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a servant snuffs out a candle with the toss of a hat to cover up his master&#x27;s affair</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Lope de Vega (full name Felix Lope de Vega y Carpio, 1562-1635) was an extraordinarily prolific Spanish Golden Age playwright who wrote over 1,500 plays. <a href="cervantes_stock.html" class="crossref-inline">Cervantes</a> nicknamed him 'The Phoenix of Wits' and called him a 'Monster of Nature.' He believed all tragedies should only be three acts long, which was controversial. His comedias rejected Aristotelian unities. Friend of Quevedo and contemporary of Cervantes. Also a poet whose 'Sonnet Impromptu' is anthologized frequently and whose religious sonnets were referenced by Lorca for their 'duende.' Called his lover Elena Osorio 'Filis' in his poems. A poem by him inspired the response 'Letter to Belardo' by an anonymous female poet under the alias Amarilis. He first created the character of Pedro Crespo (later used by Calderon in <a href="pedro_calderon_de_la_barca_stock.html#the-mayor-of-zalamea-el-alcalde-de-zalamea" class="crossref-inline">The Mayor of Zalamea</a>). Also wrote the novel The Pilgrim in his Own Country. <a href="goethe_stock.html" class="crossref-inline">Goethe</a> wished he had produced as 'vast and colourful' an oeuvre. Some scholars theorize he may have written the fake <a href="cervantes_stock.html#don-quixote" class="crossref-inline">Don Quixote</a> sequel. His plays set in Valencia include The Widow from Valencia and a play where Floriano and Erifila fall in love in Valencia's asylum.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Extremely prolific Spanish Golden Age playwright (wrote 1,000-1,500+ plays)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author wrote some 1,500 plays | this ridiculously prolific Spanish Golden Age playwright | this Spanish Golden Age author&#x27;s 1,000-plus plays</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nicknamed &#x27;The Phoenix of Wits&#x27; by Cervantes; Cervantes also called him a &#x27;Monster of Nature&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nicknamed The Phoenix of Wits by Cervantes | this contemporary of Cervantes, whom he called a &#x27;Monster of Nature&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Believed all tragedies should be three acts long; his comedias rejected Aristotelian unities</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">caused controversy in his own day for believing that all tragedies should only be three acts long | Lope de Vega&#x27;s comedias differ from Renaissance tragedies in their rejection of Aristotelian unities and in their use of this structure</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also a poet; &#x27;Sonnet Impromptu&#x27; is frequently anthologized</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Anthologies of Spanish Golden Age poetry almost invariably contain this author&#x27;s &#x27;Sonnet Impromptu&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called his lover Elena Osorio &#x27;Filis&#x27; in his poems</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this other author, who called his lover Elena Osorio &#x27;Filis&#x27; in his poems</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A poem by him inspired the response &#x27;Letter to Belardo&#x27; by an anonymous female poet using the alias Amarilis</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A poem by this author inspired the response &#x27;Letter to Belardo,&#x27; written by an anonymous female poet under the alias Amarilis</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Goethe wished he had produced as &#x27;vast and colourful&#x27; an oeuvre as this playwright</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Goethe once wished he had been able to produce as &#x27;vast and colourful&#x27; an oeuvre as this playwright</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lorca referenced the &#x27;duende&#x27; in his religious sonnets</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Lorca&#x27;s lecture referenced the &#x27;duende&#x27; present in this author&#x27;s religious sonnets</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First created the character Pedro Crespo (later used by Calderon in The Mayor of Zalamea)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The character of Pedro Crespo was first created by this other Spanish Golden Age playwright</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also wrote the novel The Pilgrim in his Own Country and Fenisa&#x27;s Hook</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">also wrote The Dog in the Manger among over a thousand other plays, as well as the novel The Pilgrim in his Own Country</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Some scholars theorize he wrote the fake Don Quixote sequel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Some scholars theorize the fake writer to be this contemporary of Cervantes</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Plays set in Valencia: The Widow from Valencia (secret affair instead of mourning) and a play where Floriano and Erifila fall in love in Valencia&#x27;s asylum</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A play by Lope de Vega titled for &#x27;The Widow from&#x27; this city features the title character choosing to have a secret affair instead of mourning her husband</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Lope de Vega (Felix Lope de Vega y Carpio, 1562-1635) is the most prominent Spanish Golden Age playwright in quizbowl, known above all for his extraordinary prolificacy — he wrote over 1,500 plays. The clue that appears in virtually every question about him is from Fuenteovejuna (The Sheep Well): when tortured about who killed the tyrannical Commander Gomez de Guzman of the Order of Calatrava, every villager insists that &#x27;Fuenteovejuna did it.&#x27; The play is set during the reign of Ferdinand and Isabella, who pardon the village at the end. Other important Fuenteovejuna clues include a peasant stealing the Commander&#x27;s crossbow to prevent the rape of Laurencia, Laurencia&#x27;s rousing speech calling men &#x27;spinning women,&#x27; and Mengo&#x27;s analogy comparing poetry to a baker making doughnuts. The Dog in the Manger (El Perro del Hortelano) is his second most asked-about work. Titled for an Aesop fable about a dog that prevents others from using what it cannot use, it centers on the Countess Diana who falls in love with her secretary Teodoro but refuses to let him marry her maid Marcela. The gracioso Tristan resolves the plot by fabricating a Byzantine noble lineage for Teodoro. Punishment Without Revenge (also called Justice Without Revenge) features a duke who discovers his bastard son&#x27;s affair with his wife Casandra and tricks the son into stabbing her while she is tied under a white veil. Biographically, <a href="cervantes_stock.html" class="crossref-inline">Cervantes</a> nicknamed him &#x27;The Phoenix of Wits&#x27; and called him a &#x27;Monster of Nature.&#x27; He controversially believed all tragedies should be three acts long, and his comedias rejected Aristotelian unities. He is also known as a poet; his &#x27;Sonnet Impromptu&#x27; appears in most Spanish Golden Age anthologies, and Lorca referenced the &#x27;duende&#x27; in his religious sonnets. He called his lover Elena Osorio &#x27;Filis&#x27; in his poems, and a poem of his inspired the &#x27;Letter to Belardo&#x27; by an anonymous female poet using the alias Amarilis. He first created the character Pedro Crespo, later used by Calderon in <a href="pedro_calderon_de_la_barca_stock.html#the-mayor-of-zalamea-el-alcalde-de-zalamea" class="crossref-inline">The Mayor of Zalamea</a>. <a href="goethe_stock.html" class="crossref-inline">Goethe</a> admired the vastness of his oeuvre. Some scholars theorize he wrote the fake <a href="cervantes_stock.html#don-quixote" class="crossref-inline">Don Quixote</a> sequel.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Lope_de_Vega" target="_blank">Lope de Vega — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Fuenteovejuna_(play)" target="_blank">Fuenteovejuna — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Dog_in_the_Manger_(play)" target="_blank">The Dog in the Manger — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Punishment_Without_Revenge" target="_blank">Punishment Without Revenge — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Fuenteovejuna — frequently asked as its own answerline</li><li>The Dog in the Manger — appears as its own answerline</li><li>Pedro Calderon de la Barca — frequently co-mentioned Golden Age playwright</li><li>Tirso de Molina — frequently co-mentioned (Don Juan / The Trickster of Seville)</li><li>Francisco de Quevedo — frequently co-mentioned friend of Lope de Vega</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'lope_de_vega' });</script>
+
+</body>
+</html>

@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Aristotle</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Aristotle</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Ancient Greek philosopher, founder of the Lyceum and Peripatetic School, student of <a href="plato_stock.html" class="crossref-inline">Plato</a>, teacher of Alexander the Great. Known as &#x27;the First Teacher&#x27; in Islamic philosophy. Author of the Metaphysics, Nicomachean Ethics, Physics, Politics, Poetics, De Anima, and the Organon. Associated with hylomorphism, four causes, the unmoved mover, eudaimonia, virtue ethics, and the doctrine of the mean.</div>
+
+        <details class="work" id="metaphysics-and-being-qua-being" open>
+            <summary class="work-title">Metaphysics and &#x27;Being qua Being&#x27;</summary>
+            <p class="work-desc">The Metaphysics is Aristotle's most frequently clued single work. It concerns 'being qua being' and 'first philosophy.' Key clues include the unmoved mover (a 'thought thinking about thinking'), the four causes (formal, efficient, material, final), the concepts of potentiality and actuality, and the opening line 'All men by nature desire to know.' Book Zeta asks 'what is substance?' Book Twelve discusses 47 or 55 gods needed for heavenly motions. The Metaphysics was enormously influential in Islamic philosophy: Avicenna read it 40 times, al-Farabi wrote a commentary on its 'Purposes,' al-Kindi used its infinite regress argument, and <span class="crossref-inline-red" title="No page yet: Averroes">Averroes</span> wrote the famous 'Long Commentary.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Concerns &#x27;being qua being&#x27; / &#x27;first philosophy&#x27;; unmoved mover as &#x27;thought thinking about thinking&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a study of &#x27;being qua being&#x27; by Aristotle | a &#x27;thought thinking about thinking&#x27; which turns potentialities to actualities</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four causes: formal, efficient, material, final</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Formal, efficient, material, and final causes are discussed in this book</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Potentiality and actuality developed in the Metaphysics</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">developed the concepts of potentiality and actuality in a treatise on &#x27;being qua being&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Avicenna read it 40 times, only understood after al-Farabi&#x27;s commentary</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Avicenna read a book by this thinker forty times but only understood it after reading al-Farabi&#x27;s commentary</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Averroes&#x27;s Long Commentary introduced &#x27;unity of the intellect&#x27; / &#x27;monopsychicism&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the view that there is a &#x27;unity of the intellect,&#x27; which a thinker termed &#x27;monopsychicism,&#x27; is introduced in Averroes&#x27;s Long Commentary</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">al-Kindi used infinite regress argument for God as &#x27;The True One&#x27; in On First Philosophy</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this book&#x27;s discussion of an &#x27;infinite regress&#x27; is used to argue that God is &#x27;The True One&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opening: &#x27;All men by nature desire to know&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Its opening paragraph claims that we delight in senses like vision since &#x27;All men by nature desire to know&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="nicomachean-ethics-and-virtue-ethics" open>
+            <summary class="work-title">Nicomachean Ethics and Virtue Ethics</summary>
+            <p class="work-desc">The Nicomachean Ethics, named for Aristotle's son, is the founding text of virtue ethics. Eudaimonia (happiness/flourishing) is identified as the highest good. The Doctrine of the Mean holds each virtue lies between two extremes (e.g., courage between cowardice and rashness). Phronesis (practical wisdom) helps cultivate hexis (dispositions). The 'function argument' identifies the 'rational principle' as uniquely human. Book IX divides friendships into utility, pleasure, and goodness. Megalopsuchia ('great-souledness') includes a slow gait and deep voice. The work endorses Socrates's claim that no one knowingly chooses evil (akrasia). Alasdair MacIntyre's After Virtue and Anscombe's 'Modern Moral Philosophy' revived virtue ethics based on this work.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eudaimonia (happiness/flourishing) as the highest good</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Happiness, or eudaimonia, is identified as the highest good</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Doctrine of the Mean: each virtue is the average of two extremes</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">each virtue is the average of two extremes in its Doctrine of the Mean</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Phronesis (practical wisdom) helps cultivate hexis (dispositions)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;practical wisdom,&#x27; or phronesis, helps one cultivate dispositions, or hexis</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Function argument: rational principle makes humans unique (vs. plants with life, animals with perception)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this book considers life, which is shared by plants, and perception, which is shared by animals, before deciding that the &#x27;rational principle&#x27; makes humans unique</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Book IX: friendships divided into utility, pleasure, and goodness of character</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the ninth section of this book divides friendships into those based on utility, pleasure, and goodness of character</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Megalopsuchia: slow gait, deep voice; W.D. Ross translated as &#x27;proud man&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">describes a slow gait and a deep voice as attributes of the &#x27;great-souled&#x27; person</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">MacIntyre&#x27;s After Virtue revived virtue ethics based on this work; Anscombe&#x27;s &#x27;Modern Moral Philosophy&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alasdair MacIntyre&#x27;s After Virtue helped spur the recent revival of virtue ethics</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;One swallow does not make a summer&#x27; qualification</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">adds the qualifier &#x27;in a full life&#x27; to a central definition because &#x27;one swallow does not make a summer&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="physics-and-the-four-causes" open>
+            <summary class="work-title">Physics and the Four Causes</summary>
+            <p class="work-desc">Aristotle's Physics discusses change, motion, and nature. It introduces the four causes using the example of an architect designing a house (or a bronze statue). Time and space are 'continuous' because indefinitely divisible. The work refutes Zeno's paradoxes and argues that the impossibility of actual infinities means change must have begun with a Prime Mover. Aristotle rejected actual infinites while allowing potential infinites by division. Whitehead's process philosophy updates the four causes.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four causes illustrated with architect/house or bronze statue example</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">uses the example of an architect designing a house to illustrate his four causes | introduces a crucial set of conceptual distinctions with the example of a bronze statue</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Refutes Zeno&#x27;s paradoxes; time and space are &#x27;continuous&#x27; (indefinitely divisible)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">time and space are characteristically &#x27;continuous&#x27; because they can be indefinitely divided in a section refuting Zeno&#x27;s paradoxes</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Actual infinities impossible; leads to Prime Mover argument</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the impossibility of actual infinities means that change in the world must have begun with a Prime Mover</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hylomorphism: substances are complexes of form and matter</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">substances are predicative complexes of form and matter, his theory of hylomorphism</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="pseudo-aristotelian-works-and-islamic-reception" open>
+            <summary class="work-title">Pseudo-Aristotelian Works and Islamic Reception</summary>
+            <p class="work-desc">A major clue cluster concerns works falsely attributed to Aristotle. The Theology of Aristotle is actually a paraphrase of Plotinus's Enneads. The Secretum Secretorum (framed as a letter to Alexander the Great) influenced Roger Bacon. The Book of Causes was shown by Aquinas to derive from Proclus's Elements of Theology. 'Aristotle's Masterpiece' was a popular sex manual. The 'recovery' of Aristotle's works in medieval Europe resulted in many false attributions. Aristotle was called 'the First Teacher'; al-Farabi was 'the Second Teacher'; <span class="crossref-inline-red" title="No page yet: Averroes">Averroes</span> was 'the Commentator.' <a href="boethius_stock.html" class="crossref-inline">Boethius</a>'s translation of Porphyry's Isagoge was an introduction to Aristotle's Categories.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Theology of Aristotle: actually paraphrase of Plotinus&#x27;s Enneads</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a book named for this man&#x27;s theology which was traditionally attributed to this man is an Arabic paraphrase of parts of Plotinus&#x27;s Enneads</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Secretum Secretorum: letter to Alexander the Great; influenced Roger Bacon</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Roger Bacon published an edited version of the encyclopedic treatise Secretum Secretorum, attributing it to this man</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Book of Causes: Aquinas showed it derives from Proclus&#x27;s Elements of Theology</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Thomas Aquinas showed that a text with this property derived the maxim &#x27;all is in all&#x27; from Proclus&#x27; Elements</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Aristotle&#x27;s Masterpiece&#x27;: popular sex manual until 19th century</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the most widely reprinted medical book in the eighteenth and nineteenth centuries was a sex manual</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called &#x27;the First Teacher&#x27;; al-Farabi &#x27;the Second Teacher&#x27;; Averroes &#x27;the Commentator&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the Classical Arabic world, he was called &#x27;the First Teacher&#x27; | al-Farabi was known as &#x27;the Second Teacher&#x27; in homage to this &#x27;First Teacher&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Porphyry&#x27;s Isagoge: introduction to Aristotle&#x27;s Categories; translated by Boethius</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Porphyry&#x27;s Isagoge was an introduction to one of this philosopher&#x27;s works | Boethius&#x27;s translation of Porphyry&#x27;s Isagoge</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="politics" open>
+            <summary class="work-title">Politics</summary>
+            <p class="work-desc">The Politics argues that 'man is by nature a political animal.' It uses the analogy of a hand detached from the body to show humans are naturally part of a polis. The work controversially claims slaves lack the deliberative element while women possess it but it 'lacks authority.' It includes a sixfold classification of constitutions. Joan Tronto and Hannah Arendt engage with its distinction between public (polis) and private (oikos). Aristotle argues citizenship should be extended to those who hold public office.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Man is by nature a political animal&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this book famously states that &#x27;man is by nature&#x27; an animal concerned with this book&#x27;s subject</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Analogy of hand detached from body; Sophocles&#x27;s Philoctetes as &#x27;corpse among the living&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">uses the analogy of a hand being detached from its body</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Slaves lack deliberative element; women possess it but it &#x27;lacks authority&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">argues that slaves lack the deliberative element, while women possess it but it &#x27;lacks authority&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sixfold classification of constitutions (three true, three perverted)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">includes a sixfold classification of constitutions, three of which are true constitutions</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="poetics-and-de-anima" open>
+            <summary class="work-title">Poetics and De Anima</summary>
+            <p class="work-desc">The Poetics concerns tragedy and introduces mimesis (imitation) and catharsis (purification/purgation). Poets are generally better at desis than lusis. A suffering animal illustrates 'tragic pleasure.' De Anima divides mental capacities into nutritive, perceptual/sensitive, and intellectual/rational souls. Book III introduces active vs. passive intellect (nous poietikos vs. nous pathetikos), which became a major debate in medieval Arabic philosophy. The concept of tabula rasa originates here.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poetics: mimesis (imitation) and catharsis; primarily about tragedy</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">argues that this discipline originated from mimesis, or &#x27;imitation,&#x27; and introduced the concept of &#x27;catharsis&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">De Anima: nutritive, sensitive, rational souls; active vs. passive intellect</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">divided mental capacities into the nutritive, perceptual, and intellectual souls | the difference between nous poietikos and nous pathetikos</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tabula rasa originates in De Anima</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Aristotelian treatise from which the term tabula rasa originates</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">General identification: student of <a href="plato_stock.html" class="crossref-inline">Plato</a>, founder of the Lyceum, teacher of Alexander the Great. Works cited with Bekker numbers; standard English edition edited by Jonathan Barnes. The Organon collects his logical works. Introduced the syllogism. His 'future contingents' problem uses the sea battle example (Elizabeth Anscombe wrote 'Aristotle and the Sea Battle'). James of Venice's translation demarcates logica nova vs. logica vetus. Aquinas reconciled Aristotle with Christianity. <a href="duns_scotus_stock.html" class="crossref-inline">Duns Scotus</a> and Aquinas influenced by hylomorphism and four causes. William of Ockham reduced Aristotle's ten categories to substance and quality.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Student of Plato; founder of the Lyceum / Peripatetic School; teacher of Alexander the Great</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this founder of the Lyceum&#x27;s Peripatetic School, the most famous student of Plato</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bekker numbers used to cite his works; Jonathan Barnes edited standard English edition</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">His works are cited with Bekker numbers, and their standard English edition was edited by Julian Barnes&#x27;s brother, Jonathan</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Future contingents: &#x27;Tomorrow there will be a sea battle&#x27; (neither true nor false)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">used examples like &#x27;Tomorrow there will be a sea battle&#x27; to argue that future contingents are neither true nor false</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aquinas reconciled Aristotle with Christianity; referred to him as &#x27;The Philosopher&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Aquinas&#x27;s Summa Theologica refers to this thinker as &#x27;The Philosopher&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ockham reduced ten categories to substance and quality to reconcile with transubstantiation</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">an attempt to reconcile this philosopher&#x27;s thought with transubstantiation led to the claim that only &#x27;substance&#x27; and &#x27;quality&#x27; were real</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">History of the Animals: first to arrange organisms on a &#x27;Great Chain of Being&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In his History of the Animals, this thinker was the first to arrange organisms on a &#x27;Great Chain of Being&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Aristotle is one of the most broadly clued philosophers in quizbowl, with clues spanning his own works, pseudo-Aristotelian texts, and his massive influence on Islamic and medieval European philosophy. The Metaphysics is the most frequently clued individual work, concerning &#x27;being qua being&#x27; with key concepts including the unmoved mover (a &#x27;thought thinking about thinking&#x27;), the four causes, and potentiality and actuality. Its reception in the Islamic world is a major clue cluster: Avicenna famously read it 40 times, al-Farabi was called &#x27;the Second Teacher&#x27; for his commentary, <span class="crossref-inline-red" title="No page yet: Averroes">Averroes</span>&#x27;s Long Commentary introduced &#x27;monopsychicism,&#x27; and al-Kindi used its infinite regress argument.</p><p>The Nicomachean Ethics, named for Aristotle&#x27;s son, is the founding text of virtue ethics. It identifies eudaimonia as the highest good and proposes the Doctrine of the Mean. Phronesis and the &#x27;function argument&#x27; are frequently clued. The modern revival of virtue ethics by MacIntyre (After Virtue) and Anscombe (&#x27;Modern Moral Philosophy&#x27;) draws heavily on this work.</p><p>The Physics introduces the four causes (often illustrated with an architect/house or bronze statue), refutes Zeno&#x27;s paradoxes, and argues for the Prime Mover. Hylomorphism (form and matter) is central. The Politics is known for &#x27;man is by nature a political animal,&#x27; its controversial views on slaves and women, and its sixfold classification of constitutions.</p><p>Pseudo-Aristotelian works form a distinct clue cluster. The Theology of Aristotle is actually Plotinus. The Secretum Secretorum influenced Roger Bacon. The Book of Causes derives from Proclus. &#x27;Aristotle&#x27;s Masterpiece&#x27; was a sex manual. Porphyry&#x27;s Isagoge, an introduction to the Categories, was translated by <a href="boethius_stock.html" class="crossref-inline">Boethius</a> and became a medieval logic standard.</p><p>The Poetics introduces mimesis and catharsis. De Anima divides the soul into nutritive, sensitive, and rational components, with the active/passive intellect distinction becoming central to medieval Arabic debates. Aristotle introduced the syllogism, the problem of future contingents (sea battle example), and his works are cited using Bekker numbers.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Aristotle" target="_blank">Aristotle</a></li><li><a href="https://en.wikipedia.org/wiki/Metaphysics_(Aristotle)" target="_blank">Metaphysics (Aristotle)</a></li><li><a href="https://en.wikipedia.org/wiki/Nicomachean_Ethics" target="_blank">Nicomachean Ethics</a></li><li><a href="https://en.wikipedia.org/wiki/Physics_(Aristotle)" target="_blank">Physics (Aristotle)</a></li><li><a href="https://en.wikipedia.org/wiki/Poetics_(Aristotle)" target="_blank">Poetics (Aristotle)</a></li><li><a href="https://en.wikipedia.org/wiki/De_Anima" target="_blank">De Anima</a></li><li><a href="https://en.wikipedia.org/wiki/Politics_(Aristotle)" target="_blank">Politics (Aristotle)</a></li><li><a href="https://en.wikipedia.org/wiki/Hylomorphism" target="_blank">Hylomorphism</a></li><li><a href="https://en.wikipedia.org/wiki/Peripatetic_school" target="_blank">Peripatetic school</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Nicomachean Ethics - heavily clued as its own answerline</li><li>Metaphysics (Aristotle) - distinct answerline</li><li>Poetics (Aristotle) - separate topic with catharsis and mimesis</li><li>Politics (Aristotle) - own answerline</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'aristotle' });</script>
+
+</body>
+</html>

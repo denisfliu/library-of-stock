@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<title>Stock: Franz Schubert</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Franz Schubert</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Franz Schubert (1797–1828) was an Austrian Romantic composer who died at age 31 after composing over 600 lieder, nine symphonies, and a large body of chamber and piano music. His best-known works include the &#x27;Unfinished&#x27; Symphony, the &#x27;Great&#x27; C major Symphony, the Trout Quintet, the Death and the Maiden String Quartet, and the song cycles Winterreise and Die schöne Müllerin. His works were catalogued by Otto Deutsch (D. numbers).</div>
+
+        <details class="work" id="song-cycles-winterreise-die-sch-ne-m-llerin-schwanengesang" open>
+            <summary class="work-title">Song Cycles (Winterreise, Die schöne Müllerin, Schwanengesang)</summary>
+            <p class="work-desc">Schubert's three major song cycles set Wilhelm Müller's poetry (for Winterreise and Die schöne Müllerin) and <a href="heinrich_heine_stock.html" class="crossref-inline">Heinrich Heine</a>/others (for Schwanengesang). Winterreise ('Winter Journey,' 24 songs) follows a wanderer in winter: it includes a linden tree offering rest (E-major triplets), a lullaby of the brook, and ends with the wanderer encountering a hurdy-gurdy player ('Der Leiermann,' using repeated open fifths). Die schöne Müllerin (20 songs) follows a miller's apprentice who falls in love unsuccessfully and drowns himself in the brook — the brook turns out to be the villain; the cycle ends with a brook lullaby in E major. Schwanengesang (14 songs, posthumously published) includes 'Der Doppelgänger' (B-A#-D-C# ostinato, through-composed, sets Heine's poem about a man passing his lost love's house), 'Der Atlas,' and 'Die Taubenpost' (often thought to be Schubert's last lied). Both Die schöne Müllerin and Winterreise use poetry by Wilhelm Müller.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Winterreise: 24 songs on Wilhelm Müller poems; ends with hurdy-gurdy player (&#x27;Der Leiermann&#x27;) using repeated open fifths</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer set Wilhelm Muller&#x27;s poetry in a collection whose narrator meets a hurdy-gurdy player in its final piece | A collection by this composer ends with the narrator encountering a hurdy-gurdy player</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Winterreise: includes the linden tree song with rustling E-major triplets; narrator visits the tree for rest</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The cycle ends as the singer finds peace under a linden tree, whose branches are &#x27;rustled&#x27; by E-major triplets in a song in this other piece</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Die schöne Müllerin: miller&#x27;s apprentice drowns himself in the brook; the brook is the &#x27;villain&#x27;; brook sings a lullaby in E major</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This song cycle, whose protagonist drowns himself after unsuccessfully pursuing the title woman | In a lullaby from a piece by this composer, the title place twice bids the narrator good night after he drowns in it</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Schwanengesang: posthumously published 14 songs; &#x27;Der Doppelgänger&#x27; sets Heine on a man revisiting his lost love&#x27;s house, with B-A#-D-C# ostinato</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This piece begins with four bar-long block chords in the piano outlining a B-A sharp-D-C sharp ostinato | This posthumously published 1828 collection of 14 songs includes a B minor song with an ambiguous harmonic progression in which the singer stares at where his love once lived</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Schwanengesang: &#x27;Die Taubenpost&#x27; often thought to be Schubert&#x27;s last lied; right-hand figure quotes the call of the carrier pigeon</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This lied, due to its apparent simplicity and text by Johann Gabriel Seidl, is sometimes excluded in performance as the final entry in Schwanengesang | the right-hand accompanimental figure of this lied quotes the call of the title bird</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="der-erlk-nig" open>
+            <summary class="work-title">Der Erlkönig</summary>
+            <p class="work-desc">Schubert's most famous single lied, setting Goethe's poem about a father riding on horseback with his sick child being beckoned by the supernatural Erlking. The piano right hand plays repeated G octave triplets representing the galloping horse. The vocalist sings separate vocal ranges for the narrator, father, boy, and the Erlking; the boy's pitch rises in each successive appearance to show mounting fear. The song ends with the child dead ('war tot') after a perfect authentic cadence. It was arranged as a 'grand caprice' for solo violin by Heinrich Ernst. It is sometimes transposed down to F or E minor.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Piano right hand plays repeated octave G triplets representing the galloping horse</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this art song begins with repeated eighth note triplet G octaves to portray a galloping horse | the pianist&#x27;s right hand repeats G octaves in rapid triplets to represent the galloping of a horse</span></span><div class="score-clip" data-abc="X:1\nT:Erlkonig - galloping horse\n%%MIDI program 0\nM:3/8\nL:1/8\nK:C\n|GGG|GGG|GGG|GGG||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><audio controls preload="none" src="audio/0.mp3?v=1774247353" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Four vocal personas: narrator, father, child, and Erlking; child&#x27;s pitch rises with each repeat to show fear</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The singer&#x27;s last words are &#x27;war tot&#x27; before the piano plays a perfect authentic cadence | A character in this piece sings in a higher pitch each time to represent his rising fear</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sets a Goethe poem; boy cries &#x27;mein Vater&#x27; as he is seized by the title figure; child is dead at the end</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The soloist cries out &#x27;mein vater&#x27; in one of these pieces, where a boy on horseback is beckoned by the title figure based on a Goethe poem | A song by this composer sets a poem by Goethe in which a supernatural creature terrorizes a boy on horseback</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-8-in-b-minor-unfinished" open>
+            <summary class="work-title">Symphony No. 8 in B minor, &#x27;Unfinished&#x27;</summary>
+            <p class="work-desc">Schubert's Symphony No. 8 in B minor (D. 759) is called 'Unfinished' because only two movements were completed (plus a fragmentary scherzo). The first movement opens with cellos and basses playing B–C#–D–B before an oboe and clarinet theme. The second movement (Andante con moto) features a solo clarinet in E major/C-sharp minor, with the theme passing to oboe. Brian Newbould proposed using the B minor entr'acte from Schubert's Rosamunde incidental music as a finale. The score was discovered in the possession of Schubert's brother. Susan McClary gave a queer reading of the E major second movement in Queering the Pitch. <a href="robert_schumann_stock.html" class="crossref-inline">Robert Schumann</a> praised its 'heavenly length.' Columbia Records ran a 1928 completion competition.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Only two completed movements (plus fragmentary scherzo); in B minor</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">For 10 points, name this Austrian composer of the &#x27;Unfinished&#x27; Symphony | Some of the composer&#x27;s incidental music to Rosamunde is sometimes used to &#x27;complete&#x27; the eighth of these works, which has only two movements</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with cellos/basses on B–C#–D–B; first movement has oboe and clarinet theme</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this symphony that opens with cellos and basses playing the notes &#x27;B, C#, D, B&#x27; before an oboe and clarinet theme | An allegro moderato theme opening &#x27;G low D G F-sharp G F A&#x27; is played by the cellos in this symphony&#x27;s first movement</span></span><div class="score-clip" data-abc="X:1\nT:Unfinished Symphony - opening\n%%MIDI program 42\nM:3/4\nL:1/4\nK:C\n|B, ^C D B,||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><audio controls preload="none" src="audio/2.mp3?v=1774247354" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Brian Newbould proposed using the Rosamunde B minor entr&#x27;acte as its finale</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Brian Newbould proposed that the entr&#x27;acte this composer wrote for Rosamunde was the intended finale of a work | Brian Newbould performed this task by modifying the entr&#x27;acte from the incidental music to Rosamunde into a finale</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Score &#x27;discovered&#x27; in the possession of Schubert&#x27;s brother; premiered by Leipzig Gewandhaus</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After its manuscript was &#x27;discovered&#x27; in the possession of the composer&#x27;s brother, this symphony was premiered by the Leipzig Gewandhaus orchestra</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="symphony-no-9-in-c-major-great" open>
+            <summary class="work-title">Symphony No. 9 in C major, &#x27;Great&#x27;</summary>
+            <p class="work-desc">The 'Great' C major Symphony (D. 944) is Schubert's ninth and final symphony, praised by <a href="robert_schumann_stock.html" class="crossref-inline">Robert Schumann</a> for its 'heavenly length.' Its introductory theme is stated by two unison French horns playing long C–D–E–A–B–C. A chorale for cellos and violas follows. The A minor slow movement begins with seven measures of staccato string eighth notes followed by an extended oboe solo. The finale's development begins with an E-flat major quotation of the '<a href="schiller_stock.html#ode-to-joy" class="crossref-inline">Ode to Joy</a>'; its second theme features violins using ricochet in an ostinato of a quarter note plus three eighth triplets. The symphony was revived by Mendelssohn after Schumann brought him the score. Liszt planned but never completed a transcription. The 'Little' C major Symphony is No. 6; there is no standard No. 7.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Praised by Robert Schumann for &#x27;heavenly length&#x27;; revived by Mendelssohn after Schumann brought him the score</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Robert Schumann praised the &#x27;heavenly length&#x27; of this symphony | Mendelssohn also revived this symphony after Robert Schumann brought him the score</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with two unison French horns playing C–D–E (then A–B–C); chorale for cellos/violas follows</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The ninth of these works begins with the notes C, D, E, then A, B, C, played by two unaccompanied French horns | This symphony opens with the theme long C, D, E, low dotted A, short B, long C by soli French horns</span></span><div class="score-clip" data-abc="X:1\nT:Great C major Symphony opening\n%%MIDI program 60\nM:2/4\nL:1/4\nK:C\n|C2 D E|3/2A/ B c2||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><audio controls preload="none" src="audio/1.mp3?v=1774247354" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Finale&#x27;s development quotes the &#x27;Ode to Joy&#x27; in E-flat major; violinists at London premiere reportedly collapsed in laughter at the ricochet ostinato</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The development of this symphony&#x27;s finale begins with an E-flat major quotation of the &#x27;Ode to Joy&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="piano-quintet-in-a-major-trout-d-667" open>
+            <summary class="work-title">Piano Quintet in A major, &#x27;Trout&#x27; (D. 667)</summary>
+            <p class="work-desc">The Trout Quintet replaces the second violin with a double bass (inspired by Hummel's Op. 87, which uses the same unusual instrumentation). It was commissioned by Sylvester Paumgartner in Steyr, where Schubert vacationed with baritone Johann Michael Vogl (who premiered many of Schubert's works). The fourth of five movements is a set of variations in D major on the lied 'Die Forelle' (originally in D-flat major). A 1969 documentary featured Zubin Mehta as performer rather than conductor.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Replaces second violin with double bass; five movements; variations on &#x27;Die Forelle&#x27; in the fourth movement</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Austrian composed the Trout Quintet and the string quartet &#x27;Death and the Maiden&#x27; | replaced the second violin with a double bass in an A major Piano Quintet he wrote, which adapts a melody from his lied &#x27;Die Forelle&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commissioned by Sylvester Paumgartner; scored with same instrumentation as Hummel&#x27;s Op. 87</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sylvester Paumgartner commissioned this piece, which replaces the customary second violin with a double bass | This piece took inspiration from Hummel&#x27;s Opus 87, which uses the same unusual instrumentation</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Composed on vacation in Steyr with Johann Michael Vogl (Schubert&#x27;s preferred singer/collaborator)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The composer of this piece met its commissioner on a vacation in Steyr with Johann Michael Vogl, who premiered many of its composer&#x27;s works</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="string-quartet-no-14-in-d-minor-death-and-the-maiden" open>
+            <summary class="work-title">String Quartet No. 14 in D minor, &#x27;Death and the Maiden&#x27;</summary>
+            <p class="work-desc">The 'Death and the Maiden' quartet (D. 810) is named for the second movement, a theme and variations based on Schubert's earlier lied 'Der Tod und das Mädchen' (D. 531). The first movement opens with unison D, then fortissimo triplets, before modulating to F major. The finale is a D minor Presto tarantella (marked Prestissimo). It is preceded by the 'Rosamunde' Quartet (No. 13 in A minor, which reuses the incidental music to Helmina von Chézy's Rosamunde). The first movement of No. 14 opens with a 'long D in octaves, after which the second violin and viola play a triplet down to G.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Second movement is variations on the lied &#x27;Der Tod und das Mädchen&#x27; (D. 531)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s 14th string quartet quotes his song &#x27;Death and the Maiden&#x27; | The second movement features variations on a song its composer had written earlier</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Finale is a D minor Presto tarantella; first movement opens with unison D then fortissimo triplets</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The final movement of a piece with this nickname is a tarantella in D minor | This piece&#x27;s first movement opens with unison D, then fortissimo triplets, before modulating to an F major theme</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Preceded by the &#x27;Rosamunde&#x27; Quartet (No. 13 in A minor), which reuses the Rosamunde incidental music</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That string quartet is preceded by this composer&#x27;s Rosamunde Quartet | The second movement of this composer&#x27;s String Quartet No. 13 re-uses a melody he had earlier used in incidental music for a Helmina von Chezy play</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="wanderer-fantasy-d-760" open>
+            <summary class="work-title">Wanderer Fantasy (D. 760)</summary>
+            <p class="work-desc">The Wanderer Fantasy in C major (D. 760, Op. 15) is based on the lied 'Der Wanderer' — specifically the line 'The sun seems so cold to me here.' Its main rhythmic cell is 'long, short short, long, short short' on the tonic. Schubert said 'the devil may play it' in reference to its difficulty. It was dedicated to Carl Emanuel Liebenberg. Liszt orchestrated it (after Schubert's comment). Sviatoslav Richter recorded a famously slow performance of a G major sonata nicknamed 'Fantasy' but the Wanderer Fantasy itself opens with thundering C major chords in 'long, short-short' rhythm.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Schubert said &#x27;the devil may play it&#x27; about its difficulty</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer declared &#x27;the devil may play it&#x27; in reference to his challenging Wanderer Fantasy | A long, short short long, short short rhythm on the tonic appears in the first measure of the first and last movements of this piece</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on the lied &#x27;Der Wanderer&#x27;; the line &#x27;The sun seems so cold to me here&#x27; generates its main rhythmic cell</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a variation on a theme to which the composer had earlier set the line &#x27;The sun seems so cold to me here&#x27; in a piece whose title character repeatedly sighs the question &#x27;where is my beloved land?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Franz Liszt orchestrated it; Schubert dedicated it to Carl Emanuel Liebenberg</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Franz Liszt orchestrated a work by this composer that he claimed &#x27;the devil may play&#x27; in reference to its difficulty | The third movement of this piece, which was dedicated to Carl Emanuel Liebenberg</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="string-quintet-in-c-major-d-956" open>
+            <summary class="work-title">String Quintet in C major (D. 956)</summary>
+            <p class="work-desc">Schubert's only string quintet (D. 956) adds a second cello rather than a second viola (unlike Mozart's quintets). It is in C major and ends with the whole ensemble playing an unusual D-flat grace note resolving down to C. The second movement is Schubert's most famous adagio. The first movement features one cello holding a G while another chromatically descends to transition to an E-flat major second theme. David Finckel rejoined the Emerson String Quartet to perform it at the ensemble's farewell concerts. Schubert said after hearing Beethoven's 14th String Quartet: 'After this, what is left for us to write?'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adds a second cello (not second viola); in C major; only string quintet by Schubert</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s only string quintet is in C major and is scored for a string quartet with an extra cello | This composer added a second cello in his C major String Quintet</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with the whole ensemble playing an unusual D-flat grace note resolving to C</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That chamber work by this composer ends with the whole ensemble playing an unusual D-flat grace note that resolves down to C</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="last-piano-sonatas-d-958-960" open>
+            <summary class="work-title">Last Piano Sonatas (D. 958–960) <a href="ludwig_van_beethoven_stock.html#piano-sonatas" class="work-link-btn" title="Go to Ludwig van Beethoven">&rarr;</a></summary>
+            <p class="work-desc">Schubert's last three <a href="ludwig_van_beethoven_stock.html#piano-sonatas" class="crossref-inline">Piano Sonatas</a> (D. 958 in C minor, D. 959 in A major, D. 960 in B-flat major) are often performed as a trilogy. The B-flat major Sonata (No. 21, D. 960) is the final one and opens with a mysterious low G-flat trill eight measures in (Alex Ross called it the 'Trill of Doom'); its C-sharp minor slow movement unusually ends in major; the rondo finale begins with a loud G octave in the left hand. Andras Schiff gave an interview titled 'The Trill of Doom' analyzing the trill. Sviatoslav Richter recorded a famously slow performance of a G major sonata nicknamed 'Fantasy.' The C major sonata (Reliquie) was mistakenly thought to be Schubert's last.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">B-flat major final sonata (D. 960) has a mysterious low G-flat trill eight measures in (&#x27;Trill of Doom&#x27;)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A mysterious low G-flat trill appears early in a B-flat-major piano sonata that is this composer&#x27;s twenty-first and final piano sonata | The last of these works darkens in mood with a trill in its eighth measure that begins on a low F and alternates between the notes G-flat and A-flat, which Alex Ross described as the &#x27;Trill of Doom&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Last three sonatas (C minor, A major, B-flat major) are often performed as a trilogy; D. 958–960</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the last three of these works are labeled D. 958 through 960, and the final one alludes to their composer&#x27;s earlier song Der Wanderer | the last three of which — in C minor, A major, and B-flat major — are so thematically knit they are often performed as a trilogy</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Austrian composer (1797–1828) who died at age 31 from typhoid fever. He wrote over 600 lieder, nine symphonies, and vast chamber and piano music. His works were catalogued by Otto Deutsch using 'D.' numbers. He was possibly gay — Maynard Solomon identified a close circle of male intimates including Eduard von Bauernfeld (the 'peacocks of Benvenuto Cellini' theory). He expanded the impromptu form (invented by Jan Václav Vořišek/Vorisek) and wrote 8 impromptus in two sets and 6 Moments Musicaux. He added a second violin to Beethoven's Septet to create his Octet in F (commissioned by Ferdinand Troyer for the Schuppanzigh quartet). After hearing Beethoven's 14th String Quartet, he asked 'After this, what is left for us to write?'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Austrian; died at age 31; wrote over 600 lieder; works catalogued by Otto Deutsch (D. numbers)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This incredibly prolific composer wrote those song cycles, which number among his more than 600 extant vocal pieces. He also wrote seven symphonies including an &#x27;Unfinished&#x27; one, before dying young at age 31 | This composer, whose works were catalogued by Otto Deutsch, wrote the only major extant sonata for Arpeggione</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote 8 impromptus in two sets and 6 Moments Musicaux; impromptu form invented by Vorisek</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer expanded upon a freeform style invented by his friend Jan Vaclav Vorisek by writing six short piano pieces called moments musicaux and two sets of four Impromptus | Brahms edited a set of &#x27;three piano pieces&#x27; by this composer initially intended to be a third set of four impromptus</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Octet in F commissioned by Ferdinand Troyer; created by adding a second violin to Beethoven&#x27;s Septet instrumentation</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Clarinettist Ferdinand Troyer commissioned this composer&#x27;s Octet as a companion piece to Beethoven&#x27;s Septet | This composer added an extra violin to the instrumentation of Beethoven&#x27;s Septet to create the earliest major mixed wind and string octet in the standard repertoire</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">After hearing Beethoven&#x27;s String Quartet No. 14 in C-sharp minor, said &#x27;After this, what is left for us to write?&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After listening to Beethoven&#x27;s 14th String Quartet, this composer asked &#x27;After this, what is left for us to write?&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Franz Schubert (1797–1828) was an Austrian Romantic composer who died at age 31 yet produced over 600 lieder, nine symphonies, and a vast body of chamber and piano music. His works are catalogued by Otto Deutsch using &#x27;D.&#x27; numbers.</p><p>Schubert&#x27;s song cycles are central to quizbowl. Winterreise (24 songs on Wilhelm Müller poems) follows a wanderer in winter; key moments include the linden tree song (E-major triplets in the accompaniment), and the cycle ends with the narrator meeting a hurdy-gurdy player (&#x27;Der Leiermann&#x27;) whose instrument is depicted by repeated open fifths. Die schöne Müllerin (20 songs, also on Müller) follows a miller&#x27;s apprentice who falls for a woman and drowns himself in the brook — the brook is revealed as the villain, and it sings the cycle&#x27;s final lullaby in E major. Schwanengesang (14 songs, posthumously published) includes &#x27;Der Doppelgänger&#x27; (B–A#–D–C# ostinato, setting Heine) and &#x27;Die Taubenpost&#x27; (often called Schubert&#x27;s last lied, with an accompaniment quoting the pigeon&#x27;s call).</p><p>Der Erlkönig (D. 328), setting Goethe, features the piano&#x27;s right hand repeating rapid G octave triplets to portray a galloping horse; the vocalist must sing four distinct registers for narrator, father, child, and the Erlking; the child&#x27;s pitches rise with each terrified plea. The child is dead at the end.</p><p>The Symphony No. 8 in B minor (&#x27;Unfinished,&#x27; D. 759) has only two completed movements (plus a fragmentary scherzo). Its first movement opens with cellos and basses on B–C#–D–B before an oboe/clarinet theme. Brian Newbould proposed using the B minor entr&#x27;acte from Rosamunde as a finale. The score was recovered from Schubert&#x27;s brother. The Symphony No. 9 in C major (&#x27;Great,&#x27; D. 944) is praised by <a href="robert_schumann_stock.html" class="crossref-inline">Robert Schumann</a> for &#x27;heavenly length.&#x27; Its introduction is stated by two unison French horns on C–D–E–A–B–C; the A minor slow movement begins with staccato string eighths before an oboe solo; the finale&#x27;s development quotes the &#x27;<a href="schiller_stock.html#ode-to-joy" class="crossref-inline">Ode to Joy</a>&#x27; in E-flat major. Mendelssohn revived it after Schumann brought him the score.</p><p>The Piano Quintet in A major (&#x27;Trout,&#x27; D. 667) replaces the second violin with a double bass, following Hummel&#x27;s Op. 87. Commissioned by Sylvester Paumgartner in Steyr during a vacation with baritone Johann Michael Vogl, its fourth movement is a set of D-major variations on the lied &#x27;Die Forelle.&#x27; The String Quartet No. 14 in D minor (&#x27;Death and the Maiden,&#x27; D. 810) quotes the earlier lied in its second-movement variations; its finale is a Presto tarantella; it is preceded in composition by the &#x27;Rosamunde&#x27; Quartet (No. 13, which reuses Rosamunde incidental music). The String Quintet in C major (D. 956) adds a second cello (unusual for the genre), ends with a D-flat grace note resolving to C, and its second movement is considered Schubert&#x27;s finest adagio.</p><p>The Wanderer Fantasy in C major (D. 760) is based on the lied &#x27;Der Wanderer&#x27; (the line &#x27;The sun seems so cold to me here&#x27; generates its main rhythmic cell: long-short-short). Schubert said &#x27;the devil may play it&#x27;; Liszt later orchestrated it. The last three <a href="ludwig_van_beethoven_stock.html#piano-sonatas" class="crossref-inline">Piano Sonatas</a> (D. 958–960 in C minor, A major, B-flat major) are often performed as a trilogy; the B-flat major final sonata has a mysterious G-flat bass trill eight measures in, which Alex Ross called the &#x27;Trill of Doom.&#x27; Schubert wrote eight impromptus in two sets and six Moments Musicaux, expanding the form invented by Jan Václav Vořišek. His Octet in F was commissioned by Ferdinand Troyer and adds a second violin to Beethoven&#x27;s Septet instrumentation.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Franz_Schubert" target="_blank">Franz Schubert (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Winterreise" target="_blank">Winterreise (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Die_sch%C3%B6ne_M%C3%BCllerin" target="_blank">Die schöne Müllerin (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Symphony_No._8_(Schubert)" target="_blank">Symphony No. 8 &#x27;Unfinished&#x27; (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/Piano_Quintet_in_A_major_(Schubert)" target="_blank">Piano Quintet &#x27;Trout&#x27; (Wikipedia)</a></li><li><a href="https://en.wikipedia.org/wiki/String_Quartet_No._14_(Schubert)" target="_blank">String Quartet &#x27;Death and the Maiden&#x27; (Wikipedia)</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Winterreise — extremely rich individual song clue content; warrants standalone analysis</li><li>Der Erlkönig — frequently answerline in AFA and has unique pitch/rhythm clues worth detailed score analysis</li><li>Symphony No. 8 &#x27;Unfinished&#x27; — own answerline in many questions; worth dedicated analysis</li><li>Die schöne Müllerin — standalone analysis warranted for individual song content</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'franz_schubert' });</script>
+<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {
+        ABCJS.renderAbc(el, abc, { responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' });
+    }
+});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+    var visual = ABCJS.renderAbc('_offscreen', abc, {});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({ visualObj: visual[0] }).then(function() {
+        return synth.prime();
+    }).then(function() {
+        synth.start();
+        _clipSynth = synth;
+    }).catch(function(e) { console.warn('abcjs synth:', e); });
+}
+function stopAbc(btn) {
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>
+</body>
+</html>

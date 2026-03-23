@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Bertrand Russell</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Bertrand Russell</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">British philosopher, logician, and public intellectual. Co-authored Principia Mathematica with Alfred North Whitehead. Wrote &#x27;On Denoting&#x27; (theory of definite descriptions), Why I Am Not a Christian (Russell&#x27;s teapot), and A History of Western Philosophy. Known for Russell&#x27;s paradox, neutral monism, logical atomism, and anti-war activism.</div>
+
+        <details class="work" id="on-denoting-theory-of-definite-descriptions" open>
+            <summary class="work-title">On Denoting &amp; Theory of Definite Descriptions</summary>
+            <p class="work-desc">Russell's landmark 1905 essay in the philosophy of language. It introduces the theory of definite descriptions, distinguishing phrases that describe one and only one object ('the father of Charles II was executed') from indefinite descriptions. The essay famously analyzes 'the present king of France is bald' — a phrase that describes a non-existent entity — and argues against Alexius Meinong's theory that non-existent objects can 'subsist.' It also considers the sentence about 'George IV wanting to know whether Scott was the author of Waverley.' P.F. Strawson criticized the essay in 'On Referring,' leading Russell to write 'Mr. Strawson on Referring.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;the present king of France is bald&#x27; — analyzing definite descriptions of non-existent entities</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker uses the sentence &#x27;the present king of France is bald&#x27; to explain his idea of definite descriptions | distinguished between the present King of England and the present King of France as different kinds of definite descriptions</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">against Alexius Meinong — non-existent objects like &#x27;round square&#x27; violate principle of contradiction</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker posited an example of a phrase which describes one and only one event: &#x27;the father of Charles II was executed&#x27; | departed from the extreme realism of Meinong</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">P.F. Strawson criticized the essay in &#x27;On Referring&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">P.F. Strawson criticized an essay by this thinker | criticism by P.F Strawson prompted this author to write the polemic response &#x27;Mr. Strawson on Referring&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;the author of Waverley&#x27; / Scott example — distinguishing identity statements</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">discusses how the sentence &#x27;George IV wanted to know whether Scott was the author of Waverley&#x27; is true</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">knowledge by acquaintance vs. knowledge by description (sense data)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this essay divides knowledge into knowledge by description and knowledge by acquaintance, or sense data</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gray&#x27;s Elegy Argument — notoriously confusing critique of Frege</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a notoriously confusing argument by this philosopher is a criticism of Frege&#x27;s philosophy of language known as the &#x27;Gray&#x27;s Elegy Argument&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="principia-mathematica-russell-s-paradox" open>
+            <summary class="work-title">Principia Mathematica &amp; Russell&#x27;s Paradox</summary>
+            <p class="work-desc">Russell co-authored the three-volume Principia Mathematica (1910-1913) with Alfred North Whitehead, axiomatically constructing set theory and presenting a ramified theory of types. The work famously proves 1+1=2 and remarks 'the above proposition is occasionally useful.' Russell's paradox concerns the set of all sets that do not contain themselves, discovered when Russell found an inconsistency in Frege's Basic Law V. The paradox was resolved by Zermelo-Fraenkel set theory. Godel's incompleteness theorems are considered the nail in the coffin of the Principia's program.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">14x</td>
+                <td class="clue-body">
+                    <span class="clue-text">co-authored Principia Mathematica with Alfred North Whitehead</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">co-authored Principia Mathematica with Alfred North Whitehead | this man axiomatically constructed set theory with the founder of process philosophy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Russell&#x27;s paradox — set of all sets that do not contain themselves</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a paradox named for this man concerns the set of all sets that are not members of themselves | by banning unrestricted comprehension and universes, Zermelo and Fraenkel developed a system that avoids that problem</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">found inconsistency in Frege&#x27;s Basic Law V; developed ramified type theory</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this man developed a &#x27;ramified&#x27; type theory to resolve an inconsistency he derived from Axiom V</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">proves 1+1=2 and remarks &#x27;occasionally useful&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in a work co-written with Whitehead, this philosopher proves one plus one equals two, and then remarks &#x27;The above proposition is occasionally useful&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Godel&#x27;s incompleteness theorems — nail in the coffin of Principia</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Godel&#x27;s incompleteness theorems are often considered the nail in the coffin of this three-volume work</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="russell-s-teapot-why-i-am-not-a-christian" open>
+            <summary class="work-title">Russell&#x27;s Teapot &amp; Why I Am Not a Christian</summary>
+            <p class="work-desc">Russell formulated the teapot argument — that the burden of proof lies on the claimant, not the skeptic — by imagining a teapot too small to see floating in space between Earth and Mars. The full argument appears in his book Why I Am Not a Christian, which includes a talk given at the National Secular Society criticizing the 'first cause' argument and arguing that Christ was not the 'best and wisest of men.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Russell&#x27;s teapot — burden of proof on unfalsifiable claims; teapot too small to see in space</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">formulated an argument against defaulting to belief in God that involves a floating teapot | countered arguments for the existence of god through his thought experiment involving a teapot in outer space</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Why I Am Not a Christian — talk at National Secular Society; refutes &#x27;first cause&#x27; argument</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this philosopher gave a talk at the National Secular Society on why he thought that the &#x27;best and wisest of men&#x27; was not Christ</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">discussed John Stuart Mill&#x27;s rejection of &#x27;who made me?&#x27; to rebut first cause</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this philosopher discusses John Stuart Mill&#x27;s rejection of the question &#x27;who made me?&#x27; to rebut the &#x27;first cause&#x27; argument</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-history-of-western-philosophy" open>
+            <summary class="work-title">A History of Western Philosophy</summary>
+            <p class="work-desc">Russell's 1945 survey of philosophy from the ancient Greeks through the modern era, divided into 'Ancient Philosophy,' 'Catholic Philosophy,' and 'Modern Philosophy.' It criticizes Aquinas for finding arguments for conclusions already drawn, dismisses Aristotelian notions of 'essence' and 'substance,' and attacks Bergson as anti-rational. Russell credits the book with helping him win the 1950 Nobel Prize in Literature.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">divided into &#x27;Ancient Philosophy,&#x27; &#x27;Catholic Philosophy,&#x27; and &#x27;Modern Philosophy&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">that book is divided into three sections on &#x27;Ancient Philosophy,&#x27; &#x27;Catholic Philosophy,&#x27; and &#x27;Modern Philosophy&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">criticizes Aquinas for finding arguments for conclusions already drawn</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this philosopher wrote that Aquinas lacks the &#x27;true philosophic spirit&#x27; because he finds arguments for conclusions he has already drawn</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">attacks Bergson as anti-rational</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker helped depopularize Bergson by attacking him as anti-rational</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">credits the book with helping him win the 1950 Nobel Prize in Literature</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a 1929 book on marriage this man credits with helping him win the 1950 Nobel Prize in Literature</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="neutral-monism-logical-atomism" open>
+            <summary class="work-title">Neutral Monism &amp; Logical Atomism</summary>
+            <p class="work-desc">Russell's metaphysical positions. Logical atomism holds that the world is composed of 'simples' and that compound propositions ('molecular') consist of multiple 'atomic' propositions. Neutral monism holds that there is a single existing substance that can be viewed as mental or physical depending on context — illustrated by the postal worker analogy (sorting letters alphabetically = mental, geographically = physical). Russell's The Analysis of Mind introduced neutral monism, rejecting dualism.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">logical atomism — atomic propositions, molecular propositions composed via truth-functions</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this neutral monist called propositions that are compounded using truth-function operators &#x27;molecular&#x27; | this thinker coined the term logical atomism</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">neutral monism — postal worker analogy; single substance viewed as mental or physical</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a paper by this thinker compared classifying substances to sorting a letter by alphabetical or geographical order in a postal directory analogy | used the fact that names can appear in multiple sections of a phone book as an analogy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Analysis of Mind introduced neutral monism</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Analysis of Minds introduced his neutral monism</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="anti-war-activism-political-writings" open>
+            <summary class="work-title">Anti-War Activism &amp; Political Writings</summary>
+            <p class="work-desc">Russell was a prominent anti-war activist. He organized the Russell-Einstein Manifesto (1955) condemning nuclear weapons, and with Jean-Paul Sartre led a tribunal that found the US guilty of war crimes in Vietnam. He advocated a four-hour workday in 'In Praise of Idleness' and supported guild socialism. His opposition to American entry into World War I resulted in his dismissal from Trinity College. He founded the Beacon Hill School with his second wife Dora and wrote On Education.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Russell-Einstein Manifesto (1955) — condemned nuclear weapons</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">in 1955, a manifesto named for a German scientist and this thinker condemned the danger of nuclear weapons</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">with Sartre, led tribunal finding US guilty of war crimes in Vietnam</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">with Jean-Paul Sartre, this thinker led a conference that found the US guilty of war crimes in Vietnam</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;In Praise of Idleness&#x27; — advocated four-hour workday</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker advocated for a four-hour workday in the essay &#x27;In Praise of Idleness&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">dismissed from Trinity College for opposing WWI entry</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker&#x27;s opposition to American entry into World War I resulted in his dismissal from Trinity College</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Beacon Hill School founded with second wife Dora; On Education</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">with his second wife, Dora, this one-time head of the India League founded the Beacon Hill School</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;relative political pacifism&#x27; — not absolute pacifism</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker described his relative pacifism by contrast with absolute pacifism in &#x27;The Future of Pacifism&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">1950 Nobel Prize in Literature</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a 1929 book on marriage this man credits with helping him win the 1950 Nobel Prize in Literature</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-problems-of-philosophy-other-works" open>
+            <summary class="work-title">The Problems of Philosophy &amp; Other Works</summary>
+            <p class="work-desc">Russell's 1912 introductory text discusses appearance vs. reality (using a table example), knowledge by acquaintance, and argued against coherence theory. He also wrote The ABC of Atoms, The ABC of Relativity, Why Men Fight, and Proposed Roads to Freedom. Ray Monk wrote his biography (The Spirit of Solitude / The Ghost of Madness).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Problems of Philosophy — appearance vs. reality; table example; argued against coherence theory</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this philosopher&#x27;s 1912 work The Problems of Philosophy argued against coherence theory | Russell first discusses appearance and reality in passages about the color and reflective properties of one of these objects</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ray Monk biography — &#x27;The Spirit of Solitude&#x27; / &#x27;The Ghost of Madness&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ray Monk called this thinker &#x27;the Spirit of Solitude&#x27; in a biography | Ray Monk&#x27;s biography of this man, subtitled The Ghost of Madness</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Proposed Roads to Freedom — explained different left-wing traditions including guild socialism</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker explained different left-wing traditions in Proposed Roads to Freedom</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Bertrand Russell is one of the most heavily clued philosophers in quizbowl, with major contributions spanning logic, philosophy of language, epistemology, and political activism. His 1905 essay &#x27;On Denoting&#x27; introduces the theory of definite descriptions, analyzing &#x27;the present king of France is bald&#x27; and arguing against Meinong&#x27;s theory of non-existent objects. P.F. Strawson&#x27;s critique in &#x27;On Referring&#x27; is a frequent follow-up clue.</p><p>With Alfred North Whitehead, Russell co-authored Principia Mathematica, which axiomatically constructs set theory and presents a ramified theory of types. Russell&#x27;s paradox — concerning the set of all sets that do not contain themselves — was discovered when he found an inconsistency in Frege&#x27;s Basic Law V. The paradox motivated Zermelo-Fraenkel set theory.</p><p>Russell formulated the &#x27;teapot&#x27; argument for atheism, imagining a teapot too small to see floating in space. Why I Am Not a Christian collects his arguments against theism. A History of Western Philosophy (1945), divided into three sections, criticizes Aquinas and Bergson and helped Russell win the 1950 Nobel Prize in Literature.</p><p>His metaphysical positions include logical atomism (atomic and molecular propositions) and neutral monism (a single substance viewed as mental or physical, illustrated by the postal worker analogy). He advocated political causes throughout his life: the Russell-Einstein Manifesto condemned nuclear weapons, he led a tribunal with Sartre finding the US guilty of Vietnam war crimes, advocated a four-hour workday in &#x27;In Praise of Idleness,&#x27; and was dismissed from Trinity College for opposing WWI.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Bertrand_Russell" target="_blank">Bertrand Russell</a></li><li><a href="https://en.wikipedia.org/wiki/On_Denoting" target="_blank">On Denoting</a></li><li><a href="https://en.wikipedia.org/wiki/Principia_Mathematica" target="_blank">Principia Mathematica</a></li><li><a href="https://en.wikipedia.org/wiki/Russell%27s_paradox" target="_blank">Russell&#x27;s paradox</a></li><li><a href="https://en.wikipedia.org/wiki/Russell%27s_teapot" target="_blank">Russell&#x27;s teapot</a></li><li><a href="https://en.wikipedia.org/wiki/A_History_of_Western_Philosophy" target="_blank">A History of Western Philosophy</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>On Denoting</li><li>Principia Mathematica</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'bertrand_russell' });</script>
+
+</body>
+</html>

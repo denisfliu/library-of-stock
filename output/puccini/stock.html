@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<title>Stock: Giacomo Puccini</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Giacomo Puccini</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Italian verismo opera composer (1858–1924). Major operas include <a href="la_boheme_stock.html" class="crossref-inline">La Bohème</a> (1896), <a href="tosca_stock.html" class="crossref-inline">Tosca</a> (1900), Madama Butterfly (1904), La fanciulla del West (1910), Il trittico (1918, comprising Il tabarro, Suor Angelica, and Gianni Schicchi), and the unfinished <a href="turandot_stock.html" class="crossref-inline">Turandot</a>. His frequent librettists were Luigi Illica and Giuseppe Giacosa. Close collaborator with conductor Arturo Toscanini. Known for &#x27;Nessun dorma,&#x27; &#x27;O mio babbino caro,&#x27; &#x27;Un bel dì vedremo,&#x27; &#x27;Vissi d&#x27;arte,&#x27; &#x27;Che gelida manina,&#x27; and &#x27;Musetta&#x27;s Waltz.&#x27;</div>
+
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Giacomo Puccini (1858–1924), Italian verismo opera composer. His frequent librettists were Luigi Illica (who also wrote for Giordano's <a href="andrea_chenier_stock.html" class="crossref-inline">Andrea Chénier</a> and for Catalani's La Wally) and Giuseppe Giacosa. Close collaborator with conductor Arturo Toscanini, who conducted the premieres of <a href="la_boheme_stock.html" class="crossref-inline">La Bohème</a>, La fanciulla del West, and <a href="turandot_stock.html" class="crossref-inline">Turandot</a>. Puccini died of throat cancer before completing Turandot — his deathbed plea to Toscanini was 'don't let [the opera] die.' The musical Rent (Jonathan Larson) is based on La bohème. Musicologist Joseph Kerman called <a href="tosca_stock.html" class="crossref-inline">Tosca</a> a 'shabby little shocker.' Puccini's publisher Ricordi rejected La Rondine as 'bad Lehár.' Al Jolson was sued by Puccini's publisher for plagiarizing an aria in 'Avalon.' <a href='https://en.wikipedia.org/wiki/Giacomo_Puccini' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">15x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Italian verismo opera composer; major works include La bohème, Tosca, Madama Butterfly, and Turandot</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Italian composer of Gianni Schicchi and La boheme | name this Italian verismo composer of Madama Butterfly</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arturo Toscanini conducted the premieres of La bohème, La fanciulla del West, and Turandot; Puccini begged him on his deathbed &#x27;don&#x27;t let [Turandot] die&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">As he was dying of throat cancer, the composer of this opera approached Arturo Toscanini and begged him &#x27;don&#x27;t let [this opera] die!&#x27; | This composer had a collaborative friendship with Arturo Toscanini, who conducted the premiere of his opera, La Boheme.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Luigi Illica (with Giacosa) wrote the libretti for La bohème, Tosca, and Madama Butterfly; Illica also wrote the libretto for Manon Lescaut</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This playwright, who wrote the libretto for Giordano&#x27;s Andrea Chenier, collaborated with Giuseppe Giacosa in writing the libretti for most of Puccini&#x27;s greatest hits, including La Boheme, Tosca, and Madama Butterfly. | The libretto for Catalani&#x27;s La Wally was written by Luigi Illica, who also penned the libretto to this composer&#x27;s opera Manon Lescaut.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The musical Rent (Jonathan Larson) is based on La bohème</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Jonathan Larson musical Rent is based on his opera La boheme.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Musicologist Joseph Kerman called Tosca a &#x27;shabby little shocker&#x27;; conductor Thomas Beecham responded that anything Kerman says about Puccini &#x27;can safely be ignored&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This opera was controversially referred to as a &#x27;shabby little shocker&#x27; by musicologist Joseph Kerman in his 1956 book Opera as Drama. After Kerman&#x27;s scathing remarks, the conductor Thomas Beecham responded by saying that anything Kerman says about this opera&#x27;s composer &#x27;can safely be ignored.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="la-boh-me" open>
+            <summary class="work-title">La bohème <a href="la_boheme_stock.html" class="work-link-btn" title="Go to La Bohème">&rarr;</a></summary>
+            <p class="work-desc">Opera (1896) set in the Latin Quarter of Paris among a group of young bohemian artists. Rodolfo is a poet; Mimi is a seamstress who is dying of tuberculosis. Rodolfo sings 'Che gelida manina' ('What a cold little hand') when he hides her key; Mimi introduces herself with 'Sì, mi chiamano Mimì.' Rodolfo and his friends include the painter Marcello. Musetta sings her waltz 'Quando me'n vo'' to win back Marcello. Colline sells his overcoat in the aria 'Vecchia zimarra.' Mimi dies in Rodolfo's arms. Premiered by Toscanini. <a href='https://en.wikipedia.org/wiki/La_boh%C3%A8me' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rodolfo sings &#x27;Che gelida manina&#x27; and reveals his life as a poet; Mimi responds with &#x27;Sì, mi chiamano Mimì&#x27;; they sing &#x27;O soave fanciulla&#x27; together</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a poet reveals his life story in &#x27;Che gelida manina&#x27; | Rodolfo sings &#x27;O soave fanciulla&#x27; and &#x27;Che gelida manina&#x27; about the seamstress Mimi</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Musetta sings her waltz &#x27;Quando me&#x27;n vo&#x27;&#x27; to win back Marcello, sending Alcindoro to the shoemaker by pretending her shoe is too tight</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a mistress of Alcindoro, sings &#x27;Quando me&#x27;n vo&#x27;&#x27; to win back the affections of Marcello, and that song is known as Musetta&#x27;s waltz | pretends that her shoe is too tight and sends off Alcindoro to the shoemaker immediately after singing this aria, in which she states that everyone stares at her beauty</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Colline sells his overcoat in &#x27;Vecchia zimarra&#x27;; Mimi dies in Rodolfo&#x27;s arms</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Colline sells his favorite coat in the aria &#x27;Vecchia Zimarra&#x27; in an opera by this composer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Puccini was furious he didn&#x27;t cast Enrico Caruso as Cavaradossi in Tosca after Caruso sang &#x27;Che gelida manina&#x27;; Puccini said &#x27;Who sent you to me—God?&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Upon hearing Enrico Caruso sing this aria, its composer supposedly said &#x27;Who sent you to me-God?&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="tosca" open>
+            <summary class="work-title">Tosca <a href="tosca_stock.html" class="work-link-btn" title="Go to Tosca">&rarr;</a></summary>
+            <p class="work-desc">Opera (1900) based on Sardou's play. The title character is a diva (Floria <a href="tosca_stock.html" class="crossref-inline">Tosca</a>); her lover is the painter Mario Cavaradossi; the villain is Baron Scarpia, head of the secret police. Tosca sings 'Vissi d'arte' in Act II when Scarpia demands she sleep with him to save Cavaradossi; she then stabs Scarpia with his own knife. Scarpia gave her a fake safe-conduct letter but arranged a real execution. Cavaradossi sings 'E lucevan le stelle' in Act III (introduced by clarinet, reprised triple-forte by brass as Tosca jumps). He sings 'Recondita armonia' in Act I comparing his painting of Mary Magdalene to Tosca. The Te Deum ends Act I. Tosca leaps from Castel Sant'Angelo. <a href='https://en.wikipedia.org/wiki/Tosca' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tosca stabs Baron Scarpia after he demands she sleep with him in exchange for Cavaradossi&#x27;s life; he gives her a fake safe-conduct; she cries &#x27;O Scarpia, we meet before God!&#x27; before jumping</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist kills the head of the secret police, Baron Scarpia, who wrote a safe conduct letter for her and her lover Mario Cavaradossi | This character... leaps off of a wall after finding out that Cavaradossi is dead and that Baron Scarpia has betrayed her.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tosca sings &#x27;Vissi d&#x27;arte&#x27; (&#x27;I lived for art&#x27;) in Act II — slow aria beginning E-flat, D-flat, B-flat, A-flat; she asks &#x27;why, Lord, do you reward me thus?&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The original plan for Scarpia to arrange a mock execution for Mario in exchange for Tosca&#x27;s hand in marriage occurs shortly after Tosca sings this penitent aria in Act 2 | This slow aria begins with the quarter notes E-flat, D-flat, B-flat, A-flat, and is then repeated with a small flourish before the singer says she had never &#x27;harmed a living soul.&#x27;</span></span><div class="score-clip" data-abc="X:1\nT:Vissi d'arte opening\n%%MIDI program 71\nM:4/4\nL:1/4\nK:C\n| _E _D _B, _A, ||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><audio controls preload="none" src="audio/1.mp3?v=1774247360" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cavaradossi sings &#x27;E lucevan le stelle&#x27; (introduced by a clarinet solo) in Act III atop Castel Sant&#x27;Angelo before his execution; the clarinet theme recurs triple-forte in brass as Tosca jumps</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The clarinet introduces this tenor aria from act 3 of Tosca, where Cavaradossi is unable to hold in his emotions as he attempts to write Tosca a letter. That clarinet introduction... is later played in a passage marked triple-forte by the brass as Tosca commits suicide. | &#x27;E lucevan le stelle&#x27; is sung by Cavaradossi to the title diva of another opera by this composer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cavaradossi sings &#x27;Recondita armonia&#x27; in Act I, comparing his painting of Mary Magdalene (modeled on the Marchesa Attavanti&#x27;s eyes) to Tosca&#x27;s dark hair</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This is the aria that Cavaradossi sings while discussing combining Tosca&#x27;s dark hair and Attavanti&#x27;s blue eyes in the features of his painting of Mary Magdalene. | He abets the convict Cesare Angelotti after comparing his painting of Mary Magdalene to his lover in the aria &#x27;Recondita armonia&#x27;.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Act I ends with Scarpia joining the chorus singing the Te Deum</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first act of Tosca ends with Scarpia profanely joining the chorus as they sing this hymn.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="madama-butterfly" open>
+            <summary class="work-title">Madama Butterfly</summary>
+            <p class="work-desc">Opera (1904) set in Nagasaki. Cio-Cio San (Butterfly) is a Japanese woman married to American Navy Lieutenant Pinkerton; the American Consul is Sharpless. Butterfly waits faithfully for Pinkerton, singing 'Un bel dì vedremo' ('One Beautiful Day'). A humming chorus (with solo viola d'amore) bridges acts. Pinkerton's theme uses 'The Star-Spangled Banner.' Butterfly stabs herself ('Con onor muore'). Toscanini conducted the premiere of <a href="la_boheme_stock.html" class="crossref-inline">La Bohème</a>. <a href='https://en.wikipedia.org/wiki/Madama_Butterfly' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Butterfly (Cio-Cio San) sings &#x27;Un bel dì vedremo&#x27; (&#x27;One Beautiful Day&#x27;), foretelling Pinkerton&#x27;s return; she also asks Sharpless about robins&#x27; nesting in America</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">She foretells the coming of a ship... and she later asks another character about her beloved&#x27;s behavior with the analogy of a nesting robin. | This Puccini opera, in which it is sung by the title character Cio-Cio San, who is tragically married to the American Navy Lieutenant Pinkerton.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The humming chorus (with solo viola d&#x27;amore) bridges Acts II and III; begins with cellos playing pizzicato F, A, B-flat then flutes and high strings responding with arpeggiated B-flat major</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This vocal number begins with the cellos playing the pizzicato notes F, A, B-flat, to which the flutes and high strings respond with a staccato arpeggiated B-flat major pattern. | Madama Butterfly features a notable chorus using this atypical vocal technique [humming].</span></span><div class="score-clip" data-abc="X:1\nT:Humming chorus opening\n%%MIDI program 40\nM:4/4\nL:1/4\nK:C\n| F A _B2 | _B d f _B ||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><audio controls preload="none" src="audio/2.mp3?v=1774247361" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pinkerton&#x27;s theme uses motifs from &#x27;The Star-Spangled Banner&#x27; (not yet the national anthem when Puccini composed the opera)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Puccini&#x27;s score for Madama Butterfly represents Cio-Cio San&#x27;s husband with a motif based on this song. | Motifs from this melody often accompany the appearance of Lieutenant Pinkerton throughout Madama Butterfly, including his grand appearance in the aria &#x27;Dovunque al Mondo.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="turandot" open>
+            <summary class="work-title">Turandot <a href="turandot_stock.html" class="work-link-btn" title="Go to Turandot">&rarr;</a></summary>
+            <p class="work-desc">Puccini's unfinished final opera. Prince Calaf correctly answers three riddles to win the title princess's hand. He sings 'Nessun dorma' ('None shall sleep') in Act III, declaring that nobody may sleep until <a href="turandot_stock.html" class="crossref-inline">Turandot</a> learns his name. Puccini died of throat cancer before finishing the opera; he begged Toscanini 'don't let it die.' Toscanini conducted the premiere. Liu, a slave girl, kills herself to protect Calaf. <a href='https://en.wikipedia.org/wiki/Turandot' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Calaf sings &#x27;Nessun dorma&#x27; (&#x27;None shall sleep&#x27;) in Act III — declares no one may sleep until Turandot discovers his name</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In Puccini&#x27;s Turandot, prince Calaf sings this aria in Act 3, by far the opera&#x27;s most well-known, which states that &#x27;nobody shall sleep&#x27; until he discovers the title character&#x27;s name. | Other famous arias by this composer include &#x27;O Mio Babbino Caro&#x27; and &#x27;Nessun Dorma.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Calaf correctly answers three riddles posed by Princess Turandot</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Toscanini later conducted the premiere of this opera in which Calaf correctly answers three riddles to win the hand of the title princess. | Puccini died before completing Turandot</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Puccini died of throat cancer before completing the opera; begged Toscanini on his deathbed &#x27;don&#x27;t let it die&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">As he was dying of throat cancer, the composer of this opera approached Arturo Toscanini and begged him &#x27;don&#x27;t let [this opera] die!&#x27; | This Italian composer died before settling on the true ending to his opera La rondine, and before completing his Turandot at all.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="il-trittico-il-tabarro-suor-angelica-gianni-schicchi" open>
+            <summary class="work-title">Il trittico (Il tabarro, Suor Angelica, Gianni Schicchi)</summary>
+            <p class="work-desc">Three one-act operas premiered together in 1918. Il tabarro: Michele reveals the murdered body of Luigi hidden under his cloak. Suor Angelica: the title nun had an illegitimate child; she dies. Gianni Schicchi: comedy based on an incident in Dante's Divine Comedy — Buoso's relatives scheme over his mule, house, and mill; Gianni Schicchi impersonates the dead man. Lauretta sings 'O mio babbino caro' ('O my dear father') threatening to throw herself into the Arno if she can't marry Rinuccio. The aria opens on A-flat, A-flat, A-flat, long C, G, long F, long E-flat with harp arpeggios. <a href='https://en.wikipedia.org/wiki/Il_trittico' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Il trittico comprises Il tabarro (Michele hides Luigi&#x27;s corpse under his cloak), Suor Angelica (nun with a secret child), and Gianni Schicchi (Dante-based comedy; relatives scheme over Buoso&#x27;s estate)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer had a collaborative friendship with Arturo Toscanini, who conducted the premiere of his opera, La Boheme. Name this Italian verismo composer whose Il trittico consists of the operas Il tabarro, Suor Angelica, and Gianni Schicchi. | in another work, Buoso&#x27;s relatives scheme to get their hands on his mule, house, and mill, and that work is part of Il Trittico along with Il tabarro.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;O mio babbino caro&#x27; — Lauretta (soprano) threatens to throw herself in the Arno if she can&#x27;t marry Rinuccio; opens on A-flat, A-flat, A-flat, long C with harp arpeggios</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this aria whose title phrase is sung on the notes [A-flat, A-flat, A-flat, long C, G, long F, long E-flat] and accompanied by harp arpeggios. This aria&#x27;s singer threatens to throw herself into the Arno if she cannot marry Rinuccio. | In this famous aria from Gianni Schicchi, Lauretta threatens to throw herself into the Arno river if her father will not consent to her marriage with Rinuccio.</span></span><div class="score-clip" data-abc="X:1\nT:O mio babbino caro opening\n%%MIDI program 71\nM:6/8\nL:1/8\nK:C\n| _A _A _A _c2 G | F3 _E3 ||"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><audio controls preload="none" src="audio/0.mp3?v=1774247360" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="la-fanciulla-del-west-the-girl-of-the-golden-west" open>
+            <summary class="work-title">La fanciulla del West (The Girl of the Golden West)</summary>
+            <p class="work-desc">Opera (1910), world premiere at the Met with Emmy Destinn as Minnie. Set during the California Gold Rush. Minnie runs a saloon, is courted by Sheriff Jack Rance and miner Sonora, but loves the bandit Dick Johnson (real name Ramerrez). She cheats in a poker game against Rance to save Dick's life ('una partita a poker'). Dick Johnson sings 'Ch'ella mi creda' ('Let her believe me') before being nearly hanged. The opera was later an inspiration for John Adams's Girls of the Golden West (2017). <a href='https://en.wikipedia.org/wiki/La_fanciulla_del_West' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Minnie cheats at poker against Sheriff Rance to save Dick Johnson (the bandit Ramerrez); Dick sings &#x27;Ch&#x27;ella mi creda&#x27; before near-execution</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In another opera by this composer, a tenor sings &#x27;Ch&#x27;ella () mi creda&#x27; before being executed by a mob. | In an opera by this composer, Minnie challenges Rance to &#x27;una partita a poker&#x27; to save her lover&#x27;s life.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">World premiere at the Met in December 1910 with Czech soprano Emmy Destinn as Minnie; Arturo Toscanini conducted</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The work in which this character appears was first premiered at the Met in December 1910, and she was played at that performance by the Czech soprano Emmy Destinn.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">La Rondine ('The Swallow'): opera about the courtesan Magda, named 'La Rondine' by the poet Prunier; she falls in love with Ruggero but leaves him; the two write their names on a tablecloth. The publisher Ricordi dismissed it as 'bad Lehár.' Manon Lescaut (1893): Puccini's version of the Abbé Prévost novel (Massenet also wrote Manon); includes the aria 'Sola, perduta, abbandonata!' as Manon dies in Louisiana. <a href='https://en.wikipedia.org/wiki/Giacomo_Puccini' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">La Rondine: Magda is given the &#x27;swallow&#x27; nickname by poet Prunier; she and Ruggero write their names on a tablecloth; Ricordi called it &#x27;bad Lehár&#x27;; aria &#x27;Chi bel suono di Doretta&#x27; / &#x27;Che il bel sogno&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This opera originated as a Viennese-style operetta, leading to its rejection by a publisher as &#x27;bad Lehar.&#x27; | While reminiscing about a past love affair, a character in an opera by this composer writes her name on a tablecloth, after which Ruggero writes his own underneath.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Manon Lescaut (1893): Manon dies in Louisiana singing &#x27;Sola, perduta, abbandonata!&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character of that opera by this composer is sent to Louisiana, where she is overcome by despair in the aria &#x27;Sola, perduta, abbandonata!&#x27; and dies in Des Grieux&#x27;s arms.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Giacomo Puccini (1858–1924) is the preeminent Italian opera composer of the verismo era, best known for <a href="la_boheme_stock.html" class="crossref-inline">La Bohème</a> (1896), <a href="tosca_stock.html" class="crossref-inline">Tosca</a> (1900), Madama Butterfly (1904), La fanciulla del West (1910), the triptych Il trittico (1918), and the posthumously completed <a href="turandot_stock.html" class="crossref-inline">Turandot</a>. His chief librettists were Luigi Illica and Giuseppe Giacosa. He had a close relationship with conductor Arturo Toscanini, who conducted the premieres of La bohème, La fanciulla del West, and Turandot. Puccini died of throat cancer in 1924 before completing Turandot, begging Toscanini on his deathbed &#x27;don&#x27;t let it die.&#x27;</p><p><a href="la_boheme_stock.html" class="crossref-inline">La Bohème</a> follows bohemian artists in Paris. Rodolfo (poet) hides Mimi&#x27;s key to keep her by candlelight, singing &#x27;Che gelida manina&#x27; (&#x27;What a cold little hand&#x27;); she responds with &#x27;Sì, mi chiamano Mimì.&#x27; Musetta&#x27;s waltz (&#x27;Quando me&#x27;n vo&#x27;&#x27;) wins back Marcello as she sends Alcindoro on a fake errand. Colline sells his overcoat (&#x27;Vecchia zimarra&#x27;) to pay for medicine; Mimi dies in Rodolfo&#x27;s arms. Jonathan Larson&#x27;s musical Rent is based on this opera.</p><p><a href="tosca_stock.html" class="crossref-inline">Tosca</a> is a political thriller set in Rome. The painter Cavaradossi hides a fugitive and sings &#x27;Recondita armonia&#x27; comparing his painting to Tosca, while Baron Scarpia suspects him. Tosca sings &#x27;Vissi d&#x27;arte&#x27; (beginning E-flat, D-flat, B-flat, A-flat) in Act II before stabbing Scarpia with his own knife; Scarpia&#x27;s safe-conduct letter is fake and Cavaradossi is shot. Cavaradossi sings &#x27;E lucevan le stelle&#x27; (introduced by a clarinet solo; reprised triple-forte by brass as Tosca leaps from Castel Sant&#x27;Angelo). Act I ends with Scarpia joining the chorus singing the Te Deum. Musicologist Joseph Kerman called it a &#x27;shabby little shocker.&#x27;</p><p>Madama Butterfly is set in Nagasaki. Butterfly sings &#x27;Un bel dì vedremo&#x27; (&#x27;One Beautiful Day&#x27;) waiting for Lieutenant Pinkerton&#x27;s return. Pinkerton&#x27;s theme uses motifs from &#x27;The Star-Spangled Banner&#x27; (not yet the national anthem). A humming chorus (with solo viola d&#x27;amore) bridges the acts; it begins with cellos playing pizzicato F, A, B-flat before flutes answer with arpeggiated B-flat major. Butterfly stabs herself (&#x27;Con onor muore&#x27;).</p><p><a href="turandot_stock.html" class="crossref-inline">Turandot</a> features Calaf solving three riddles to win the icy princess Turandot; he sings &#x27;Nessun dorma&#x27; (&#x27;None shall sleep&#x27;) in Act III. Toscanini conducted the premiere.</p><p>Il trittico (1918) comprises three one-act operas: Il tabarro (Michele hides Luigi&#x27;s body under his cloak), Suor Angelica (a nun&#x27;s secret child), and Gianni Schicchi (Dante-based comedy in which Buoso&#x27;s greedy relatives scheme over his estate, including his mule, house, and mill). Lauretta sings &#x27;O mio babbino caro&#x27; (opening A-flat, A-flat, A-flat, long C, G, long F, E-flat with harp arpeggios), threatening to throw herself in the Arno if she can&#x27;t marry Rinuccio.</p><p>La fanciulla del West (1910) premiered at the Met with Emmy Destinn as Minnie; it is set during the California Gold Rush and features Minnie cheating at poker against Sheriff Rance (&#x27;una partita a poker&#x27;) to save the bandit Dick Johnson, who sings &#x27;Ch&#x27;ella mi creda&#x27; before near-hanging. This opera inspired John Adams&#x27;s Girls of the Golden West (2017).</p><p>La Rondine (&#x27;The Swallow&#x27;): Magda is named &#x27;La Rondine&#x27; by the poet Prunier; she and her lover Ruggero write their names on a tablecloth; Puccini&#x27;s publisher Ricordi dismissed the opera as &#x27;bad Lehár.&#x27; Manon Lescaut (1893): Manon dies in Louisiana singing &#x27;Sola, perduta, abbandonata!&#x27;</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Giacomo_Puccini" target="_blank">Giacomo Puccini — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/La_boh%C3%A8me" target="_blank">La bohème — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Tosca" target="_blank">Tosca — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>La bohème (Puccini) — frequently the answer itself; deserves its own deep-dive clue analysis</li><li>Tosca (Puccini) — same as above; &#x27;Vissi d&#x27;arte,&#x27; &#x27;E lucevan le stelle,&#x27; Scarpia are heavily clued</li><li>Madama Butterfly (Puccini) — &#x27;Un bel dì,&#x27; humming chorus are major clue clusters</li><li>Turandot (Puccini) — &#x27;Nessun dorma&#x27; is one of the most famous arias in the repertoire</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'puccini' });</script>
+<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {
+        ABCJS.renderAbc(el, abc, { responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' });
+    }
+});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+    var visual = ABCJS.renderAbc('_offscreen', abc, {});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({ visualObj: visual[0] }).then(function() {
+        return synth.prime();
+    }).then(function() {
+        synth.start();
+        _clipSynth = synth;
+    }).catch(function(e) { console.warn('abcjs synth:', e); });
+}
+function stopAbc(btn) {
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>
+</body>
+</html>

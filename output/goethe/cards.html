@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cards: Johann Wolfgang von Goethe</title>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    font-size: 14px;
+    line-height: 1.5;
+}
+a { color: #6b9eff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: normal;
+    color: #e0e0e0;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #3a3f47;
+}
+.toolbar button, .toolbar select {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.82rem;
+    background: #1a1f25;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.toolbar button:hover { background: #262d37; }
+.toolbar button.primary {
+    background: #2a3a55;
+    color: #6b9eff;
+    border-color: #6b9eff;
+}
+.toolbar button.danger {
+    color: #f08080;
+    border-color: #6b2a2a;
+}
+.toolbar input[type="text"] {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.82rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+    width: 160px;
+}
+.toolbar input:focus { border-color: #6b9eff; }
+.stats {
+    font-size: 0.82rem;
+    color: #808790;
+    margin-left: auto;
+}
+/* Card table */
+.card-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.card-table th {
+    text-align: left;
+    padding: 0.4rem 0.5rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    color: #9aa0a7;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.card-table th.cb-col { width: 2rem; text-align: center; }
+.card-table th.freq-col { width: 2.5rem; text-align: center; }
+.card-table th.type-col { width: 4rem; }
+.card-table th.tags-col { width: 10rem; }
+.card-table td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.card-table tr:hover td {
+    background: #1a1f25;
+}
+.card-table tr.selected td {
+    background: #1e2a3a;
+}
+.card-table td.cb-col { text-align: center; }
+.card-table td.freq-col {
+    text-align: center;
+    color: #808790;
+    font-weight: bold;
+}
+.card-table .editable {
+    cursor: text;
+    min-height: 1.2em;
+    outline: none;
+    border-radius: 2px;
+    padding: 0.1rem 0.2rem;
+}
+.card-table .editable:focus {
+    background: #15191e;
+    box-shadow: 0 0 0 1px #6b9eff;
+}
+.card-table .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    background: #15191e;
+    border: 1px solid #2a2f37;
+    border-radius: 8px;
+    padding: 0 0.35rem;
+    margin: 0.1rem 0.1rem;
+    color: #808790;
+}
+.back-link {
+    display: inline-block;
+    margin-bottom: 0.8rem;
+    font-size: 0.88rem;
+}
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 6px;
+    padding: 1.2rem;
+    min-width: 400px;
+    max-width: 600px;
+}
+.modal h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    color: #e0e0e0;
+}
+.modal label {
+    display: block;
+    font-size: 0.82rem;
+    color: #9aa0a7;
+    margin-bottom: 0.2rem;
+    margin-top: 0.6rem;
+}
+.modal input, .modal textarea, .modal select {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    font-family: inherit;
+    outline: none;
+}
+.modal textarea { min-height: 60px; resize: vertical; }
+.modal input:focus, .modal textarea:focus { border-color: #6b9eff; }
+.modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+.img-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem;
+    border: 1px solid #2a2f37;
+    border-radius: 3px;
+    margin-bottom: 0.3rem;
+    background: #15191e;
+}
+.img-list-item img {
+    max-width: 80px;
+    max-height: 60px;
+    border-radius: 2px;
+    border: 1px solid #3a3f47;
+    flex-shrink: 0;
+}
+.img-list-item .img-info {
+    flex: 1;
+    font-size: 0.78rem;
+    color: #9aa0a7;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.img-list-item .img-side {
+    font-size: 0.72rem;
+    color: #808790;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    padding: 0.1rem 0.3rem;
+}
+.img-list-item .img-remove {
+    color: #f08080;
+    cursor: pointer;
+    font-size: 0.82rem;
+    flex-shrink: 0;
+}
+.img-palette {
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    background: #15191e;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+}
+.img-palette summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #9aa0a7;
+    user-select: none;
+}
+.img-palette summary:hover { color: #c8ccd1; }
+.palette-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+.palette-img {
+    position: relative;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 3px;
+    transition: border-color 0.15s;
+}
+.palette-img:hover { border-color: #6b9eff; }
+.palette-img.selected { border-color: #6b9eff; }
+.palette-img img {
+    max-height: 70px;
+    max-width: 110px;
+    display: block;
+    border-radius: 2px;
+}
+.palette-img .palette-remove {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #1a1f25;
+    color: #f08080;
+    border: 1px solid #3a3f47;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
+    display: none;
+}
+.palette-img:hover .palette-remove { display: block; }
+.palette-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+.palette-actions input {
+    flex: 1;
+    min-width: 150px;
+}
+.palette-actions button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.78rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #6b9eff;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.palette-apply {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #9aa0a7;
+}
+.palette-apply button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.78rem;
+    background: #2a3a55;
+    color: #6b9eff;
+    border: 1px solid #6b9eff;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.modal-actions button {
+    padding: 0.35rem 0.8rem;
+    font-size: 0.82rem;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    background: #1a1f25;
+    color: #c8ccd1;
+}
+.modal-actions button.primary {
+    background: #2a3a55;
+    color: #6b9eff;
+    border-color: #6b9eff;
+}
+</style>
+</head>
+<body>
+<div class="back-link"><a href="../../index.html">&larr; Home</a> · <a href="stock.html">Study guide</a></div>
+<h1>Cards: Johann Wolfgang von Goethe</h1>
+
+<div class="toolbar">
+    <button onclick="addCard()" class="primary">+ Add card</button>
+    <button onclick="deleteSelected()" class="danger">Delete selected</button>
+    <span style="color:#3a3f47">|</span>
+    <input type="text" id="bulk-tag" placeholder="Tag to add..." list="tag-suggestions">
+    <datalist id="tag-suggestions">
+        <option value="Johann Wolfgang von Goethe"><option value="Faust"><option value="The Sorrows of Young Werther"><option value="Der Erlkonig"><option value="Italian Journey / Roman Elegies / Venetian Epigrams"><option value="West-Eastern Divan"><option value="Elective Affinities"><option value="Wilhelm Meister novels"><option value="Wanderer&#x27;s Nightsong"><option value="Marienbad Elegy"><option value="The Sorcerer&#x27;s Apprentice"><option value="Theory of Colors / Scientific Works"><option value="Other Poems"><option value="Egmont / Gotz von Berlichingen"><option value="General / Biographical"><option value="Sturm und Drang"><option value="Weimar Classicism"><option value="Romanticism">
+    </datalist>
+    <button onclick="addTagToSelected()">Add tag to selected</button>
+    <span style="color:#3a3f47">|</span>
+    <input type="text" id="bulk-indicator" placeholder="Indicator..." list="indicator-suggestions">
+    <button onclick="setIndicatorSelected()">Set indicator</button>
+    <span style="color:#3a3f47">|</span>
+    <select id="filter-work" onchange="renderTable()">
+        <option value="">All works</option>
+    </select>
+    <span style="color:#3a3f47">|</span>
+    <button onclick="exportJSON()" class="primary">Save JSON</button>
+    <button onclick="exportTSV()">Export TSV</button>
+    <button onclick="exportApkgBtn()" class="primary">Download .apkg</button>
+    <span class="stats" id="stats"></span>
+</div>
+
+<details class="img-palette" open>
+    <summary>Media Palette <span id="palette-count"></span></summary>
+    <div class="palette-grid" id="palette-grid"></div>
+    <div class="palette-actions">
+        <input type="text" id="palette-url" placeholder="Add image URL...">
+        <button onclick="addToPalette()">+ Add</button>
+        <span style="font-size:0.72rem;color:#555;">or Ctrl+V to paste</span>
+    </div>
+    <div class="palette-apply" id="palette-apply" style="display:none;">
+        <span>Selected image:</span>
+        <select id="palette-side">
+            <option value="back">Back</option>
+            <option value="front">Front</option>
+        </select>
+        <button onclick="applyPaletteToSelected()">Apply to selected cards</button>
+        <button onclick="clearPaletteSelection()" style="background:#1a1f25;">Cancel</button>
+    </div>
+    
+</details>
+
+<table class="card-table">
+    <thead>
+        <tr>
+            <th class="cb-col"><input type="checkbox" id="select-all" onchange="toggleAll(this.checked)"></th>
+            <th class="freq-col">Freq</th>
+            <th class="type-col">Indicator</th>
+            <th>Front</th>
+            <th>Back</th>
+            <th class="tags-col">Tags</th>
+        </tr>
+    </thead>
+    <tbody id="card-body"></tbody>
+</table>
+
+<!-- Add/Edit modal -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <h3 id="modal-title">Add Card</h3>
+        <label>Type</label>
+        <select id="m-type"><option value="basic">Basic</option><option value="image">Image</option></select>
+        <label>Indicator (e.g. Play, Novel, Composer, Painting)</label>
+        <input type="text" id="m-indicator" list="indicator-suggestions">
+        <datalist id="indicator-suggestions">
+            <option value="Play"><option value="Novel"><option value="Poem"><option value="Short Story">
+            <option value="Opera"><option value="Symphony"><option value="Painting"><option value="Sculpture">
+            <option value="Author"><option value="Composer"><option value="Painter"><option value="Playwright">
+            <option value="Philosopher"><option value="Film"><option value="Work"><option value="Concept">
+        </datalist>
+        <label>Front</label>
+        <textarea id="m-front"></textarea>
+        <label>Back</label>
+        <input type="text" id="m-back">
+        <label>Images <span style="font-weight:normal;font-size:0.78rem;color:#808790;">&mdash; click palette image, paste (Ctrl+V), or add by URL</span></label>
+        <div id="m-images-list"></div>
+        <div id="m-palette-picker" style="margin-top:0.3rem;"></div>
+        <div id="m-image-drop" style="border:1px dashed #3a3f47;border-radius:4px;padding:0.5rem;margin-top:0.3rem;text-align:center;background:#15191e;cursor:pointer;" tabindex="0">
+            <div style="font-size:0.82rem;color:#808790;">Paste image here (Ctrl+V) or drag &amp; drop</div>
+        </div>
+        <div style="display:flex;gap:0.4rem;align-items:center;margin-top:0.4rem;">
+            <input type="text" id="m-image-url" placeholder="Or enter image URL...">
+            <select id="m-image-side-new" style="width:auto;padding:0.3rem;">
+                <option value="back">Back</option>
+                <option value="front">Front</option>
+            </select>
+            <button type="button" onclick="addImageToList()" style="padding:0.3rem 0.6rem;font-size:0.82rem;background:#1a1f25;color:#6b9eff;border:1px solid #6b9eff;border-radius:3px;cursor:pointer;">+ Add</button>
+        </div>
+        <label>Tags (comma separated)</label>
+        <input type="text" id="m-tags">
+        <div style="margin-top:0.3rem;display:flex;flex-wrap:wrap;gap:0.2rem;">
+            <span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Johann Wolfgang von Goethe</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Faust</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">The Sorrows of Young Werther</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Der Erlkonig</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Italian Journey / Roman Elegies / Venetian Epigrams</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">West-Eastern Divan</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Elective Affinities</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Wilhelm Meister novels</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Wanderer&#x27;s Nightsong</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Marienbad Elegy</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">The Sorcerer&#x27;s Apprentice</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Theory of Colors / Scientific Works</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Other Poems</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Egmont / Gotz von Berlichingen</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">General / Biographical</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Sturm und Drang</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Weimar Classicism</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Romanticism</span>
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeModal()">Cancel</button>
+            <button onclick="saveModal(true)" class="primary">Save &amp; New</button>
+            <button onclick="saveModal()" class="primary">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const TOPIC = "Johann Wolfgang von Goethe";
+let cards = [{"type": "basic", "indicator": "Play", "front": "Play: the protagonist bets he will not tell the passing moment 'tarry awhile, thou art so fair'", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the female lead sings 'My peace is gone, my heart is sore' at her spinning wheel, inspiring Schubert's 'Gretchen am Spinnrade'", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: ends by invoking the 'eternal feminine' that 'draws us on high'", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the title scholar dances with witches on Walpurgis Night and encounters a homunculus", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: in Part II, the title character has a child with Helen of Troy", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the female lead sings 'The King in Thule,' in which a golden goblet is tossed into the tide at a king's death", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: includes a prologue in the theater and a prologue in Heaven", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Simon Magus appears on paper money in Part II", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Delacroix published lithographs illustrating it in 1828; Harry Clarke made Art Nouveau illustrations in 1925", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Hugo Wolf wrote 51 art songs based on the author's texts, opening with three settings of 'The Harp Player'", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Mahler's Symphony of a Thousand uses texts from Part II for the holy anchorites sung by chorus", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist cries when the woman he loves says the name 'Klopstock'", "back": "The Sorrows of Young Werther (Johann Wolfgang von Goethe)", "work": "The Sorrows of Young Werther", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist bonds with the woman he loves over their mutual appreciation of Goldsmith and Klopstock", "back": "The Sorrows of Young Werther (Johann Wolfgang von Goethe)", "work": "The Sorrows of Young Werther", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Friedrich Nicolai parodied this work by adding chicken's blood to the suicide scene", "back": "The Sorrows of Young Werther (Johann Wolfgang von Goethe)", "work": "The Sorrows of Young Werther", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist receives a pink ribbon in the mail", "back": "The Sorrows of Young Werther (Johann Wolfgang von Goethe)", "work": "The Sorrows of Young Werther", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the title figure promises 'my daughters shall tend thee with sisterly care' to a boy riding on horseback with his father", "back": "Der Erlkonig (Johann Wolfgang von Goethe)", "work": "Der Erlkonig", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the father dismisses his son's fears by saying ''tis the aged grey willows deceiving thy sight' and 'it's a streak of fog'", "back": "Der Erlkonig (Johann Wolfgang von Goethe)", "work": "Der Erlkonig", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Schubert's setting opens with G octaves in the piano's right hand", "back": "Der Erlkonig (Johann Wolfgang von Goethe)", "work": "Der Erlkonig", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the first poem commands 'Tell me you stones, O speak, you towering palaces!' in a cycle of 24 sensual poems originally titled Erotica", "back": "Roman Elegies (Johann Wolfgang von Goethe)", "work": "Italian Journey / Roman Elegies / Venetian Epigrams", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Tischbein painted the author reclining on a rock slab 'in the Roman Campagna' next to a relief of Iphigenia's sacrifice", "back": "Italian Journey (Johann Wolfgang von Goethe)", "work": "Italian Journey / Roman Elegies / Venetian Epigrams", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a travelogue with the epigraph 'I, too in Arcadia,' recounting a 1786-88 journey", "back": "Italian Journey (Johann Wolfgang von Goethe)", "work": "Italian Journey / Roman Elegies / Venetian Epigrams", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the fourth poem imagines people questioning the author about a suicidal character from another novel", "back": "Roman Elegies (Johann Wolfgang von Goethe)", "work": "Italian Journey / Roman Elegies / Venetian Epigrams", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: dedicated to Christiane Vulpius; Angelica Kauffman painted a portrait of the author in Rome during this period", "back": "Roman Elegies (Johann Wolfgang von Goethe)", "work": "Italian Journey / Roman Elegies / Venetian Epigrams", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: inspired by Joseph Hammer-Purgstall's translation of Hafez and an affair with Marianne von Willemer; uses ghazals", "back": "West-Eastern Divan (Johann Wolfgang von Goethe)", "work": "West-Eastern Divan", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: features conversations between the lovers Hatem and Suleika; each of its twelve books has a Persian and German title", "back": "West-Eastern Divan (Johann Wolfgang von Goethe)", "work": "West-Eastern Divan", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the romantic attractions between two couples are explained through chemical double-displacement reactions; Captain Otto and Ottilie are invited to a Weimar home", "back": "Elective Affinities (Johann Wolfgang von Goethe)", "work": "Elective Affinities", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: a woman drops her baby cousin while pushing a rowboat into a lake, causing the baby to drown", "back": "Elective Affinities (Johann Wolfgang von Goethe)", "work": "Elective Affinities", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: inspired by an aphorism about people who 'mix like water and wine' or 'separate like water and oil'; Walter Benjamin wrote an essay on it", "back": "Elective Affinities (Johann Wolfgang von Goethe)", "work": "Elective Affinities", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist plays Hamlet in an acting troupe after being rejected by Mariane, and eventually joins the Tower Society", "back": "Wilhelm Meister's Apprenticeship (Johann Wolfgang von Goethe)", "work": "Wilhelm Meister novels", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the character Mignon sings 'Do you know the land where the lemon trees bloom?'", "back": "Wilhelm Meister's Apprenticeship (Johann Wolfgang von Goethe)", "work": "Wilhelm Meister novels", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Mignon also sings 'None but the Lonely Heart' ('Nur wer die Sehnsucht kennt')", "back": "Wilhelm Meister's Apprenticeship (Johann Wolfgang von Goethe)", "work": "Wilhelm Meister novels", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Mignon is first introduced as a child purchased from a theatre troupe; she later performs an egg dance", "back": "Wilhelm Meister's Apprenticeship (Johann Wolfgang von Goethe)", "work": "Wilhelm Meister novels", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Over all hilltops is peace... in all the treetops / hearest thou / hardly a breath'; ends with 'soon thou too shalt rest'", "back": "Wanderer's Nightsong (Johann Wolfgang von Goethe)", "work": "Wanderer's Nightsong", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the author inscribed the lines of the second poem on the walls of a cabin", "back": "Wanderer's Nightsong (Johann Wolfgang von Goethe)", "work": "Wanderer's Nightsong", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: written after a 73-year-old author proposed to 17-year-old Ulrike von Levetzow and was rejected; forms the second part of a 'Trilogy of Passion'", "back": "Marienbad Elegy (Johann Wolfgang von Goethe)", "work": "Marienbad Elegy", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: contains the lines 'They urged me to those lips, with rapture crowned / Deserted me, and hurled me to the ground'", "back": "Marienbad Elegy (Johann Wolfgang von Goethe)", "work": "Marienbad Elegy", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a magic broom is instructed to fetch pails of water and floods a workshop; the apprentice futilely cuts the broom in half", "back": "The Sorcerer's Apprentice (Johann Wolfgang von Goethe)", "work": "The Sorcerer's Apprentice", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: source of the idiom 'the spirits that I called'; set to music by Paul Dukas", "back": "The Sorcerer's Apprentice (Johann Wolfgang von Goethe)", "work": "The Sorcerer's Apprentice", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: an anti-Newtonian treatise; associated with a triangle of nine segments using labels like 'unnecessary'", "back": "Theory of Colors (Johann Wolfgang von Goethe)", "work": "Theory of Colors / Scientific Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Wittgenstein's Remarks on Colour expands on ideas from this treatise; Turner referenced it in a painting about the morning after the flood", "back": "Theory of Colors (Johann Wolfgang von Goethe)", "work": "Theory of Colors / Scientific Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: posits a primordial 'Urpflanze' from which all plant life developed", "back": "The Metamorphosis of Plants (Johann Wolfgang von Goethe)", "work": "Theory of Colors / Scientific Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a moth consumed by a flame; speaker writes 'You remain no longer caught / In the penumbral gloom'", "back": "Blessed Longing (Johann Wolfgang von Goethe)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a temple prostitute is deified for committing sati after discovering an avatar of Shiva in her bed", "back": "The God and the Bayadere (Johann Wolfgang von Goethe)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ends with 'yet, to be loved, what happiness! / What happiness, ye gods, to love!' after describing a horseback ride to a nighttime tryst", "back": "Welcome and Farewell (Johann Wolfgang von Goethe)", "work": "Other Poems", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a boy picks a rosebud despite its promise to prick him", "back": "Heidenroslein (Johann Wolfgang von Goethe)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: ends with Freedom visiting Klarchen's lover in jail; Beethoven composed the overture", "back": "Egmont (Johann Wolfgang von Goethe)", "work": "Egmont / Gotz von Berlichingen", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: called out 'more light! more light!' on his deathbed", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: secretary Eckermann recorded nine years of his table talk; he quipped 'architecture is frozen music' and advanced a notion of the 'Daemonic'", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: declared 'the classical I call healthy, and the romantic sickly'", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: coined the phrase 'the epoch of world literature is at hand' while comparing a Chinese novel to one of his own works", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: defined a novella as telling of a 'single remarkable event'", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: during an interview with Napoleon, Pierre Daru mentioned his translation of Voltaire's Mahomet, and Napoleon responded 'That is an awful play'", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: first published Diderot's Rameau's Nephew in a German translation", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: a pioneer of the Innerlichkeit style; worked for the Duke of Saxe-Weimar, who ennobled him", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote the story 'The Green Snake and the Beautiful Lily,' informed by an interest in alchemy", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: a section of Nabokov's 'Pale Fire' quotes him after the line 'And now what shall I do? My knight is pinned'", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 2, "tags": []}];
+const SCORE_CLIPS = [];
+let editIndex = -1; // -1 = adding new
+
+// Populate work filter
+const works = [...new Set(cards.map(c => c.work).filter(Boolean))];
+const workSelect = document.getElementById('filter-work');
+works.forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w;
+    opt.textContent = w;
+    workSelect.appendChild(opt);
+});
+
+function renderTable() {
+    const tbody = document.getElementById('card-body');
+    const filterWork = document.getElementById('filter-work').value;
+    const visible = cards.map((c, i) => ({ ...c, _idx: i }))
+        .filter(c => !filterWork || c.work === filterWork);
+
+    tbody.innerHTML = visible.map(c => `
+        <tr data-idx="${c._idx}">
+            <td class="cb-col"><input type="checkbox" class="row-cb" data-idx="${c._idx}"></td>
+            <td class="freq-col">${c.frequency || ''}x</td>
+            <td>${c.indicator || c.type || 'basic'}</td>
+            <td>${getImgs(c,'front')}${getImgs(c,'front') ? '<br>' : ''}<div class="editable" style="display:inline" contenteditable="true" data-field="front" data-idx="${c._idx}">${escHtml(c.front)}</div></td>
+            <td><div class="editable" contenteditable="true" data-field="back" data-idx="${c._idx}">${escHtml(c.back)}</div>${getImgs(c,'back')}</td>
+            <td>${(c.tags || []).map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</td>
+        </tr>
+    `).join('');
+
+    // Inline edit handlers
+    tbody.querySelectorAll('.editable').forEach(el => {
+        el.addEventListener('blur', () => {
+            const idx = parseInt(el.dataset.idx);
+            const field = el.dataset.field;
+            cards[idx][field] = el.textContent.trim();
+        });
+    });
+
+    // Double-click row to open editor
+    tbody.querySelectorAll('tr').forEach(tr => {
+        tr.addEventListener('dblclick', (e) => {
+            if (e.target.classList.contains('editable') || e.target.type === 'checkbox') return;
+            openEditModal(parseInt(tr.dataset.idx));
+        });
+    });
+
+    document.getElementById('stats').textContent = visible.length + ' of ' + cards.length + ' cards';
+}
+
+function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+}
+
+function toggleAll(checked) {
+    document.querySelectorAll('.row-cb').forEach(cb => cb.checked = checked);
+}
+
+function getSelected() {
+    return [...document.querySelectorAll('.row-cb:checked')].map(cb => parseInt(cb.dataset.idx));
+}
+
+function deleteSelected() {
+    const sel = getSelected().sort((a, b) => b - a);
+    if (sel.length === 0) return;
+    if (!confirm(`Delete ${sel.length} card(s)?`)) return;
+    sel.forEach(i => cards.splice(i, 1));
+    renderTable();
+}
+
+function addTagToSelected() {
+    const tag = document.getElementById('bulk-tag').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    if (sel.length === 0) { alert('Select cards first'); return; }
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    document.getElementById('bulk-tag').value = '';
+    renderTable();
+}
+
+function setIndicatorSelected() {
+    const ind = document.getElementById('bulk-indicator').value.trim();
+    if (!ind) return;
+    const sel = getSelected();
+    if (sel.length === 0) { alert('Select cards first'); return; }
+    sel.forEach(i => {
+        const old = cards[i].indicator || '';
+        cards[i].indicator = ind;
+        // Update front text: replace old indicator prefix or prepend new one
+        if (old && cards[i].front.startsWith(old + ': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.slice(old.length + 2);
+        } else if (!cards[i].front.startsWith(ind + ': ')) {
+            cards[i].front = ind + ': ' + cards[i].front;
+        }
+    });
+    document.getElementById('bulk-indicator').value = '';
+    renderTable();
+}
+
+// Modal
+function openEditModal(idx) {
+    editIndex = idx;
+    const c = idx >= 0 ? cards[idx] : { type: 'basic', front: '', back: '', images: [], tags: [] };
+    document.getElementById('modal-title').textContent = idx >= 0 ? 'Edit Card' : 'Add Card';
+    document.getElementById('m-type').value = c.type || 'basic';
+    document.getElementById('m-indicator').value = c.indicator || '';
+    document.getElementById('m-front').value = c.front || '';
+    document.getElementById('m-back').value = c.back || '';
+    modalImages = getCardImages(c).map(img => ({ ...img }));
+    renderImageList();
+    renderModalPalette();
+    document.getElementById('m-tags').value = (c.tags || []).join(', ');
+    document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    editIndex = -1;
+}
+
+function addCard() { openEditModal(-1); }
+
+function saveModal(andNew) {
+    const indicator = document.getElementById('m-indicator').value.trim();
+    let frontText = document.getElementById('m-front').value.trim();
+    // Auto-prepend indicator if not already present
+    if (indicator && !frontText.startsWith(indicator + ':')) {
+        frontText = indicator + ': ' + frontText;
+    }
+    const card = {
+        type: document.getElementById('m-type').value,
+        indicator: indicator,
+        front: frontText,
+        back: document.getElementById('m-back').value.trim(),
+        images: modalImages.slice(),
+        tags: document.getElementById('m-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+        frequency: editIndex >= 0 ? (cards[editIndex].frequency || 0) : 0,
+        work: editIndex >= 0 ? (cards[editIndex].work || '') : '',
+    };
+    if (!card.front && (!card.images || !card.images.length)) { alert('Front or image required'); return; }
+    if (editIndex >= 0) {
+        cards[editIndex] = { ...cards[editIndex], ...card };
+    } else {
+        cards.push(card);
+    }
+    renderTable();
+    if (andNew) {
+        openEditModal(-1);
+    } else {
+        closeModal();
+    }
+}
+
+// Export
+function exportJSON() {
+    const blob = new Blob([JSON.stringify(cards, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = TOPIC.toLowerCase().replace(/\s+/g, '_') + '_cards.json';
+    a.click();
+}
+
+// Multi-image handling
+let modalImages = [];
+
+function getCardImages(card) {
+    // Normalize: support both old image_url and new images array
+    if (card.images && card.images.length) return card.images;
+    if (card.image_url) return [{ url: card.image_url, side: card.image_side || (card.type === 'image' ? 'front' : 'back') }];
+    return [];
+}
+
+function getImgs(card, side) {
+    const imgs = getCardImages(card);
+    return imgs.filter(img => img.side === side)
+        .map(img => `<img src="${img.url}" style="max-height:60px;max-width:100px;vertical-align:middle;margin:0.1rem;">`)
+        .join('');
+}
+
+function renderImageList() {
+    const el = document.getElementById('m-images-list');
+    if (modalImages.length === 0) {
+        el.innerHTML = '<div style="font-size:0.78rem;color:#555;padding:0.3rem;">No images</div>';
+        return;
+    }
+    el.innerHTML = modalImages.map((img, i) => `
+        <div class="img-list-item">
+            <img src="${img.url}" onerror="this.style.display='none'">
+            <div class="img-info">${img.url.startsWith('data:') ? '(pasted image)' : img.url.split('/').pop().substring(0, 40)}</div>
+            <span class="img-side" style="cursor:pointer;" onclick="toggleImgSide(${i})" title="Click to toggle front/back">${img.side}</span>
+            <span class="img-remove" onclick="modalImages.splice(${i},1);renderImageList();">&times;</span>
+        </div>
+    `).join('');
+}
+
+function toggleImgSide(idx) {
+    if (modalImages[idx]) {
+        modalImages[idx].side = modalImages[idx].side === 'front' ? 'back' : 'front';
+        renderImageList();
+    }
+}
+
+function addImageToList() {
+    const url = document.getElementById('m-image-url').value.trim();
+    if (!url) return;
+    const side = document.getElementById('m-image-side-new').value;
+    modalImages.push({ url, side });
+    document.getElementById('m-image-url').value = '';
+    renderImageList();
+}
+
+function renderModalPalette() {
+    const picker = document.getElementById('m-palette-picker');
+    if (!picker || paletteImages.length === 0) {
+        if (picker) picker.innerHTML = '';
+        return;
+    }
+    const side = document.getElementById('m-image-side-new').value;
+    picker.innerHTML = '<div style="font-size:0.75rem;color:#808790;margin-bottom:0.25rem;">From palette (click to add):</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;">' +
+        paletteImages.map((img, i) => `
+            <div style="position:relative;cursor:pointer;border:1px solid #3a3f47;border-radius:3px;overflow:hidden;"
+                 onclick="addPaletteImgToModal(${i})" title="${img.label}">
+                <img src="${img.url}" style="max-height:50px;max-width:80px;display:block;" onerror="this.parentElement.style.display='none'">
+            </div>
+        `).join('') + '</div>';
+}
+
+function addPaletteImgToModal(idx) {
+    const img = paletteImages[idx];
+    if (!img) return;
+    const side = document.getElementById('m-image-side-new').value;
+    if (!modalImages.some(m => m.url === img.url)) {
+        modalImages.push({ url: img.url, side });
+        renderImageList();
+    }
+}
+
+function appendTag(tag) {
+    const input = document.getElementById('m-tags');
+    const existing = input.value.split(',').map(t => t.trim()).filter(Boolean);
+    if (!existing.includes(tag)) {
+        existing.push(tag);
+        input.value = existing.join(', ');
+    }
+}
+
+function exportTSV() {
+    const header = 'Front\tBack\tTags\n';
+    const rows = cards.map(c =>
+        [c.front, c.back, (c.tags || []).join(' ')].map(f => f.replace(/\t/g, ' ').replace(/\n/g, ' ')).join('\t')
+    ).join('\n');
+    const blob = new Blob([header + rows], { type: 'text/tab-separated-values' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = TOPIC.toLowerCase().replace(/\s+/g, '_') + '_cards.tsv';
+    a.click();
+}
+
+// Disable paste on contenteditable fields in the table (not in modal)
+document.querySelector('.card-table')?.addEventListener('paste', e => {
+    e.preventDefault();
+});
+
+// Image paste/drop handling in modal
+function handleImageFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const side = document.getElementById('m-image-side-new').value;
+        modalImages.push({ url: ev.target.result, side });
+        renderImageList();
+    };
+    reader.readAsDataURL(file);
+}
+
+// Paste anywhere in modal adds image
+document.getElementById('modal')?.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            handleImageFile(item.getAsFile());
+            return;
+        }
+    }
+});
+
+// Drag & drop on the drop zone
+const dropZone = document.getElementById('m-image-drop');
+if (dropZone) {
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#6b9eff';
+        dropZone.style.background = '#1a2535';
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = '#3a3f47';
+        dropZone.style.background = '#15191e';
+    });
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#3a3f47';
+        dropZone.style.background = '#15191e';
+        const file = e.dataTransfer?.files?.[0];
+        if (file) handleImageFile(file);
+    });
+}
+
+// Keyboard: Escape closes modal
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// --- Image Palette ---
+let paletteImages = [];
+let selectedPaletteIdx = -1;
+
+// Initialize palette from existing work images
+(function initPalette() {
+    const seen = new Set();
+    cards.forEach(c => {
+        (getCardImages(c)).forEach(img => {
+            if (img.url && !seen.has(img.url)) {
+                seen.add(img.url);
+                paletteImages.push({ url: img.url, label: c.work || '' });
+            }
+        });
+    });
+})();
+
+// --- Score Clips Palette ---
+let _clipSynths = {};
+
+function initClipsPalette() {
+    const clips = SCORE_CLIPS.filter(c => c.abc && (c.mp3 || c.abc));
+    if (!clips.length) return;
+    const section = document.getElementById('clips-section');
+    const grid = document.getElementById('clips-grid');
+    section.style.display = '';
+    grid.innerHTML = clips.map((clip, i) => `
+        <div style="background:#1a1f25;border:1px solid #3a3f47;border-radius:4px;padding:0.4rem 0.6rem;min-width:180px;max-width:280px;">
+            <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${escHtml(clip.work || '')}${clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}</div>
+            <div id="clip-notation-${i}" style="max-width:100%;overflow:hidden;"></div>
+            <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
+                ${clip.mp3
+                    ? `<audio controls preload="none" src="${escHtml(clip.mp3)}${clip.mp3_v ? '?v=' + clip.mp3_v : ''}" style="height:24px;width:120px;"></audio>`
+                    : `<button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="playClip(${i})">▶ Play</button>
+                       <button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="stopClip(${i})">■</button>`
+                }
+            </div>
+        </div>
+    `).join('');
+
+    // Render ABC notation for each clip
+    clips.forEach((clip, i) => {
+        if (clip.abc && typeof ABCJS !== 'undefined') {
+            try {
+                ABCJS.renderAbc(`clip-notation-${i}`, clip.abc, {
+                    responsive: 'resize',
+                    staffwidth: 240,
+                    scale: 0.7,
+                    paddingright: 0,
+                    paddingleft: 0,
+                });
+            } catch(e) {}
+        }
+    });
+}
+
+async function playClip(i) {
+    const clip = SCORE_CLIPS.filter(c => c.abc)[i];
+    if (!clip || typeof ABCJS === 'undefined') return;
+    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} }
+    try {
+        const visualObjs = ABCJS.renderAbc('offscreen-render', clip.abc, {});
+        const synth = new ABCJS.synth.CreateSynth();
+        await synth.init({ visualObj: visualObjs[0] });
+        await synth.prime();
+        synth.start();
+        _clipSynths[i] = synth;
+    } catch(e) { console.warn('playClip error:', e); }
+}
+
+function stopClip(i) {
+    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} delete _clipSynths[i]; }
+}
+
+function renderPalette() {
+    const grid = document.getElementById('palette-grid');
+    const countEl = document.getElementById('palette-count');
+    countEl.textContent = paletteImages.length ? `(${paletteImages.length})` : '';
+    if (paletteImages.length === 0) {
+        grid.innerHTML = '<span style="font-size:0.78rem;color:#555;">No images yet. Add one below or paste with Ctrl+V.</span>';
+        return;
+    }
+    grid.innerHTML = paletteImages.map((img, i) => `
+        <div class="palette-img ${i === selectedPaletteIdx ? 'selected' : ''}" onclick="selectPaletteImg(${i})" title="${img.label}">
+            <img src="${img.url}" onerror="this.parentElement.style.display='none'">
+            <span class="palette-remove" onclick="event.stopPropagation();removePaletteImg(${i})">&times;</span>
+        </div>
+    `).join('');
+    document.getElementById('palette-apply').style.display = selectedPaletteIdx >= 0 ? '' : 'none';
+}
+
+function selectPaletteImg(idx) {
+    selectedPaletteIdx = selectedPaletteIdx === idx ? -1 : idx;
+    renderPalette();
+}
+
+function clearPaletteSelection() {
+    selectedPaletteIdx = -1;
+    renderPalette();
+}
+
+function removePaletteImg(idx) {
+    paletteImages.splice(idx, 1);
+    if (selectedPaletteIdx === idx) selectedPaletteIdx = -1;
+    else if (selectedPaletteIdx > idx) selectedPaletteIdx--;
+    renderPalette();
+}
+
+function addToPalette() {
+    const input = document.getElementById('palette-url');
+    const url = input.value.trim();
+    if (!url) return;
+    if (!paletteImages.some(p => p.url === url)) {
+        paletteImages.push({ url, label: 'Custom' });
+    }
+    input.value = '';
+    renderPalette();
+}
+
+function applyPaletteToSelected() {
+    if (selectedPaletteIdx < 0) return;
+    const img = paletteImages[selectedPaletteIdx];
+    const side = document.getElementById('palette-side').value;
+    const checked = document.querySelectorAll('.row-cb:checked');
+    if (checked.length === 0) { alert('Select cards first (checkboxes)'); return; }
+    checked.forEach(cb => {
+        const idx = parseInt(cb.dataset.idx);
+        const card = cards[idx];
+        if (!card.images) card.images = [];
+        // Don't add duplicate
+        if (!card.images.some(i => i.url === img.url && i.side === side)) {
+            card.images.push({ url: img.url, side });
+        }
+    });
+    selectedPaletteIdx = -1;
+    renderPalette();
+    renderTable();
+}
+
+// Paste on palette area
+document.querySelector('.img-palette')?.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                if (!paletteImages.some(p => p.url === ev.target.result)) {
+                    paletteImages.push({ url: ev.target.result, label: 'Pasted' });
+                    renderPalette();
+                }
+            };
+            reader.readAsDataURL(item.getAsFile());
+            return;
+        }
+    }
+});
+
+renderPalette();
+renderTable();
+
+</script>
+
+<script src="../../lib/js/anki_export.js"></script>
+<script>
+async function exportApkgBtn() {
+    const btn = event.target;
+    const origText = btn.textContent;
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+    try {
+        const blob = await exportApkg(cards, 'StockQB::' + TOPIC);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = TOPIC.toLowerCase().replace(/\s+/g, '_') + '.apkg';
+        a.click();
+        btn.textContent = 'Downloaded!';
+        setTimeout(() => { btn.textContent = origText; }, 2000);
+    } catch (e) {
+        console.error(e);
+        alert('Export failed: ' + e.message);
+        btn.textContent = origText;
+    } finally {
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>

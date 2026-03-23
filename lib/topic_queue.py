@@ -65,7 +65,7 @@ def add_second(topic, reason='', difficulties='7,8,9,10'):
         print(f'Already in second pass queue: {topic}')
         return
     # Check that analysis JSON exists
-    analysis_file = ROOT / 'output' / f'{slug}_analysis.json'
+    analysis_file = ROOT / 'output' / slug / 'analysis.json'
     if not analysis_file.exists():
         print(f'Warning: no analysis JSON found for {topic} ({slug}). Use first pass instead?')
     category = ''

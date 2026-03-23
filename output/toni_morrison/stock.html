@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Toni Morrison</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Toni Morrison</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">African-American Nobel Prize-winning author (1993), known for novels exploring Black American experience. Editor at Random House who diversified publishing. Associated with Ohio settings and themes of race, memory, and trauma.</div>
+
+        <details class="work" id="beloved" open>
+            <summary class="work-title">Beloved</summary>
+            <p class="work-desc">Morrison's most celebrated novel, dedicated to 'Sixty Million and more,' inspired by the true story of Margaret Garner. Set at 124 Bluestone Road, the escaped slave Sethe is haunted by the ghost of the daughter she killed to save from slavery. Paul D arrives from the Sweet Home plantation, where they were both enslaved under Schoolteacher. Sethe's back bears scars she describes as a 'chokecherry tree.' The ghost Beloved materializes as a young woman. Denver, Sethe's surviving daughter, eventually seeks help from the community. Key moments include Sethe attacking Mr. Bodwin with an ice pick (mistaking him for Schoolteacher), Sixo being burned alive, and the famous opening line '124 was spiteful.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">14x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set at 124 Bluestone Road; Sethe is haunted by the ghost of her murdered daughter</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a ghost at 124 Bluestone Road haunts Denver and her mother Sethe | Sethe&#x27;s house is haunted by the ghost of her daughter</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by Margaret Garner; dedicated to &#x27;Sixty Million and more&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">inspired by Margaret Garner | a novel dedicated to &#x27;Sixty Million and more&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sethe escapes Sweet Home plantation; Schoolteacher is the slave owner</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character attacks Mr. Bodwin with an ice pick thinking that he was Schoolteacher | Schoolteacher&#x27;s slave catchers</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sethe&#x27;s back scars described as a &#x27;chokecherry tree&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">describes the scars on her back as &#x27;a choke-cherry tree&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Paul D arrives at 124; he &#x27;wants to put his story next to hers&#x27;; &#x27;thin love is no love at all&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a protagonist tells another character, who &#x27;wants to put his story next to hers,&#x27; that &#x27;thin love is no love at all&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sixo burned alive by Schoolteacher</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character who burns Sixo alive</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sethe&#x27;s breast milk was stolen; her husband smears butter on his face</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character who smears butter all over his face after hearing that his wife&#x27;s breast milk was stolen</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens &#x27;124 was spiteful&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Beloved opens with this three-word sentence</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="song-of-solomon" open>
+            <summary class="work-title">Song of Solomon</summary>
+            <p class="work-desc">The novel follows Milkman Dead III, named after the janitor Freddie catches Ruth breastfeeding him well into childhood. His sisters First Corinthians and Magdalene Called Lena were named by randomly putting a pin in the Bible. The novel opens with Robert Smith jumping from the roof of Mercy Hospital. Milkman discovers the Seven Days, a vengeful society, and his friend Guitar Bains is a member. He travels to Shalimar, Virginia, to learn his family history and discovers his grandfather Solomon could fly. The theme of flight permeates the novel, from the opening song 'O Sugarman' to Milkman leaping toward Guitar at the end. His aunt Pilate has no navel.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Follows Milkman Dead III; named because he was breastfed into childhood</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">focuses on the life and family of Milkman Dead III | gets his name after Freddie the janitor walks in on his mother while she&#x27;s breastfeeding him</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Theme of flight; Solomon could fly; &#x27;O Sugarman&#x27; song; Milkman leaps at Guitar</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the theme of human flight permeates a novel which begins with Robert Smith jumping from the roof of Mercy Hospital | Milkman discovers that he&#x27;s descended from a man named Solomon, who could fly</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Seven Days vigilante society; Guitar Bains is a member</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a vengeful society named the Seven Days | his friend Guitar</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Robert Smith jumps from roof of Mercy Hospital at the opening</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Robert Smith jumping from the roof of Mercy Hospital</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Milkman travels to Shalimar, Virginia to trace his ancestry</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist visiting Shalimar and leaping at his friend Guitar</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pilate (Milkman&#x27;s aunt) has no navel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist&#x27;s aunt has no navel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sisters named by putting a pin in the Bible: First Corinthians and Magdalene Called Lena</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a couple chooses names for their daughters by randomly selecting passages from the Bible</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-bluest-eye" open>
+            <summary class="work-title">The Bluest Eye</summary>
+            <p class="work-desc">Morrison's first novel, set in Lorain, Ohio. Pecola Breedlove, an African-American girl, desires blue eyes as a symbol of white beauty. She is raped by her alcoholic father Cholly, and the resulting premature baby dies — foreshadowed by the failure of marigolds to bloom. The novel's chapter titles parody Dick and Jane readers. Pecola is manipulated by the charlatan Soaphead Church. Claudia and Frieda MacTeer are her neighbors who plant the marigolds.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pecola Breedlove desires blue eyes / obsessed with white beauty standards</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Pecola Breedlove&#x27;s desire for the beauty of &#x27;whiteness&#x27; | Pecola Breedlove, whose desire for whiteness leads her to fantasize about having the title feature</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pecola raped by her father Cholly; premature baby dies; marigolds won&#x27;t bloom</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Pecola Breedlove is raped by her alcoholic father, Cholly, and the resulting child dies after being born prematurely | none of these flowers bloom in 1941 after Pecola is impregnated</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chapter titles parody Dick and Jane readers</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Most of this novel&#x27;s chapter titles are run-on sentences with no punctuation that parody the Dick and Jane readers</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Soaphead Church manipulates Pecola</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">manipulated by Soaphead Church</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="jazz" open>
+            <summary class="work-title">Jazz</summary>
+            <p class="work-desc">The second novel in Morrison's Beloved trilogy. Joe Trace, a cosmetics salesman, has an ill-fated affair with the young Dorcas and murders her. Joe's wife Violet, nicknamed 'Violent,' stabs Dorcas's corpse at the funeral. Joe traces his heritage to a homeless woman named Wild. The novel is set in Harlem.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Joe Trace murders his mistress Dorcas; Violet stabs the corpse at the funeral</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Joe Trace&#x27;s fatal shooting of his mistress, Dorcas | his wife gains the nickname &#x27;Violent&#x27; for stabbing a corpse at a funeral</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Violet&#x27;s husband&#x27;s mistress shows up to the funeral dressed in white</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">her husband&#x27;s mistress outrageously showed up to her husband&#x27;s funeral dressed in white</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Joe traces heritage to a homeless woman named Wild</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist traces his heritage to a homeless woman named Wild</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="paradise" open>
+            <summary class="work-title">Paradise</summary>
+            <p class="work-desc">The third novel in Morrison's trilogy. Opens with the line 'They shoot the white girl first,' but never reveals which Convent resident is white. Nine men from the all-Black town of Ruby, Oklahoma attack the women at the Convent. The town was founded by darker-skinned Black residents fleeing colorism in their former home of Haven. The Oven, a communal structure, has a disputed inscription about 'the Furrow of His Brow.' Midwife Lone DuPres is shunned for allegedly causing birth defects.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens &#x27;They shoot the white girl first&#x27;; never reveals which woman is white</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">begins with the line &#x27;They shoot the white girl first&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nine men from Ruby, Oklahoma kill women at the Convent</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">nine men from Ruby, Oklahoma kill women at the Convent</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Oven has a disputed inscription about &#x27;the Furrow of His Brow&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">differing interpretations of an inscription on this object referring to the &#x27;the Furrow of His Brow&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="tar-baby" open>
+            <summary class="work-title">Tar Baby</summary>
+            <p class="work-desc">Centers on the affair between the stowaway Son and the Sorbonne-educated Jadine Childs on the Caribbean Isle des Chevaliers, where the wealthy Valerian Street has retired. Valerian's wife Margaret abused their son Michael. The novel ends with Son running into the forest to join blind, naked horsemen. Morrison said the title 'came to mean the black woman who can hold things together.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Son and Jadine&#x27;s affair on Isle des Chevaliers; Valerian Street; Margaret abused their son</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the wealthy Valerian Street in a novel in which his wife Margaret abuses her son Michael in L&#x27;Isle des Chevaliers | the stowaway Son and the Sorbonne-educated Jadine Childs</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Son runs into the forest to join blind, naked horsemen</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">ends as its main character first crawls, then runs into the forest to join a band of blind, naked horsemen</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="sula" open>
+            <summary class="work-title">Sula</summary>
+            <p class="work-desc">Set in the neighborhood called the Bottom, where the PTSD-afflicted veteran Shadrack leads National Suicide Day on January 3rd each year. The title character Sula sleeps with her best friend Nel's husband and accidentally kills the boy Chicken Little. Sula's grandmother Eva allegedly lost her leg by placing it on a railroad track for insurance money.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">National Suicide Day on January 3rd; veteran Shadrack; set in the Bottom</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the PTSD-afflicted veteran Shadrack leads the celebration of National Suicide Day each year on January 3rd</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sula sleeps with Nel&#x27;s husband; accidentally kills Chicken Little</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the title character sleeps with her best friend Nel&#x27;s husband and accidentally kills Chicken Little</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eva allegedly lost her leg on a railroad track for insurance</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sula&#x27;s grandmother Eva lost her leg by purposely placing it on one of these objects</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-mercy" open>
+            <summary class="work-title">A Mercy</summary>
+            <p class="work-desc">Set in 17th-century Virginia on the estate of the rum trader Jacob Vaark. Characters include the enslaved Angolan Florens, the Native American servant Lina, and Rebekah Vaark. Both Florens and Lina survive a smallpox epidemic. The narrative is written with a nail onto the floor of a mansion.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set in 17th-century Virginia; Jacob Vaark&#x27;s estate; Florens, Lina, Rebekah</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the slave Florens, the Native American laborer Lina, and Rebekah Vaark, the inhabitants of a seventeenth-century Virginia farm | a Native American servant and an enslaved Angolan named Florens both survive a smallpox epidemic</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="playing-in-the-dark" open>
+            <summary class="work-title">Playing in the Dark</summary>
+            <p class="work-desc">Morrison's book of literary criticism adapted from her 1990 Massey Lectures. She explores the 'Africanist presence' in American literature and asserts the importance of 'American Africanism' to the American literary tradition. The chapter 'Romancing the Shadow' analyzes Poe's Arthur Gordon Pym and the ending's 'figurations of impenetrable whiteness.' She also discusses <a href="willa_cather_stock.html" class="crossref-inline">Willa Cather</a>'s <a href="willa_cather_stock.html#sapphira-and-the-slave-girl" class="crossref-inline">Sapphira and the Slave Girl</a>.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Explores &#x27;Africanist presence&#x27; in American literature; adapted from 1990 Massey Lectures</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">adapted her lectures on the whiteness of American literature into Playing in the Dark | explores an &#x27;Africanist presence&#x27; central to American literature</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Romancing the Shadow&#x27; chapter analyzes Poe&#x27;s Arthur Gordon Pym</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Romancing the Shadow&#x27; begins with an analysis of the &#x27;white ghost&#x27; that appears at the end of this adventure novel by Edgar Allan Poe</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="recitatif" open>
+            <summary class="work-title">Recitatif</summary>
+            <p class="work-desc">Morrison's only short story. State wards Roberta and Twyla switch beds every night while living at a shelter and meet repeatedly throughout their lives. The story never reveals which character is Black and which is white. They fight by raising protest signs, and one questions whether the mute cook Maggie was really Black.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Morrison&#x27;s only short story; Roberta and Twyla; racial ambiguity; mute cook Maggie</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">State wards Roberta and Twyla switch beds every night while living at a shelter | this author&#x27;s only short story</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Morrison was the first Black woman to win the Nobel Prize in Literature (1993). She was an editor at Random House, where she compiled The Black Book and diversified publishing. She was born Chloe Ardelia Wofford. She won the 1988 Pulitzer Prize after dozens of writers petitioned for it. Her works are often set in Ohio (Lorain, specifically). She collaborated on operas including Desdemona (with Peter Sellars) and Margaret Garner (with Richard Danielpour). Her acceptance speech included the parable of the blind old woman and the bird that represents language.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nobel Prize in Literature (1993); first Black woman Nobel laureate in literature</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this 1993 Nobel Laureate | this Black Nobel laureate</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Editor at Random House; compiled The Black Book</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">acquisitions editor with diversifying publishing in the 1970s at Random House | compiled The Black Book while at Random House</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Collaborated on operas Desdemona (with Peter Sellars) and Margaret Garner (Danielpour)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">collaborated with Peter Sellars and Rokia Traore on the 2012 opera Desdemona</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nobel speech: parable of blind old woman, bird representing language</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a parable imagines young people trying to trick a blind old woman by asking if a bird representing language is alive or dead</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Toni Morrison is among the most heavily clued American authors in quizbowl, recognized as the first Black woman to win the Nobel Prize in Literature in 1993. Born Chloe Ardelia Wofford, she served as an editor at Random House where she compiled The Black Book and championed Black authors. Her works are frequently set in Ohio and the American South, and she is known for her rich exploration of African-American history, memory, and identity.</p><p>Beloved is Morrison&#x27;s most prominent work in clues, set at 124 Bluestone Road where the escaped slave Sethe is haunted by the ghost of the daughter she killed to prevent her return to slavery. The novel is dedicated to &#x27;Sixty Million and more&#x27; and was inspired by the real story of Margaret Garner. Key details include Sethe&#x27;s back scars described as a &#x27;chokecherry tree,&#x27; Paul D&#x27;s arrival from the Sweet Home plantation, Schoolteacher&#x27;s cruelty (including burning Sixo alive), and the famous opening &#x27;124 was spiteful.&#x27;</p><p>Song of Solomon follows Milkman Dead III, named because Freddie caught Ruth breastfeeding him well into childhood. The theme of flight pervades the novel from the opening (Robert Smith jumping from Mercy Hospital&#x27;s roof and the song &#x27;O Sugarman&#x27;) to Milkman&#x27;s discovery that his ancestor Solomon could fly. The Seven Days vigilante society and Guitar Bains are frequently clued, as is Milkman&#x27;s journey to Shalimar, Virginia.</p><p>The Bluest Eye, Morrison&#x27;s debut, depicts Pecola Breedlove&#x27;s tragic desire for blue eyes as a symbol of white beauty. Pecola is raped by her father Cholly, her premature baby dies, and the failure of marigolds to bloom foreshadows this. Jazz and Paradise complete the Beloved trilogy: Jazz features Joe Trace&#x27;s murder of Dorcas and Violet stabbing the corpse; Paradise opens &#x27;They shoot the white girl first&#x27; and depicts nine men from Ruby, Oklahoma attacking women at the Convent.</p><p>Other works include Tar Baby (Son and Jadine on Isle des Chevaliers with Valerian Street), Sula (National Suicide Day, the Bottom, Shadrack), A Mercy (17th-century Virginia, Florens and Jacob Vaark), and her only short story &#x27;Recitatif&#x27; (Roberta and Twyla&#x27;s racially ambiguous friendship). Playing in the Dark, her literary criticism adapted from the Massey Lectures, examines the &#x27;Africanist presence&#x27; in American literature. She also collaborated on operas and was known for her Nobel acceptance speech parable about a blind woman and a bird representing language.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Toni_Morrison" target="_blank">Toni Morrison — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Beloved_(novel)" target="_blank">Beloved — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Song_of_Solomon_(novel)" target="_blank">Song of Solomon — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Bluest_Eye" target="_blank">The Bluest Eye — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Playing_in_the_Dark" target="_blank">Playing in the Dark — Wikipedia</a></li></ul>
+            
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'toni_morrison' });</script>
+
+</body>
+</html>

@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<title>Stock: Henry Purcell</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Henry Purcell</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">English Baroque composer (c. 1659–1695), student of John Blow, and organist at Westminster Abbey. Best known for the opera Dido and Aeneas (especially the &#x27;Lament&#x27;), and for semi-operas such as King Arthur, The Fairy-Queen, and Dioclesian. His incidental music to Abdelazer provided the theme <a href="benjamin_britten_stock.html" class="crossref-inline">Benjamin Britten</a> used in <a href="benjamin_britten_stock.html#the-young-person-s-guide-to-the-orchestra" class="crossref-inline">The Young Person&#x27;s Guide to the Orchestra</a>.</div>
+
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Henry Purcell (c. 1659–1695) was an English Baroque composer and student of John Blow, whom he succeeded as principal organist at Westminster Abbey. He modeled the final chorus of Dido and Aeneas on the final chorus of Blow's Venus and <a href="adonis_stock.html" class="crossref-inline">Adonis</a>. His works are catalogued using Z numbers (compiled by musicologist Franklin Zimmerman). Michael Nyman quoted Purcell in works including 'Chasing Sheep is Best Left to Shepherds' and 'Memorial.' He is commonly attributed as the author of the Irish march Lilliburlero. His brother Michael and son Edward were also composers. His posthumous collection of songs was called Orpheus Britannicus.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Student of John Blow; succeeded him as organist at Westminster Abbey</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer succeeded his mentor as principal organist at the Westminster Abbey | This composer succeeded Blow as organist. He composed the anthem Thou knowest, Lord as well as the semi-opera King Arthur.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Works catalogued by Z numbers (compiled by musicologist Franklin Zimmerman)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Musicologist Franklin Zimmerman primarily studies this composer&#x27;s music, and compiled the Z numbers used to catalogue his works.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Posthumous song collection Orpheus Britannicus (contains &#x27;Music for a While&#x27; and other songs)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Originally written for a performance of Oedipus, that song was later published in this composer&#x27;s posthumous collection Orpheus Britannicus.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commonly attributed as the author of the Irish march Lilliburlero</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man is commonly attributed as the author of the Irish march Lilliburlero.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Michael Nyman quoted him in &#x27;Chasing Sheep is Best Left to Shepherds&#x27; and &#x27;Memorial&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Michael Nyman quoted this composer in his works Chasing Sheep is Best Left to Shepherds and Memorial.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alfred Deller is best known for reviving dramatic works and songs by Purcell</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alfred Deller is best-known for reviving dramatic works and songs by this composer.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote music for the funeral of Queen Mary II, including a C minor March scored for four flatt (slide) trumpets and a setting of &#x27;Thou Knowest Lord&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man is the English Baroque composer. He composed four flatt trumpets, a type of slide trumpet, in a march and canzona that he wrote for a royal funeral. | Purcell set the hymn &#x27;Thou knowest, Lord&#x27; in a set of Funeral Sentences for this ruler&#x27;s death that includes a C minor March and Canzona.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote birthday ode &#x27;Come, Ye Sons of Art&#x27; for the birthday of Queen Mary II</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Purcell&#x27;s Come, Ye Sons of Art was written to honor the birthday of this ruler. | This composer wrote the musical ode &#x27;Come ye Sons of Art&#x27; for the birthday of a monarch</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Come, Ye Sons of Art&#x27; includes the countertenor duet &#x27;Sound the Trumpet&#x27;; opening sinfonia reused in The Indian Queen</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer included the countertenor duet Sound the Trumpet as part of an ode whose opening sinfonia was reused in his unfinished opera The Indian Queen.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ode to St. Cecilia (Hail! Bright Cecilia) features the movement &#x27;Wondrous Machine!&#x27; in praise of the organ</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man&#x27;s popular Ode to St. Cecilia features a movement titled Wondrous Machine! in praise of the organ. | This composer&#x27;s Hail! Bright Cecilia was one of a series of works which they wrote honouring St Cecilia.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Te Deum was the first English-language Te Deum with orchestral accompaniment; composed for St. Cecilia&#x27;s feast day</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Purcell&#x27;s Te Deum, which was composed for this saint&#x27;s feast day, was the first English-language Te Deum with orchestral accompaniment.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote the anthem &#x27;My Heart is Inditing&#x27; for the coronation of James II</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The text for My Heart is Inditing was written by this earlier composer for the coronation of James II.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Incidental music for Aphra Behn&#x27;s Abdelazer; Benjamin Britten used a rondeau from it as the theme for The Young Person&#x27;s Guide to the Orchestra</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This frequent collaborator of Nahum Tate composed the incidental music to Abdelazer, which was used as the basis for Benjamin Britten&#x27;s Young Person&#x27;s Guide to the Orchestra. | Purcell composed the incidental music for this Aphra Behn play, the second movement of which was used by Benjamin Britten for the theme of his The Young Person&#x27;s Guide to the Orchestra.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Collaborated with librettist Nahum Tate on Dido and Aeneas</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This frequent collaborator of Nahum Tate composed the incidental music to Abdelazer | Nahum Tate wrote the libretto for this opera</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="dido-and-aeneas-dido-s-lament-when-i-am-laid-in-earth" open>
+            <summary class="work-title">Dido and Aeneas – Dido&#x27;s Lament (&#x27;When I am laid in earth&#x27;)</summary>
+            <p class="work-desc">The climactic final aria of Dido and Aeneas, in G minor. Preceded by the secco recitative 'Thy hand, Belinda.' The opening melody descends with the repeating phrase 'Remember me!' in a dotted rhythm, followed by 'but ah! Forget my fate.' The basso ostinato is a chromatic descending fourth (G to D) — a 'lament bass' or chromatic fourth, also called passus duriusculus — with a two-measure cadential return; each repetition is 5 bars (unusual for a ground bass). The handmaid Belinda witnesses Dido's death. <a href="https://en.wikipedia.org/wiki/Dido%27s_Lament" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with a chromatic descending bass from G to D (chromatic fourth / lament bass); unique 5-bar ground bass repetition</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The basso ostinato for this aria consists of a chromatic stepwise descent over the interval of a fourth and a two-measure cadence returning to the tonic G. | Name this aria, which opens with a chromatic descending bass pattern from G down to D. This aria features a unique instance of a ground bass since each repetition has a length of 5 bars.</span></span><div class="score-clip" data-abc="X:1\nT:Dido's Lament - ground bass\n%%MIDI program 0\nM:3/2\nL:1/4\nK:C\n|G2 ^F2 F2|E2 _E2 D2|"><div class="score-clip-header"><span class="score-clip-label">Score clip <span class="review-badge" title="ABC needs review">⚠</span></span><audio controls preload="none" src="audio/0.mp3?v=1774247356" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio></div><div class="score-notation"></div></div>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Preceded by the secco recitative &#x27;Thy hand, Belinda, darkness shades me / On thy bosom let me rest&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The recitativo secco that precedes this aria opens with the lines &#x27;Thy hand, Belinda, darkness shades me / On thy bosom let me rest.&#x27; | The secco recitative &#x27;Thy hand, Belinda&#x27; introduces this aria.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dido sings &#x27;Remember me, but ah! Forget my fate&#x27;; also &#x27;May my wrongs create / No trouble in thy breast&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer is probably best known for an opera whose best aria repeats the line &#x27;Remember me, but ah, forget my fate.&#x27; | Name this operatic character who sings a dotted rhythm on three repetitions of the phrase &#x27;Remember me!&#x27; before singing a descending melody on &#x27;but ah! Forget my fate.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Handmaid Belinda (Dido&#x27;s sister) witnesses the lament; she is the one beseeched</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This character, Dido&#x27;s sister, and Second Woman are handmaidens of Dido. She is the one beseeched in &#x27;Dido&#x27;s Lament&#x27;. | In one opera by this composer, one of the title characters sings a dying aria set over a ground bass... with Belinda as witness</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="dido-and-aeneas-the-work-as-a-whole" open>
+            <summary class="work-title">Dido and Aeneas – The Work as a Whole</summary>
+            <p class="work-desc">Purcell's only true opera, with a libretto by Nahum Tate. Depicts the love story of Dido, Queen of Carthage, and the Trojan hero Aeneas (from <a href="virgil_stock.html" class="crossref-inline">Virgil</a>'s Aeneid). An evil sorceress tricks Aeneas into abandoning Dido. The opera includes a chorus of witches and a chorus of sailors. Purcell modeled the final chorus ('With drooping wings') on the final chorus of Blow's Venus and <a href="adonis_stock.html" class="crossref-inline">Adonis</a>. Heavily influenced by Blow's Venus and Adonis and by Cavalli's Didone. <a href="https://en.wikipedia.org/wiki/Dido_and_Aeneas_(opera)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Libretto by Nahum Tate; evil sorceress tricks Aeneas into abandoning Dido</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nahum Tate wrote the libretto for this opera in which an evil sorceress tricks one of the title lovers into abandoning the other. | Dido and Aeneas, an opera by this English Baroque composer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Includes chorus of witches and chorus of sailors</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A chorus of witches and a chorus of sailors are characters in an opera by this composer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Final chorus &#x27;With drooping wings&#x27; modeled on the final chorus of Blow&#x27;s Venus and Adonis</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer succeeded his mentor as principal organist at the Westminster Abbey, and modeled one opera&#x27;s final chorus, With drooping wings, on the final chorus of Venus and Adonis by that mentor, John Blow.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Influenced by Blow&#x27;s Venus and Adonis and Cavalli&#x27;s Didone</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Besides its basis in Virgil&#x27;s Aeneid and influence from Cavalli&#x27;s Didone, Dido and Aeneas was heavily influenced by this Baroque composer&#x27;s Venus and Adonis.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="king-arthur-semi-opera" open>
+            <summary class="work-title">King Arthur (semi-opera)</summary>
+            <p class="work-desc">A semi-opera with libretto by <a href="john_dryden_stock.html" class="crossref-inline">John Dryden</a>. Arthur rescues the blind princess Emmeline from the Saxon King Oswald. Includes the 'Frost Scene' (Cold Genius aria 'What Power art thou,' sung by Cupid) and the aria 'Fairest Isle.' The 'Cold Song' from this opera (with lyrics about a spirit frozen in ice, sung by a countertenor) was used by Klaus Nomi and covered by Olga Neuwirth. A fanfare on 'Fairest Isle' was used as the BBC Radio 3 theme for a 1995 celebration of British music. <a href="https://en.wikipedia.org/wiki/King_Arthur_(opera)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Frost Scene&#x27;: Cupid sings &#x27;What Power art thou&#x27; (Cold Genius aria) — countertenor set over a ground bass describing snakes from Fury Alecto&#x27;s head, in three-bar C minor ground bass</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cupid sings the aria &#x27;What Power art thou&#x27; in the &#x27;Frost Scene&#x27; of this man&#x27;s opera King Arthur. | He used a three-bar ground bass in C minor for an aria often sung by a countertenor, whose lyrics describe snakes dropping from the head of the Fury Alecto.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Libretto by John Dryden; Arthur rescues blind princess Emmeline from Saxon King Oswald</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">With a libretto by John Dryden, King Arthur&#x27;s music was written by this composer. | this 17th century semi-opera in which the title character rescues the blind princess Emmeline from the Saxon King Oswald.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Fairest Isle&#x27; aria; a fanfare on it was used as the BBC Radio 3 1995 British music celebration theme</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A fanfare based on &#x27;Fairest Isle&#x27; from this opera was used as a theme for BBC Radio 3&#x27;s 1995 celebration of British music.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-fairy-queen-semi-opera" open>
+            <summary class="work-title">The Fairy-Queen (semi-opera)</summary>
+            <p class="work-desc">A semi-opera based on Shakespeare's A Midsummer Night's Dream, with a 'Drunken Poet' character added. Includes the Chinese Woman's aria 'Hark! Now the Echoing Air' preceded by the 'Monkey's Dance,' and Juno singing 'Thrice Happy Lovers' and 'The Plaint.' <a href="https://en.wikipedia.org/wiki/The_Fairy-Queen" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on A Midsummer Night&#x27;s Dream, with the character of the Drunken Poet added</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He also wrote the &#x27;Monkey&#x27;s Dance,&#x27; which is followed by the Chinese Woman&#x27;s aria &#x27;Hark! Now the Echoing Air,&#x27; in a work in which Juno sings &#x27;Thrice Happy Lovers&#x27; and &#x27;The Plaint,&#x27; and the character of The Drunken Poet is added to an adaptation of A Midsummer Night&#x27;s Dream. | This English Baroque composer of Ode to St. Cecilia... He adapted William Shakespeare&#x27;s play A Midsummer Night&#x27;s Dream into his opera The Fairy-Queen.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Includes &#x27;Monkey&#x27;s Dance,&#x27; Chinese Woman&#x27;s aria &#x27;Hark! Now the Echoing Air,&#x27; and Juno singing &#x27;Thrice Happy Lovers&#x27; and &#x27;The Plaint&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He also wrote the &#x27;Monkey&#x27;s Dance,&#x27; which is followed by the Chinese Woman&#x27;s aria &#x27;Hark! Now the Echoing Air,&#x27; in a work in which Juno sings &#x27;Thrice Happy Lovers&#x27; and &#x27;The Plaint&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Purcell's other semi-operas include Dioclesian (subtitled 'The Prophetess,' named for a Roman emperor) and the unfinished The Indian Queen (set in Mexico; its opening sinfonia was reused from the ode 'Come, Ye Sons of Art'). 'Music for a While' is a countertenor song from the incidental music for a play on the Oedipus story, later published in Orpheus Britannicus. He also wrote a chaconne in G minor (arranged by Britten).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Music for a While&#x27; — countertenor song in incidental music for an Oedipus-based play; published posthumously in Orpheus Britannicus</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Today, countertenors often perform this composer&#x27;s Music for a While. | He included the ground-bass song &#x27;Music for a while&#x27; in his incidental music for a play on the Oedipus story</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dioclesian (semi-opera named for a Roman emperor; subtitled &#x27;The Prophetess&#x27;)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Among Purcell&#x27;s semi-operas is one named for a holder of this position and subtitled &#x27;The Prophetess.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Indian Queen — unfinished dramatic opera set in Mexico; opening sinfonia reused from &#x27;Come, Ye Sons of Art&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer never finished a work set in Mexico, his dramatic opera called The Indian Queen. | This composer included the countertenor duet Sound the Trumpet as part of an ode whose opening sinfonia was reused in his unfinished opera The Indian Queen.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote a chaconne in G minor, arranged by Britten</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer also wrote a chaconne in G minor that was arranged by Benjamin Britten.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Henry Purcell (c. 1659–1695) was an English Baroque composer and student of John Blow, whom he succeeded as principal organist at Westminster Abbey. His works are catalogued by Z numbers, compiled by musicologist Franklin Zimmerman. His brother Michael and son Edward were also composers.</p><p>Purcell&#x27;s only true opera is Dido and Aeneas, with a libretto by Nahum Tate. It depicts the love affair between Dido, Queen of Carthage, and the Trojan hero Aeneas, who is tricked by an evil sorceress into abandoning her. The opera was heavily influenced by Blow&#x27;s Venus and <a href="adonis_stock.html" class="crossref-inline">Adonis</a> (Purcell modeled his final chorus &#x27;With drooping wings&#x27; on Blow&#x27;s) and by Cavalli&#x27;s Didone. Its climax is &#x27;Dido&#x27;s Lament&#x27; (&#x27;When I am laid in earth&#x27;) — the singer pleads &#x27;Remember me, but ah! Forget my fate&#x27; — preceded by the recitative &#x27;Thy hand, Belinda.&#x27; The lament is built on a chromatic descending ground bass (G down to D, a chromatic fourth / passus duriusculus), with each repetition lasting an unusual 5 bars. Dido&#x27;s handmaid Belinda witnesses her death.</p><p>Purcell&#x27;s semi-operas include King Arthur (libretto by <a href="john_dryden_stock.html" class="crossref-inline">John Dryden</a>, in which Arthur rescues the blind princess Emmeline from Saxon King Oswald), The Fairy-Queen (adapted from A Midsummer Night&#x27;s Dream, adding the Drunken Poet character), Dioclesian (&#x27;The Prophetess&#x27;), and the unfinished The Indian Queen. King Arthur contains the &#x27;Frost Scene&#x27; in which Cupid sings &#x27;What Power art thou&#x27; over a three-bar ground bass in C minor, with lyrics about snakes from the head of Fury Alecto — the aria is often performed by a countertenor. The opera&#x27;s &#x27;Fairest Isle&#x27; aria was the basis for a BBC Radio 3 1995 celebration of British music. &#x27;Music for a While,&#x27; a countertenor song from Purcell&#x27;s incidental music for an Oedipus-based play, was later published in his posthumous collection Orpheus Britannicus.</p><p>Purcell&#x27;s incidental music for <a href="aphra_behn_stock.html" class="crossref-inline">Aphra Behn</a>&#x27;s Abdelazer provided the rondeau theme <a href="benjamin_britten_stock.html" class="crossref-inline">Benjamin Britten</a> used in <a href="benjamin_britten_stock.html#the-young-person-s-guide-to-the-orchestra" class="crossref-inline">The Young Person&#x27;s Guide to the Orchestra</a> (Variations and Fugue on a Theme of Purcell). He composed music for Queen Mary II&#x27;s funeral — a C minor March for four flatt (slide) trumpets and a Canzona — and the setting of &#x27;Thou Knowest Lord.&#x27; His birthday ode &#x27;Come, Ye Sons of Art&#x27; (honoring Queen Mary II) features the countertenor duet &#x27;Sound the Trumpet&#x27;; its opening sinfonia was recycled in The Indian Queen. His Ode to St. Cecilia (&#x27;Hail! Bright Cecilia&#x27;) includes the movement &#x27;Wondrous Machine!&#x27; in praise of the organ; his Te Deum was the first English Te Deum with orchestral accompaniment. William Croft used Purcell&#x27;s setting of &#x27;Thou Knowest Lord&#x27; as a homage. Michael Nyman quoted Purcell in &#x27;Chasing Sheep is Best Left to Shepherds&#x27; and &#x27;Memorial&#x27;; Purcell is also credited with the Irish march Lilliburlero.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Henry_Purcell" target="_blank">Henry Purcell — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Dido_and_Aeneas_(opera)" target="_blank">Dido and Aeneas — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/King_Arthur_(opera)" target="_blank">King Arthur (opera) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Dido and Aeneas — warrants own answerline search for deeper plot and musical clues</li><li>The Young Person&#x27;s Guide to the Orchestra (Britten) — Purcell&#x27;s Abdelazer theme is at its core; linked topic</li><li>John Blow — Purcell&#x27;s mentor, whose Venus and Adonis directly influenced Dido and Aeneas</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'henry_purcell' });</script>
+<script>
+// Render ABC notation for all score clips
+document.querySelectorAll('.score-clip').forEach(function(clip) {
+    var abc = clip.dataset.abc;
+    var el = clip.querySelector('.score-notation');
+    if (abc && el && typeof ABCJS !== 'undefined') {
+        ABCJS.renderAbc(el, abc, { responsive: 'resize', staffwidth: 340, scale: 0.85,
+            paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
+            foregroundColor: '#c8ccd1' });
+    }
+});
+
+// Fallback abcjs synth for clips without mp3
+var _clipSynth = null;
+function playAbc(btn) {
+    var clip = btn.closest('.score-clip');
+    var abc = clip.dataset.abc;
+    if (!abc || typeof ABCJS === 'undefined') return;
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+    var visual = ABCJS.renderAbc('_offscreen', abc, {});
+    var synth = new ABCJS.synth.CreateSynth();
+    synth.init({ visualObj: visual[0] }).then(function() {
+        return synth.prime();
+    }).then(function() {
+        synth.start();
+        _clipSynth = synth;
+    }).catch(function(e) { console.warn('abcjs synth:', e); });
+}
+function stopAbc(btn) {
+    if (_clipSynth) { try { _clipSynth.stop(); } catch(e) {} _clipSynth = null; }
+}
+</script>
+<div id="_offscreen" style="display:none;position:absolute;"></div>
+</body>
+</html>

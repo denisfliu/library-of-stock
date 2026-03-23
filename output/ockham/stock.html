@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: William of Ockham</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>William of Ockham</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">14th-century English Franciscan friar and Scholastic philosopher, author of Summa Logicae. Best known for Ockham&#x27;s razor (&#x27;entities should not be multiplied without necessity&#x27;), his nominalism about universals, his reduction of <a href="aristotle_stock.html" class="crossref-inline">Aristotle</a>&#x27;s ten categories to substance and quality, and his theory of mental language.</div>
+
+        <details class="work" id="ockham-s-razor-principle-of-parsimony" open>
+            <summary class="work-title">Ockham&#x27;s Razor (Principle of Parsimony)</summary>
+            <p class="work-desc">Ockham's razor, also called the principle of parsimony or lex parsimoniae, is the statement that 'entities should not be multiplied without necessity.' Though widely attributed to Ockham, the exact phrasing was coined by Irish theologian John Punch. The razor has been discussed by Quine (whose 'Plato's beard' problem shows how nonbeing 'dulls' it), Paul Grice (who used a modified version to defend conversational implicature), and Walter Chatton (who created an 'anti-razor'). It frequently appears as its own answerline.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">13x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Entities should not be multiplied without necessity&#x27; - principle of parsimony / lex parsimoniae</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the idea that &#x27;entities should not be multiplied beyond necessity&#x27; is what medieval philosopher&#x27;s namesake razor? | &#x27;entities should not be multiplied without necessity,&#x27; advocates for using simple explanations over more complex ones</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Quine&#x27;s &#x27;Plato&#x27;s beard&#x27; paradox shows nonbeing &#x27;dulls&#x27; the razor (&#x27;On What There Is&#x27;)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Applying this statement to nonexistent objects makes it less effective per Quine&#x27;s paper &#x27;On What There Is&#x27;, which notes that this statement is &#x27;dulled&#x27; by a &#x27;tangled&#x27; paradox called Plato&#x27;s beard. | Quine&#x27;s name for the &#x27;old Platonic riddle&#x27; in which &#x27;nonbeing must in some sense be&#x27; references the difficulties it poses for this statement.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Walter Chatton created an &#x27;anti-razor&#x27;; frequently feuded with Ockham</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An &#x27;anti&#x27; form of this statement was created by Walter Chatton, who frequently feuded with its formulator. | An argument against this statement that depended on time and space being still was presented by Robert Chatton.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Paul Grice used a modified version to defend his theory of conversational implicature</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A modified version of this statement was used by Paul Grice to defend his theory of conversational implicature.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Provides the basis of methodological reductionism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This statement, which provides the basis of methodological reductionism</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ernst Mach adapted it to physics: &#x27;scientists must use the simplest means of arriving at their result&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ernst Mach adapted this philosophical statement to physics, claiming that &#x27;scientists must use the simplest means of arriving at their result.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Irish theologian John Punch was actual coiner of the phrase attributed to Ockham</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Irish theologian John Punch was the actual coiner of a phrase attributed to this philosopher</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The razor justified reducing Aristotle&#x27;s categories from ten to substance and quality</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This statement justified reducing the number of categories in Aristotle&#x27;s ontology from ten to those of substance and quality.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="nominalism-and-the-problem-of-universals" open>
+            <summary class="work-title">Nominalism and the Problem of Universals</summary>
+            <p class="work-desc">Ockham is the most famous nominalist philosopher, arguing that universals exist only in the mind and are not real entities. He transitioned from a 'fictum theory' (universals as mental fictions with objective being in the soul) to an 'intellectio theory' (universals are acts of intellection themselves). He accepted abstractions like whiteness but denied they were universals. His position opposed <a href="duns_scotus_stock.html" class="crossref-inline">Duns Scotus</a>'s realism.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Argued universals exist only in the mind; nominalist position in Summa Logicae</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This thinker argued for nominalism about universals in Summa Logicae. | This man&#x27;s Summa of Logic argued that universals are only in the mind.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Transitioned from &#x27;fictum theory&#x27; to &#x27;intellectio theory&#x27; of universals (universals as acts of intellection)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This philosopher held that certain concepts are merely the act of &#x27;intellection&#x27; itself after abandoning his earlier fictum-theory of those entities. | This thinker, whose idealization of poverty fueled his dispute with Pope John XXII, transitioned from a &#x27;fictum-theory&#x27; to an &#x27;intellectio-theory&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Accepted abstractions like whiteness but did not believe they were universals</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This philosopher accepted abstractions like whiteness but did not believe they were universals | This philosopher argued that certain entities were merely the result of thinking of several particulars at once</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opposed Duns Scotus&#x27;s realism about universals</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">John Duns Scotus&#x27;s realism about universals was disputed by this nominalist&#x27;s Summa of Logic. | In contrast to Duns Scotus&#x27;s realism, this thinker&#x27;s Summa Logicae solved the problem of universals</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Richard Weaver lamented his role in changing &#x27;man&#x27;s conception of reality&#x27; in Ideas Have Consequences</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The conservative writer Richard Weaver lamented this philosopher&#x27;s role in changing &#x27;man&#x27;s conception of reality&#x27; in the book Ideas Have Consequences.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Follower of Roscellinus (founder of nominalism)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker distinguished between existent abstractions and nonexistent universals as part of the nominalist philosophy he advanced from Roscellinus</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="reduction-of-aristotle-s-categories" open>
+            <summary class="work-title">Reduction of Aristotle&#x27;s Categories <a href="aristotle_stock.html" class="work-link-btn" title="Go to Aristotle">&rarr;</a></summary>
+            <p class="work-desc">Ockham reduced <a href="aristotle_stock.html" class="crossref-inline">Aristotle</a>'s ten categories of being to just two (substance and quality) or sometimes three (adding relation for Trinitarian thought). He used the example 'Socrates is similar to Plato' to show that seven of ten categories were unnecessary. Walter Burley disagreed with this reduction.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Reduced Aristotle&#x27;s ten categories to substance and quality (sometimes three with relation)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This philosopher reduced the number of categories in his ontology from ten down to two: substance and quality. | He wrote that eight of Aristotle&#x27;s ten categories can be defined in terms of just two: substance and quality.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Used &#x27;Socrates is similar to Plato&#x27; to show seven of ten categories were unnecessary</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This thinker used the example of the sentence &#x27;Socrates is similar to Plato&#x27; to show that seven out of ten of Aristotle&#x27;s categories were unnecessary. | He argued that seven out of the ten categories of Aristotle were devoid of any entities.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Walter Burley disagreed with the reduction</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Walter Burley disagreed with this philosopher&#x27;s reduction of Aristotle&#x27;s ten categories into two: substance and quality.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="summa-logicae-and-mental-language" open>
+            <summary class="work-title">Summa Logicae and Mental Language</summary>
+            <p class="work-desc">Ockham's Summa Logicae (Summa of Logic) is his major work on logic, in which he develops a theory of mental language using 'natural signs' analogous to spoken language. He distinguished between intuitive and abstractive cognition, and developed a theory of supposition (personal, simple, and material). The work subordinates written and spoken language to mental language. David Chalmers wrote a paper on Ockham's 'simple connotative terms' and 'synonymy.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Summa Logicae develops theory of mental language using &#x27;natural signs&#x27;; subordinates written/spoken language to thought</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man&#x27;s main work subordinated written and spoken language to that of thought, because only the latter&#x27;s significations are ordained by nature. | This philosopher built on Aristotle&#x27;s idea of a mental language to analyze concepts as &#x27;natural signs&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Distinguished intuitive cognition from abstractive cognition</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This thinker developed the notion of &#x27;intuitive cognition,&#x27; which he distinguished from &#x27;abstractive cognition.&#x27; | Ockham distinguished between these two types of cognition, which differ in whether they deliver knowledge of an object&#x27;s existence</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Theory of supposition: personal, simple, and material</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Claude Pannaccio has written about a system devised by this philosopher that relies on personal, material, and simple suppositions. | This other thinker&#x27;s work on logic included splitting the theory of supposition into three parts: personal, simple, and material.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">David Chalmers&#x27;s only history-of-philosophy paper addresses Ockham&#x27;s &#x27;simple connotative terms&#x27; and &#x27;synonymy&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">David Chalmers&#x27;s only paper on the history of philosophy addresses the issues of &#x27;simple connotative terms&#x27; and &#x27;synonymy&#x27; in this much-earlier thinker&#x27;s theory</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Anticipated Descartes on God&#x27;s ability to deceive; discussed process of intuitive and abstract cognitions leading to beliefs</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This thinker anticipated Descartes&#x27;s exploration of the ability of God to deceive people by discussing the process by which intuitive and abstract cognitions lead to beliefs.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">English Franciscan friar of the 14th century. His idealization of poverty fueled a dispute with Pope John XXII, whom he called a heretic for rejecting Apostolic Poverty. He argued against papal infallibility in Eight Questions on the Power of the Pope. He is the foremost representative of the via moderna, contrasted with the earlier via antiqua. Marilyn McCord Adams wrote a two-volume study of him. <a href="anselm_stock.html" class="crossref-inline">Anselm</a> is considered the 'father' of Scholasticism, of which Ockham was a leading late figure.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">English Franciscan friar; dispute with Pope John XXII over Apostolic Poverty</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker, whose idealization of poverty fueled his dispute with Pope John XXII | This author discussed logical problems in the Quodlibets, which he wrote after he called John XXII a heretic</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Argued for papal infallibility in Eight Questions on the Power of the Pope, defending bull Exiit qui seminat</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This thinker argued for papal infallibility in their Eight Questions on the Power of the Pope, arguing that it was impossible for John XXII to revoke the earlier bull Exiit qui seminat.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Argued no property rights existed in Garden of Eden; natural rights but no property rights</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker argued against Pope John XXII that there were natural rights, but no property rights, in the Garden of Eden | This man&#x27;s view that no property rights existed in the Garden of Eden led to reciprocal accusations of heresy with the Pope.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Foremost representative of the via moderna, contrasted with the via antiqua</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">William of Ockham is the foremost representative of this way of thinking with a two-word Latin name, which arose in the 14th century.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marilyn McCord Adams wrote a two-volume study of him</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">McCord Adams wrote a two-volume study of this medieval British philosopher.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Commentary on Lombard&#x27;s Sentences contains formulation similar to the razor; only approved one book of it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">His commentary on Lombard&#x27;s Sentences states the principle that entities should not be posited beyond necessity. | This author approved only one book of his commentary on Lombard&#x27;s Sentences</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rejected Aquinas&#x27;s position that people only sin out of ignorance; argued people choose whether to pursue good</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This thinker rejected Aquinas&#x27;s position that people only sin out of ignorance, arguing instead that people choose whether or not to pursue good.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opposed Scotus&#x27;s formal distinction</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This thinker also opposed the formal distinction advanced by Duns Scotus</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>William of Ockham is a 14th-century English Franciscan friar and the most famous nominalist philosopher. He is best known for Ockham&#x27;s razor, the principle of parsimony commonly stated as &#x27;entities should not be multiplied without necessity,&#x27; though the exact phrase was coined by Irish theologian John Punch. The razor has been discussed by many later thinkers: Quine&#x27;s &#x27;Plato&#x27;s beard&#x27; problem shows how nonbeing &#x27;dulls&#x27; it, Walter Chatton created an &#x27;anti-razor,&#x27; Paul Grice used a modified version to defend conversational implicature, and Ernst Mach adapted it to physics.</p><p>Ockham&#x27;s nominalism held that universals exist only in the mind and are not real entities. He developed this position in his Summa Logicae (Summa of Logic), transitioning from a &#x27;fictum theory&#x27; (universals as mental fictions) to an &#x27;intellectio theory&#x27; (universals as acts of intellection). He accepted abstractions like whiteness but denied they were universals. His position opposed <a href="duns_scotus_stock.html" class="crossref-inline">Duns Scotus</a>&#x27;s realism. Richard Weaver later lamented Ockham&#x27;s role in changing &#x27;man&#x27;s conception of reality&#x27; in Ideas Have Consequences.</p><p>Ockham reduced <a href="aristotle_stock.html" class="crossref-inline">Aristotle</a>&#x27;s ten categories of being to just two: substance and quality (sometimes three, adding relation for Trinitarian thought). He used the example &#x27;Socrates is similar to Plato&#x27; to demonstrate that seven of the ten categories were unnecessary. Walter Burley disagreed with this reduction.</p><p>The Summa Logicae develops a theory of mental language, building on <a href="aristotle_stock.html" class="crossref-inline">Aristotle</a>&#x27;s idea to analyze concepts as &#x27;natural signs&#x27; and subordinating written and spoken language to thought. Ockham distinguished between intuitive and abstractive cognition and developed a theory of supposition with personal, simple, and material types. David Chalmers&#x27;s only history-of-philosophy paper addresses Ockham&#x27;s theory of &#x27;simple connotative terms&#x27; and &#x27;synonymy.&#x27;</p><p>Biographically, Ockham&#x27;s idealization of poverty fueled a major dispute with Pope John XXII, whom he called a heretic for rejecting the doctrine of Apostolic Poverty. He argued that no property rights existed in the Garden of Eden. He is the foremost representative of the via moderna. Marilyn McCord Adams wrote a two-volume study of him, and he is often considered a leading figure of Scholasticism alongside <a href="anselm_stock.html" class="crossref-inline">Anselm</a> (its &#x27;father&#x27;), Aquinas, and Scotus.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/William_of_Ockham" target="_blank">William of Ockham</a></li><li><a href="https://en.wikipedia.org/wiki/Occam%27s_razor" target="_blank">Ockham&#x27;s razor</a></li><li><a href="https://en.wikipedia.org/wiki/Summa_Logicae" target="_blank">Summa Logicae</a></li><li><a href="https://en.wikipedia.org/wiki/Problem_of_universals" target="_blank">Problem of universals</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Ockham&#x27;s razor - frequently appears as its own answerline</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'ockham' });</script>
+
+</body>
+</html>

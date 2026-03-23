@@ -104,9 +104,9 @@ If the initial fetch returned fewer than **10 total tossups + bonuses**, run two
 Read all output files and incorporate into your analysis. Text mention clues should be labeled as contextual.
 
 ### Read clues and create analysis JSON
-Read `output/{{slug}}_clues.txt`. Create `output/{{slug}}_analysis.json` following the analysis protocol above.
+Read `output/{{slug}}/clues.txt`. Create `output/{{slug}}/analysis.json` following the analysis protocol above.
 IMPORTANT: Set "topic" to the FULL proper name (from the answerline), not the search term.
-Reference `output/emily_carr_analysis.json` for JSON formatting.
+Reference `output/emily_carr/analysis.json` for JSON formatting.
 
 Required top-level fields:
 - "topic": full proper name
@@ -132,7 +132,7 @@ Required top-level fields:
 
 ### Render
 ```bash
-python3 -c "from lib.render import render_html; import json; f=open('output/{{slug}}_analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}_stock.html')"
+python3 -c "from lib.render import render_html; import json; f=open('output/{{slug}}/analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
 python3 lib/render_cards.py
 ```
 
@@ -158,7 +158,7 @@ If output is "EMPTY", you are done — exit.
 Parse the JSON output to get the topic name and slug.
 
 ### Load existing analysis
-Read `output/{{slug}}_analysis.json`. Note how many work sections, cards, and which works have thin coverage.
+Read `output/{{slug}}/analysis.json`. Note how many work sections, cards, and which works have thin coverage.
 
 ### Fetch additional data
 If the page is sparse (<10 original tossups+bonuses or <4 work sections):
@@ -170,7 +170,7 @@ Strip dates and parentheticals from work names. If 0 results, skip.
 
 ### Merge and update analysis
 Read ALL new clue files. Follow the merge protocol in the analysis protocol above.
-Reference `output/emily_carr_analysis.json` for JSON formatting.
+Reference `output/emily_carr/analysis.json` for JSON formatting.
 
 ### Self-check (MANDATORY)
 - [ ] All existing work sections preserved
@@ -184,7 +184,7 @@ Reference `output/emily_carr_analysis.json` for JSON formatting.
 
 ### Render
 ```bash
-python3 -c "from lib.render import render_html; import json; f=open('output/{{slug}}_analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}_stock.html')"
+python3 -c "from lib.render import render_html; import json; f=open('output/{{slug}}/analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
 python3 lib/render_cards.py
 ```
 

@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Samuel Beckett</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Samuel Beckett</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Irish playwright and novelist, key figure of the Theatre of the Absurd. Best known for Waiting for Godot, Endgame, and his trilogy of novels (Molloy, Malone Dies, The Unnamable). Wrote many works in French, then translated them into English. Also wrote Happy Days, Krapp&#x27;s Last Tape, Not I, and the novel Murphy.</div>
+
+        <details class="work" id="waiting-for-godot" open>
+            <summary class="work-title">Waiting for Godot</summary>
+            <p class="work-desc">Beckett's most famous play, about Vladimir and Estragon waiting by a tree on a country road for the mysterious Godot, who never arrives. Characters often say 'nothing to be done.' They discuss hanging themselves from the lone tree. A few leaves appear on the tree between acts despite only one day passing. Vivian Mercer described it as a play in which 'Nothing happens, twice.' Lucky delivers a rambling monologue stopped when his bowler hat is removed. Pozzo says Lucky will be 'chucked away like a banana skin.' A 'gravedigger puts on the forceps' and 'habit is the great deadener.' Beckett told a friend that a Caspar David Friedrich painting of two men contemplating the moon 'was the source of Waiting for Godot.' Originally written in French.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">16x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Vladimir and Estragon wait for Godot, who never comes</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Vladimir and Estragon await the arrival of the title character, who never appears</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Nothing to be done&#x27; — repeated phrase</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">play where characters repeat &#x27;nothing to be done&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set includes a lone tree on a country road; characters discuss hanging themselves from it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">two characters discuss whether to hang themselves from a lone tree</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Leaves appear on tree between acts despite one day passing</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a few leaves appear on a tree between acts despite only one day passing</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written in French; Theatre of the Absurd</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">used French to write... a play centered on Vladimir and Estragon</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lucky&#x27;s rambling monologue — stopped when bowler hat removed</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">delivers a rambling monologue that is stopped when his bowler hat is removed</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Beckett said Caspar David Friedrich painting was &#x27;the source&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Samuel Beckett told a friend that it &#x27;was the source of Waiting for Godot, you know&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Habit is the great deadener&#x27; / &#x27;gravedigger puts on the forceps&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;gravedigger puts on the forceps&#x27; before claiming that &#x27;habit is the great deadener&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Estragon fails to take off his boot at the beginning</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man fails to take off his boot at the beginning</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="endgame" open>
+            <summary class="work-title">Endgame</summary>
+            <p class="work-desc">A one-act play set in a room shaped like a human skull. The blind Hamm sits in an armchair and abuses his servant Clov, who cannot sit down. Hamm's legless parents Nagg and Nell live in ashbins (dustbins/trash cans). They lost their legs in a bicycling accident in the Ardennes. Nell dies, saying 'nothing is funnier than unhappiness.' Clov opens curtains via stepladder at the start. An alarm clock is placed on Nagg's ashbin. The title is a chess allusion. Beckett drew on his mother's death from Parkinson's. Premiered at the Royal Court Theatre.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nagg and Nell live in ashbins/dustbins; they are legless</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nagg and Nell live in trash cans | legless characters Nagg and Nell reside</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Blind Hamm in an armchair with servant Clov who cannot sit</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a blind man in an armchair | Clov... is unable to sit down</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Clov uses stepladder to open curtains at the start</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man using a stepladder to open the curtains in front of two windows</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title is a chess allusion; set shaped like a skull</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">title is an allusion to chess | set is shaped like a human skull</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nell says &#x27;nothing is funnier than unhappiness&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nell says that &#x27;nothing is funnier than&#x27; this concept</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nagg and Nell lost legs in a bicycling accident in the Ardennes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">lost their legs in a bicycling accident in the Ardennes</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="molloy" open>
+            <summary class="work-title">Molloy</summary>
+            <p class="work-desc">First novel of the trilogy (with Malone Dies and The Unnamable). Written in French. The title character travels between unnamed towns on a bicycle searching for his possibly-dead mother and is pursued by the detective Jacques Moran. Moran's son goes to buy a bicycle and takes months to return. The protagonist spends an eighty-page paragraph on a bicycle. Molloy murders a 'charcoal-burner' with the aid of his crutches. A woman saves a man who ran over her dog with a bicycle, sparing him from a mob.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First of the trilogy with Malone Dies and The Unnamable</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">part of a trilogy with Malone Dies and The Unnamable</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Detective Jacques Moran pursues the title character</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The detective Jacques Moran tries to track down the title character</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written in French</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">used French to write the novel Molloy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title character searches for his mother on a bicycle</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">protagonist, who spends an eighty-page paragraph on a bicycle searching for his mother</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Protagonist murders a &#x27;charcoal-burner&#x27; with crutches</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">murders a &#x27;charcoal-burner&#x27; with the aid of his crutches</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-unnamable" open>
+            <summary class="work-title">The Unnamable</summary>
+            <p class="work-desc">Third and final novel of the trilogy. Ends with the famous lines 'You must go on. I can't go on. I'll go on.' The narrator thinks unknown people have taken over his mouth. Contains the line 'if I am Mahood, I am Worm too,' suggesting shifting narrators. A story about a legless, armless, and speechless character named Mahood is told within. The narrator references Murphy and Watt as previous characters.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends &#x27;You must go on. I can&#x27;t go on. I&#x27;ll go on.&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">ends with the lines &#x27;You must go on. I can&#x27;t go on. I&#x27;ll go on.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;If I am Mahood, I am Worm too&#x27; — shifting narrators</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;if I am Mahood, I am Worm too&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Narrator says he is neither Murphy nor Watt</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">states that he is neither Murphy nor Watt</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="murphy" open>
+            <summary class="work-title">Murphy</summary>
+            <p class="work-desc">Beckett's first novel. Opens with 'The sun shone, having no alternative, on the nothing new.' The protagonist enjoys rocking in a chair while tied to it naked and his mind is described as 'a large hollow sphere, hermetically closed to the universe without.' Murphy begins a relationship with the prostitute Celia. He plays chess with the schizophrenic Mr. Endon at a mental hospital. Murphy burns to death when someone turns on the gas instead of flushing the toilet. His friend Cooper loses his ashes in a bar fight after Murphy wished for them to be flushed down the toilet at the Abbey Theater. Mentored by Neary, a practitioner of self-induced cardiac arrests.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Relationship with the prostitute Celia; plays chess with Mr. Endon</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">falls in love with a prostitute named Celia and plays chess with Mr. Endon</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Burns to death when gas is turned on instead of toilet flushed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">burns to death when someone accidentally turns on the gas</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with &#x27;The sun shone, having no alternative, on the nothing new&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">begins with the sentence &#x27;The sun shone, having no alternative, on the nothing new&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ashes lost in a bar fight; wished to be flushed at Abbey Theater</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cooper instead loses his ashes in a bar fight</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mentored by Neary, who can stop his own heart</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mr. Neary, who claims he has &#x27;apmonia,&#x27; or the ability to stop his heart</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="happy-days" open>
+            <summary class="work-title">Happy Days</summary>
+            <p class="work-desc">Features Winnie buried in a mound of earth (up to her waist, then her neck in Act 2), talking to her husband Willie. Her parasol catches fire. She opens a music box that plays a waltz from The Merry Widow. Willie reads a newspaper, ignoring her.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Winnie is buried in a mound of earth while talking to Willie</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Winnie is buried waist-deep in dirt | Winnie is buried in a mound throughout the performance</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Parasol catches fire; music box plays waltz from The Merry Widow</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">her parasol catches on fire... opens a music-box that plays a waltz from The Merry Widow</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="krapp-s-last-tape" open>
+            <summary class="work-title">Krapp&#x27;s Last Tape</summary>
+            <p class="work-desc">A one-man play in which the title character spends his birthday listening to recordings of his voice from past years. On his 69th birthday, he listens to a 39-year-old recording. He eats bananas and enjoys saying the word 'spool.' Ends with Krapp covering his face with a blood-stained handkerchief called an 'old stancher.' Originally written for Patrick Magee.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title character listens to recordings of his past self on his birthday</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the title character spends his birthday listening to recordings of his voice</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eats bananas; enjoys saying &#x27;spool&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">enjoy saying the word &#x27;spool&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Covers face with handkerchief called an &#x27;old stancher&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">covers his face with a handkerchief that he calls an &#x27;old stancher&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="not-i" open>
+            <summary class="work-title">Not I</summary>
+            <p class="work-desc">A dramatic monologue in which an actress recounts a traumatic event. The staging calls for a pitch-black space with a spotlight focused only on the actress's mouth, elevated eight feet above the stage. A black-robed Auditor makes 'gestures of helpless compassion.' Collected in the book Ends and Odds.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Spotlight on a woman&#x27;s mouth eight feet above the ground in pitch blackness</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a spotlight shining on a woman&#x27;s mouth... elevated to a height of eight feet</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Black-robed Auditor makes &#x27;gestures of helpless compassion&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character wearing a &#x27;loose black djellaba&#x27; is instructed to make four &#x27;gestures of helpless compassion&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Irish author who switched to writing in French mid-career in order to write 'without style.' Won an unspecified prize and agreed to a Swedish Television interview on the condition no questions be asked. Stabbed by a pimp named Prudent; <a href="james_joyce_stock.html" class="crossref-inline">James Joyce</a> paid for his hospital room despite Beckett once being the lover of Lucia Joyce. Drove young Andre the Giant to school. His first published work was a Schopenhauer-influenced monograph on Proust. Was interested in the philosopher Arnold Geulincx. <a href="michel_foucault_stock.html" class="crossref-inline">Michel Foucault</a>'s 'What is an Author?' quotes his Texts for Nothing. Collaborated with Morton Feldman on the opera Neither. The 35-second play Breath is his shortest work. Worstward Ho contains the advice 'Fail again. Fail better.' Wrote the novel Watt while hiding from the Gestapo. The short film Film starred Buster Keaton.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Switched to French to write &#x27;without style&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">switched languages mid-career in order to write &#x27;without style&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Influenced by Arnold Geulincx</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Arnold Geulincx-interested author</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stabbed by pimp named Prudent; Joyce paid hospital bill</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A pimp named Prudent stabbed this author</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First published work was a monograph on Proust (influenced by Schopenhauer)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;art is the apotheosis of solitude&#x27; in his first published work, a Schopenhauer-drenched monograph nominally about Marcel Proust</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Fail again. Fail better.&#x27; from Worstward Ho</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Worstward Ho contains the advice to &#x27;try again; fail again; fail better&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Drove young Andre the Giant to school</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">drove a young Andre the Giant to school</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote Watt while on the run from the Gestapo</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">While on the run from the Gestapo, this author wrote a novel set in Mr. Knott&#x27;s house titled Watt</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Film starred Buster Keaton — eyes of goldfish, parrot, chihuahua, cat frighten eyepatched man</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the eyes of a goldfish, parrot, chihuahua, and cat frighten an eyepatched man played by Buster Keaton</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Samuel Beckett (1906-1989) was an Irish playwright and novelist, one of the most important figures in twentieth-century literature and a central figure of the Theatre of the Absurd. In quizbowl, he is among the most heavily clued literary figures, with a vast body of work appearing across difficulty levels.</p><p>Waiting for Godot is Beckett&#x27;s most recognizable work, depicting Vladimir and Estragon waiting by a tree on a country road for the mysterious Godot, who never arrives. The play opens with &#x27;Nothing to be done&#x27; as Estragon fails to remove his boot. A few leaves appear on the tree between acts despite only one day passing. Lucky delivers a rambling monologue that stops only when his bowler hat is removed. Vivian Mercer famously described it as a play in which &#x27;nothing happens, twice.&#x27; Beckett once told a friend that Caspar David Friedrich&#x27;s painting of two men contemplating the moon &#x27;was the source of Waiting for Godot.&#x27; Originally written in French.</p><p>Endgame is a one-act play set in a room shaped like a human skull. The blind Hamm sits in an armchair abusing his servant Clov, who cannot sit down. Hamm&#x27;s legless parents Nagg and Nell live in ashbins (they lost their legs in a bicycling accident in the Ardennes). Clov opens curtains via a stepladder at the start. Before dying, Nell says &#x27;nothing is funnier than unhappiness.&#x27; The title is a chess allusion.</p><p>Beckett&#x27;s prose trilogy consists of Molloy, Malone Dies, and The Unnamable. In Molloy, the title character travels on a bicycle searching for his possibly-dead mother while the detective Jacques Moran pursues him. The Unnamable ends with the famous lines &#x27;You must go on. I can&#x27;t go on. I&#x27;ll go on&#x27; and features shifting narrators (&#x27;if I am Mahood, I am Worm too&#x27;). Malone Dies features a narrator immobile in a hospital bed who writes a story about a boy called Sapo, later renamed Macmann. Murphy is Beckett&#x27;s first novel, opening with &#x27;The sun shone, having no alternative, on the nothing new.&#x27; The protagonist befriends the prostitute Celia, plays chess with the schizophrenic Mr. Endon, and burns to death when someone turns on the gas instead of flushing the toilet.</p><p>Happy Days features Winnie buried progressively deeper in a mound of earth while talking to her husband Willie. Her parasol catches fire, and she plays a music box from The Merry Widow. Krapp&#x27;s Last Tape is a one-man play in which the title character listens to recordings of his past self on his birthday, eating bananas and ending by covering his face with a handkerchief called an &#x27;old stancher.&#x27; Not I features only a woman&#x27;s mouth, spotlit eight feet above the stage in pitch darkness, while a black-robed Auditor makes &#x27;gestures of helpless compassion.&#x27;</p><p>Biographically, Beckett switched to writing in French to write &#x27;without style.&#x27; He was influenced by the philosopher Arnold Geulincx. He was stabbed by a pimp named Prudent, and <a href="james_joyce_stock.html" class="crossref-inline">James Joyce</a> paid for his hospital room despite Beckett having been the lover of Joyce&#x27;s daughter Lucia. He drove young Andre the Giant to school. His first published work was a Schopenhauer-influenced monograph on Proust. He wrote Watt while hiding from the Gestapo. Worstward Ho contains the advice &#x27;Fail again. Fail better.&#x27; The short film Film starred Buster Keaton. He collaborated with Morton Feldman on the opera Neither and wrote the 35-second play Breath.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Samuel_Beckett" target="_blank">Samuel Beckett</a></li><li><a href="https://en.wikipedia.org/wiki/Waiting_for_Godot" target="_blank">Waiting for Godot</a></li><li><a href="https://en.wikipedia.org/wiki/Endgame_(play)" target="_blank">Endgame</a></li><li><a href="https://en.wikipedia.org/wiki/Molloy_(novel)" target="_blank">Molloy</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Waiting for Godot (may have its own answerline)</li><li>Endgame (may have its own answerline)</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'beckett' });</script>
+
+</body>
+</html>

@@ -924,14 +924,13 @@ function closeTimeline() {
 
 def build():
     guides = []
-    for f in sorted(OUTPUT_DIR.glob("*_stock.html")):
-        # Default name from filename, but prefer topic from analysis JSON
-        # Use removesuffix to only strip the trailing _stock, not _stock inside names like Stockton
-        slug = f.stem.removesuffix("_stock") if f.stem.endswith("_stock") else f.stem
+    for f in sorted(OUTPUT_DIR.glob("*/stock.html")):
+        # Slug is the parent directory name
+        slug = f.parent.name
         name = slug.replace("_", " ").title()
 
-        # Load metadata from analysis JSON
-        analysis_json = f.with_name(slug + "_analysis.json")
+        # Load metadata from analysis JSON (in same directory)
+        analysis_json = f.parent / "analysis.json"
         works_count = "?"
         category = ""
         subcategory = ""
@@ -962,7 +961,7 @@ def build():
         mtime = datetime.fromtimestamp(f.stat().st_mtime).strftime("%Y-%m-%d")
         guide = {
             "name": name,
-            "path": f"output/{f.name}",
+            "path": f"output/{slug}/stock.html",
             "works": works_count,
             "category": category,
             "subcategory": subcategory,

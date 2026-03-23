@@ -85,7 +85,7 @@ def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
     cards = _synthesize_audio_cards(
         analysis, _synthesize_image_cards(analysis, analysis.get("cards", []))
     )
-    stock_link = output_path.name.replace("_cards.html", "_stock.html")
+    stock_link = "stock.html"
 
     # Build recommended tags from analysis metadata
     rec_tags = [topic]
@@ -445,7 +445,7 @@ h1 {{
 </style>
 </head>
 <body>
-<div class="back-link"><a href="../index.html">&larr; Home</a> · <a href="{stock_link}">Study guide</a></div>
+<div class="back-link"><a href="../../index.html">&larr; Home</a> · <a href="{stock_link}">Study guide</a></div>
 <h1>Cards: {escape(topic)}</h1>
 
 <div class="toolbar">
@@ -1035,7 +1035,7 @@ renderTable();
 {'initClipsPalette();' if has_score_clips else ''}
 </script>
 {'<div id="offscreen-render" style="display:none;position:absolute;"></div>' if has_score_clips else ''}
-<script src="../lib/js/anki_export.js"></script>
+<script src="../../lib/js/anki_export.js"></script>
 <script>
 async function exportApkgBtn() {{
     const btn = event.target;
@@ -1071,9 +1071,8 @@ async function exportApkgBtn() {{
 def build_all(force: bool = False):
     count = 0
     skipped = 0
-    for f in sorted(OUTPUT_DIR.glob("*_analysis.json")):
-        topic_key = f.stem.replace("_analysis", "")
-        out_path = OUTPUT_DIR / f"{topic_key}_cards.html"
+    for f in sorted(OUTPUT_DIR.glob("*/analysis.json")):
+        out_path = f.parent / "cards.html"
 
         # Incremental: skip if cards HTML is newer than JSON (unless --force)
         if not force and out_path.exists() and out_path.stat().st_mtime >= f.stat().st_mtime:
@@ -1103,10 +1102,10 @@ if __name__ == "__main__":
     force = "--force" in sys.argv
     remaining = [a for a in sys.argv[1:] if a != "--force"]
     if remaining:
-        with open(remaining[0]) as f:
+        json_path = Path(remaining[0])
+        with open(json_path) as f:
             analysis = json.load(f)
-        topic_key = Path(remaining[0]).stem.replace("_analysis", "")
-        out = render_cards_html(analysis, OUTPUT_DIR / f"{topic_key}_cards.html")
+        out = render_cards_html(analysis, json_path.parent / "cards.html")
         print(f"Rendered to {out}")
     else:
         build_all(force=force)

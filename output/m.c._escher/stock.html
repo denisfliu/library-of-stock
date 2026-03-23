@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: M.C. Escher</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>M.C. Escher</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Dutch graphic artist known for impossible constructions, tessellations, and visual paradoxes. His works are discussed in Douglas Hofstadter&#x27;s Gödel, Escher, Bach. Inspired by Islamic tile art at the Alhambra and by <a href="piranesi_stock.html" class="crossref-inline">Piranesi</a>&#x27;s Imaginary Prisons.</div>
+
+        <details class="work" id="relativity-1953" open>
+            <summary class="work-title">Relativity (1953)</summary>
+            <p class="work-desc">Lithograph depicting a world with three sources of gravity, featuring staircases in a shape similar to a Penrose triangle. Faceless figures walk on staircases that defy normal gravity. <a href="https://en.wikipedia.org/wiki/Relativity_(M._C._Escher)" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/en/a/a3/Escher%27s_Relativity.jpg" alt="Relativity (1953)" loading="lazy">
+                        <figcaption>Relativity (1953)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lithograph depicting faceless people in a space with multiple sources of gravity; staircases form a Penrose triangle shape</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Piranesi&#x27;s Imaginary Prisons inspired this artist&#x27;s lithograph of faceless people in a space with multiple sources of gravity | depicts several staircases in a shape similar to a Penrose triangle | used the &#x27;Penrose triangle&#x27; in a work depicting people climbing an unending staircase</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by Piranesi&#x27;s Imaginary Prisons</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Piranesi&#x27;s Imaginary Prisons inspired this artist&#x27;s lithograph | This artist took inspiration from Piranesi in such works as Relativity</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="tessellation-works-reptiles-verbum-etc" open>
+            <summary class="work-title">Tessellation Works (Reptiles, Verbum, etc.)</summary>
+            <p class="work-desc">Works featuring tessellated patterns of knights, birds, reptiles, etc. Inspired by Islamic tile art at the Alhambra Palace in Spain.</p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/Reptiles_(M._C._Escher)" target="_blank">View: Tessellation Works (Reptiles, Verbum, etc.)</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tessellations inspired by the Alhambra — &#x27;regular division of the plane&#x27; featuring knights, birds, reptiles</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">obsession with a &#x27;regular division of the plane&#x27; — inspired by the Alhambra — can be seen in works which contrast black-and-white tessellations of knights and birds | Tiles from the Alhambra inspired this artist to create works such as Verbum that feature fish or birds with tessellated patterns | made multiple sketches of the tiles of the Alhambra Palace and later included similar patterns in such works as Reptiles</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="drawing-hands-hand-with-reflecting-sphere" open>
+            <summary class="work-title">Drawing Hands / Hand with Reflecting Sphere</summary>
+            <p class="work-desc">Drawing Hands: lithograph of two hands drawing each other into existence, discussed in Hofstadter's GEB as an example of 'strange loops.' Hand with Reflecting Sphere: self-portrait in his Roman studio looking into a reflective sphere.</p>
+            <div class="work-images">
+                    <figure>
+                        <a href="https://en.wikipedia.org/wiki/Drawing_Hands" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/be/Ambigram_Escher_and_tessellation_background_-_photomontage_with_reversible_hands.jpg/500px-Ambigram_Escher_and_tessellation_background_-_photomontage_with_reversible_hands.jpg" alt="Drawing Hands / Hand with Reflecting Sphere" loading="lazy"></a>
+                        <figcaption>Drawing Hands / Hand with Reflecting Sphere</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Drawing Hands — lithograph of two hands drawing each other into existence; exemplifies Hofstadter&#x27;s &#x27;strange loop&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">lithograph of two hands drawing each other into existence is discussed in a Douglas Hofstadter book | A lithograph by this artist that exemplifies Douglas Hofstadter&#x27;s notion of the &#x27;strange loop&#x27; depicts two hands drawing each other</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hand with Reflecting Sphere — self-portrait looking into a reflective sphere in his Roman studio (1935)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">seated in his Roman studio, looks directly into the title object in his 1935 painting Hand with Reflecting Sphere | Artist of Hand with a Reflecting Sphere</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="ascending-and-descending" open>
+            <summary class="work-title">Ascending and Descending</summary>
+            <p class="work-desc">Lithograph depicting Penrose stairs — an impossible staircase that loops endlessly.</p>
+            <div class="work-images">
+                    <figure>
+                        <a href="https://en.wikipedia.org/wiki/Ascending_and_Descending" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Three_spheres_I_%28Tr%C3%AAs_esferas_I%29_%281945%29_-_Maurits_Cornelis_Escher_%28M.C._Escher%29_%281898-1972%29_-_Flickr_-_pedrosimoes7.jpg/500px-Three_spheres_I_%28Tr%C3%AAs_esferas_I%29_%281945%29_-_Maurits_Cornelis_Escher_%28M.C._Escher%29_%281898-1972%29_-_Flickr_-_pedrosimoes7.jpg" alt="Ascending and Descending" loading="lazy"></a>
+                        <figcaption>Ascending and Descending</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicts Penrose stairs — an impossible continuous staircase</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">His fondness for impossible objects can be seen in his lithograph Ascending and Descending, which depicts Penrose stairs | structures that exhibit self-reference, such as Shepard tones and the lithograph Ascending and Descending</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="waterfall" open>
+            <summary class="work-title">Waterfall</summary>
+            <p class="work-desc">Lithograph depicting a perpetual motion machine using the Penrose tribar (impossible triangle).</p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/Waterfall_(M._C._Escher)" target="_blank">View: Waterfall</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Roger Penrose was inspired by this artist&#x27;s work to create his tribar; the artist later used it in Waterfall (perpetual motion machine)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Roger Penrose was inspired by this person&#x27;s work to create his tribar, which this person later utilised in a lithograph titled Waterfall that depicts a perpetual motion machine</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Other works mentioned in clues.</p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/M._C._Escher" target="_blank">View: Other Works</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Another World — mezzotint with &#x27;bird-humans&#x27; depicted three times along the central vertical axis; inspired by a simurgh statue</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A statue of a simurgh gifted to this artist inspired the &#x27;bird-humans&#x27; that are depicted three times along the central vertical axis in the mezzotint Another World</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Puddle — woodcut of tire tracks and footprints crossing over a reflective puddle; drew from earlier depiction of pine trees in Calvi</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">drew from an earlier depiction of pine trees in Calvi for a woodcut of tire tracks and footprints crossing over a reflective puddle</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Metamorphosis series — includes the resort town of Atrani</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The resort town of Atrani appears several times in this artist&#x27;s works, including in his Metamorphosis series</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Belvedere — copied the figure of a lady with two horns from The Garden of Earthly Delights</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">copied the figure of a lady with two horns from The Garden of Earthly Delights for his work Belvedere</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Double Planetoid — four colored woodblock prints</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">four colored woodblock prints he used for making Double Planetoid</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Snakes — his final print, with rotational symmetry</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s final print, Snakes, contains the rotational symmetry common in his late period</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Creation series — Adam and Eve in symmetrical composition below an owl</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">depicted Adam and Eve in a symmetrical composition below an owl as part of his &#x27;Creation&#x27; series</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Self-portrait inspired by Parmigianino&#x27;s Self-Portrait in a Convex Mirror — includes an Indonesian shadow puppet in background</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An Indonesian shadow puppet can be seen in the background of a self-portrait by this artist inspired by Parmigianino&#x27;s Self-Portrait in a Convex Mirror</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rind and Bond of Union — parodied by Cheri Samba in J&#x27;aime la couleur</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cheri Samba&#x27;s painting J&#x27;aime la couleur is a surreal self-portrait parodying this artist&#x27;s works, most notably the woodcut Rind and the lithograph Bond of Union</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Escher is identified and biographical clues.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dutch artist of impossible constructions and visual paradoxes</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Dutch artist of many paradoxical drawings | this Dutch artist known for his &#x27;impossible constructions,&#x27; such as seemingly endless staircases</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Discussed in Hofstadter&#x27;s Gödel, Escher, Bach — &#x27;strange loops&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">discussed in a Douglas Hofstadter book which he names along with Kurt Godel and J.S. Bach | Douglas Hofstadter explored self-reference and repetition in math, art, and music in this book</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Studied under graphic artist Samuel Jessurun de Mesquita</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s early training under graphic artist Samuel Jessurun de Mesquita</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Martin Gardner helped popularize his work in Scientific American&#x27;s &#x27;Mathematical Games&#x27; column in the 1960s</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Martin Gardner helped popularise the &#x27;eerie&#x27; work of this person in his &#x27;Mathematical Games&#x27; column for Scientific American</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Made multiple wood engravings of Möbius strips</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Dutch graphic artist made multiple wood engravings of mobius strips</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>M.C. Escher (1898-1972) was a Dutch graphic artist renowned for his impossible constructions, tessellations, and visual paradoxes. His work is frequently linked to Douglas Hofstadter&#x27;s Pulitzer Prize-winning book Gödel, Escher, Bach, which describes his art as depicting &quot;strange loops&quot; — structures that exhibit self-reference.</p><p>His most commonly clued works include Relativity (1953), a lithograph depicting faceless people in a world with multiple sources of gravity, with staircases forming a Penrose triangle shape, inspired by <a href="piranesi_stock.html" class="crossref-inline">Piranesi</a>&#x27;s Imaginary Prisons. His tessellation works (including Reptiles and Verbum) were inspired by Islamic tile art at the Alhambra Palace in Spain, which he sketched multiple times. He was obsessed with the &quot;regular division of the plane,&quot; creating works contrasting black-and-white tessellations of knights and birds.</p><p>Drawing Hands is his famous lithograph of two hands drawing each other into existence, exemplifying Hofstadter&#x27;s &quot;strange loop&quot; concept. Hand with Reflecting Sphere (1935) is a self-portrait in his Roman studio where he looks directly into a reflective sphere. Ascending and Descending depicts Penrose stairs, while Waterfall uses the Penrose tribar (which Roger Penrose created after being inspired by Escher&#x27;s work) to depict a perpetual motion machine.</p><p>Other works include Another World (a mezzotint with bird-humans inspired by a simurgh statue), the Metamorphosis series (featuring the Italian town of Atrani), Belvedere (referencing Bosch&#x27;s Garden of Earthly Delights), Snakes (his final print, with rotational symmetry), and a self-portrait inspired by Parmigianino&#x27;s <a href="john_ashbery_stock.html" class="crossref-inline">Self-Portrait in a Convex Mirror</a> with an Indonesian shadow puppet. He studied under Samuel Jessurun de Mesquita and was popularized by Martin Gardner in Scientific American.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/M._C._Escher" target="_blank">M.C. Escher — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Relativity_(M._C._Escher)" target="_blank">Relativity (Escher) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Gödel, Escher, Bach — Hofstadter&#x27;s book, has its own answerline</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'm.c._escher' });</script>
+
+</body>
+</html>

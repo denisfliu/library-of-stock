@@ -16,7 +16,7 @@ This script only touches topics with no `cross_refs` key yet. It's conservative:
 ## What You Do
 
 For each assigned topic:
-1. Read `output/{slug}_analysis.json`
+1. Read `output/{slug}/analysis.json`
 2. Read `output/topic_index.json` (the master index of all topics/works)
 3. Scan the summary, comprehensive_summary, and work descriptions for mentions of other indexed topics
 4. Add a `cross_refs` array to the JSON
@@ -63,11 +63,13 @@ Scan all text fields (summary, comprehensive_summary, work descriptions, clue te
 
 ## Priority Rules
 
-1. **Own page** → `type: "topic"`, link to their page (e.g., Robert Henri has `robert_henri_stock.html`)
+1. **Own page** → `type: "topic"`, link to their page (e.g., Robert Henri has `output/robert_henri/stock.html`)
 2. **Section in another page** → `type: "work"`, link to that page's section (e.g., John Sloan is a section in Ashcan School)
 3. **No page but notable** → `type: "topic"`, `exists: false` (red link for future page)
 
 To check: look up the name in `output/topic_index.json`. If found with `type: "topic"` → rule 1. If found with `type: "work"` → rule 2. If not found but clearly a notable person/work → rule 3.
+
+**Section anchors**: When `target_work` is set, the renderer appends `#section-anchor` to the URL (e.g., `../ashcan_school/stock.html#john-sloan`).
 
 ## How the Renderer Uses Cross-Refs
 

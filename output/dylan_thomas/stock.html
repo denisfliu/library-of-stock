@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Dylan Thomas</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Dylan Thomas</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Welsh poet known for &#x27;Do not go gentle into that good night,&#x27; &#x27;Fern Hill,&#x27; &#x27;And death shall have no dominion,&#x27; and the radio play Under Milk Wood. Associated with his collection Deaths and Entrances, first collection 18 Poems, and the short story collection Portrait of the Artist as a Young Dog.</div>
+
+        <details class="work" id="do-not-go-gentle-into-that-good-night" open>
+            <summary class="work-title">Do not go gentle into that good night</summary>
+            <p class="work-desc">Thomas's most famous poem, a villanelle addressed to his dying father. The poem categorizes men into wise men, good men, wild men, and grave men, each of whom resist death in different ways. The refrain 'Rage, rage against the dying of the light' appears throughout. The speaker asks his father to 'Curse, bless, me now with your fierce tears.' Lines reference 'blind eyes' that 'could blaze like meteors and be gay,' alluding to his father's blindness. Collected in In Country Sleep and also in Deaths and Entrances.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">14x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Rage, rage against the dying of the light&#x27; refrain</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">urges his addressee to &#x27;rage against the dying of the light&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">It is a villanelle</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The speaker of a villanelle by an author with this surname repeats, &#x27;Rage, rage against the dying of the light&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Old age should burn and rave at close of day&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;old age should burn and rave at close of day&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Wise men at their end know dark is right&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;wise men at their end know dark is right&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Wild men who caught and sang the sun in flight&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;wild men who caught and sang the sun in flight&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Speaker asks father to &#x27;Curse, bless, me now with your fierce tears&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">whose speaker prays &#x27;Curse, bless, me now with your fierce tears&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Blind eyes could blaze like meteors and be gay&#x27; — reference to father&#x27;s blindness</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">men whose &#x27;Blind eyes could blaze like meteors and be gay,&#x27; a reference to this poet&#x27;s dying father</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Grave men, near death, see with blinding sight&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;grave men, near death...see with blinding sight&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes wise men, good men, wild men, and grave men</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">described &#x27;wise men,&#x27; &#x27;good men,&#x27; &#x27;wild men,&#x27; and &#x27;grave men&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Words &#x27;forked no lightning&#x27; — describing wise men</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">men whose &#x27;words had forked no lightning&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="fern-hill" open>
+            <summary class="work-title">Fern Hill</summary>
+            <p class="work-desc">A poem about Thomas's childhood at his aunt's farm in Wales, recalling a time when he was 'young and easy under the apple boughs.' The poem ends with the famous line 'Time held me green and dying / Though I sang in my chains like the sea.' The speaker describes being 'honoured among the foxes and pheasants' and 'famous among the barns.' The poem uses the color green extensively, with 'green and carefree' and 'happy as the grass was green.' It was the last entry in Deaths and Entrances. The farm setting was Aunt Annie's farm, which also inspired the story 'The Peaches.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Time held me green and dying / Though I sang in my chains like the sea&#x27; — ending lines</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Time held me green and dying / Though I sang in my chains like the sea&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Young and easy under the apple boughs&#x27; — opening image</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;I was young and easy under the apple boughs&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Honoured among the foxes and pheasants&#x27; / &#x27;famous among the barns&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;honoured among the foxes and pheasants&#x27; and &#x27;famous among the barns&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Uses green repeatedly — &#x27;green and carefree,&#x27; &#x27;happy as the grass was green&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this adjective and &#x27;carefree&#x27; describe a speaker who was &#x27;famous among the barns&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;It was all shining, it was Adam and maiden&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;it was all / shining, it was Adam and maiden&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set at Aunt Annie&#x27;s farm, inspired by Welsh countryside</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">recalls visits to his aunt&#x27;s farm</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Last entry in Deaths and Entrances collection</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">included &#x27;In my Craft or Sullen Art&#x27; and &#x27;Fern Hill&#x27; in Deaths and Entrances</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-force-that-through-the-green-fuse-drives-the-flower" open>
+            <summary class="work-title">The force that through the green fuse drives the flower</summary>
+            <p class="work-desc">An early poem from Thomas's first collection 18 Poems, characterized by the recurring phrase 'And I am dumb to tell.' The speaker observes how 'of my clay is made the hangman's lime' and that 'the force that drives my green age' is also his destroyer. Part of Thomas's early 'womb-tomb period.' The poem explores the connection between natural forces and human mortality.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stanzas end with &#x27;And I am dumb to tell...&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;of my clay is made the hangman&#x27;s lime,&#x27; but he is &#x27;dumb to tell&#x27; that to the &#x27;hanging man&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">From the collection 18 Poems</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">from this author&#x27;s first collection, 18 Poems</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The force that drives my green age&#x27; is his destroyer</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;the force that drives [his] green age&#x27; is his destroyer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Part of Thomas&#x27;s early &#x27;womb-tomb period&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">from this author&#x27;s early &#x27;womb-tomb period&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="and-death-shall-have-no-dominion" open>
+            <summary class="work-title">And death shall have no dominion</summary>
+            <p class="work-desc">Published in the collection Twenty-Five Poems when Thomas was 21. The title line, drawn from Paul's epistle to the Romans, opens and closes all three stanzas. Contains the lines 'Though lovers be lost love shall not' and images of men who are 'mad and dead as nails' who 'break in the sun til the sun breaks down.' Also mentions men 'under the windings of the sea' who 'shall not die windily.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Though lovers be lost love shall not&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Though lovers be lost love shall not&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title line from Paul&#x27;s epistle to the Romans; opens and closes all three stanzas</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">title line, which opens and closes all three stanzas</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Published in Twenty-Five Poems when Thomas was 21</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">published in the collection Twenty-Five Poems</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Mad and dead as nails&#x27; / &#x27;break in the sun til the sun breaks down&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;mad and dead as nails,&#x27; &#x27;break in the sun til the sun breaks down&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Men &#x27;under the windings of the sea&#x27; who &#x27;shall not die windily&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">men &#x27;under the windings&#x27; of this entity &#x27;shall not die windily&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-refusal-to-mourn-the-death-by-fire-of-a-child-in-london" open>
+            <summary class="work-title">A Refusal to Mourn the Death, by Fire, of a Child in London</summary>
+            <p class="work-desc">A poem inspired by the London Blitz, depicting the dead 'robed in the long friends, the grains beyond age, the dark veins of her mother.' The poem concludes with the famous line 'after the first death, there is no other.' Also references the 'majesty and burning of the child's death.' The poet refuses to mourn because after the first death, further mourning is unnecessary.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;After the first death, there is no other&#x27; — concluding line</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">concludes &#x27;after the first death, there is no other&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Robed in the long friends, the grains beyond age, the dark veins of her mother&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">depicts the dead &#x27;Robed in the long friends, / The grains beyond age, the dark veins of her mother&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by the London Blitz</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">about the Blitz</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Will not give &#x27;any further elegy of innocence and youth&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">will not give &#x27;any further / elegy of innocence and youth&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="under-milk-wood" open>
+            <summary class="work-title">Under Milk Wood</summary>
+            <p class="work-desc">A radio play (described as a 'play for voices') set in the fictional seaside town of Llareggub (which is 'bugger all' reversed). Characters include Captain Cat, who describes 'Seas gliding with swans / In the seal-barking moon,' and Mrs. Ogmore-Pritchard. The audience listens to the dreams of sleeping townsfolk. Originally written for BBC Radio.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set in the fictional town of Llareggub (&#x27;bugger all&#x27; reversed)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">set in the seaside town of Llareggub</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A radio play / &#x27;play for voices&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Dylan Thomas radio play</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Captain Cat character — describes &#x27;Seas gliding with swans&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Captain Cat describes &#x27;Seas gliding with swans / In the seal-barking moon&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Originally written for BBC Radio</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">originally written for</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="deaths-and-entrances" open>
+            <summary class="work-title">Deaths and Entrances</summary>
+            <p class="work-desc">Both the title of a poem about the London Blitz and of a collection containing 'Fern Hill' and 'In my Craft or Sullen Art.' The poem warns of an enemy who knows 'your heart is luminous in the watched dark' and will 'shut the sun' on 'almost the incendiary eve.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title of both a Blitz poem and a collection containing &#x27;Fern Hill&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">also wrote about in &#x27;Deaths and Entrances&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poem set &#x27;on almost the incendiary eve&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">set &#x27;on almost the incendiary eve&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Welsh poet born in Swansea. His father David John Thomas was an English teacher in Wales, described as a 'clever, disappointed man' who introduced his son to poetry. Thomas addressed his father in the unfinished poem 'Elegy' as a 'cold kind man brave in his narrow pride.' Edith Sitwell supported Thomas and said he behaved impeccably in her presence. Roald Dahl built a replica of Thomas's house to write in. Thomas was notably a heavy drinker. <a href="lawrence_ferlinghetti_stock.html" class="crossref-inline">Lawrence Ferlinghetti</a> parodied Thomas in 'Underwear' with lines like 'do not go naked into that good night.' The collection Portrait of the Artist as a Young Dog includes stories set in Swansea. 'A Child's Christmas in Wales' was recited on BBC Radio. Other works include 'Poem in October' (thirtieth birthday poem), 'In my Craft or Sullen Art,' 'Request to Leda,' 'The Orchards,' and 'A Visit to Grandpa's.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Welsh poet / born in Swansea</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Welsh poet</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Father was an English teacher; inspired &#x27;Do not go gentle&#x27; and unfinished &#x27;Elegy&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">his father, &#x27;a cold kind man brave in his narrow pride&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Roald Dahl built a replica of his house to write in</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Roald Dahl built a replica of this author&#x27;s house to write in</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Collection Portrait of the Artist as a Young Dog — stories set in Swansea</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Portrait of the Artist as a Young Dog</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;A Child&#x27;s Christmas in Wales&#x27; — recited on BBC Radio</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">recited stories like A Child&#x27;s Christmas in Wales on BBC Radio</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Poem in October&#x27; — about his &#x27;thirtieth year to heaven&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">poem about his &#x27;thirtieth year to heaven&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Heavy drinker</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this heavy-drinking Welsh poet</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Dylan Thomas (1914-1953) was a Welsh poet born in Swansea, recognized in quizbowl as one of the most frequently clued twentieth-century poets. His work is dominated by a handful of major poems and a radio play, all of which appear with remarkable consistency across tournaments.</p><p>His most famous poem, &#x27;Do not go gentle into that good night,&#x27; is a villanelle addressed to his dying, blind father, David John Thomas, who was an English teacher in Wales. The poem categorizes men into wise, good, wild, and grave types, each resisting death differently, and culminates in the refrain &#x27;Rage, rage against the dying of the light.&#x27; The speaker asks his father to &#x27;Curse, bless, me now with your fierce tears,&#x27; and describes &#x27;blind eyes&#x27; that &#x27;could blaze like meteors and be gay.&#x27; Thomas also addressed his father in the unfinished poem &#x27;Elegy,&#x27; calling him &#x27;a cold kind man brave in his narrow pride&#x27; who was &#x27;too proud to die.&#x27;</p><p>&#x27;Fern Hill&#x27; is Thomas&#x27;s great pastoral poem, recalling his childhood at Aunt Annie&#x27;s farm where he was &#x27;young and easy under the apple boughs,&#x27; &#x27;honoured among the foxes and pheasants,&#x27; and &#x27;famous among the barns.&#x27; The poem makes extensive use of the color green, with the speaker &#x27;happy as the grass was green&#x27; and &#x27;green and carefree,&#x27; ending with the celebrated line &#x27;Time held me green and dying / Though I sang in my chains like the sea.&#x27; It was the last entry in the collection Deaths and Entrances.</p><p>From his first collection 18 Poems, &#x27;The force that through the green fuse drives the flower&#x27; is characterized by its repeated phrase &#x27;And I am dumb to tell,&#x27; connecting natural forces with human mortality. The speaker observes that &#x27;of my clay is made the hangman&#x27;s lime&#x27; and that the force driving his &#x27;green age&#x27; is also his destroyer. This belongs to Thomas&#x27;s early &#x27;womb-tomb period.&#x27;</p><p>&#x27;And death shall have no dominion,&#x27; published in Twenty-Five Poems when Thomas was 21, takes its title from Paul&#x27;s epistle to the Romans. The title line opens and closes all three stanzas, and the poem declares &#x27;Though lovers be lost love shall not.&#x27; It envisions men &#x27;mad and dead as nails&#x27; who &#x27;break in the sun til the sun breaks down.&#x27;</p><p>Thomas wrote several poems inspired by the London Blitz. &#x27;A Refusal to Mourn the Death, by Fire, of a Child in London&#x27; depicts the dead &#x27;robed in the long friends, the grains beyond age, the dark veins of her mother&#x27; and concludes with &#x27;after the first death, there is no other.&#x27; The poem &#x27;Deaths and Entrances&#x27; is set &#x27;on almost the incendiary eve&#x27; and warns of an enemy who &#x27;will shut the sun.&#x27;</p><p>Under Milk Wood is a radio play (a &#x27;play for voices&#x27;) set in the fictional seaside town of Llareggub (&#x27;bugger all&#x27; reversed), featuring characters like Captain Cat and Mrs. Ogmore-Pritchard. Originally written for BBC Radio, the audience listens to the dreams of sleeping townsfolk.</p><p>Thomas was supported by Edith Sitwell, who noted he always behaved impeccably in her presence. Roald Dahl built a replica of Thomas&#x27;s writing shed. His prose works include Portrait of the Artist as a Young Dog (stories set in Swansea), &#x27;A Child&#x27;s Christmas in Wales&#x27; (recited on BBC Radio), and early esoteric stories like &#x27;The Orchards&#x27; and &#x27;A Visit to Grandpa&#x27;s.&#x27; <a href="lawrence_ferlinghetti_stock.html" class="crossref-inline">Lawrence Ferlinghetti</a> frequently parodied Thomas, including &#x27;do not go naked into that good night&#x27; in &#x27;Underwear.&#x27;</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Dylan_Thomas" target="_blank">Dylan Thomas</a></li><li><a href="https://en.wikipedia.org/wiki/Do_not_go_gentle_into_that_good_night" target="_blank">Do not go gentle into that good night</a></li><li><a href="https://en.wikipedia.org/wiki/Fern_Hill" target="_blank">Fern Hill</a></li><li><a href="https://en.wikipedia.org/wiki/Under_Milk_Wood" target="_blank">Under Milk Wood</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Under Milk Wood (may have its own answerline)</li><li>Deaths and Entrances (collection)</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'dylan_thomas' });</script>
+
+</body>
+</html>

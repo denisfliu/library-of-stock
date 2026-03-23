@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Journey to the West</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Journey to the West</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">A Ming Dynasty novel attributed to Wu Cheng&#x27;en, one of the Four Great Classical Novels of China. It follows the Buddhist monk Xuanzang (also called Tang Sanzang or Tripitaka) on a pilgrimage to India (Vulture Peak) to retrieve Buddhist scriptures, accompanied by Sun Wukong (the Monkey King), Pigsy (Zhu Bajie), and Sandy. Based on the historical monk Xuanzang&#x27;s real journey to India in the 7th century. Arthur Waley&#x27;s abridged English translation (30 of 100 chapters) is titled Monkey.</div>
+
+        <details class="work" id="sun-wukong-the-monkey-king" open>
+            <summary class="work-title">Sun Wukong (the Monkey King)</summary>
+            <p class="work-desc">The central heroic figure of the novel. Born from a stone egg, he becomes king of the monkeys after jumping through a waterfall to discover a cave behind it at Flower Fruit Mountain. He wields a shape-changing iron staff obtained from the Dragon King of the Eastern Sea (Ao Guang). He possesses seventy-two transformations and the ability to cloud-somersault. He once angered his master Subodhi by transforming into a pine tree. Subodhi conferred the name 'Sun Wukong' upon him to reward his awareness of the vacuity of the universe. He loses a bet when he cannot somersault out of Buddha's hand. He is captured during a fight when hit in the head by a bracelet thrown from heaven. He is freed from beneath a mountain after agreeing to help the monk retrieve Buddhist texts. <a href="https://en.wikipedia.org/wiki/Sun_Wukong" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Born from a stone egg; becomes king of the monkeys after jumping through a waterfall at Flower Fruit Mountain</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in this novel born from a stone egg is freed from the mountain he is trapped under after agreeing to help a monk retrieve Buddhist texts. | A character born out of a stone egg becomes a king after performing this action to enter a mountain cave. | Sun Wukong hatched from an egg made of this unusual substance.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Loses a bet after being unable to somersault out of Buddha&#x27;s hand; has seventy-two transformations and cloud-somersaulting ability</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in this novel loses a bet after he is unable to somersault out of a hand. | a novel centering on a cloud-somersaulting figure with seventy-two transformations.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wields a shape-changing iron staff obtained from the Dragon King of the Eastern Sea (Ao Guang), whose palace is guarded by shrimps and crabs</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sun Wukong is given his magical shape-changing staff by the king of the eastern sea, who is one of these creatures [dragons]. | The Monkey King acquired his magic iron staff from the &#x27;sea treasury&#x27; of this deity, who rules over the Pacific Ocean from his palace guarded by shrimps and crabs. | A translation by Arthur Waley is titled for this character, who wields a staff that allows him to shrink and grow to any size.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Captured when hit in the head by a bracelet thrown from heaven</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">During a fight, a character in this novel is captured after he is hit in the head by a bracelet thrown from heaven.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Freed from beneath a mountain after agreeing to help a monk retrieve Buddhist texts</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A character in this novel born from a stone egg is freed from the mountain he is trapped under after agreeing to help a monk retrieve Buddhist texts.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Angered master Subodhi/Subhuti by transforming into a pine tree; Subodhi named him &#x27;Sun Wukong&#x27; for awareness of the vacuity of the universe</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Monkey King had previously angered his master Subhodi by transforming into one of these things [a pine tree]. | This Buddhist sage and tutor conferred the name &#x27;Sun Wukong&#x27; upon the Monkey King to reward him for his awareness of the vacuity of the universe.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Journeys to the Chinese underworld and meets the Ten Yama Kings at Youdu</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sun Wukong meets this place&#x27;s Ten Yama Kings while traveling to its capital of Youdu.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="supporting-characters-pigsy-sandy-tang-sanzang" open>
+            <summary class="work-title">Supporting Characters (Pigsy, Sandy, Tang Sanzang)</summary>
+            <p class="work-desc">Tang Sanzang (Xuanzang/Tripitaka) is the Buddhist monk leading the pilgrimage. His flesh is sought by demons throughout the journey. He rides a white horse who is actually a dragon. Pigsy (Zhu Bajie) uses a nine-toothed rake and is tasked with cleaning altars; he is a demoted demigod and the hard-working suitor who kidnaps a village elder's daughter. Sandy is another demoted demigod. Characters also include the Ox King.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pigsy uses a nine-toothed rake as a weapon; tasked with cleaning altars; demoted demigod</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The task of cleaning altars is given to a character in this novel who uses a nine-toothed rake as a weapon. | It sees demoted demigods Pigsy and Sandy help on a quest to retrieve some Buddhist scriptures. | Sun Wukong and Pigsy join the title trip.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pigsy kidnaps the daughter of a village elder; consumes more food than the farm produces</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this novel, the daughter of a village elder is kidnapped by her hard-working suitor who consumes more food than the farm produces.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tang Sanzang&#x27;s flesh is sought by demons multiple times throughout the journey</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Demons attempt to eat the monk&#x27;s Tang Sanzang&#x27;s flesh multiple times in this member of the Four Classic Chinese novels.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tang Sanzang rides a white horse who is actually a dragon</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Tang Sanzang rides a white horse who is also one of these creatures [dragons].</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-supplement-to-journey-to-the-west-and-other-episodes" open>
+            <summary class="work-title">The Supplement to Journey to the West and Other Episodes</summary>
+            <p class="work-desc">A 17th-century supplement features bizarre dreams inflicted by a 'fish spirit of sexual desire,' and includes one character time-traveling after being trapped in a dream world by a fish demon. In one episode, Sun Wukong turns into a fly and enters a demon's body to beat her up and obtain a banana leaf fan that allows the group to pass flaming mountains.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">17th-century supplement subjects characters to bizarre dreams by a fish spirit of sexual desire; includes time travel via a fish demon&#x27;s dream world</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a 17th century &#x27;supplement&#x27; to this novel, the main characters are subjected to bizarre dreams by a spirit whose name translates roughly to &#x27;fish spirit of sexual desire.&#x27; | In a later supplement to this novel, one character is able to time travel after getting trapped in a dream world by a fish demon.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sun Wukong turns into a fly and enters a demon&#x27;s body to obtain a banana leaf fan to pass flaming mountains</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Sun Wukong turns into a fly and enters a demon&#x27;s body to beat her up, so that she will give up one of these items [a fan], which allows the group to pass flaming mountains.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-identification" open>
+            <summary class="work-title">General / Identification</summary>
+            <p class="work-desc">How the novel is identified in clues. Attributed to Wu Cheng'en, written during the Ming Dynasty, one of the Four Great Classical Novels of China. It has 100 chapters. Arthur Waley's abridged English translation (30 chapters) is titled Monkey. The novel follows Sun Wukong, Pigsy, Sandy, and the monk Xuanzang (Tang Sanzang / Tripitaka) on a pilgrimage to Vulture Peak in India to obtain Buddhist scriptures. Based on the real monk Xuanzang's 7th-century trip to India, described in the Great Tang Records on the Western Regions. The aphorism 'when you're young, you shouldn't read this work' is quoted in Xuan Juliana Wang's Home Remedies.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Classic Chinese novel by Wu Cheng&#x27;en about Sun Wukong / the Monkey King traveling to India with a Buddhist monk to retrieve scriptures</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this novel in which Tang Sanzang and Sun Wukong, the Monkey King, travel to India. | Sun Wukong is the simian hero of this Chinese literary classic by Wu Cheng&#x27;in, in which he travels away from China with Xuanzang and several others to obtain Buddhist scriptures from India. | this classic Chinese novel about Sun Wukong&#x27;s trip to India.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One of the Four Great Classical Novels of China; Ming Dynasty novel</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This one of the Four Great Classic Novels of Chinese literature was written during the Ming Dynasty and is attributed to Wu Cheng&#x27;en. | one of the Four Great Novels.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arthur Waley&#x27;s abridged translation titled Monkey (30 of 100 chapters)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Arthur Waley translated this text under the title Monkey. | In the preface to a translated edition to this book, an author stated that his edition only included 30 of its 100 chapters. | Arthur Waley&#x27;s English translation of this novel is titled for the Monkey King Sun Wukong.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on the historical monk Xuanzang&#x27;s pilgrimage to India; described in the Great Tang Records on the Western Regions</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This other Ming-dynasty Classical Novel originates in popular tales about the Buddhist monk Xuanzang&#x27;s pilgrimage to India to obtain sacred texts. | The Great Tang Records on the Western Regions preserves this Chinese buddhist monk&#x27;s description of Nalanda. | A milestone in Chinese Buddhism was this event, which Xuanzang undertook in 646.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Destination is Vulture Peak in India</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Monkey King and Tripitaka travel to Vulture Peak to receive Buddhist scriptures. | Vulture Peak in India is the destination for the characters in this work.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aphorism: &#x27;when you&#x27;re young, you shouldn&#x27;t read this work&#x27; — quoted in Xuan Juliana Wang&#x27;s Home Remedies</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A short story in Xuan Juliana Wang&#x27;s collection Home Remedies begins by quoting an aphorism that &#x27;when you&#x27;re young you shouldn&#x27;t read&#x27; this work.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Journey to the West is a Ming Dynasty novel attributed to Wu Cheng&#x27;en, and one of the Four Great Classical Novels of China. It has 100 chapters and follows the Buddhist monk Xuanzang (also known as Tang Sanzang or Tripitaka) on a pilgrimage to Vulture Peak in India to obtain Buddhist scriptures. He is accompanied by Sun Wukong (the Monkey King), Pigsy (Zhu Bajie), and Sandy, the latter two being demoted demigods. The novel originates in popular tales about the real 7th-century monk Xuanzang&#x27;s journey to India, which is also documented in the Great Tang Records on the Western Regions, preserving descriptions of Nalanda, Tashkent, Samarkand, and Bactria. Arthur Waley&#x27;s abridged English translation, covering 30 of 100 chapters, is titled Monkey.</p><p>Sun Wukong is the central hero. Born from a stone egg, he becomes king of the monkeys after jumping through a waterfall at Flower Fruit Mountain, discovering a cave behind it with a stone tablet describing &#x27;the blessed land of Flower Fruit Mountain.&#x27; He acquires his shape-changing iron staff (which can shrink and grow to any size) from the Dragon King of the Eastern Sea (Ao Guang), whose palace is guarded by shrimps and crabs. He possesses seventy-two transformations and the cloud-somersault ability. His master Subodhi conferred the name &#x27;Sun Wukong&#x27; upon him to reward his awareness of the vacuity of the universe, but the Monkey King angered Subodhi by transforming into a pine tree. Sun Wukong loses a bet when he fails to somersault out of Buddha&#x27;s hand. He is captured during a fight when struck in the head by a bracelet thrown from heaven, and is freed from beneath a mountain after agreeing to help the monk on his quest. He also journeys to the Chinese underworld, meeting the Ten Yama Kings at the capital Youdu.</p><p>Pigsy uses a nine-toothed rake as a weapon and is tasked with cleaning altars. He is characterized as the hard-working suitor who kidnaps the daughter of a village elder and consumes more food than the farm produces. Tang Sanzang rides a white horse that is actually a dragon, and demons attempt to eat his flesh multiple times throughout the journey. The novel also features the Ox King.</p><p>A 17th-century supplement to the novel features bizarre dreams inflicted by a spirit called the &#x27;fish spirit of sexual desire,&#x27; including time travel through a fish demon&#x27;s dream world. In one notable episode from the main novel, Sun Wukong transforms into a fly and enters a demon&#x27;s body to beat her up, forcing her to give up a banana leaf fan that allows the group to pass flaming mountains.</p><p>A Chinese aphorism states &#x27;when you&#x27;re young, you shouldn&#x27;t read this work,&#x27; quoted in Xuan Juliana Wang&#x27;s short story collection Home Remedies. The novel has been referenced in various cultural contexts, including the Dragon Ball character Son Goku, who is based on Sun Wukong.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Journey_to_the_West" target="_blank">Journey to the West — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Sun_Wukong" target="_blank">Sun Wukong — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Xuanzang" target="_blank">Xuanzang — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Wu_Cheng%27en" target="_blank">Wu Cheng&#x27;en — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Sun Wukong — major character; may appear as own answerline</li><li>Xuanzang — the historical monk; may appear in history as own answerline</li><li>Water Margin — frequently mentioned alongside as Four Great Classical Novels</li><li>Dream of the Red Chamber — another of the Four Great Classical Novels</li><li>Four Great Classical Novels of China — potential umbrella topic</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'journey_to_the_west' });</script>
+
+</body>
+</html>

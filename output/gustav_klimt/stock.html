@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Gustav Klimt</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Gustav Klimt</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Austrian Symbolist painter and founding member of the Vienna Secession. Known for The Kiss (gold leaf, inspired by Ravenna mosaics), Beethoven Frieze (Typhoeus, Gorgons, Ode to Joy), Portrait of Adele Bloch-Bauer I (Woman in Gold, stolen by Nazis), and Danae. Characteristic &#x27;golden phase&#x27; inspired by Byzantine mosaics in Ravenna. Egon Schiele was his protege; both died in 1918. Other works include Stoclet Frieze, Pallas Athene, Judith, Water Serpents, and Goldfish (To My Critics).</div>
+
+        <details class="work" id="the-kiss-1907-1908" open>
+            <summary class="work-title">The Kiss (1907-1908)</summary>
+            <p class="work-desc">Couple in golden robes embracing on a flowered cliff. Man's garment has rectangles, woman's has circles. Characteristic gold leaf. <a href="https://en.wikipedia.org/wiki/The_Kiss_(Klimt)" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg/400px-The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg" alt="The Kiss (1907-1908)" loading="lazy">
+                        <figcaption>The Kiss (1907-1908)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Couple in golden robes embracing on a flowered cliff; man has rectangles, woman has circles; gold leaf</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s best-known painting depicts a couple dressed in yellow robes embracing, and features his characteristic use of gold leaf | A cliff covered in flowers supports a woman covered in circles and a man with rectangles kneeling and embracing</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by Byzantine mosaics at the Basilica San Vitale in Ravenna; same pose as Francesco Hayez&#x27;s painting of the same name</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This painting, which was inspired by its artist&#x27;s viewing of Byzantine mosaics at the Basilica San Vitale | This painting&#x27;s central figures have the same pose as a group in a painting by Francesco Hayez with the same name</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Highlight of the Belvedere Palace; the last piece of his &#x27;Golden Period&#x27;; initially sold for 25,000 crowns</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This large square painting is the highlight of the Belvedere Palace | initially sold for a high sum of 25,000 crowns</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="beethoven-frieze-1902" open>
+            <summary class="work-title">Beethoven Frieze (1902)</summary>
+            <p class="work-desc">Three-wall frieze in the Secession Building depicting Beethoven's Ninth Symphony / Ode to Joy. Features Typhoeus, three Gorgons, floating Genii, and a knight in gold armor. 7 feet tall, 112 feet wide. Created for the 14th Vienna Secessionist exhibition alongside Max Klinger's Beethoven sculpture. <a href="https://en.wikipedia.org/wiki/Beethoven_Frieze" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Gustav_Klimt_-_Head_of_a_Woman_in_Three-Quarter_Profile_%28Study_for_the_Beethoven_Frieze%29%2C_1901-1902_-_Google_Art_Project.jpg/500px-Gustav_Klimt_-_Head_of_a_Woman_in_Three-Quarter_Profile_%28Study_for_the_Beethoven_Frieze%29%2C_1901-1902_-_Google_Art_Project.jpg" alt="Beethoven Frieze, hostile forces (detail)" loading="lazy">
+                        <figcaption>Beethoven Frieze, hostile forces (detail)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three-wall frieze in Vienna Secession Building depicting themes of Beethoven&#x27;s Ninth / Ode to Joy</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this painting that covers three walls in the Secession Building in Vienna | this artist of the Beethoven Frieze, the leading painter of the Vienna Secession</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features ape-like giant Typhoeus and his three Gorgon daughters as hostile forces</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">hostile forces like the monkey-like giant Typhoeus and his daughters, the Gorgons</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Knight in gold leaf / armored strength opposing Typhon&#x27;s forces; &#x27;Armored Strength&#x27; section printed on a 2004 coin</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A section of another of this artist&#x27;s works depicting &#x27;Armored Strength&#x27; was printed on a 2004 coin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Created for 14th Vienna Secessionist exhibition alongside Max Klinger&#x27;s bare-chested Beethoven sculpture</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Max Klinger&#x27;s bare-chested sculpture was made for an exhibit that also featured a painting allegorizing one of that person&#x27;s works</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Housed in Secession Building (white building designed by Joseph Maria Olbrich); &#x27;Yearning for Happiness&#x27; section shows Ambition and Compassion flanking a knight; embracing couple before chorus singing Ode to Joy</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">housed in a white building designed by Joseph Maria Olbrich | The &#x27;Yearning for Happiness&#x27; section shows Ambition, a woman holding a wreath, and Compassion above a knight in golden armor | A third section shows an embracing couple in front of a chorus singing an Ode to Joy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Secession Building financed by Karl Wittgenstein; featured on the Austrian 50-cent coin</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this exhibition hall, financed by Karl Wittgenstein | it is featured on the 50-cent Austrian coin</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="portrait-of-adele-bloch-bauer-i-1907" open>
+            <summary class="work-title">Portrait of Adele Bloch-Bauer I (1907)</summary>
+            <p class="work-desc">Portrait in golden dress decorated with eyes. Also called 'Woman in Gold.' Briefly most expensive painting ever ($135M, 2006). Stolen by Nazis; reclaimed by Maria Altmann. Now at Neue Galerie. <a href="https://en.wikipedia.org/wiki/Portrait_of_Adele_Bloch-Bauer_I" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Gustav_Klimt_046.jpg/300px-Gustav_Klimt_046.jpg" alt="Portrait of Adele Bloch-Bauer I (1907)" loading="lazy">
+                        <figcaption>Portrait of Adele Bloch-Bauer I (1907)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Portrait of Viennese salon lady in golden dress decorated with eyes; exemplifies gold phase</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s Pallas Athene makes use of his trademark gold leaf, which is abundant in his portrait of an industrialist&#x27;s wife</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stolen by Nazis; reclaimed by Maria Altmann in Republic of Austria vs. Altmann</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nazis stole five paintings by this artist that were successfully reclaimed by Maria Altmann</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Briefly most expensive painting ever at $135 million in 2006; now at Neue Galerie</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">which was briefly the most expensive painting ever when it sold for $135 million in 2006</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also called &#x27;Woman in Gold&#x27;; featured in film of that name</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s portrait of Adele Bloch-Bauer was recently featured in the film Woman in Gold</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two portraits of Adele exist; second is at MoMA</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Klimt&#x27;s second painting of this woman is on display at the MoMa</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by mosaic of Empress Theodora at San Vitale in Ravenna; critics punned &#x27;more brass than Bloch-Bauer&#x27;; Ronald Lauder paid $130 million</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A portrait of this woman was inspired by a mosaic of Empress Theodora at the church of San Vitale | derided as &#x27;more brass than&#x27; her surname | Ronald Lauder paid $130 million for a painting of this woman</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adele was the model for Klimt&#x27;s eroticized 1901 Judith holding the head of Holofernes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This woman was the model for an eroticized 1901 portrait of Judith holding the head of Holofernes</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="danae-1907-1908" open>
+            <summary class="work-title">Danae (1907-1908)</summary>
+            <p class="work-desc">Nude red-haired woman curled in fetal position, surrounded by purple, impregnated by golden rain of Zeus. Only mythological subject other than Pallas Athena.</p>
+            <div class="work-images">
+                    <figure>
+                        <a href="https://en.wikipedia.org/wiki/Dana%C3%AB_(Klimt)" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Gustav_Klimt_010.jpg/500px-Gustav_Klimt_010.jpg" alt="Danae" loading="lazy"></a>
+                        <figcaption>Danae</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nude red-haired woman curled in fetal position, impregnated by golden rain of Zeus</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">sleeping naked girl with red hair curled up and surrounded by purple being visited and impregnated by the golden rain of Zeus</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Only mythological subject other than Pallas Athena; possibly same model as The Kiss</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">it is his only mythological subject other than &#x27;Pallas Athena&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="stoclet-frieze-palais-stoclet" open>
+            <summary class="work-title">Stoclet Frieze / Palais Stoclet</summary>
+            <p class="work-desc">Mosaic frieze for the Palais Stoclet in Brussels featuring Tree of Life with spiral motif, plus The Expectation and The Embrace. Building designed by Josef Hoffmann.</p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Gustav_Klimt_-_Nine_Working_Drawings_for_the_Execution_of_a_Frieze_for_the_Dining_Room_of_Stoclet_House_in_Brussels_-_1910-11.jpg/500px-Gustav_Klimt_-_Nine_Working_Drawings_for_the_Execution_of_a_Frieze_for_the_Dining_Room_of_Stoclet_House_in_Brussels_-_1910-11.jpg" alt="Stoclet Frieze / Palais Stoclet" loading="lazy">
+                        <figcaption>Stoclet Frieze / Palais Stoclet</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Frieze for Palais Stoclet in Brussels with Tree of Life (spiral motif), The Expectation, and The Embrace</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Three panels titled The Knight, The Expectation, and The Embrace comprise a triptych by this artist which includes a swirling depiction of the Tree of Life</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Palais Stoclet is the most famous work of Secessionist architect Josef Hoffmann</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This building is the most famous work of Secessionist architect Josef Hoffmann</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Founding member of Vienna Secession. Egon Schiele and <a href="oskar_kokoschka_stock.html" class="crossref-inline">Oskar Kokoschka</a> were students. University of Vienna ceiling paintings (Philosophy, Medicine, Jurisprudence) destroyed. Schubert at the Piano destroyed by fire. Painted landscapes of Lake Attersee. Judith, Hope I/II, Pallas Athene, Three Ages of Woman, Birch Forest, The Park. Ver Sacrum magazine.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Founding member of Vienna Secession; left the Association of Austrian Artists</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this founding member of the Vienna Secession</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Golden phase&#x27; characterized by gold leaf</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Austrian symbolist whose &#x27;golden phase&#x27; also produced The Kiss</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Egon Schiele was his student/protege</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Egon Schiele&#x27;s career was promoted by this other artist of the Vienna Secession</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">University of Vienna ceiling paintings destroyed by fire at Schloss Immendorf; caused scandal</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A fire at Schloss Immendorf destroyed this artist&#x27;s paintings that were commissioned for the University of Vienna&#x27;s Great Hall</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Schubert at the Piano: destroyed, commissioned by Nikolaus Dumba</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A fire set by retreating German soldiers destroyed a painting by this artist depicting Franz Schubert playing the piano by candlelight</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ver Sacrum: magazine of the Vienna Secession with square pages</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This movement&#x27;s aesthetics were advertised in the periodical Ver Sacrum</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Secession Building by Joseph Maria Olbrich, nicknamed &#x27;Golden Cabbage&#x27;; facade has owls by Koloman Moser</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Joseph Maria Olbrich designed a building known as the Golden Cabbage</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Judith: only half of Holofernes&#x27;s head visible; Adele Bloch-Bauer was model</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Only half of Holofernes&#x27;s head is visible in the bottom-right corner of this artist&#x27;s depiction of a bare-breasted Judith</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Roses Under the Trees restituted to Stiasny family in 2022</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the French government restored this painter&#x27;s Roses Under the Trees from the French national collections to the Stiasny family</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Landscapes: Birch Forest, The Park (canopy of green, yellow, blue dots), Lake Attersee (square-shaped)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The vast majority of the canvas consists of a canopy of green, yellow, and blue dots in this artist&#x27;s landscape The Park</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Portrait of Emilie Floge in ornamented blue dress</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A portrait by this artist depicts his partner Emilie Floge in an ornamented blue dress</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hope I and II: painted model Herma pregnant</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist painted the model Herma pregnant in his paintings Hope I and II</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Golden phase inspired by Byzantine mosaics in Ravenna (and Venice); died in 1918, same year as Egon Schiele</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gustav Klimt&#x27;s &#x27;Golden Phase&#x27; was inspired by artworks in Venice and this city | Both Egon Schiele and Gustav Klimt died in this year</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Goldfish (To My Critics): woman baring her bottom; response to university rejection of Philosophy, Medicine, Jurisprudence</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An artist painted a nude woman sticking out her buttocks toward the viewer in Goldfish to mock detractors | painted a woman baring her bottom in Goldfish (To My Critics) as a response to a university rejecting his paintings</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lady with a Fan: his &#x27;last masterpiece,&#x27; completed the year he died (1918)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">completed this &#x27;last masterpiece&#x27; of his the year he died</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pallas Athene: gold breastplate with Medusa head sticking out its tongue</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This color is used for the breastplate of a Medusa head sticking its tongue out in a front-facing painting titled Pallas Athene | A grotesque face sticking out its tongue is depicted on a gorget made of this material in a portrait of an ambiguously gendered Pallas Athene</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Water Serpents: gold threads wrap around two naked women</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Threads made of this material wrap around two naked women in two paintings both titled Water Serpents</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Secession motto: &#x27;To every age its art, to every art its freedom&#x27;; Koloman Moser co-founder</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The motto &#x27;To every age its art, to every art its freedom&#x27; appears above a building in this city | co-founded by Koloman Moser</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Gustav Klimt (1862-1918) was an Austrian Symbolist painter and the founding member of the Vienna Secession, most commonly identified by The Kiss and the Beethoven Frieze. His &#x27;golden phase,&#x27; inspired by Byzantine mosaics in Ravenna and Venice, featured extensive use of gold leaf. He died in 1918, the same year as his protege Egon Schiele.</p><p>The Kiss depicts a couple in golden robes embracing on a flowered cliff, with the man&#x27;s garment decorated with rectangles and the woman&#x27;s with circles. It was inspired by Byzantine mosaics at the Basilica San Vitale in Ravenna and shares the same pose as a painting by Francesco Hayez. It is the highlight of the Belvedere Palace and was initially sold for 25,000 crowns. It is the last piece of his &#x27;Golden Period.&#x27;</p><p>The Beethoven Frieze is a massive work (7 feet tall, 112 feet wide) covering three walls of the Secession Building, depicting Beethoven&#x27;s Ninth Symphony. The &#x27;Yearning for Happiness&#x27; section shows Ambition (woman holding a wreath) and Compassion flanking a knight in golden armor. The &#x27;Hostile Forces&#x27; section features the ape-like giant Typhoeus and his three Gorgon daughters. The final section shows an embracing couple before a chorus singing Ode to Joy. It was created for the 14th Vienna Secessionist exhibition alongside Max Klinger&#x27;s bare-chested Beethoven sculpture. The Secession Building was financed by Karl Wittgenstein and is featured on the Austrian 50-cent coin.</p><p>Klimt painted two portraits of Adele Bloch-Bauer. The first (1907), also called &#x27;Woman in Gold,&#x27; exemplifies his gold phase with a dress decorated with eyes, inspired by a mosaic of Empress Theodora at San Vitale in Ravenna. Critics punned it had &#x27;more brass than Bloch-Bauer.&#x27; It was stolen by the Nazis and reclaimed by Maria Altmann. Ronald Lauder paid $130 million for it for the Neue Galerie. The second portrait is at MoMA. Adele was also the model for Klimt&#x27;s eroticized 1901 Judith holding the head of Holofernes.</p><p>Danae shows a nude red-haired woman curled in the fetal position, draped in a purple veil, impregnated by Zeus&#x27;s golden rain, and is his only mythological subject besides Pallas Athene (gold breastplate with Medusa head sticking out its tongue).</p><p>The Stoclet Frieze for the Palais Stoclet in Brussels (Josef Hoffmann&#x27;s most famous building) features the Tree of Life with spiral motifs and panels The Expectation (eyes in Egyptian style) and The Embrace. The building has a hexagonal-patterned marble facade with a tower topped by a bronze rose bush and four nudes by Franz Metzner.</p><p>His University of Vienna ceiling paintings (Philosophy, Medicine, Jurisprudence) caused scandal and were destroyed by fire at Schloss Immendorf. He painted Goldfish (To My Critics), showing a woman baring her bottom, as a response to the university rejection. Schubert at the Piano, commissioned by Nikolaus Dumba, was also destroyed. Lady with a Fan was his &#x27;last masterpiece,&#x27; completed the year he died.</p><p>Klimt mentored Egon Schiele and <a href="oskar_kokoschka_stock.html" class="crossref-inline">Oskar Kokoschka</a>. Other works include Water Serpents (gold threads around two naked women), Hope I and II (pregnant model Herma), Three Ages of Woman, Birch Forest, The Park (canopy of colored dots), square-shaped landscapes of Lake Attersee, and a portrait of partner Emilie Floge. The Secession&#x27;s motto was &#x27;To every age its art, to every art its freedom.&#x27; Ver Sacrum was the Secession&#x27;s magazine. The Secession Building was designed by Joseph Maria Olbrich, nicknamed the &#x27;Golden Cabbage,&#x27; with owl decorations by Koloman Moser, who co-founded the movement. Roses Under the Trees was restituted to the Stiasny family in 2022.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Gustav_Klimt" target="_blank">Gustav Klimt - Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Kiss_(Klimt)" target="_blank">The Kiss - Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Beethoven_Frieze" target="_blank">Beethoven Frieze - Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Portrait_of_Adele_Bloch-Bauer_I" target="_blank">Portrait of Adele Bloch-Bauer I - Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Beethoven Frieze</li><li>Portrait of Adele Bloch-Bauer</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'gustav_klimt' });</script>
+
+</body>
+</html>

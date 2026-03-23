@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Ashcan School</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Ashcan School</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">American realist art movement depicting gritty scenes of urban life in New York City. Led by Robert Henri, closely associated with &#x27;The Eight.&#x27; Key members include George Bellows, John Sloan, William Glackens, and George Luks.</div>
+
+        <details class="work" id="robert-henri-leader" open>
+            <summary class="work-title">Robert Henri (leader) <a href="robert_henri_stock.html" class="work-link-btn" title="Go to Robert Henri">&rarr;</a></summary>
+            <p class="work-desc">Organizer of 'The Eight' and leader of the Ashcan School. Author of <a href="robert_henri_stock.html" class="crossref-inline">The Art Spirit</a>. Studied under Thomas Anshutz. Philadelphia-born.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Robert Henri was the leader/ringleader of the Ashcan School and organizer of &#x27;The Eight&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Robert Henri, a leader of this school which included George Bellows | name this gritty realist American art movement led by Robert Henri and George Bellows | The Philadelphia-born Robert Henri led a group of artists based in this city that grew out of a group known as The Eight</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Henri wrote The Art Spirit, compiled from his lectures and writings, encouraging interest in color and light as &#x27;means of expression&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The author of The Art Spirit, Robert Henri, was part of this group | This man&#x27;s teachings are collected in The Art Spirit</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Henri painted Snow in New York (carriage on snowy street surrounded by brownstone apartments)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Its ringleader painted a carriage on a snowy street | painted a carriage rolling down a street surrounded by brownstone apartment buildings in Snow in New York</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Henri painted his second wife Marjorie Organ in The Masquerade Dress</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist painted his second wife, the newspaper cartoonist Marjorie Organ, against a plain black background in his portrait The Masquerade Dress</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Henri painted Cumulus Clouds, East River</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Henri&#x27;s painting Cumulus Clouds, East River</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">many Ashcan artists studied under Thomas Anshutz, who studied under Thomas Eakins</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">many of whom had met while studying under Thomas Anshutz | Robert Henri studied under Thomas Anshutz, who in turn studied under this Philadelphia-based artist</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="george-bellows" open>
+            <summary class="work-title">George Bellows <a href="george_bellows_stock.html" class="work-link-btn" title="Go to George Bellows">&rarr;</a></summary>
+            <p class="work-desc">Student of Henri. Famous for <a href="george_bellows_stock.html" class="crossref-inline">Boxing Paintings</a> (Stag at Sharkey's, Dempsey and Firpo, Both Members of This Club). Also painted Cliff Dwellers, 42 Kids, The Barricade, and seascapes. Contributed to The Masses magazine.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bellows known for boxing paintings: Stag at Sharkey&#x27;s, Dempsey and Firpo, Both Members of This Club</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Dempsey and Firpo and Stag at Sharkey&#x27;s are two of this artist&#x27;s many paintings of boxers | George Bellows, is known for his paintings of this type of event, most notably in Both Members of This Club and Stag at Sharkey&#x27;s</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Both Members of This Club depicts a white boxer and black fighter Joe Gans; title satirizes private sport clubs where fighters were not actually members</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Bellows painting of a boxing match depicts a white boxer and the black fighter Joe Gans. Its title satirically refers to the practice of fighters not truly being part of private sport groups | appended an ironic title to a painting showing a black fighter attacking a man with a bloodied face</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stag at Sharkey&#x27;s: referee pushed aside as fighters grapple; bloodied men; borrowed from the Belvedere torso; &#x27;stags&#x27; are non-member spectators</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">two bloodied men grapple each other at a namesake boxing club | borrowed from the Belvedere torso in a work where a vulgar crowd cheers on two men locked in combat at a namesake Athletic club | title refers to the fact that one or more of its central figures are not actually members of the club depicted</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dempsey and Firpo: one fighter stands with legs forming equilateral triangle, other tangled in ropes; man in background holds bell preparing to slam it down</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">one title character stands with his legs forming an almost equilateral triangle, while the other&#x27;s body lies momentarily tangled over some ropes | A man in the background of this painting holds a bell in an arm he is preparing to slam down</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cliff Dwellers (1913) depicts laundry/clotheslines between apartment buildings, crowd in Lower East Side; trolley heading to Vesey Street; street vendor with pushcart</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This 1913 painting by Bellows depicts laundry hanging between two apartment buildings over a large crowd of people in New York&#x27;s Lower East Side | a trolley heads toward Vesey Street while a street vendor hawks goods from a pushcart</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cliff Dwellers used color system based on musical notes learned from H.G. Maratta</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This painting used a color system based on musical notes that the artist learned from H.G. Maratta</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">42 Kids: naked/half-naked boys jumping off dock/pier into water (East River); critic said boys looked &#x27;more like maggots than humans&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a band of naked and half-naked boys jumping off of a wharf into the East River | One critic complained that the boys in this Bellows painting looked &#x27;more like maggots than humans&#x27; | naked youths dive off a dock in his Forty-two Kids</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Barricade: German soldiers hiding behind naked Belgian civilians; Bellows said Da Vinci &#x27;didn&#x27;t have a ticket to paint the Last Supper&#x27; when asked about qualification to paint war scenes</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this artist asked if Da Vinci &#x27;had a ticket to paint the Last Supper&#x27; while responding to criticism over a work showing German soldiers hiding behind civilians | depicting nude Belgians holding up their arms in defiance against the German invasion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Paddy Flannigan: portrait of buck-toothed, bare-chested Irish boy with tattered clothes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a buck-toothed, bare-chested boy named Paddy Flannigan | depicted a young, bare-chested Irish boy with tattered clothes and poor teeth in their portrait of Paddy Flannigan</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Emma at the Piano: wife in cobalt blue gown, illuminated, right hand resting on keys</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this painter&#x27;s portrait of his wife, she wears a cobalt blue gown and is brightly illuminated, contrasting with the dark instrument at which she sits as her right hand rests on the keys</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Seascapes inspired by Winslow Homer; frequented Monhegan and Matinicus Islands; The Big Dory shows angular men struggling to move a red and white boat</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Seascapes by this artist inspired by Winslow Homer depict his frequent visits to Monhegan and Matinicus Islands | this artist took frequent vacations to the Maine coast, where they painted a group of angular men struggle to move a red and white boat into the water</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bellows was a student of Robert Henri; editor/illustrator of The Masses (socialist magazine)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Robert Henri taught this member of the Ashcan school | This artist of The Barricade often depicted &#x27;splinter beaches&#x27; as editor of The Masses</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lithograph of Billy Sunday lunging forward and pointing into crowd; created lithographs with collaborator Bolton Brown</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A lithograph by this artist shows Billy Sunday lunging forward and pointing into a crowd</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Painted Pennsylvania Station construction series and The Last Tenement</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist painted The Last Tenement and a series showing the construction of Pennsylvania Station</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Archibald Motley was partly inspired by studies under Bellows</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Motley&#x27;s focus on realistic urban scenes was partly inspired by his studies under this Ashcan School artist</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="john-sloan" open>
+            <summary class="work-title">John Sloan</summary>
+            <p class="work-desc">Member of The Eight. Known for sympathetic portrayals of working-class New Yorkers. Socialist themes.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sloan painted McSorley&#x27;s Bar; was a regular there</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">McSorley&#x27;s Bar painter John Sloan | Wake of the Ferry and McSorley&#x27;s Bar | three women drying their hair on a rooftop and painted McSorley&#x27;s Bar, which he was a regular at</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">painted Hairdresser&#x27;s Window (crowd watching stylist color woman&#x27;s hair)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">depicted a crowd watching a stylist color a woman&#x27;s hair in Hairdresser&#x27;s Window</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">painted Wake of the Ferry</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">sympathetic portrayals of working-class New Yorkers include Wake of the Ferry and McSorley&#x27;s Bar</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">painted Movies, Five Cents (theatergoer peers at viewer)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A theatergoer peers at the viewer in the painting Movies, Five Cents by John Sloan</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">known for overtly socialist themes; painted bespectacled self-portrait with crooked tie on window panel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this artist known for overtly socialist themes in his work. He also painted a famous bespectacled self-portrait with a crooked tie</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sixth Avenue Elevated at Third Street: woman in blue watches as friends are about to be hit by swerving car</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a woman dressed in blue looks on as three of her friends are about to be hit by a swerving car</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">painted three women drying their hair on a rooftop</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An artist who worked in this city depicted three women drying their hair on a rooftop</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">painted Salome wearing a green bra for Macbeth Galleries exhibition</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An artist who worked in this city depicted Salome wearing a green bra in a painting created for an exhibition at the Macbeth Galleries</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="george-luks" open>
+            <summary class="work-title">George Luks</summary>
+            <p class="work-desc">Member of The Eight. His rejection from a gallery prompted Henri to create the group. Painted Sulky Boy.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Luks painted The Wrestlers (1905, created to shock the Pennsylvania Academy of Fine Arts)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">George Luks, the painter of two works titled The Wrestlers</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Luks&#x27;s rejection from gallery prompted Henri to storm out and create the new artistic group</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">whose rejection from a gallery exhibition prompted Robert Henri to storm out and create a new artistic group</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">painted Houston Street and Hester Street</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this painter of numerous realist street scenes like Houston Street and Hester Street</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sulky Boy: boy leaning against a table with a bowl of apples</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s Sulky Boy shows a boy leaning against a table with a bowl of apples on it</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Luks&#x27;s portrait The White Blackbird depicts Margarett Sargent</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An artist with this surname appears in George Luks&#x27; portrait The White Blackbird</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-movement-identity" open>
+            <summary class="work-title">General / Movement Identity</summary>
+            <p class="work-desc">Realist art movement focused on gritty depictions of poor urban life in New York City. Closely related to 'The Eight.' Name originated from a Philadelphia Record drawing caption. Connected to The Masses magazine and the 1913 Armory Show.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">realist movement depicting gritty scenes of daily urban life / poor neighborhoods in New York</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this artistic movement which depicted realistic scenes of lower-class New York neighborhoods | this art movement related to The Eight that focused on depicting poorer neighborhoods of New York</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">closely associated with / overlapping with &#x27;The Eight&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bellows was associated with The Eight as well as this largely overlapping group | Several artists of this movement were also members of a group dubbed &#x27;The Eight&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">name originated from caption of a drawing in the Philadelphia Record, disparaged by cartoonist Art Young (editor of The Masses and first to apply &#x27;Ashcan&#x27; to painting)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The name of this movement originated in the caption of a drawing from the Philadelphia Record that was disparaged by the cartoonist Art Young | Its editor Art Young was the first critic to apply the term &#x27;Ashcan&#x27; to painting</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Eight&#x27; exhibition organized by Charcoal Club members to protest jury voting policies of the National Academy of Design; exhibited works by Shinn, Glackens, Prendergast, Sloan</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">organized by members of the &#x27;Charcoal Club&#x27; to protest the jury voting policies of the powerful National Academy of Design | held at the Macbeth Galleries in 1908, featured works by artists like Everett Shinn, William Glackens, Maurice Prendergast, and John Sloan</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">members include William Glackens</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Members included William Glackens and Robert Henri</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Macbeth Galleries housed biggest exhibition of the group (1908)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Macbeth Galleries housed the biggest exhibition of artists in this movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Arthur Davies joined the movement; also worked for The Masses</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Arthur Davies later joined this movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Maurice Prendergast exhibited with the group but didn&#x27;t share their style</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Although Prendergast exhibited with this American art group, his paintings did not share the style or subject matter</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">many artists grew up in Philadelphia; Glackens helped purchase initial paintings for Philadelphia&#x27;s Barnes Foundation</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Davis and Sloan were among the many Ashcan artists who grew up in this city | While most of the famous paintings of the Ashcan school depict New York, the movement had its origins in this other US city</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stuart Davis studied under Henri before gravitating toward cubism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Stuart Davis studied under Robert Henri, a leader of this school</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">strangest artist developed &#x27;inhalation&#x27; theory and created austere landscape with three unicorns</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The strangest artist in this movement developed a weird &#x27;inhalation&#x27; theory of art</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Masses: socialist magazine that members illustrated; published quote about &#x27;girls hitching up their skirts&#x27; that gave the group its name</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A quote about &#x27;girls hitching up their skirts&#x27; gave a group of artists from this city its name and was published in The Masses | George Bellows, like fellow Ashcan artist Arthur Davies, worked on illustrating this socialist magazine</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Connected to 1913 Armory Show; Arthur B. Davies, Walter Pach, Walt Kuhn staged Armory Show; Duchamp&#x27;s Nude Descending a Staircase No. 2 ridiculed there</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Walter Pach, Walt Kuhn, and Arthur B. Davies staged an exhibition beginning in this city | the Armory Show was first staged in what city, which was depicted in the urban realist paintings of the Ashcan school</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jacob Riis&#x27;s How the Other Half Lives (photographs of NYC tenements) parallels Ashcan School depictions of urban poverty</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This book of photographs of New York City tenements by Jacob Riis mirrored the poor conditions depicted in Ashcan School paintings | Cliff Dwellers, like Jacob Riis&#x27;s pioneering book of photojournalism How the Other Half Lives, depicts poor inhabitants of the Lower East Side</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Margarett Sargent was an Ashcan School artist (same surname as John Singer Sargent)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ashcan School artist Margarett had this surname, as did an artist who painted an actress with very long red braids</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>The Ashcan School was an American realist art movement focused on depicting gritty scenes of poor urban life in New York City, closely associated with the group known as &#x27;The Eight.&#x27; The name originated from a caption in the Philadelphia Record, disparaged by cartoonist Art Young (editor of The Masses, the first to apply the term &#x27;Ashcan&#x27; to painting). The Eight&#x27;s exhibition was organized by Charcoal Club members to protest the jury voting policies of the National Academy of Design and was held at the Macbeth Galleries in 1908, featuring works by Everett Shinn, William Glackens, Maurice Prendergast, and John Sloan. Many members grew up in Philadelphia and studied under Thomas Anshutz, who in turn studied under Thomas Eakins. The movement was connected to the 1913 Armory Show, staged by Arthur B. Davies, Walter Pach, and Walt Kuhn. Jacob Riis&#x27;s How the Other Half Lives paralleled the Ashcan School&#x27;s depictions of urban poverty.</p><p>Robert Henri was the leader of the movement, Philadelphia-born, and author of <a href="robert_henri_stock.html" class="crossref-inline">The Art Spirit</a> (encouraging color and light as &#x27;means of expression&#x27;). He painted Snow in New York (carriage on snowy brownstone street), The Masquerade Dress (portrait of his second wife Marjorie Organ), and Cumulus Clouds, East River. George Luks&#x27;s rejection from a gallery exhibition prompted Henri to storm out and form the new group.</p><p>George Bellows, Henri&#x27;s student, is the most frequently clued member, famous for <a href="george_bellows_stock.html" class="crossref-inline">Boxing Paintings</a> including Stag at Sharkey&#x27;s (referee pushed aside, fighters grapple, borrowed from the Belvedere torso, &#x27;stags&#x27; are non-member spectators), Dempsey and Firpo (one fighter&#x27;s legs form equilateral triangle, other tangled in ropes), and Both Members of This Club (white boxer vs. black fighter Joe Gans, title satirizes private sport clubs). His other major works include Cliff Dwellers (1913, laundry/clotheslines between tenement buildings, trolley heading to Vesey Street, used H.G. Maratta&#x27;s color system based on musical notes), 42 Kids (naked boys jumping off dock into East River, critic said they looked &#x27;more like maggots than humans&#x27;), The Barricade (German soldiers using naked Belgians as human shields; Bellows said Da Vinci &#x27;didn&#x27;t have a ticket to paint the Last Supper&#x27;), Paddy Flannigan (buck-toothed bare-chested Irish boy), Emma at the Piano (wife in cobalt blue gown), and seascapes inspired by Winslow Homer at Monhegan and Matinicus Islands. He served as editor/illustrator of The Masses and taught Archibald Motley.</p><p>John Sloan painted sympathetic portrayals of working-class New Yorkers including McSorley&#x27;s Bar (he was a regular), Wake of the Ferry, Hairdresser&#x27;s Window, Movies Five Cents, Sixth Avenue Elevated at Third Street, and three women drying hair on a rooftop. He was known for socialist themes and painted Salome in a green bra for the Macbeth Galleries. George Luks painted The Wrestlers, Houston Street, Hester Street, and Sulky Boy. William Glackens helped purchase initial paintings for Philadelphia&#x27;s Barnes Foundation. Maurice Prendergast exhibited with the group but his Post-Impressionist style differed. Stuart Davis studied under Henri before gravitating toward cubism. Margarett Sargent was also an Ashcan School artist.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Ashcan_school" target="_blank">Ashcan School — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Robert_Henri" target="_blank">Robert Henri — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/George_Bellows" target="_blank">George Bellows — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Eight_(artists)" target="_blank">The Eight (artists) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>George Bellows</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'ashcan_school' });</script>
+
+</body>
+</html>

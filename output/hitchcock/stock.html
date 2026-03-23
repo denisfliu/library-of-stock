@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Alfred Hitchcock</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Alfred Hitchcock</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">British-born classic Hollywood director (1899–1980), known as the &#x27;Master of Suspense.&#x27; Major films include Psycho, Vertigo, Rear Window, North by Northwest, and <a href="daphne_du_maurier_stock.html#the-birds" class="crossref-inline">The Birds</a>. Celebrated by the <a href="french_new_wave_stock.html" class="crossref-inline">French New Wave</a> as a technically innovative auteur, particularly through <a href="french_new_wave_stock.html#francois-truffaut" class="crossref-inline">Francois <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a></a>&#x27;s 1966 book-length interview with him. Known for &#x27;Hitchcock blondes,&#x27; the MacGuffin concept, and Catholic guilt transference.</div>
+
+        <details class="work" id="psycho-1960" open>
+            <summary class="work-title">Psycho (1960)</summary>
+            <p class="work-desc">Hitchcock's most iconic horror/thriller. Marion Crane is repeatedly stabbed in the shower to a shrieking Bernard Herrmann score, in a scene that pans to a newspaper on a nightstand before a character shouts 'Mother! Oh God, Mother! Blood! Blood!' Norman Bates, a psychologically disturbed motel owner, tells Marion that 'a boy's best friend is his mother' and 'we all go a little mad sometimes.' He stuffs birds and has a split personality triggered by sexual attraction. Robin Wood rose to prominence with his critique of the film. Slavoj Zizek analyzed the three floors of Bates's mansion as superego, ego, and id in The Pervert's Guide to the Cinema (2006). <a href='https://en.wikipedia.org/wiki/Psycho_(1960_film)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marion Crane is repeatedly stabbed in the shower to a shrieking Bernard Herrmann score</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Marion Crane is repeatedly stabbed to a shrieking score composed by Bernard Herrmann | Robin Wood rose to prominence by critiquing a film by this director which contains a scene that ends by panning to a newspaper sitting on a nightstand, before a character yells out &#x27;Mother! Oh God, Mother! Blood! Blood!&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Norman Bates tells Marion &#x27;a boy&#x27;s best friend is his mother&#x27; and &#x27;we all go a little mad sometimes&#x27;; he stuffs birds and has a split personality triggered by sexual attraction to women</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man tells a woman that &#x27;we all go a little mad sometimes.&#x27; | He enjoys stuffing birds and suffers from a split personality that appears whenever he is sexually attracted to women.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Slavoj Zizek analyzed the three floors of Norman Bates&#x27;s mansion as superego, ego, and id in The Pervert&#x27;s Guide to the Cinema (2006)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Slavoj Zizek draws a parallel between the three floors of Bates&#x27;s mansion to the superego, ego, and id in this 2006 documentary in which he psychoanalyzes numerous films.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="vertigo-1958" open>
+            <summary class="work-title">Vertigo (1958)</summary>
+            <p class="work-desc">The acrophobic detective Scottie (played by Jimmy Stewart) follows a woman played by Kim Novak. A nun appears at the bell tower at the film's climax, causing Kim Novak's character to scream and fall to her death. The film revisits Muir Woods (where tree rings are examined). Chris Marker's essay-film Sans Soleil revisits Vertigo's locations and calls it the only film portraying 'impossible memory.' The dolly zoom technique used in this film is now called the 'Vertigo effect.' Laura Mulvey's essay 'Visual Pleasure and Narrative Cinema' analyzes the male hero's scopophilia in this film. <a href='https://en.wikipedia.org/wiki/Vertigo_(film)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The acrophobic Scottie (Jimmy Stewart) follows a woman played by Kim Novak; she falls to her death from a bell tower when she sees a nun</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the acrophobic Scottie, played by Jimmy Stewart, follows a woman played by Kim Novak | Kim Novak&#x27;s character falls to her death from a bell tower in another film set in this state [California]</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chris Marker&#x27;s Sans Soleil revisits Vertigo&#x27;s locations and describes it as portraying &#x27;impossible memory&#x27; and &#x27;insane memory&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A man in Marker&#x27;s Sans Soleil claims that this Hitchcock movie is the only film that has portrayed &#x27;impossible memory.&#x27; | A film that mostly uses documentary footage from Japan and Guinea-Bissau also revisits locations from a film by this director, which it describes as depicting &#x27;impossible&#x27; and &#x27;insane memory&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The &#x27;dolly zoom&#x27; technique is nicknamed the &#x27;Vertigo effect&#x27; because this film first used it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The dolly zoom is sometimes called the Vertigo effect after it was first used by this British director.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laura Mulvey&#x27;s &#x27;Visual Pleasure and Narrative Cinema&#x27; analyzes the male hero&#x27;s scopophilic eroticism in this film</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mulvey spends a fair amount of time on the male heroes of this director&#x27;s Vertigo, Marnie and Rear Window, who &#x27;takes fascination with an image through scopophilic eroticism as the subject of the film&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A Sans Soleil sequence revisits locations from this film; Marker&#x27;s essay-film recreates its hypnotic POV driving shots</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A film that mostly uses documentary footage from Japan and Guinea-Bissau also revisits locations from a film by this director... recreating its hypnotic POV driving shots.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="rear-window-1954" open>
+            <summary class="work-title">Rear Window (1954)</summary>
+            <p class="work-desc">A film featuring a protagonist who uses camera flashbulbs to temporarily blind the murderous antagonist Lars Thorwald at the climax. Laura Mulvey discusses its male hero's scopophilic eroticism in 'Visual Pleasure and Narrative Cinema.' Compared and contrasted with Michael Powell's Peeping Tom. <a href='https://en.wikipedia.org/wiki/Rear_Window' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">At the climax, the protagonist uses camera flashbulbs to temporarily blind the murderous antagonist Lars Thorwald</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">At the climax of this earlier film, the protagonist uses several camera flashbulbs to temporarily blind the murderous antagonist, Lars Thorwald.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laura Mulvey&#x27;s essay &#x27;Visual Pleasure and Narrative Cinema&#x27; analyzes the scopophilic male hero of this film</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mulvey spends a fair amount of time on the male heroes of this director&#x27;s Vertigo, Marnie and Rear Window</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="north-by-northwest-1959" open>
+            <summary class="work-title">North by Northwest (1959)</summary>
+            <p class="work-desc">A thriller featuring a famous crop duster scene set near Bus Stop 41 and a climactic scene where Cary Grant and Eva Marie Saint's characters hang from a ledge on Mount Rushmore. John Patterson called it 'the first Bond film.' <a href='https://en.wikipedia.org/wiki/North_by_Northwest' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Famous crop duster scene near Bus Stop 41; supposedly inspired James Bond helicopter chases; described as &#x27;the first Bond film&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this scene set near Bus Stop 41. This scene supposedly inspired several of the James Bond helicopter chases, and John Patterson described the film in which this scene appears as &#x27;the first Bond film.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cary Grant and Eva Marie Saint hang from a ledge on the face of Mount Rushmore</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a suspenseful scene in this film, Cary Grant and Eva Marie Saint&#x27;s characters hang precipitously from a ledge on the face of Mount Rushmore.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-birds-1963" open>
+            <summary class="work-title">The Birds (1963) <a href="daphne_du_maurier_stock.html#the-birds" class="work-link-btn" title="Go to Daphne du Maurier">&rarr;</a></summary>
+            <p class="work-desc">Set in California. The 'Hitchcock blonde' Tippi Hedren was badly bruised by real bird claw marks in the climactic scene. <a href='https://en.wikipedia.org/wiki/The_Birds_(film)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tippi Hedren (a &#x27;Hitchcock blonde&#x27;) was badly bruised by real bird claw marks during filming of the climactic scene</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The &#x27;Hitchcock blonde&#x27; Tippi Hedren was badly bruised by claw marks in a climactic scene of a film set in this state [California].</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">British-born director Alfred Hitchcock (1899–1980), called the 'Master of Suspense.' As a child, his father sent him to a police station where he was locked up briefly for misbehaving — he later said 'I'm not against the police; I'm just afraid of them.' Known for preferring blonde female leads ('Hitchcock blondes'), Catholic guilt transference (studied by Eric Rohmer and Claude Chabrol), and the MacGuffin plot device. <a href="french_new_wave_stock.html#francois-truffaut" class="crossref-inline">Francois <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a></a> conducted an eight-day interview with Hitchcock (with Helen Scott as interpreter), published in 1966, that cemented Hitchcock's reputation as an auteur and dispelled the view that his work was purely commercial; a 2015 Kent Jones documentary is based on this interview. Laura Mulvey's seminal essay 'Visual Pleasure and Narrative Cinema' focuses on Hitchcock alongside Josef von Sternberg. Alfred Hitchcock Presents was a TV show where each episode began with Hitchcock walking into the outline of his profile to 'Funeral March for a Marionette.' <a href='https://en.wikipedia.org/wiki/Alfred_Hitchcock' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Francois Truffaut conducted an eight-day interview (with Helen Scott as interpreter), published in 1966 as a book, cementing Hitchcock&#x27;s reputation as an auteur</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Helen Scott served as the interpreter during an eight day-long interview Francois Truffaut conducted with this director. | A French director published a book in 1966 based on an eight-day interview session with this director, which is credited with largely dispelling the idea that his work was purely commercial.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Laura Mulvey&#x27;s essay &#x27;Visual Pleasure and Narrative Cinema&#x27; focuses on Hitchcock and Josef von Sternberg</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director and Josef von Sternberg are the major focus of the essay &#x27;Visual Pleasure and Narrative Cinema,&#x27; written by Laura Mulvey.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eric Rohmer and Claude Chabrol wrote an extensive study positing his &#x27;Catholic guilt transference&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director&#x27;s &#x27;Catholic guilt transference&#x27; was posited in an extensive study of his films written by Eric Rohmer and Claude Chabrol.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Known for &#x27;Hitchcock blondes&#x27;: blonde female leads; Tippi Hedren and June Tripp&#x27;s character in The Lodger are examples</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Blonde actresses frequently starred in films by this director. | blonde hair of women such as June Tripp&#x27;s character targeted by the Avenger in the style-defining silent film The Lodger</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called drama &#x27;life with the dull bits cut out&#x27;; explained the MacGuffin in the Truffaut interview</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">he called drama &#x27;life with the dull bits cut out,&#x27; harped on the difference between surprise and suspense, and explained the term &#x27;MacGuffin&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">As a child was briefly locked up in a police station by his father for misbehaving; later said &#x27;I&#x27;m not against the police; I&#x27;m just afraid of them&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He said &#x27;I&#x27;m not against the police; I&#x27;m just afraid of them&#x27; in reference to an incident from his childhood in which his father sent him to the police station to lock him up for a few minutes for misbehaving.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alfred Hitchcock Presents TV show: each episode began with Hitchcock walking into the outline of his profile to the music &#x27;Funeral March for a Marionette&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Each episode of this show began with the host walking into the outline of his profile to the music &#x27;Funeral March for a Marionette.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Technique of putting a light inside a glass of milk and placing the camera very high for a staircase shooting are discussed in the Truffaut interview</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The aforementioned anecdotes are from a book about this director which also explains his use of techniques like putting a light inside a glass of milk, and placing the camera very high to shoot a scene where a detective is killed at the top of a staircase.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A 2023 Laurence Leamer book describes the borderline abusive conditions endured by eight of his actresses</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A 2023 Laurence Leamer book describes the borderline abusive conditions endured by eight actresses with this feature [blonde hair].</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Alfred Hitchcock (1899–1980) was a British-born classic Hollywood director known as the &#x27;Master of Suspense.&#x27; Born in England, he later worked primarily in Hollywood and became one of cinema&#x27;s most celebrated and analyzed directors.</p><p>His most famous film is Psycho (1960), in which Marion Crane is stabbed in a shower to a shrieking Bernard Herrmann score; the scene pans to a newspaper on a nightstand before a character cries &#x27;Mother! Oh God, Mother! Blood! Blood!&#x27; The motel owner Norman Bates tells Marion &#x27;a boy&#x27;s best friend is his mother&#x27; and &#x27;we all go a little mad sometimes&#x27;; he stuffs birds and has a split personality triggered by sexual attraction that turns him violent. Slavoj Zizek&#x27;s 2006 documentary The Pervert&#x27;s Guide to the Cinema mapped the three floors of Bates&#x27;s mansion onto superego, ego, and id. Robin Wood rose to critical prominence writing about this film.</p><p>Vertigo (1958) follows the acrophobic detective Scottie (Jimmy Stewart) as he follows a woman played by Kim Novak; she eventually falls from a bell tower after seeing a nun. Chris Marker&#x27;s essay-film Sans Soleil revisits the film&#x27;s San Francisco locations and calls Vertigo the only film to depict &#x27;impossible memory,&#x27; recreating its hypnotic POV driving shots. The film also introduced the &#x27;dolly zoom&#x27; (sometimes called the &#x27;Vertigo effect&#x27;). Laura Mulvey&#x27;s landmark feminist essay &#x27;Visual Pleasure and Narrative Cinema&#x27; focuses extensively on the male hero&#x27;s scopophilic eroticism in Vertigo (alongside Rear Window and Marnie). Mulvey also pairs Hitchcock with Josef von Sternberg as the essay&#x27;s primary subjects.</p><p>Rear Window (1954) climaxes with the protagonist using camera flashbulbs to temporarily blind the murderous Lars Thorwald. North by Northwest (1959) features the famous crop duster scene near Bus Stop 41 (described as inspiring James Bond helicopter chases and called &#x27;the first Bond film&#x27;) and a climax where Cary Grant and Eva Marie Saint hang from Mount Rushmore. <a href="daphne_du_maurier_stock.html#the-birds" class="crossref-inline">The Birds</a> (1963) starred Tippi Hedren, who was bruised by real bird claw marks during filming.</p><p>Biographically, Hitchcock is closely associated with the <a href="francois_truffaut_stock.html" class="crossref-inline">Truffaut</a> interview: <a href="french_new_wave_stock.html#francois-truffaut" class="crossref-inline">Francois Truffaut</a> conducted an eight-day interview (with Helen Scott as interpreter) that was published in 1966 and is credited with dispelling the view that Hitchcock&#x27;s work was merely commercial, cementing his reputation as a technically innovative auteur. A 2015 Kent Jones documentary is based on this interview. In the interview, Hitchcock called drama &#x27;life with the dull bits cut out,&#x27; explained the MacGuffin, and discussed techniques like placing a light inside a glass of milk. Eric Rohmer and Claude Chabrol wrote an extensive study positing Hitchcock&#x27;s &#x27;Catholic guilt transference.&#x27; He is also known for his &#x27;Hitchcock blondes&#x27; — preferring blonde female leads such as Kim Novak, Tippi Hedren, and June Tripp. A 2023 Laurence Leamer book describes borderline abusive conditions endured by eight of these actresses. As a child, his father once sent him to a police station to be briefly locked up as punishment; he later said &#x27;I&#x27;m not against the police; I&#x27;m just afraid of them.&#x27; His TV show Alfred Hitchcock Presents began each episode with him walking into the silhouette of his famous profile to &#x27;Funeral March for a Marionette.&#x27;</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Alfred_Hitchcock" target="_blank">Alfred Hitchcock — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Psycho_(1960_film)" target="_blank">Psycho (1960) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Vertigo_(film)" target="_blank">Vertigo (1958) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Rear_Window" target="_blank">Rear Window — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/North_by_Northwest" target="_blank">North by Northwest — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Birds_(film)" target="_blank">The Birds (1963) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Hitchcock/Truffaut_(film)" target="_blank">Hitchcock/Truffaut (2015 documentary) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Psycho — rich clue set; Norman Bates has own cultural footprint worth exploring</li><li>Vertigo — multiple analytical frameworks applied to it (Mulvey, Marker); worth deeper search</li><li>Rear Window — scopophilia theme; connections to feminist film theory</li><li>North by Northwest — crop duster scene is well-known; James Bond connection</li><li>Francois Truffaut — the Truffaut/Hitchcock interview is a key clue anchor; Truffaut as auteur critic</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'hitchcock' });</script>
+
+</body>
+</html>

@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Utilitarianism</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Utilitarianism</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">A consequentialist ethical theory that advocates maximizing happiness for the greatest number of people. Founded by <a href="jeremy_bentham_stock.html" class="crossref-inline">Jeremy Bentham</a> and developed by <a href="john_stuart_mill_stock.html" class="crossref-inline">John Stuart Mill</a>. Comes in &#x27;act&#x27; and &#x27;rule&#x27; forms, and has been critiqued by Bernard Williams, Derek Parfit, and others.</div>
+
+        <details class="work" id="the-greatest-happiness-principle-core-doctrine" open>
+            <summary class="work-title">The Greatest Happiness Principle &amp; Core Doctrine</summary>
+            <p class="work-desc">The foundational principle of utilitarianism, which holds that actions are right insofar as they promote the greatest happiness for the greatest number. Developed by <a href="jeremy_bentham_stock.html" class="crossref-inline">Jeremy Bentham</a> in An Introduction to the Principles of Morals and Legislation and refined by <a href="john_stuart_mill_stock.html" class="crossref-inline">John Stuart Mill</a> in his essay Utilitarianism. Bentham's felicific calculus attempted to quantify pleasure and pain, while Mill distinguished between higher and lower pleasures. The doctrine has been traced to Cesare Beccaria's On Crimes and Punishments.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">advocates &#x27;the greatest happiness for the greatest number&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">what ethical position developed by Jeremy Bentham advocates the greatest good for the greatest number? | actions should maximize human happiness</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jeremy Bentham founded utilitarianism; developed the felicific/hedonistic calculus</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the founder of this school, who theorized a circular prison called the panopticon, was Jeremy Bentham | the founder of this school of philosophy described how a &#x27;felicific calculus&#x27; can be used to assess the morality of an action</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">John Stuart Mill wrote a treatise titled Utilitarianism; distinguished higher and lower pleasures</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A John Stuart Mill treatise is titled after this school of philosophy | Mill distinguished between higher and lower pleasures</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">comes in &#x27;act&#x27; and &#x27;rule&#x27; forms</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">there are &#x27;act&#x27; and &#x27;rule&#x27; formulations of this philosophical position | a theory named for this concept has &#x27;act&#x27; and &#x27;rule&#x27; forms</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cesare Beccaria likely originated the phrase &#x27;greatest happiness of the greatest number&#x27; in On Crimes and Punishments</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bentham likely took the phrase &#x27;the greatest happiness of the greatest number&#x27; from the work of this enlightenment criminologist</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="act-vs-rule-utilitarianism" open>
+            <summary class="work-title">Act vs. Rule Utilitarianism</summary>
+            <p class="work-desc">The distinction between act utilitarianism (judging each individual action by its consequences) and rule utilitarianism (judging actions by whether they conform to rules that maximize utility). J.J.C. Smart advocated 'extreme' act utilitarianism, while R.M. Hare argued rule utilitarianism was preferable for ordinary people. John Rawls's 'Two Concepts of Rules' defended utilitarianism by distinguishing justifying a practice from justifying an act within it. Smart criticized rule utilitarianism as 'restricted.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">act vs. rule distinction — act judges individual actions, rule judges underlying principles</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Smart contrasted &#x27;extreme&#x27; act utilitarianism with this other approach, which judges actions based on their underlying principles</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">J.J.C. Smart advocated extreme/act utilitarianism; criticized rule utilitarianism as &#x27;restricted&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">J.J.C. Smart criticized this utilitarian school as &#x27;restricted&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">John Rawls&#x27;s &#x27;Two Concepts of Rules&#x27; defended utilitarianism from punishment and promise-keeping objections</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker defended utilitarianism from &#x27;punishment&#x27; and &#x27;promise-keeping&#x27; objections in &#x27;Two Concepts of Rules&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">R.M. Hare argued rule utilitarianism preferable for &#x27;proles&#x27; needing intuitive-level moral principles</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this theory is preferable for &#x27;proles&#x27; who need &#x27;intuitive level&#x27; moral principles because they lack the cognitive abilities of &#x27;archangels&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;preference&#x27; utilitarianism pioneered by Peter Singer</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">generally, &#x27;effective altruism&#x27; advocates adopt this position, which comes in... a &#x27;preference&#x27; form pioneered by Peter Singer</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="bernard-williams-s-critiques" open>
+            <summary class="work-title">Bernard Williams&#x27;s Critiques</summary>
+            <p class="work-desc">Bernard Williams was the most prominent critic of utilitarianism in the quizbowl corpus. He debated J.J.C. Smart in the volume Utilitarianism: For and Against, attacking the doctrine of 'negative responsibility' through thought experiments like 'Jim and the Indians' and 'George and the chemical warfare researcher.' Williams coined the term 'moral luck' in a paper about Gauguin's abandonment of his family, and introduced the phrase 'one thought too many' to critique utilitarian prescriptions.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bernard Williams debated J.J.C. Smart in Utilitarianism: For and Against</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bernard Williams debated Smart in a book titled for this position and subtitled &#x27;for and against&#x27; | this thinker wrote on the &#x27;against&#x27; side against J.J.C. Smart</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Jim and the Indians&#x27; — botanist finds a captain about to execute protestors; challenges negative responsibility</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this position is attacked by a story where a botanist finds a captain about to execute protestors | advanced the &#x27;integrity objection&#x27; to it</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">George and the chemical warfare researcher thought experiment</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this philosopher proposed a scenario in which George might become a chemical warfare researcher</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">coined &#x27;moral luck&#x27; — judging Gauguin&#x27;s abandonment of his family based on success of his art</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote an essay that suggests that we judge Gauguin&#x27;s abandonment of his family based on how successful his art happened to be</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;one thought too many&#x27; — critiques utilitarian prescriptions for a man choosing between saving his wife or a stranger</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Bernard Williams coined this four-word phrase for the prescriptions that moral theories offer a man who can either save his wife or a stranger</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="derek-parfit-the-repugnant-conclusion" open>
+            <summary class="work-title">Derek Parfit &amp; the Repugnant Conclusion</summary>
+            <p class="work-desc">Derek Parfit's 'repugnant conclusion' (from the mere addition paradox) is a major counterexample to utilitarianism. It shows that for any population, there exists a larger population whose total existence is better even though individuals have lives barely worth living. Parfit explored this in Reasons and Persons, which also uses the teletransporter thought experiment. Parfit later attempted to show that rule utilitarianism, Kantian deontology, and Scanlon's contractualism make similar recommendations in On What Matters.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">repugnant conclusion / mere addition paradox — larger population with lives barely worth living could have more total utility</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a challenge to this position that results from the &#x27;mere addition paradox&#x27; was elucidated in the book Reasons and Persons by Derek Parfit | for a population of at least 10 billion, there could exist some larger population whose sum-total existence would be better</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Parfit&#x27;s Reasons and Persons — teletransporter thought experiment, ethical egoism is self-defeating</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker used the &#x27;teletransporter&#x27; thought experiment in his book Reasons and Persons</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">On What Matters — attempted to show rule utilitarianism, Kantian deontology, and Scanlon&#x27;s contractualism converge</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this ethicist attempted to show that rule utilitarianism, Kantian deontology, and T. M. Scanlon&#x27;s contractualism all make similar recommendations</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="peter-singer-effective-altruism" open>
+            <summary class="work-title">Peter Singer &amp; Effective Altruism</summary>
+            <p class="work-desc">Peter Singer is a major modern utilitarian, known for 'Famine, Affluence, and Morality' (1971/1972), which uses the drowning child analogy to argue that wealthy people are morally obligated to donate to humanitarian causes. Singer coined the term 'speciesism' and argued that the capability to suffer should be the basis for rights. He is closely associated with the effective altruism movement and has shifted from preference utilitarianism to hedonistic utilitarianism.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Peter Singer — drowning child analogy, &#x27;Famine, Affluence, and Morality,&#x27; effective altruism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this philosopher used an analogy involving saving a drowning child to argue that charitable giving is obligatory | generally, &#x27;effective altruism&#x27; advocates adopt this position... a &#x27;preference&#x27; form pioneered by Peter Singer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Singer coined &#x27;speciesism&#x27; — capability to suffer should be basis for rights</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker argued in a 1975 book that the capability to suffer should be the basis for rights, instead of the &#x27;speciesist&#x27; grounding in intelligence</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">effective altruism movement — using reason to benefit as many people as possible</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this philosophical movement seeks to use reason to benefit as many people as possible | Sam Bankman-Fried, Dustin Moskovitz</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="henry-sidgwick-the-methods-of-ethics" open>
+            <summary class="work-title">Henry Sidgwick &amp; The Methods of Ethics</summary>
+            <p class="work-desc">Henry Sidgwick's The Methods of Ethics (1874) analyzes three approaches to ethics: egoism, intuitionism, and utilitarianism. Sidgwick is commended by <a href="g.e._moore_stock.html" class="crossref-inline">G.E. Moore</a> for not committing the naturalistic fallacy. Sidgwick identified the paradox of hedonism and formulated the principle of 'pure equality' (each counts for one). He is frequently clued as a key figure bridging classical utilitarianism and modern moral philosophy.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Methods of Ethics — three approaches: egoism, intuitionism, utilitarianism</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">these are the two thinkers most discussed as exemplars of a view contrasted with intuitionism and egoism in Henry Sidgwick&#x27;s The Methods of Ethics</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">G.E. Moore praised Sidgwick for not committing the naturalistic fallacy</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">G.E. Moore singles out this philosopher for praise for not falling prey to the naturalistic fallacy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">paradox of hedonism; principle of &#x27;pure equality&#x27; (each counts for one)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Parfit&#x27;s principle of &#x27;each counts for one&#x27; may have been inspired by this thinker&#x27;s principle of &#x27;pure equality&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="critiques-and-thought-experiments" open>
+            <summary class="work-title">Critiques and Thought Experiments</summary>
+            <p class="work-desc">Utilitarianism faces numerous thought-experiment-based critiques. Robert Nozick's 'utility monster' shows that a being who derives vastly more pleasure could justify taking from others. The trolley problem (Philippa Foot) was originally an argument against utilitarianism. The 'demandingness objection' holds that utilitarianism demands too much of individuals. 'Roko's Basilisk' imagines an AI punishing those who did not help build it. The 'no rest' objection (Louis Pojman) argues strict utilitarianism freezes adherents into inaction.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Robert Nozick&#x27;s &#x27;utility monster&#x27; — a being that gains more utility, so maximizing total utility means giving it everything</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Robert Nozick imagined a scenario in which it is more readily acquired by a &#x27;monster&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">trolley problem (Philippa Foot) — originally an argument against utilitarianism</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Foot&#x27;s trolley problem originally served as an argument against this consequentialist ethical system</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;no rest&#x27; objection — strict adherence causes inaction</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">anyone trying to adopt it strictly would be frozen into inaction because it allows &#x27;no rest&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;demandingness objection&#x27; — utilitarianism demands too much</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the inability of this view to accommodate supererogation is known as the &#x27;demandingness objection&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Roko&#x27;s Basilisk — AI punishing those who did not help build it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Roko&#x27;s Basilisk&#x27; refers to the fear that an AI adopting this position would punish those who did not help build it</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Karl Marx called Bentham the &#x27;arch-Philistine&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this philosopher, who called Bentham a leather-tongued &#x27;arch-philistine&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-identification" open>
+            <summary class="work-title">General / Identification</summary>
+            <p class="work-desc">Standard identification clues for utilitarianism as a concept: it is a consequentialist ethical theory, contrasted with deontology. Bentham and Mill are its co-founders. The felicific calculus is Bentham's tool for measuring pleasure. It is associated with the phrase 'greatest happiness principle.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">consequentialist ethical theory — morality of actions depends on outcomes</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">what broad class of ethical theories includes hedonism and utilitarianism, and holds that the moral worth of an action depends on its outcome</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">contrasted with deontology (Kantian ethics)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">common variants of this theory include act or rule version of it, such as exemplified by Bentham and Mill respectively</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Le Guin&#x27;s &#x27;The Ones Who Walk Away from Omelas&#x27; is often taken as a critique</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Le Guin&#x27;s story &#x27;The Ones Who Walk Away from Omelas&#x27; is often taken as a critique of this ethical theory</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mohist &#x27;Concern for Everyone&#x27; analogized to utilitarianism</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Mohists, whose doctrine of &#x27;Concern for Everyone&#x27; has been analogized to this Western ethical theory</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Utilitarianism is the most heavily clued ethical theory in quizbowl. It is a consequentialist system that holds the morality of an action depends on its outcomes, specifically whether it maximizes happiness for the greatest number. The theory was founded by <a href="jeremy_bentham_stock.html" class="crossref-inline">Jeremy Bentham</a>, who developed the felicific calculus to quantify pleasure and pain in An Introduction to the Principles of Morals and Legislation, and who described humanity as governed by &#x27;two sovereign masters, pain and pleasure.&#x27; <a href="john_stuart_mill_stock.html" class="crossref-inline">John Stuart Mill</a> refined the doctrine in his 1861 essay Utilitarianism, distinguishing between higher and lower pleasures and famously claiming &#x27;better to be Socrates dissatisfied than a fool satisfied.&#x27; The phrase &#x27;greatest happiness of the greatest number&#x27; may trace back to Cesare Beccaria&#x27;s On Crimes and Punishments.</p><p>The theory comes in &#x27;act&#x27; and &#x27;rule&#x27; forms. Act utilitarianism judges each individual action by its consequences, while rule utilitarianism judges actions by whether they conform to rules that maximize utility. J.J.C. Smart advocated extreme act utilitarianism and criticized rule utilitarianism as &#x27;restricted.&#x27; John Rawls defended utilitarianism from objections in &#x27;Two Concepts of Rules.&#x27; Peter Singer pioneered &#x27;preference&#x27; utilitarianism and is closely associated with the effective altruism movement.</p><p>Bernard Williams is the most prominent critic in the quizbowl corpus. He debated Smart in Utilitarianism: For and Against, introducing the &#x27;Jim and the Indians&#x27; and &#x27;George and the chemical warfare researcher&#x27; thought experiments to challenge the doctrine of &#x27;negative responsibility.&#x27; Williams coined the term &#x27;moral luck&#x27; and the phrase &#x27;one thought too many.&#x27; Derek Parfit&#x27;s &#x27;repugnant conclusion&#x27; (from the mere addition paradox in Reasons and Persons) is another major counterexample, showing that utilitarianism could endorse a vastly overpopulated world of miserable people. Robert Nozick&#x27;s &#x27;utility monster&#x27; and Philippa Foot&#x27;s trolley problem also serve as critiques. The &#x27;no rest&#x27; objection holds that strict utilitarianism freezes adherents into inaction, and the &#x27;demandingness objection&#x27; argues it asks too much.</p><p>Henry Sidgwick&#x27;s The Methods of Ethics is a key text that analyzes egoism, intuitionism, and utilitarianism as three methods of ethics. <a href="g.e._moore_stock.html" class="crossref-inline">G.E. Moore</a> praised Sidgwick for not committing the naturalistic fallacy. In modern times, Peter Singer&#x27;s drowning child analogy and effective altruism have made utilitarianism prominent in applied ethics.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Utilitarianism" target="_blank">Utilitarianism (philosophy)</a></li><li><a href="https://en.wikipedia.org/wiki/Utility_(philosophy)" target="_blank">Greatest happiness principle</a></li><li><a href="https://en.wikipedia.org/wiki/Bernard_Williams" target="_blank">Bernard Williams</a></li><li><a href="https://en.wikipedia.org/wiki/Derek_Parfit" target="_blank">Derek Parfit</a></li><li><a href="https://en.wikipedia.org/wiki/Peter_Singer" target="_blank">Peter Singer</a></li><li><a href="https://en.wikipedia.org/wiki/Effective_altruism" target="_blank">Effective altruism</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Bernard Williams</li><li>Derek Parfit</li><li>Peter Singer</li><li>Henry Sidgwick</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'utilitarianism' });</script>
+
+</body>
+</html>

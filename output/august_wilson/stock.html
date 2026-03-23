@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: August Wilson</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>August Wilson</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">African-American playwright, author of the ten-play Pittsburgh Cycle (Century Cycle) depicting Black life in each decade of the 20th century. Most commonly identified by Fences (Troy Maxson, garbage collector, Rose, Cory, Gabriel&#x27;s trumpet) and The Piano Lesson (Boy Willie, Berniece, Ghosts of the Yellow Dog, Sutter&#x27;s ghost). Other plays include Ma Rainey&#x27;s Black Bottom, Joe Turner&#x27;s Come and Gone, Two Trains Running, Jitney, Seven Guitars, King Hedley II, Gem of the Ocean, and Radio Golf.</div>
+
+        <details class="work" id="fences" open>
+            <summary class="work-title">Fences</summary>
+            <p class="work-desc">Wilson's most famous play, set in 1950s Pittsburgh. Troy Maxson is a garbage collector (the first Black garbage truck driver in Pittsburgh) and former baseball player who couldn't break into the MLB due to the color barrier. He prevents his son Cory from playing college football, forcing him to work at A&P. Troy warns Cory he has 'strike two' and is 'living with a full count'; he eventually chases Cory from the house with a baseball bat. Troy has an affair with Alberta, who dies in childbirth; Rose adopts their daughter Raynell. Troy's brother Gabriel has a metal plate in his head from WWII and believes he's an archangel. The play ends at Troy's funeral, where Gabriel fails to blow his broken trumpet—he instead performs an 'atavistic' dance and the 'gates of Heaven stand open as wide as God's closet.' Troy tells Rose he 'planted a seed' but 'the soil was hard and rocky.' Troy refers to death as 'nothing but a fastball on the outside corner.' Troy taunts Death while building the fence: 'I ain't afraid of you!' Bono bets buying his wife a refrigerator on Troy's finishing the fence. Characters sing a song about the dog Blue who 'treed a possum in Noah's Ark.' Rose tells Troy 'I planted myself inside you and waited to bloom.' James Earl Jones premiered as Troy on Broadway. Denzel Washington has pledged to produce films of all the Pittsburgh Cycle plays. The play was adapted into a 2016 film directed by Denzel Washington.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">18x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Troy Maxson: garbage collector, former baseball player; color barrier prevented MLB; son Cory forbidden from playing football, forced to work at A&amp;P</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the garbage collector Troy Maxson | a character who could not break into the MLB because of the color barrier</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gabriel blows (broken) trumpet to open gates of Heaven at Troy&#x27;s funeral; has metal plate in head from WWII; performs &#x27;atavistic&#x27; dance when trumpet fails</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gabriel opening the &#x27;gates of Heaven&#x27; with his trumpet during Troy Maxson&#x27;s funeral | Gabriel&#x27;s dancing is described as &#x27;slow, strange&#x27; and &#x27;atavistic&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Troy&#x27;s affair with Alberta; Alberta dies in childbirth; Rose adopts daughter Raynell</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Raynell is the result of her husband&#x27;s infidelity with Alberta | Alberta dies giving birth to Raynell</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Troy refers to death as &#x27;nothing but a fastball on the outside corner&#x27;; taunts Death while building the fence; wrestled with Death for &#x27;three days and three nights&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist refers to death as &#x27;nothing but a fastball on the outside corner&#x27; | a stage direction describes a batting posture as a character taunts &#x27;Death, the fastball on the outside corner&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Troy warns Cory he has &#x27;strike two&#x27;; chases him from the house with a baseball bat</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character warns his son that he has committed &#x27;strike two&#x27; and is &#x27;living with a full count&#x27; before eventually chasing him out of the house with a baseball bat</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Blue the dog song (&#x27;treed a possum in Noah&#x27;s Ark&#x27;); Bono bets buying a refrigerator on fence being finished</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">characters sing a song about the possum-treeing dog Blue | Bono finally agrees to buy a fridge for his wife on a bet with this play&#x27;s protagonist</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rose: &#x27;I planted myself inside you and waited to bloom&#x27;; tells Troy &#x27;you say I take and don&#x27;t give&#x27;; soil was &#x27;hard and rocky&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a woman laments &#x27;I planted myself inside you and waited to bloom&#x27; | Troy &#x27;planted a seed&#x27; but &#x27;the soil was hard and rocky&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">James Earl Jones premiered as Troy; Denzel Washington pledged to produce films of the Pittsburgh Cycle; 2016 film adaptation directed by Washington</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">James Earl Jones described audience members shouting &#x27;Drown the damn baby!&#x27; at the scene of Troy with Raynell | Denzel Washington has pledged to produce films of this author&#x27;s Pittsburgh Cycle</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-piano-lesson" open>
+            <summary class="work-title">The Piano Lesson</summary>
+            <p class="work-desc">Wilson's 1990 Pulitzer Prize-winning play, set in 1936. Boy Willie wants to sell the family piano (which has the family's history carved into it by the slave carpenter Willie Boy) to buy Sutter's land. His sister Berniece refuses. Sutter's ghost appears and is exorcised when Berniece plays the piano and sings 'I want you to help me' eighteen times, invoking her ancestors. The Ghosts of the Yellow Dog (Boy Charles and four hobos burned alive in a boxcar by a lynch mob) are blamed for mysterious deaths including Sutter falling down a well. Wining Boy sells a silk 'magic suit' that supposedly attracts women to Lymon. Boy Willie and Lymon arrive from Mississippi with a truck full of watermelons. Doaker is the uncle who manages the household. Berniece's daughter Maretha is being taught piano. Reverend Avery wants to marry Berniece. The play's working title was Mill Hand's Lunch Bucket, inspired by a <span class="crossref-inline-red" title="No page yet: Romare Bearden">Romare Bearden</span> painting. Song: 'When you marry, marry a railroad man, every day is dollar day.' Mama Ola rubbed the piano until her hands bled. Samuel L. Jackson appeared as Boy Willie in the first live performance; a 2024 adaptation was directed by Malcolm Washington.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">14x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Boy Willie vs. Berniece over selling the piano; family history carved into it by slave ancestors; piano used to exorcise Sutter&#x27;s ghost</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the central family is haunted by Sutter&#x27;s ghost as Boy Willie attempts to sell the title object | Berniece uses it to exorcise the ghost of the slave owner Sutter</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ghosts of the Yellow Dog: Boy Charles and hobos burned alive in boxcar; blamed for Sutter falling down a well</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">four characters who died in a boxcar fire become the Ghosts of the Yellow Dog | supposedly the spirits of Boy Charles and four hobos who were burnt alive by a lynch mob</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Berniece sings &#x27;I want you to help me&#x27; eighteen times to exorcise Sutter; invokes ancestors&#x27; names</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">at the end of this play, one character sings &#x27;I want you to help me&#x27; eighteen times, only stopping to invoke family members&#x27; names</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wining Boy sells a silk &#x27;magic suit&#x27; that attracts women to Lymon; Wining Boy calls out to Ghosts at railway crossing</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the washed-up musician Wining Boy sells his suit and shoes to Lymon, promising amatory effects | Wining Boy recounts &#x27;It felt like the longer I stood there the bigger I got&#x27; after calling to the Ghosts at a railway crossing</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Boy Willie and Lymon arrive from Mississippi in a truck of watermelons; Doaker manages the house; Reverend Avery courts Berniece</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Lymon and Boy Willie arrive with a truck full of watermelons | the craftsman Doaker tells the story of how the piano was carved</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Working title: Mill Hand&#x27;s Lunch Bucket, inspired by Romare Bearden painting; Samuel L. Jackson as Boy Willie at first live performance</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">working title, Mill Hand&#x27;s Lunch Bucket, was inspired by a painting by Romare Bearden | Samuel Jackson served as this play&#x27;s male lead at its first live performance</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="ma-rainey-s-black-bottom" open>
+            <summary class="work-title">Ma Rainey&#x27;s Black Bottom</summary>
+            <p class="work-desc">The only Pittsburgh Cycle play not set in Pittsburgh (set in Chicago). Blues musicians wait for Ma Rainey to start a recording session; she refuses until she gets a Coca-Cola. The trumpeter Levee stabs Toledo for stepping on his Florsheim shoes. Stuttering Sylvester appears. Slow Drag. Adapted into a 2020 film starring Viola Davis and Chadwick Boseman.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Only Pittsburgh Cycle play not set in Pittsburgh; set in Chicago; Ma Rainey refuses to start recording without Coca-Cola</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ma Rainey refuses to start a recording session without a Coca-Cola | Wilson set Ma Rainey&#x27;s Black Bottom among blues singers in this city further west</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Levee stabs Toledo for stepping on Florsheim shoes; stuttering Sylvester</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man treasures his expensive Florsheim shoes, stabbing Toledo for accidentally stepping on them</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">2020 film adaptation starring Viola Davis and Chadwick Boseman</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">adapted into a 2020 film starring Viola Davis and Chadwick Boseman</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="joe-turner-s-come-and-gone" open>
+            <summary class="work-title">Joe Turner&#x27;s Come and Gone</summary>
+            <p class="work-desc">Set in the 1910s at Seth Holly's boarding house. Herald Loomis searches for his wife Martha Pentecost after being captured and enslaved by Joe Turner for seven years. The conjure man Bynum sings a song about Joe Turner. The 'People Finder' Selig is a sheet metal seller. Herald slashes his chest and rubs blood on his face, finding his 'song of self-sufficiency.' Bynum describes following a 'shiny man.' Reuben and Zonia look at pigeons. Working title was Mill Hand's Lunch Bucket, inspired by <span class="crossref-inline-red" title="No page yet: Romare Bearden">Romare Bearden</span> painting.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Herald Loomis searches for wife Martha Pentecost; enslaved by Joe Turner for seven years; slashes chest</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Herald Loomis, a man trying to find his wife | a man slashes his chest and denounces his religion after learning the &#x27;song of self-sufficiency&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bynum: conjure man; sings about Joe Turner; describes following a &#x27;shiny man&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the conjure man Bynum sings a song about a man who had captured and enslaved Herald Loomis | Bynum describes following a man with this visual quality</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Seth Holly&#x27;s boarding house; Reuben and Zonia look at pigeons</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the craftsman Seth Holly runs a boarding house | the children Reuben and Zonia leave to look at some pigeons</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-plays-and-general" open>
+            <summary class="work-title">Other Plays and General</summary>
+            <p class="work-desc">Two Trains Running: set in Memphis Lee's diner; Risa scars her legs to deflect male attention; Hambone can only say two phrases about ham; Sterling steals ham to put in Hambone's coffin after his death. Jitney: unlicensed taxi cab business; Becker and his son Booster (jailed for killing a woman); Youngblood buys a house to surprise Rena. Seven Guitars: Floyd 'Schoolboy' Barton achieves posthumous success; King Hedley (Sr.) kills Floyd, mistaking him for Buddy Bolden. King Hedley II: King Hedley II (ex-con) sells stolen refrigerators; Stool Pigeon is the prophetic wise man; Aunt Ester dies at age 366; Ruby (King's mother) kills him. Gem of the Ocean: Aunt Ester at 1839 Wylie Avenue (age 285); Citizen Barlow is healed; Solly Two Kings burns down a steel mill and is shot by Caesar Wilks. Radio Golf: Harmond Wilks campaigns for mayor; discovers 1839 Wylie was illegally acquired. Aunt Ester is a recurring clairvoyant character who ages from 285 to 366 across the cycle and is described as a 'washer of souls.' Stool Pigeon / Canewell is a recurring harmonica player. Wilson's 'four B's' influences: <a href="borges_stock.html" class="crossref-inline">Jorge Luis Borges</a>, <a href="amiri_baraka_stock.html" class="crossref-inline">Amiri Baraka</a>, <span class="crossref-inline-red" title="No page yet: Romare Bearden">Romare Bearden</span>, and the blues. Wilson slammed Robert Brustein in his speech 'The Ground on Which I Stand.' Wilson wrote autobiographical works including How I Learned What I Learned. Plays often feature 'spectacle characters' (characters with mental disabilities providing spiritual wisdom): Sylvester (Ma Rainey), Gabriel (Fences), Hedley Sr. (Seven Guitars). Wilson's influences include Ed Bullins.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aunt Ester: recurring clairvoyant &#x27;washer of souls&#x27;; ages 285 (Gem) to 366 (King Hedley II); lives at 1839 Wylie Avenue</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the clairvoyant 349-year-old Aunt Ester is a recurring character | Aunt Ester Tyler, who dies at age 366 in King Hedley II</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pittsburgh Cycle: ten plays, one per decade of 20th century; set in Hill District of Pittsburgh</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this African-American playwright of the Pittsburgh Cycle | ten-play Pittsburgh Cycle, depicting black life in each decade of the 20th century</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two Trains Running: Memphis Lee&#x27;s diner; Risa scars legs to deflect men; Sterling steals ham for Hambone&#x27;s coffin; Hambone only says two phrases</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Risa purposely scars her legs to deflect attention from men | Sterling steals ham to place in Hambone&#x27;s coffin after his death</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jitney: unlicensed taxi cab business; Becker and son Booster (jailed); Youngblood buys house to surprise Rena</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Booster takes over Jim Becker&#x27;s unofficial taxi cab business | Youngblood saves up to buy Rena a house as a surprise</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Seven Guitars: Floyd &#x27;Schoolboy&#x27; Barton; King Hedley (Sr.) kills Floyd thinking he is Buddy Bolden</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Floyd &#x27;Schoolboy&#x27; Barton achieves posthumous success | King Hedley murders Floyd Barton, mistaking him for Buddy Bolden</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">King Hedley II: ex-con sells stolen refrigerators; Stool Pigeon prophetic wise man; Aunt Ester dies age 366; Ruby kills King</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">King Hedley II sells stolen refrigerators to support the pregnant Tonya | Stool Pigeon, described as a &#x27;King Hedley checker champ of Nam&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gem of the Ocean: Aunt Ester at 1839 Wylie (age 285); Citizen Barlow healed; Solly Two Kings burns steel mill, shot by Caesar Wilks</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Solly Two Kings burns down a steel mill and is shot by the policeman Caesar Wilks | Citizen Barlow comes to Aunt Ester to be cleansed at 1839 Wylie Avenue</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wilson&#x27;s &#x27;four B&#x27;s&#x27;: Borges, Baraka, Bearden, and the blues; &#x27;spectacle characters&#x27; (mentally disabled figures with spiritual wisdom); slammed Robert Brustein in &#x27;The Ground on Which I Stand&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Wilson has cited the blues, Baraka, and Romare Bearden among his influences | Wilson slammed Robert Brustein in his manifesto &#x27;The Ground on Which I Stand&#x27; | many of this author&#x27;s plays feature what he called &#x27;spectacle characters&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>August Wilson (1945–2005), born Frederick August Kittel Jr., is the most frequently clued African-American playwright in quizbowl. He is best known for his ten-play Pittsburgh Cycle (also called the Century Cycle), which depicts Black life in the Hill District of Pittsburgh across each decade of the twentieth century. His &#x27;four B&#x27;s&#x27; influences were <a href="borges_stock.html" class="crossref-inline">Jorge Luis Borges</a>, <a href="amiri_baraka_stock.html" class="crossref-inline">Amiri Baraka</a>, <span class="crossref-inline-red" title="No page yet: Romare Bearden">Romare Bearden</span>, and the blues. His plays characteristically feature &#x27;spectacle characters&#x27;—figures with mental disabilities who provide spiritual or biblical wisdom—and he publicly criticized Robert Brustein in his speech &#x27;The Ground on Which I Stand.&#x27;</p><p>Fences (set in the 1950s) is by far the most heavily clued play. Troy Maxson is the first Black garbage truck driver in Pittsburgh and a former baseball player who couldn&#x27;t enter the MLB due to the color barrier. He prevents his son Cory from accepting a football scholarship, forcing him to work at A&amp;P. Troy warns Cory he has &#x27;strike two&#x27; and eventually chases him from the house with a baseball bat. Troy has an affair with Alberta, who dies in childbirth; Rose (&#x27;I planted myself inside you and waited to bloom&#x27;) adopts their daughter Raynell. Troy taunts Death while building the fence, calling it &#x27;nothing but a fastball on the outside corner.&#x27; Characters sing about the dog Blue who &#x27;treed a possum in Noah&#x27;s Ark.&#x27; Bono bets buying his wife a refrigerator on the fence getting finished. Troy&#x27;s brother Gabriel has a metal plate in his head from WWII; at Troy&#x27;s funeral, Gabriel&#x27;s broken trumpet fails to sound and he instead performs an &#x27;atavistic&#x27; dance, opening &#x27;the gates of Heaven as wide as God&#x27;s closet.&#x27; James Earl Jones originated the role. Denzel Washington has pledged to film all the Pittsburgh Cycle plays.</p><p>The Piano Lesson (1990 Pulitzer) is set in 1936 and revolves around the conflict between Boy Willie, who wants to sell the family piano to buy Sutter&#x27;s land, and his sister Berniece, who refuses. The slave carpenter Willie Boy carved the family&#x27;s history into the piano. Sutter&#x27;s ghost appears and is exorcised when Berniece plays the piano and sings &#x27;I want you to help me&#x27; eighteen times, invoking her ancestors&#x27; names. The Ghosts of the Yellow Dog—Boy Charles and four hobos burned alive in a boxcar by a lynch mob—are blamed for mysterious deaths including Sutter falling down a well. Wining Boy (a washed-up musician) sells a silk &#x27;magic suit&#x27; to Lymon. Boy Willie and Lymon arrive from Mississippi in a truck of watermelons. Doaker manages the household. Reverend Avery courts Berniece. The play&#x27;s working title was Mill Hand&#x27;s Lunch Bucket, inspired by a <span class="crossref-inline-red" title="No page yet: Romare Bearden">Romare Bearden</span> painting. Samuel L. Jackson appeared as Boy Willie at the first live performance.</p><p>Ma Rainey&#x27;s Black Bottom is the only Pittsburgh Cycle play not set in Pittsburgh; it takes place in a 1920s Chicago recording studio. Ma Rainey refuses to begin recording without a Coca-Cola (and accuses police of mistreating her). The trumpeter Levee stabs the pianist Toledo for stepping on his expensive Florsheim shoes after Ma Rainey fires Levee for improvising the title song. The stuttering Sylvester mars the intro. The play was adapted into a 2020 Netflix film starring Viola Davis as Ma Rainey and Chadwick Boseman as Levee.</p><p>Joe Turner&#x27;s Come and Gone (set in the 1910s) takes place at Seth Holly&#x27;s boarding house. Herald Loomis searches for his wife Martha Pentecost after being enslaved by Joe Turner for seven years. He slashes his chest and rubs blood on his face, finding his &#x27;song of self-sufficiency&#x27;; Bynum says Loomis is now &#x27;shining like new money.&#x27; The conjure man Bynum sings a song about Joe Turner. The &#x27;People Finder&#x27; Selig—a sheet metal seller—is hired to find the &#x27;shiny man.&#x27; The play&#x27;s working title was Mill Hand&#x27;s Lunch Bucket, inspired by Bearden&#x27;s painting.</p><p>Two Trains Running (set in 1969) takes place in Memphis Lee&#x27;s diner. Risa purposely scars her legs to deflect male attention. Hambone can only say two phrases about ham (he demanded a ham for a job well done); after Hambone&#x27;s death, Sterling steals a ham to put in his coffin. Jitney (1970s) depicts an unlicensed taxi cab station run by Becker; his son Booster returns from jail (for killing a woman who accused him of rape) and takes over after Becker dies. Youngblood buys a house to surprise his girlfriend Rena.</p><p>Seven Guitars (1940s) follows Floyd &#x27;Schoolboy&#x27; Barton, who achieves posthumous success. King Hedley (Sr.) kills Floyd while mistaking him for Buddy Bolden. King Hedley II (1980s) features King Hedley II, an ex-convict who sells stolen refrigerators and is killed by his own mother Ruby. Stool Pigeon is a prophetic wise man. Aunt Ester dies at age 366 in this play. Gem of the Ocean (1904) centers on Aunt Ester at 1839 Wylie Avenue (age 285); Citizen Barlow is healed; Solly Two Kings burns down a steel mill and is shot by Caesar Wilks. Radio Golf (2000s) features Harmond Wilks campaigning for mayor and discovering that 1839 Wylie Avenue was illegally acquired. Aunt Ester is the recurring clairvoyant &#x27;washer of souls&#x27; who ages from 285 to 366 across the cycle; Stool Pigeon / Canewell is a recurring harmonica player.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/August_Wilson" target="_blank">August Wilson</a></li><li><a href="https://en.wikipedia.org/wiki/Fences_(play)" target="_blank">Fences</a></li><li><a href="https://en.wikipedia.org/wiki/The_Piano_Lesson" target="_blank">The Piano Lesson</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Fences</li><li>The Piano Lesson</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'august_wilson' });</script>
+
+</body>
+</html>

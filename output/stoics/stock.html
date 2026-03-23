@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Stoics</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Stoics</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Ancient Greek and Roman philosophical school founded by <a href="zeno_of_citium_stock.html" class="crossref-inline">Zeno of Citium</a> at the &#x27;painted porch&#x27; (stoa) in Athens. Core doctrines: virtue is the only good, control of emotions, prohairesis (volition), pneuma, ekpyrosis (great conflagration), and propositional logic. Major figures include Chrysippus, Cleanthes, <a href="epictetus_stock.html" class="crossref-inline">Epictetus</a>, <a href="seneca_stock.html" class="crossref-inline">Seneca</a>, and <a href="marcus_aurelius_stock.html" class="crossref-inline">Marcus Aurelius</a>. Divided philosophy into logic, physics, and ethics.</div>
+
+        <details class="work" id="prohairesis-volition-and-stoic-ethics" open>
+            <summary class="work-title">Prohairesis, Volition, and Stoic Ethics</summary>
+            <p class="work-desc">The central ethical concept of Stoicism is prohairesis (volition) -- the only thing fully within our control. <a href="epictetus_stock.html" class="crossref-inline">Epictetus</a> argued in the Discourses (compiled by Arrian) and the Enchiridion (Handbook/Manual) that one should only be concerned with one's own actions. The Stoics held that virtue is the only good, with health and wealth classified as 'indifferents' having only 'selective value.' The school distinguished between katorthomata (perfect action) and kathekonta (appropriate action). Kathekon (proper action in accordance with nature) was taught from the 'painted porch.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Prohairesis (volition): the only thing within our control/power</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the only thing fully in our power is our own volition, or prohairesis | the only thing &#x27;in our power&#x27; is prohairesis, or volition</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Epictetus: Discourses (compiled by Arrian) and Enchiridion (Handbook/Manual)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a work compiled by Arrian as the Discourses | the Enchiridion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Virtue is the only good; health and wealth are &#x27;indifferents&#x27; with &#x27;selective value&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the primary doctrine of this philosophical school is that virtue is necessary and sufficient for happiness | classified all external aspects of life as &#x27;indifferents&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Distinguished goods from &#x27;preferred&#x27;/&#x27;dispreferred&#x27; things; Rachel Barney&#x27;s puzzle</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Rachel Barney explores this school&#x27;s approach to things that are &#x27;preferred&#x27; or &#x27;dispreferred&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kathekonta (appropriate action) vs. katorthomata (perfect action)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">while ordinary people cannot perform katorthomata, they can perform kathekonta</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Oikeiosis: perceiving &#x27;ownership&#x27;; Hierocles&#x27;s concentric circles</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Hierocles&#x27; account of this process describes a series of concentric circles</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Seneca: moral letters to Lucilius; On the Shortness of Life; On Mercy (dedicated to Nero)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">advocated treating slaves well in his moral letters to Lucilius and wrote On the Shortness of Life</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Epictetus: &#x27;behave in life as at a dinner party&#x27;; compared life to an athlete striking a ball</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a short book on this school of thought contains the injunction to &#x27;behave in life as at a dinner party&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marcus Aurelius: Meditations, written during military campaigns; &#x27;either Providence or blind atoms&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the ideal &#x27;sage&#x27; is discussed in the Meditations | proposed the alternatives of &#x27;either Providence or blind atoms&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Premeditatio malorum (Seneca): envision negative outcomes ahead of time</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;All the terms of our human lot should be before our eyes&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="stoic-physics-pneuma-ekpyrosis-and-cosmology" open>
+            <summary class="work-title">Stoic Physics: Pneuma, Ekpyrosis, and Cosmology</summary>
+            <p class="work-desc">Stoic physics held that the universe is infused with pneuma, a mixture of air and fire serving as a vital organizing substance. The cosmos undergoes cyclical destruction through ekpyrosis (great conflagration) at the end of each 'Great Year.' This doctrine of eternal recurrence was later adopted by Nietzsche. Heraclitus's 'fire everliving' influenced the Stoic belief in conflagration. The Stoics held that only bodies exist and that moral qualities and the soul are corporeal. The logos spermatikos is the supreme creative force.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pneuma: mixture of air and fire infusing the universe</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the universe was infused with a mixture of air and fire called pneuma</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ekpyrosis (great conflagration): cosmos cyclically destroyed by fire</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">every Great Year ends with an ekpyrosis, or great conflagration, destroying the cosmos</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Only bodies exist; moral qualities and soul are corporeal</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">members of this school argued that only bodies exist, and that moral qualities and the soul are corporeal</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Logos spermatikos: supreme creative force</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Logos spermatikos is the supreme creative force in this philosophical school</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="stoic-logic" open>
+            <summary class="work-title">Stoic Logic</summary>
+            <p class="work-desc">The Stoics developed the first form of propositional logic, based on propositions rather than Aristotelian terms. Truth-bearers were lekta ('sayables'). Chrysippus created a system with five proposition connectives and was the most prolific Stoic logician. He died laughing (supposedly after seeing a donkey eat figs). His 'growing argument' (Dion thought experiment) addressed identity, inspiring modern work like Wiggins's Tibbles the Cat. The Stoics used a hand analogy for levels of understanding (open palm = perception, covered fist = knowledge). The 'cognitive impression' was the criterion of truth.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Propositional logic: based on propositions, not Aristotelian terms; lekta (&#x27;sayables&#x27;) as truth-bearers</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">developed a form of logic based on propositions rather than terms | logic did not describe relations between words but between &#x27;sayables&#x27; called lekta</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chrysippus: five proposition connectives; died laughing (donkey eating figs); &#x27;growing argument&#x27; (Dion)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Five proposition connectives were developed by a follower who literally died of laughter | introduced a paradox of identity with a thought experiment involving Dion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hand analogy for understanding: open palm = perception, covered fist = knowledge</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">used a hand to illustrate different levels of understanding, with an open palm being perception and a covered fist being knowledge</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cognitive impression as criterion of truth</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the criterion of truth is the &#x27;cognitive impression&#x27; | the perfect sage never makes epistemological mistakes because they only assent to cognitive impressions</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chrysippus: dog using disjunctive syllogism; cone/cylinder analogy for determinism</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">described how his dog used a disjunctive syllogism to decide which path to take | analogy of a cone and cylinder rolling differently after an initial push</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-school-identity-and-reception" open>
+            <summary class="work-title">General / School Identity and Reception</summary>
+            <p class="work-desc">Founded by <a href="zeno_of_citium_stock.html" class="crossref-inline">Zeno of Citium</a> at the 'painted porch' (stoa) in Athens. Divided philosophy into logic, physics, and ethics (compared to an egg with logic on the outside). Pierre Hadot connected the three disciplines to desire, action, and assent. The school's ideal 'sage' was a recurring concept. Justus Lipsius attempted to synthesize Stoicism with Christianity (neostoicism) in On Constancy, but neostoics abandoned the belief in fate. The cognitivist theory of emotions traces back to Stoic understanding of emotions as judgments. Cicero critiqued Stoicism in Pro Murena. The dog-tied-to-cart analogy illustrated determinism and free will.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Founded by Zeno of Citium; taught at the &#x27;painted porch&#x27; (stoa poikile)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Zeno of Citium founded this tradition | named from the &#x27;painted porch&#x27; where its founder Zeno of Citium taught</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Divided philosophy into logic, physics, and ethics (like an egg)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">divided philosophy into the three subjects of logic, physics, and ethics | compared philosophy to an egg with logic on the outside</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hadot: three disciplines (desire, action, assent) map to physics, ethics, logic</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">three disciplines of desire, action, and assent were connected by Pierre Hadot</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Justus Lipsius: On Constancy; neostoicism (synthesized with Christianity)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Justus Lipsius attempted to synthesize this ancient philosophy with Christianity</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dog tied to cart analogy for determinism and free will (Cleanthes)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a school of ancient philosophy attempted to harmonize a purely autonomous will with a deterministic model using an analogy involving dogs</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marcus Aurelius: Meditations written during military campaigns; erased false impressions</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">described striving to live as a philosopher in notes written during a military campaign</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Albert Ellis: REBT framework inspired by Stoicism</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this school of thought heavily inspired the development of the REBT framework by Albert Ellis</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Amor fati (love of fate): Epictetus and Marcus Aurelius inspired Nietzsche</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Epictetus and Marcus Aurelius inspired Nietzsche&#x27;s love, or amor, of fate</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Stoicism is one of the most heavily clued Hellenistic philosophical schools, founded by <a href="zeno_of_citium_stock.html" class="crossref-inline">Zeno of Citium</a> at the &#x27;painted porch&#x27; in Athens and including major figures such as Chrysippus, Cleanthes, <a href="seneca_stock.html" class="crossref-inline">Seneca</a>, <a href="epictetus_stock.html" class="crossref-inline">Epictetus</a>, and <a href="marcus_aurelius_stock.html" class="crossref-inline">Marcus Aurelius</a>. The school divided philosophy into logic, physics, and ethics, which Pierre Hadot connected to the disciplines of desire, action, and assent.</p><p>The central ethical concept is prohairesis (volition) -- the only thing fully within our control, as taught by <a href="epictetus_stock.html" class="crossref-inline">Epictetus</a> in his Discourses (compiled by Arrian) and the Enchiridion. Virtue is the only good, with health and wealth classified as &#x27;indifferents.&#x27; <a href="marcus_aurelius_stock.html" class="crossref-inline">Marcus Aurelius</a>&#x27;s Meditations, written during military campaigns, discusses the ideal sage and proposes &#x27;either Providence or blind atoms.&#x27; <a href="seneca_stock.html" class="crossref-inline">Seneca</a> wrote moral letters to Lucilius, On the Shortness of Life, and On Mercy (dedicated to Nero).</p><p>Stoic physics held that the universe is infused with pneuma (a mixture of air and fire) and undergoes cyclical destruction through ekpyrosis (great conflagration). Heraclitus&#x27;s fire influenced this doctrine. The logos spermatikos is the supreme creative force. Only bodies truly exist in Stoic ontology.</p><p>The Stoics developed the first form of propositional logic, using lekta (&#x27;sayables&#x27;) as truth-bearers rather than Aristotelian terms. Chrysippus created five proposition connectives and died laughing at a donkey eating figs. His &#x27;growing argument&#x27; about Dion addressed personal identity. He described a dog using disjunctive syllogism and used the cone/cylinder analogy for determinism. The &#x27;cognitive impression&#x27; served as the criterion of truth.</p><p>Justus Lipsius synthesized Stoicism with Christianity in On Constancy, founding neostoicism. The cognitivist theory of emotions traces to Stoic judgments. Cicero critiqued Stoicism in Pro Murena. The dog-tied-to-cart analogy (Cleanthes) illustrated the harmony of autonomous will with determinism. Albert Ellis&#x27;s REBT framework was inspired by Stoicism, and Nietzsche&#x27;s amor fati was inspired by <a href="epictetus_stock.html" class="crossref-inline">Epictetus</a> and <a href="marcus_aurelius_stock.html" class="crossref-inline">Marcus Aurelius</a>.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Stoicism" target="_blank">Stoicism</a></li><li><a href="https://en.wikipedia.org/wiki/Epictetus" target="_blank">Epictetus</a></li><li><a href="https://en.wikipedia.org/wiki/Marcus_Aurelius" target="_blank">Marcus Aurelius</a></li><li><a href="https://en.wikipedia.org/wiki/Seneca_the_Younger" target="_blank">Seneca</a></li><li><a href="https://en.wikipedia.org/wiki/Chrysippus" target="_blank">Chrysippus</a></li><li><a href="https://en.wikipedia.org/wiki/Zeno_of_Citium" target="_blank">Zeno of Citium</a></li><li><a href="https://en.wikipedia.org/wiki/Prohairesis" target="_blank">Prohairesis</a></li><li><a href="https://en.wikipedia.org/wiki/Ekpyrosis" target="_blank">Ekpyrosis</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Marcus Aurelius / Meditations (heavily clued)</li><li>Epictetus / Discourses and Enchiridion</li><li>Seneca (separate answerline)</li><li>Chrysippus (distinct clue cluster)</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'stoics' });</script>
+
+</body>
+</html>

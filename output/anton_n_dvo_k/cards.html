@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cards: Antonín Dvořák</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    font-size: 14px;
+    line-height: 1.5;
+}
+a { color: #6b9eff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: normal;
+    color: #e0e0e0;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #3a3f47;
+}
+.toolbar button, .toolbar select {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.82rem;
+    background: #1a1f25;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.toolbar button:hover { background: #262d37; }
+.toolbar button.primary {
+    background: #2a3a55;
+    color: #6b9eff;
+    border-color: #6b9eff;
+}
+.toolbar button.danger {
+    color: #f08080;
+    border-color: #6b2a2a;
+}
+.toolbar input[type="text"] {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.82rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+    width: 160px;
+}
+.toolbar input:focus { border-color: #6b9eff; }
+.stats {
+    font-size: 0.82rem;
+    color: #808790;
+    margin-left: auto;
+}
+/* Card table */
+.card-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.card-table th {
+    text-align: left;
+    padding: 0.4rem 0.5rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    color: #9aa0a7;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.card-table th.cb-col { width: 2rem; text-align: center; }
+.card-table th.freq-col { width: 2.5rem; text-align: center; }
+.card-table th.type-col { width: 4rem; }
+.card-table th.tags-col { width: 10rem; }
+.card-table td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.card-table tr:hover td {
+    background: #1a1f25;
+}
+.card-table tr.selected td {
+    background: #1e2a3a;
+}
+.card-table td.cb-col { text-align: center; }
+.card-table td.freq-col {
+    text-align: center;
+    color: #808790;
+    font-weight: bold;
+}
+.card-table .editable {
+    cursor: text;
+    min-height: 1.2em;
+    outline: none;
+    border-radius: 2px;
+    padding: 0.1rem 0.2rem;
+}
+.card-table .editable:focus {
+    background: #15191e;
+    box-shadow: 0 0 0 1px #6b9eff;
+}
+.card-table .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    background: #15191e;
+    border: 1px solid #2a2f37;
+    border-radius: 8px;
+    padding: 0 0.35rem;
+    margin: 0.1rem 0.1rem;
+    color: #808790;
+}
+.back-link {
+    display: inline-block;
+    margin-bottom: 0.8rem;
+    font-size: 0.88rem;
+}
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 6px;
+    padding: 1.2rem;
+    min-width: 400px;
+    max-width: 600px;
+}
+.modal h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    color: #e0e0e0;
+}
+.modal label {
+    display: block;
+    font-size: 0.82rem;
+    color: #9aa0a7;
+    margin-bottom: 0.2rem;
+    margin-top: 0.6rem;
+}
+.modal input, .modal textarea, .modal select {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    font-family: inherit;
+    outline: none;
+}
+.modal textarea { min-height: 60px; resize: vertical; }
+.modal input:focus, .modal textarea:focus { border-color: #6b9eff; }
+.modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+.img-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem;
+    border: 1px solid #2a2f37;
+    border-radius: 3px;
+    margin-bottom: 0.3rem;
+    background: #15191e;
+}
+.img-list-item img {
+    max-width: 80px;
+    max-height: 60px;
+    border-radius: 2px;
+    border: 1px solid #3a3f47;
+    flex-shrink: 0;
+}
+.img-list-item .img-info {
+    flex: 1;
+    font-size: 0.78rem;
+    color: #9aa0a7;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.img-list-item .img-side {
+    font-size: 0.72rem;
+    color: #808790;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    padding: 0.1rem 0.3rem;
+}
+.img-list-item .img-remove {
+    color: #f08080;
+    cursor: pointer;
+    font-size: 0.82rem;
+    flex-shrink: 0;
+}
+.img-palette {
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    background: #15191e;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+}
+.img-palette summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #9aa0a7;
+    user-select: none;
+}
+.img-palette summary:hover { color: #c8ccd1; }
+.palette-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+.palette-img {
+    position: relative;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 3px;
+    transition: border-color 0.15s;
+}
+.palette-img:hover { border-color: #6b9eff; }
+.palette-img.selected { border-color: #6b9eff; }
+.palette-img img {
+    max-height: 70px;
+    max-width: 110px;
+    display: block;
+    border-radius: 2px;
+}
+.palette-img .palette-remove {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #1a1f25;
+    color: #f08080;
+    border: 1px solid #3a3f47;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
+    display: none;
+}
+.palette-img:hover .palette-remove { display: block; }
+.palette-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+.palette-actions input {
+    flex: 1;
+    min-width: 150px;
+}
+.palette-actions button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.78rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #6b9eff;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.palette-apply {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #9aa0a7;
+}
+.palette-apply button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.78rem;
+    background: #2a3a55;
+    color: #6b9eff;
+    border: 1px solid #6b9eff;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.modal-actions button {
+    padding: 0.35rem 0.8rem;
+    font-size: 0.82rem;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    background: #1a1f25;
+    color: #c8ccd1;
+}
+.modal-actions button.primary {
+    background: #2a3a55;
+    color: #6b9eff;
+    border-color: #6b9eff;
+}
+</style>
+</head>
+<body>
+<div class="back-link"><a href="../../index.html">&larr; Home</a> · <a href="stock.html">Study guide</a></div>
+<h1>Cards: Antonín Dvořák</h1>
+
+<div class="toolbar">
+    <button onclick="addCard()" class="primary">+ Add card</button>
+    <button onclick="deleteSelected()" class="danger">Delete selected</button>
+    <span style="color:#3a3f47">|</span>
+    <input type="text" id="bulk-tag" placeholder="Tag to add..." list="tag-suggestions">
+    <datalist id="tag-suggestions">
+        <option value="Antonín Dvořák"><option value="Symphony No. 9 in E minor, &#x27;From the New World&#x27;"><option value="Cello Concerto in B minor, Op. 104"><option value="String Quartet No. 12 in F major, &#x27;American&#x27;"><option value="Slavonic Dances"><option value="Symphonic Poems (after Erben&#x27;s Kytice)"><option value="Dumky Trio (Piano Trio No. 4)"><option value="General / Biographical"><option value="Romanticism"><option value="Czech Nationalism"><option value="National Conservatory">
+    </datalist>
+    <button onclick="addTagToSelected()">Add tag to selected</button>
+    <span style="color:#3a3f47">|</span>
+    <input type="text" id="bulk-indicator" placeholder="Indicator..." list="indicator-suggestions">
+    <button onclick="setIndicatorSelected()">Set indicator</button>
+    <span style="color:#3a3f47">|</span>
+    <select id="filter-work" onchange="renderTable()">
+        <option value="">All works</option>
+    </select>
+    <span style="color:#3a3f47">|</span>
+    <button onclick="exportJSON()" class="primary">Save JSON</button>
+    <button onclick="exportTSV()">Export TSV</button>
+    <button onclick="exportApkgBtn()" class="primary">Download .apkg</button>
+    <span class="stats" id="stats"></span>
+</div>
+
+<details class="img-palette" open>
+    <summary>Media Palette <span id="palette-count"></span></summary>
+    <div class="palette-grid" id="palette-grid"></div>
+    <div class="palette-actions">
+        <input type="text" id="palette-url" placeholder="Add image URL...">
+        <button onclick="addToPalette()">+ Add</button>
+        <span style="font-size:0.72rem;color:#555;">or Ctrl+V to paste</span>
+    </div>
+    <div class="palette-apply" id="palette-apply" style="display:none;">
+        <span>Selected image:</span>
+        <select id="palette-side">
+            <option value="back">Back</option>
+            <option value="front">Front</option>
+        </select>
+        <button onclick="applyPaletteToSelected()">Apply to selected cards</button>
+        <button onclick="clearPaletteSelection()" style="background:#1a1f25;">Cancel</button>
+    </div>
+    <div id="clips-section" style="display:none;margin-top:0.6rem;border-top:1px solid #3a3f47;padding-top:0.5rem;"><div style="font-size:0.75rem;color:#808790;margin-bottom:0.4rem;">Score Clips</div><div id="clips-grid" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div></div>
+</details>
+
+<table class="card-table">
+    <thead>
+        <tr>
+            <th class="cb-col"><input type="checkbox" id="select-all" onchange="toggleAll(this.checked)"></th>
+            <th class="freq-col">Freq</th>
+            <th class="type-col">Indicator</th>
+            <th>Front</th>
+            <th>Back</th>
+            <th class="tags-col">Tags</th>
+        </tr>
+    </thead>
+    <tbody id="card-body"></tbody>
+</table>
+
+<!-- Add/Edit modal -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <h3 id="modal-title">Add Card</h3>
+        <label>Type</label>
+        <select id="m-type"><option value="basic">Basic</option><option value="image">Image</option></select>
+        <label>Indicator (e.g. Play, Novel, Composer, Painting)</label>
+        <input type="text" id="m-indicator" list="indicator-suggestions">
+        <datalist id="indicator-suggestions">
+            <option value="Play"><option value="Novel"><option value="Poem"><option value="Short Story">
+            <option value="Opera"><option value="Symphony"><option value="Painting"><option value="Sculpture">
+            <option value="Author"><option value="Composer"><option value="Painter"><option value="Playwright">
+            <option value="Philosopher"><option value="Film"><option value="Work"><option value="Concept">
+        </datalist>
+        <label>Front</label>
+        <textarea id="m-front"></textarea>
+        <label>Back</label>
+        <input type="text" id="m-back">
+        <label>Images <span style="font-weight:normal;font-size:0.78rem;color:#808790;">&mdash; click palette image, paste (Ctrl+V), or add by URL</span></label>
+        <div id="m-images-list"></div>
+        <div id="m-palette-picker" style="margin-top:0.3rem;"></div>
+        <div id="m-image-drop" style="border:1px dashed #3a3f47;border-radius:4px;padding:0.5rem;margin-top:0.3rem;text-align:center;background:#15191e;cursor:pointer;" tabindex="0">
+            <div style="font-size:0.82rem;color:#808790;">Paste image here (Ctrl+V) or drag &amp; drop</div>
+        </div>
+        <div style="display:flex;gap:0.4rem;align-items:center;margin-top:0.4rem;">
+            <input type="text" id="m-image-url" placeholder="Or enter image URL...">
+            <select id="m-image-side-new" style="width:auto;padding:0.3rem;">
+                <option value="back">Back</option>
+                <option value="front">Front</option>
+            </select>
+            <button type="button" onclick="addImageToList()" style="padding:0.3rem 0.6rem;font-size:0.82rem;background:#1a1f25;color:#6b9eff;border:1px solid #6b9eff;border-radius:3px;cursor:pointer;">+ Add</button>
+        </div>
+        <label>Tags (comma separated)</label>
+        <input type="text" id="m-tags">
+        <div style="margin-top:0.3rem;display:flex;flex-wrap:wrap;gap:0.2rem;">
+            <span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Antonín Dvořák</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Symphony No. 9 in E minor, &#x27;From the New World&#x27;</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Cello Concerto in B minor, Op. 104</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">String Quartet No. 12 in F major, &#x27;American&#x27;</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Slavonic Dances</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Symphonic Poems (after Erben&#x27;s Kytice)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Dumky Trio (Piano Trio No. 4)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">General / Biographical</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Romanticism</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Czech Nationalism</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">National Conservatory</span>
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeModal()">Cancel</button>
+            <button onclick="saveModal(true)" class="primary">Save &amp; New</button>
+            <button onclick="saveModal()" class="primary">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const TOPIC = "Anton\u00edn Dvo\u0159\u00e1k";
+let cards = [{"type": "basic", "indicator": "Composer", "front": "Composer: Czech Romantic; directed the National Conservatory of Music in New York (1892–95), recruited by Jeanette Thurber for $15,000/year", "back": "Antonín Dvořák", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: his first symphony 'The Bells of Zlonice' was submitted to a competition, presumed lost, and found in a Leipzig bookstore 18 years later", "back": "Antonín Dvořák", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: his son-in-law and pupil Josef Suk wrote the Asrael Symphony in his memory", "back": "Antonín Dvořák", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: most famous piano piece is the G-flat major Humoresque, seventh of a set of eight", "back": "Antonín Dvořák", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Symphony", "front": "Symphony: Czech composer's final symphony in E minor, subtitled 'From the New World,' premiered by Anton Seidl at Carnegie Hall", "back": "Symphony No. 9, 'From the New World' (Dvořák)", "work": "Symphony No. 9 in E minor, 'From the New World'", "frequency": 15, "tags": []}, {"type": "basic", "indicator": "Symphony", "front": "Symphony: second movement (Largo) features an English horn pentatonic solo; later adapted as the song 'Goin' Home'", "back": "Symphony No. 9, 'From the New World' (Dvořák)", "work": "Symphony No. 9 in E minor, 'From the New World'", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Symphony", "front": "Symphony: Harry Burleigh, a Black singer who worked as a maintenance man at the National Conservatory to pay tuition, influenced its English horn solo with spirituals", "back": "Symphony No. 9, 'From the New World' (Dvořák)", "work": "Symphony No. 9 in E minor, 'From the New World'", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Symphony", "front": "Symphony: second movement opens with brass chords modulating from E major to D-flat major before the English horn enters", "back": "Symphony No. 9, 'From the New World' (Dvořák)", "work": "Symphony No. 9 in E minor, 'From the New World'", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Symphony", "front": "Symphony: formerly numbered No. 8 and No. 5 due to out-of-order publication; Neil Armstrong took a recording to the Moon", "back": "Symphony No. 9, 'From the New World' (Dvořák)", "work": "Symphony No. 9 in E minor, 'From the New World'", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Concerto", "front": "Concerto: B minor cello concerto inspired by Victor Herbert's Second Cello Concerto; soloist enters after an 86-bar introduction", "back": "Cello Concerto in B minor, Op. 104 (Dvořák)", "work": "Cello Concerto in B minor, Op. 104", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Concerto", "front": "Concerto: dedicatee Hanuš Wihán wrote a cadenza Dvořák refused to include; Leo Stern performed the premiere after receiving a gift of two rare pigeons", "back": "Cello Concerto in B minor, Op. 104 (Dvořák)", "work": "Cello Concerto in B minor, Op. 104", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Concerto", "front": "Concerto: third movement quotes the song 'Leave Me Alone' as tribute to the composer's sister-in-law", "back": "Cello Concerto in B minor, Op. 104 (Dvořák)", "work": "Cello Concerto in B minor, Op. 104", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Concerto", "front": "Concerto: soloist enters with notes B, C-sharp, D-sharp, B in the first movement", "back": "Cello Concerto in B minor, Op. 104 (Dvořák)", "work": "Cello Concerto in B minor, Op. 104", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "String Quartet", "front": "String Quartet: opens with two violins oscillating on an F-major triad, then viola plays a syncopated pentatonic melody; written in Spillville, Iowa", "back": "String Quartet No. 12, 'American' (Dvořák)", "work": "String Quartet No. 12 in F major, 'American'", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "String Quartet", "front": "String Quartet: third movement transcribes a red-eyed vireo's call heard in Spillville; sometimes misidentified as a scarlet tanager", "back": "String Quartet No. 12, 'American' (Dvořák)", "work": "String Quartet No. 12 in F major, 'American'", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Suite", "front": "Suite: 16 dances originally for piano four-hands, orchestrated; commissioned by Fritz Simrock at Brahms's urging; modeled on Brahms's Hungarian Dances", "back": "Slavonic Dances (Dvořák)", "work": "Slavonic Dances", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Suite", "front": "Suite: uses the furiant dance (notable for 'horizontal hemiola') in place of a scherzo", "back": "Slavonic Dances (Dvořák)", "work": "Slavonic Dances", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Tone Poem", "front": "Tone Poem: four tone poems based on Karel Erben's Czech folklore collection Kytice — Water Goblin, Noon Witch, Golden Spinning Wheel, Wild Dove", "back": "Dvořák's symphonic poems after Kytice", "work": "Symphonic Poems (after Erben's Kytice)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Tone Poem", "front": "Tone Poem: its goblin character is represented by a motif of three repeated F-sharps; near the end he throws a dead baby against a door", "back": "The Water Goblin (Dvořák)", "work": "Symphonic Poems (after Erben's Kytice)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Tone Poem", "front": "Tone Poem: the Slavic demon Lady Midday comes to steal a misbehaving child; the mother faints over him and accidentally smothers him", "back": "The Noon Witch (Dvořák)", "work": "Symphonic Poems (after Erben's Kytice)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Sonata", "front": "Work: six-movement piano trio in which each movement alternates between a solemn slow section and a fast bright section, based on the Ukrainian dumka form", "back": "Dumky Trio (Dvořák)", "work": "Dumky Trio (Piano Trio No. 4)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Sonata", "front": "Work: first three movements played without pause; opens with cello on C, E, A with piano descending sixths in triplets", "back": "Dumky Trio (Dvořák)", "work": "Dumky Trio (Piano Trio No. 4)", "frequency": 2, "tags": []}, {"type": "audio", "indicator": "high", "front": "Soloist's entrance in the first movement", "back": "Cello Concerto in B minor, Op. 104 (Antonín Dvořák)", "work": "Cello Concerto in B minor, Op. 104", "frequency": 0, "mp3": "audio/0.mp3", "abc": "X:1\nT:Dvorak Cello Concerto - soloist entry\n%%MIDI program 42\nM:4/4\nL:1/4\nK:C\n|B2 ^c/2 ^d/2 B2||", "needs_review": true, "tags": []}, {"type": "audio", "indicator": "high", "front": "Water Goblin motif (three repeated F-sharps)", "back": "Symphonic Poems (after Erben's Kytice) (Antonín Dvořák)", "work": "Symphonic Poems (after Erben's Kytice)", "frequency": 0, "mp3": "audio/1.mp3", "abc": "X:1\nT:Water Goblin motif\n%%MIDI program 68\nM:4/4\nL:1/4\nK:C\n|^F ^F ^F2||", "needs_review": true, "tags": []}];
+const SCORE_CLIPS = [{"work": "Cello Concerto in B minor, Op. 104", "indicator": "high", "description": "Soloist's entrance in the first movement", "source_text": "the soloist enters on the notes B, short C-sharp, short D-sharp, B", "abc": "X:1\nT:Dvorak Cello Concerto - soloist entry\n%%MIDI program 42\nM:4/4\nL:1/4\nK:C\n|B2 ^c/2 ^d/2 B2||", "needs_review": true, "mp3": "audio/0.mp3", "mp3_v": 1774247346}, {"work": "Symphonic Poems (after Erben's Kytice)", "indicator": "high", "description": "Water Goblin motif (three repeated F-sharps)", "source_text": "a repeated motif of three F-sharps", "abc": "X:1\nT:Water Goblin motif\n%%MIDI program 68\nM:4/4\nL:1/4\nK:C\n|^F ^F ^F2||", "needs_review": true, "mp3": "audio/1.mp3", "mp3_v": 1774247347}];
+let editIndex = -1; // -1 = adding new
+
+// Populate work filter
+const works = [...new Set(cards.map(c => c.work).filter(Boolean))];
+const workSelect = document.getElementById('filter-work');
+works.forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w;
+    opt.textContent = w;
+    workSelect.appendChild(opt);
+});
+
+function renderTable() {
+    const tbody = document.getElementById('card-body');
+    const filterWork = document.getElementById('filter-work').value;
+    const visible = cards.map((c, i) => ({ ...c, _idx: i }))
+        .filter(c => !filterWork || c.work === filterWork);
+
+    tbody.innerHTML = visible.map(c => `
+        <tr data-idx="${c._idx}">
+            <td class="cb-col"><input type="checkbox" class="row-cb" data-idx="${c._idx}"></td>
+            <td class="freq-col">${c.frequency || ''}x</td>
+            <td>${c.indicator || c.type || 'basic'}</td>
+            <td>${getImgs(c,'front')}${getImgs(c,'front') ? '<br>' : ''}<div class="editable" style="display:inline" contenteditable="true" data-field="front" data-idx="${c._idx}">${escHtml(c.front)}</div></td>
+            <td><div class="editable" contenteditable="true" data-field="back" data-idx="${c._idx}">${escHtml(c.back)}</div>${getImgs(c,'back')}</td>
+            <td>${(c.tags || []).map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</td>
+        </tr>
+    `).join('');
+
+    // Inline edit handlers
+    tbody.querySelectorAll('.editable').forEach(el => {
+        el.addEventListener('blur', () => {
+            const idx = parseInt(el.dataset.idx);
+            const field = el.dataset.field;
+            cards[idx][field] = el.textContent.trim();
+        });
+    });
+
+    // Double-click row to open editor
+    tbody.querySelectorAll('tr').forEach(tr => {
+        tr.addEventListener('dblclick', (e) => {
+            if (e.target.classList.contains('editable') || e.target.type === 'checkbox') return;
+            openEditModal(parseInt(tr.dataset.idx));
+        });
+    });
+
+    document.getElementById('stats').textContent = visible.length + ' of ' + cards.length + ' cards';
+}
+
+function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+}
+
+function toggleAll(checked) {
+    document.querySelectorAll('.row-cb').forEach(cb => cb.checked = checked);
+}
+
+function getSelected() {
+    return [...document.querySelectorAll('.row-cb:checked')].map(cb => parseInt(cb.dataset.idx));
+}
+
+function deleteSelected() {
+    const sel = getSelected().sort((a, b) => b - a);
+    if (sel.length === 0) return;
+    if (!confirm(`Delete ${sel.length} card(s)?`)) return;
+    sel.forEach(i => cards.splice(i, 1));
+    renderTable();
+}
+
+function addTagToSelected() {
+    const tag = document.getElementById('bulk-tag').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    if (sel.length === 0) { alert('Select cards first'); return; }
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    document.getElementById('bulk-tag').value = '';
+    renderTable();
+}
+
+function setIndicatorSelected() {
+    const ind = document.getElementById('bulk-indicator').value.trim();
+    if (!ind) return;
+    const sel = getSelected();
+    if (sel.length === 0) { alert('Select cards first'); return; }
+    sel.forEach(i => {
+        const old = cards[i].indicator || '';
+        cards[i].indicator = ind;
+        // Update front text: replace old indicator prefix or prepend new one
+        if (old && cards[i].front.startsWith(old + ': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.slice(old.length + 2);
+        } else if (!cards[i].front.startsWith(ind + ': ')) {
+            cards[i].front = ind + ': ' + cards[i].front;
+        }
+    });
+    document.getElementById('bulk-indicator').value = '';
+    renderTable();
+}
+
+// Modal
+function openEditModal(idx) {
+    editIndex = idx;
+    const c = idx >= 0 ? cards[idx] : { type: 'basic', front: '', back: '', images: [], tags: [] };
+    document.getElementById('modal-title').textContent = idx >= 0 ? 'Edit Card' : 'Add Card';
+    document.getElementById('m-type').value = c.type || 'basic';
+    document.getElementById('m-indicator').value = c.indicator || '';
+    document.getElementById('m-front').value = c.front || '';
+    document.getElementById('m-back').value = c.back || '';
+    modalImages = getCardImages(c).map(img => ({ ...img }));
+    renderImageList();
+    renderModalPalette();
+    document.getElementById('m-tags').value = (c.tags || []).join(', ');
+    document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    editIndex = -1;
+}
+
+function addCard() { openEditModal(-1); }
+
+function saveModal(andNew) {
+    const indicator = document.getElementById('m-indicator').value.trim();
+    let frontText = document.getElementById('m-front').value.trim();
+    // Auto-prepend indicator if not already present
+    if (indicator && !frontText.startsWith(indicator + ':')) {
+        frontText = indicator + ': ' + frontText;
+    }
+    const card = {
+        type: document.getElementById('m-type').value,
+        indicator: indicator,
+        front: frontText,
+        back: document.getElementById('m-back').value.trim(),
+        images: modalImages.slice(),
+        tags: document.getElementById('m-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+        frequency: editIndex >= 0 ? (cards[editIndex].frequency || 0) : 0,
+        work: editIndex >= 0 ? (cards[editIndex].work || '') : '',
+    };
+    if (!card.front && (!card.images || !card.images.length)) { alert('Front or image required'); return; }
+    if (editIndex >= 0) {
+        cards[editIndex] = { ...cards[editIndex], ...card };
+    } else {
+        cards.push(card);
+    }
+    renderTable();
+    if (andNew) {
+        openEditModal(-1);
+    } else {
+        closeModal();
+    }
+}
+
+// Export
+function exportJSON() {
+    const blob = new Blob([JSON.stringify(cards, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = TOPIC.toLowerCase().replace(/\s+/g, '_') + '_cards.json';
+    a.click();
+}
+
+// Multi-image handling
+let modalImages = [];
+
+function getCardImages(card) {
+    // Normalize: support both old image_url and new images array
+    if (card.images && card.images.length) return card.images;
+    if (card.image_url) return [{ url: card.image_url, side: card.image_side || (card.type === 'image' ? 'front' : 'back') }];
+    return [];
+}
+
+function getImgs(card, side) {
+    const imgs = getCardImages(card);
+    return imgs.filter(img => img.side === side)
+        .map(img => `<img src="${img.url}" style="max-height:60px;max-width:100px;vertical-align:middle;margin:0.1rem;">`)
+        .join('');
+}
+
+function renderImageList() {
+    const el = document.getElementById('m-images-list');
+    if (modalImages.length === 0) {
+        el.innerHTML = '<div style="font-size:0.78rem;color:#555;padding:0.3rem;">No images</div>';
+        return;
+    }
+    el.innerHTML = modalImages.map((img, i) => `
+        <div class="img-list-item">
+            <img src="${img.url}" onerror="this.style.display='none'">
+            <div class="img-info">${img.url.startsWith('data:') ? '(pasted image)' : img.url.split('/').pop().substring(0, 40)}</div>
+            <span class="img-side" style="cursor:pointer;" onclick="toggleImgSide(${i})" title="Click to toggle front/back">${img.side}</span>
+            <span class="img-remove" onclick="modalImages.splice(${i},1);renderImageList();">&times;</span>
+        </div>
+    `).join('');
+}
+
+function toggleImgSide(idx) {
+    if (modalImages[idx]) {
+        modalImages[idx].side = modalImages[idx].side === 'front' ? 'back' : 'front';
+        renderImageList();
+    }
+}
+
+function addImageToList() {
+    const url = document.getElementById('m-image-url').value.trim();
+    if (!url) return;
+    const side = document.getElementById('m-image-side-new').value;
+    modalImages.push({ url, side });
+    document.getElementById('m-image-url').value = '';
+    renderImageList();
+}
+
+function renderModalPalette() {
+    const picker = document.getElementById('m-palette-picker');
+    if (!picker || paletteImages.length === 0) {
+        if (picker) picker.innerHTML = '';
+        return;
+    }
+    const side = document.getElementById('m-image-side-new').value;
+    picker.innerHTML = '<div style="font-size:0.75rem;color:#808790;margin-bottom:0.25rem;">From palette (click to add):</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;">' +
+        paletteImages.map((img, i) => `
+            <div style="position:relative;cursor:pointer;border:1px solid #3a3f47;border-radius:3px;overflow:hidden;"
+                 onclick="addPaletteImgToModal(${i})" title="${img.label}">
+                <img src="${img.url}" style="max-height:50px;max-width:80px;display:block;" onerror="this.parentElement.style.display='none'">
+            </div>
+        `).join('') + '</div>';
+}
+
+function addPaletteImgToModal(idx) {
+    const img = paletteImages[idx];
+    if (!img) return;
+    const side = document.getElementById('m-image-side-new').value;
+    if (!modalImages.some(m => m.url === img.url)) {
+        modalImages.push({ url: img.url, side });
+        renderImageList();
+    }
+}
+
+function appendTag(tag) {
+    const input = document.getElementById('m-tags');
+    const existing = input.value.split(',').map(t => t.trim()).filter(Boolean);
+    if (!existing.includes(tag)) {
+        existing.push(tag);
+        input.value = existing.join(', ');
+    }
+}
+
+function exportTSV() {
+    const header = 'Front\tBack\tTags\n';
+    const rows = cards.map(c =>
+        [c.front, c.back, (c.tags || []).join(' ')].map(f => f.replace(/\t/g, ' ').replace(/\n/g, ' ')).join('\t')
+    ).join('\n');
+    const blob = new Blob([header + rows], { type: 'text/tab-separated-values' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = TOPIC.toLowerCase().replace(/\s+/g, '_') + '_cards.tsv';
+    a.click();
+}
+
+// Disable paste on contenteditable fields in the table (not in modal)
+document.querySelector('.card-table')?.addEventListener('paste', e => {
+    e.preventDefault();
+});
+
+// Image paste/drop handling in modal
+function handleImageFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const side = document.getElementById('m-image-side-new').value;
+        modalImages.push({ url: ev.target.result, side });
+        renderImageList();
+    };
+    reader.readAsDataURL(file);
+}
+
+// Paste anywhere in modal adds image
+document.getElementById('modal')?.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            handleImageFile(item.getAsFile());
+            return;
+        }
+    }
+});
+
+// Drag & drop on the drop zone
+const dropZone = document.getElementById('m-image-drop');
+if (dropZone) {
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#6b9eff';
+        dropZone.style.background = '#1a2535';
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = '#3a3f47';
+        dropZone.style.background = '#15191e';
+    });
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#3a3f47';
+        dropZone.style.background = '#15191e';
+        const file = e.dataTransfer?.files?.[0];
+        if (file) handleImageFile(file);
+    });
+}
+
+// Keyboard: Escape closes modal
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// --- Image Palette ---
+let paletteImages = [];
+let selectedPaletteIdx = -1;
+
+// Initialize palette from existing work images
+(function initPalette() {
+    const seen = new Set();
+    cards.forEach(c => {
+        (getCardImages(c)).forEach(img => {
+            if (img.url && !seen.has(img.url)) {
+                seen.add(img.url);
+                paletteImages.push({ url: img.url, label: c.work || '' });
+            }
+        });
+    });
+})();
+
+// --- Score Clips Palette ---
+let _clipSynths = {};
+
+function initClipsPalette() {
+    const clips = SCORE_CLIPS.filter(c => c.abc && (c.mp3 || c.abc));
+    if (!clips.length) return;
+    const section = document.getElementById('clips-section');
+    const grid = document.getElementById('clips-grid');
+    section.style.display = '';
+    grid.innerHTML = clips.map((clip, i) => `
+        <div style="background:#1a1f25;border:1px solid #3a3f47;border-radius:4px;padding:0.4rem 0.6rem;min-width:180px;max-width:280px;">
+            <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${escHtml(clip.work || '')}${clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}</div>
+            <div id="clip-notation-${i}" style="max-width:100%;overflow:hidden;"></div>
+            <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
+                ${clip.mp3
+                    ? `<audio controls preload="none" src="${escHtml(clip.mp3)}${clip.mp3_v ? '?v=' + clip.mp3_v : ''}" style="height:24px;width:120px;"></audio>`
+                    : `<button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="playClip(${i})">▶ Play</button>
+                       <button style="font-size:0.75rem;padding:0.1rem 0.4rem;" onclick="stopClip(${i})">■</button>`
+                }
+            </div>
+        </div>
+    `).join('');
+
+    // Render ABC notation for each clip
+    clips.forEach((clip, i) => {
+        if (clip.abc && typeof ABCJS !== 'undefined') {
+            try {
+                ABCJS.renderAbc(`clip-notation-${i}`, clip.abc, {
+                    responsive: 'resize',
+                    staffwidth: 240,
+                    scale: 0.7,
+                    paddingright: 0,
+                    paddingleft: 0,
+                });
+            } catch(e) {}
+        }
+    });
+}
+
+async function playClip(i) {
+    const clip = SCORE_CLIPS.filter(c => c.abc)[i];
+    if (!clip || typeof ABCJS === 'undefined') return;
+    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} }
+    try {
+        const visualObjs = ABCJS.renderAbc('offscreen-render', clip.abc, {});
+        const synth = new ABCJS.synth.CreateSynth();
+        await synth.init({ visualObj: visualObjs[0] });
+        await synth.prime();
+        synth.start();
+        _clipSynths[i] = synth;
+    } catch(e) { console.warn('playClip error:', e); }
+}
+
+function stopClip(i) {
+    if (_clipSynths[i]) { try { _clipSynths[i].stop(); } catch(e) {} delete _clipSynths[i]; }
+}
+
+function renderPalette() {
+    const grid = document.getElementById('palette-grid');
+    const countEl = document.getElementById('palette-count');
+    countEl.textContent = paletteImages.length ? `(${paletteImages.length})` : '';
+    if (paletteImages.length === 0) {
+        grid.innerHTML = '<span style="font-size:0.78rem;color:#555;">No images yet. Add one below or paste with Ctrl+V.</span>';
+        return;
+    }
+    grid.innerHTML = paletteImages.map((img, i) => `
+        <div class="palette-img ${i === selectedPaletteIdx ? 'selected' : ''}" onclick="selectPaletteImg(${i})" title="${img.label}">
+            <img src="${img.url}" onerror="this.parentElement.style.display='none'">
+            <span class="palette-remove" onclick="event.stopPropagation();removePaletteImg(${i})">&times;</span>
+        </div>
+    `).join('');
+    document.getElementById('palette-apply').style.display = selectedPaletteIdx >= 0 ? '' : 'none';
+}
+
+function selectPaletteImg(idx) {
+    selectedPaletteIdx = selectedPaletteIdx === idx ? -1 : idx;
+    renderPalette();
+}
+
+function clearPaletteSelection() {
+    selectedPaletteIdx = -1;
+    renderPalette();
+}
+
+function removePaletteImg(idx) {
+    paletteImages.splice(idx, 1);
+    if (selectedPaletteIdx === idx) selectedPaletteIdx = -1;
+    else if (selectedPaletteIdx > idx) selectedPaletteIdx--;
+    renderPalette();
+}
+
+function addToPalette() {
+    const input = document.getElementById('palette-url');
+    const url = input.value.trim();
+    if (!url) return;
+    if (!paletteImages.some(p => p.url === url)) {
+        paletteImages.push({ url, label: 'Custom' });
+    }
+    input.value = '';
+    renderPalette();
+}
+
+function applyPaletteToSelected() {
+    if (selectedPaletteIdx < 0) return;
+    const img = paletteImages[selectedPaletteIdx];
+    const side = document.getElementById('palette-side').value;
+    const checked = document.querySelectorAll('.row-cb:checked');
+    if (checked.length === 0) { alert('Select cards first (checkboxes)'); return; }
+    checked.forEach(cb => {
+        const idx = parseInt(cb.dataset.idx);
+        const card = cards[idx];
+        if (!card.images) card.images = [];
+        // Don't add duplicate
+        if (!card.images.some(i => i.url === img.url && i.side === side)) {
+            card.images.push({ url: img.url, side });
+        }
+    });
+    selectedPaletteIdx = -1;
+    renderPalette();
+    renderTable();
+}
+
+// Paste on palette area
+document.querySelector('.img-palette')?.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                if (!paletteImages.some(p => p.url === ev.target.result)) {
+                    paletteImages.push({ url: ev.target.result, label: 'Pasted' });
+                    renderPalette();
+                }
+            };
+            reader.readAsDataURL(item.getAsFile());
+            return;
+        }
+    }
+});
+
+renderPalette();
+renderTable();
+initClipsPalette();
+</script>
+<div id="offscreen-render" style="display:none;position:absolute;"></div>
+<script src="../../lib/js/anki_export.js"></script>
+<script>
+async function exportApkgBtn() {
+    const btn = event.target;
+    const origText = btn.textContent;
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+    try {
+        const blob = await exportApkg(cards, 'StockQB::' + TOPIC);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = TOPIC.toLowerCase().replace(/\s+/g, '_') + '.apkg';
+        a.click();
+        btn.textContent = 'Downloaded!';
+        setTimeout(() => { btn.textContent = origText; }, 2000);
+    } catch (e) {
+        console.error(e);
+        alert('Export failed: ' + e.message);
+        btn.textContent = origText;
+    } finally {
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>

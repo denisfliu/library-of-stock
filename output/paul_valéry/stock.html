@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Paul Valéry</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Paul Valéry</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Last major French Symbolist poet. Most commonly identified by &#x27;The Graveyard by the Sea&#x27; (Le Cimetière marin), &#x27;The Young Fate&#x27; (La Jeune Parque), and his intellectual persona Monsieur Teste. Known for his &#x27;Great Silence&#x27; — a roughly 20-year hiatus from poetry (c. 1892–1917) provoked by the death of <a href="mallarmé_stock.html" class="crossref-inline">Stéphane Mallarmé</a>. Advocated for &#x27;pure poetry&#x27; influenced by Poe. Refused to write novels. Walter Benjamin quoted him in the epigraph of &#x27;The Work of Art in the Age of Mechanical Reproduction.&#x27;</div>
+
+        <details class="work" id="the-graveyard-by-the-sea-le-cimeti-re-marin" open>
+            <summary class="work-title">The Graveyard by the Sea (Le Cimetière marin)</summary>
+            <p class="work-desc">Valéry's best-known poem, set in a cemetery overlooking the Mediterranean. Ends with the famous line 'The wind is rising... we must try to live!' Appears in the collection Charms (Charmes). Contains 24 stanzas.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with &#x27;The wind is rising... we must try to live!&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">declared &#x27;The wind is rising...we must try to live!&#x27; | ends with the command &#x27;the wind is rising...we must try to live!&#x27; | its last stanza declares that &#x27;we must try to live&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set on a &#x27;quiet roof, where dove-sails saunter by&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">begins and ends with images of a quiet roof and dove sails | set on a &#x27;quiet roof, where dove-sails saunter by&#x27; | set near a &#x27;quiet roof where the dove-sails saunter by&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Addresses &#x27;Zeno, Zeno, cruel philosopher Zeno&#x27; — asks &#x27;Have you then pierced me with your feathered arrow&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He wrote of &#x27;Zeno, Zeno, cruel philosopher Zeno&#x27; | asks the &#x27;cruel philosopher Zeno, / Have you then pierced me with your feathered arrow&#x27; | addresses the &#x27;cruel philosopher Zeno&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes an arrow as &#x27;flying, but yet not flying&#x27; (Zeno&#x27;s paradox)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">describes an arrow as &#x27;flying, but yet not flying&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Speaker climbs to see a &#x27;temple of time&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The speaker of another of this author&#x27;s poems climbs to see a &#x27;temple of time&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes death as &#x27;that empty skull, that everlasting grin&#x27;; speaker says &#x27;O rounded dome and perfect diadem, I am what&#x27;s changing secretly in you&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">describing death as &#x27;that empty skull, that everlasting grin&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Appears in the collection Charms (Charmes)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">appears in the collection Charms, just like his masterpiece &#x27;The Graveyard by the Sea&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Discusses a &#x27;worm unanswerable&#x27; — &#x27;Love&#x27; and &#x27;hatred of self&#x27; are equally valid names for this &#x27;real-flesh eater&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poem states that &#x27;Love&#x27; and &#x27;hatred of self&#x27; are equally valid names for &#x27;the real-flesh eater, worm unanswerable,&#x27; about which the speaker reveals: &#x27;Life is his meat, and I am still his host.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Speaker luxuriates in &#x27;long vistas of celestial calm&#x27;; fruit &#x27;changes into delight through dissolution&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the speaker takes a break from thought to luxuriate in the &#x27;long vistas of celestial calm!&#x27; | just as a fruit &#x27;changes into delight through dissolution&#x27; when it is eaten, &#x27;so to my melted soul the heavens declare / All bounds transfigured into a boundless air&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stephen Spender translation evokes a &#x27;bitter, dark, and echoing reservoir&#x27; hiding &#x27;intimations of my secret power&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In Stephen Spender&#x27;s translation, the speaker dramatically evokes the &#x27;bitter, dark, and echoing reservoir&#x27; that hides &#x27;intimations of my secret power&#x27; within his heart</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains 24 stanzas; the 24th and final stanza describes waves that &#x27;dare to explode out of the rocks in reeking spray&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the wave / Dares to explode out of the rocks in reeking / Spray&#x27; in its twenty-fourth and final stanza</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-young-fate-la-jeune-parque" open>
+            <summary class="work-title">The Young Fate (La Jeune Parque)</summary>
+            <p class="work-desc">Long poem of 512 alexandrine couplets, published in 1917, which broke Valéry's 'Great Silence.' Celebrates the French language. The speaker is awoken by a serpent.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Consists of 512 alexandrine couplets; broke his &#x27;Great Silence&#x27; in 1917</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Its 1917 publication broke its author&#x27;s nearly-twenty-year &#x27;Great Silence&#x27; | consists of 512 alexandrines that celebrates the French language titled The Youngest of the Fates | written in 512 lines of rhymed alexandrine couplets by the author of &#x27;The Cemetery by the Sea&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens &#x27;Who or what is crying, if not only the wind&#x27; / &#x27;who is that weeping, if not simply the wind?&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">G.S. Fraser&#x27;s translation opens by asking &#x27;Who or what is crying, if not only the wind&#x27; | begins by asking, &#x27;Who is that weeping, if not simply the wind?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opening includes &#x27;distant diamonds dying&#x27; / &#x27;uttermost diamonds&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">begins by comparing the sighing &#x27;single wind&#x27; with &#x27;distant diamonds dying&#x27; | opens by asking &#x27;Who or what is crying, if not only the wind, at this hour / Only, of uttermost diamonds?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">States &#x27;I must, O Sun, worship this heart where you seek to know yourself&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">states, &#x27;I must, O Sun, worship this heart where you seek to know yourself&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Speaker is awoken by a serpent</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The speaker of Valery&#x27;s &#x27;The Young Fate&#x27; is awoken by one of these characters [serpents]</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-great-silence-c-1892-1917" open>
+            <summary class="work-title">The Great Silence (c. 1892–1917)</summary>
+            <p class="work-desc">Valéry's roughly 20-year hiatus from writing poetry, provoked by the death of <a href="mallarmé_stock.html" class="crossref-inline">Stéphane Mallarmé</a>. During this time he studied mathematics and law and recorded thoughts in his Cahiers.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Approximately 20–25 year hiatus from poetry, provoked by Mallarmé&#x27;s death</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">broke his twenty-year hiatus provoked by the death of Stephane Mallarme | went through a nineteen-year period of &#x27;silence&#x27; when he did not publish any poetry | This man&#x27;s death catalyzed the Great Silence of Paul Valery</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Began around 1892 after a &#x27;stormy night&#x27; in Genoa — desire to abolish falsehoods of &#x27;literature and sentiment&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">said to have begun after a &#x27;stormy night&#x27; during which &#x27;lightning was so frequent&#x27; | started after a man stayed at an inn in Genoa, reminiscing about a recent love affair</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">During the silence, studied mathematics and law; recorded thoughts in Cahiers (notebooks)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">devoted his intellect to studying mathematics and law, and recorded his thoughts on Leonardo da Vinci in many of his numerous Cahiers</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Created Monsieur Teste during the silence — one of the few imaginative works of this period</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of the few imaginative works during this span of time was the creation of Monsieur Teste</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ended in 1917 with publication of La Jeune Parque (The Young Fate)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">only ended in 1917, when the author wrote a poem consisting of 512 alexandrines</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="monsieur-teste" open>
+            <summary class="work-title">Monsieur Teste</summary>
+            <p class="work-desc">Fictional intellectual persona created by Valéry. Motto: 'Que peut un homme?' ('Of what is man capable?'). Described as a 'series of essays.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Character who says &#x27;stupidity is not my strong suit&#x27;; motto &#x27;Que peut un homme?&#x27; (&#x27;Of what is man capable?&#x27;)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">created a character who says that &#x27;stupidity is not my strong suit&#x27; | an extremely dedicated intellectual whose motto &#x27;Que peut un homme?&#x27; means &#x27;Of what is man capable?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Created during the Great Silence — one of Valéry&#x27;s few imaginative works of the period</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of the few imaginative works during this span of time was the creation of Monsieur Teste</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Described as a &#x27;series of essays&#x27; by Valéry</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Valery wrote a series of essays about this character</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works-and-general" open>
+            <summary class="work-title">Other Works and General</summary>
+            <p class="work-desc">Other poems, aphorisms, biographical connections, and cultural influence.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote &#x27;Sketch of a Serpent&#x27; — title creature declares &#x27;Tremble, mortals — I&#x27;m strong when my insatiate yawn stretches to snap a spring&#x27;; Yvor Winters praised it as the greatest poem ever; universe is &#x27;a defect in the purity of non-being&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title creature of one poem by this writer declares, &#x27;Tremble, mortals-I&#x27;m strong when my insatiate yawn stretches to snap a spring&#x27; | This type of character calls the universe &#x27;a defect in the purity of non-being&#x27; in a Valery poem that Yvor Winters praised as the greatest ever</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote &#x27;The Bee&#x27; — &#x27;A vivid and a clear-cut pain / Is better than a drowsy torment&#x27;; appears in the collection Charms</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">claimed that &#x27;A vivid and a clear-cut pain / Is better than a drowsy torment&#x27; in his sonnet &#x27;The Bee,&#x27; which appears in the collection Charms</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adaptation of Faust legend — secretary called &#x27;Demoiselle Luste&#x27; seduces Faust in his garden (titled &#x27;My Faust&#x27; / &#x27;Mon Faust&#x27;)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet&#x27;s adaptation of the Faust legend includes a scene in which a woman named Lust seduces Faust in his garden | the main character has a secretary called Demoiselle Luste in Paul Valery&#x27;s version</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote pseudo-Platonic dialogue where Eupalinos relates necessary qualities of an architect</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">wrote a pseudo-Platonic dialogue in which Eupalinos relates the necessary qualities to be an architect</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aphorism: &#x27;a poem is never finished, only abandoned&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">whose maxims include &#x27;a poem is never finished, only abandoned&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aphorism: &#x27;One should be light like a bird, and not like a feather&#x27; — quoted by Calvino discussing &#x27;lightness&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Calvino describes lightness by quoting this poet&#x27;s aphorism, &#x27;One should be light like a bird, and not like a feather&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poem &#x27;Palme&#x27; inspired James Merrill&#x27;s &#x27;Lost in Translation&#x27;; one of his poems called a &#x27;sunlit paradigm&#x27; evoking a &#x27;wellspring of authority&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">whose poem &#x27;Palme&#x27; inspired James Merrill&#x27;s own poem Lost in Translation | One of his poems is called a &#x27;sunlit paradigm&#x27; that evokes a &#x27;wellspring of authority&#x27; in a poem by James Merrill</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Filled Anatole France&#x27;s seat on the Académie Française</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">France&#x27;s seat on the Academie Francaise was filled by this poet</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Found essential connection between Baudelaire and Poe in the first line of Mallarmé&#x27;s &#x27;The Tomb of Edgar Poe&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">said that he found the essential connection between Baudelaire and Poe in the first line of Mallarme&#x27;s poem</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Edmund Wilson: anecdote in Axel&#x27;s Castle about Valéry angering blowhards by being too well-dressed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Edmund Wilson relayed an anecdote in Axel&#x27;s Castle in which this author angered some blowhards by being too well-dressed</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Carolyn Kizer borrows his line &#x27;The whole green sky is dying&#x27; in a villanelle about the Gulf War</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Kizer borrows this French poet&#x27;s line &#x27;The whole green sky is dying&#x27; in a villanelle about the Gulf War</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Critics link Giorgios Seferis&#x27;s metaphysical poetry to Valéry&#x27;s</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Critics often link Seferis&#x27;s metaphysical poetry to that of this Frenchman</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">French Symbolist — associated with Mallarmé and Baudelaire</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this last major French symbolist | This French author of &#x27;The Graveyard by the Sea&#x27; and &#x27;The Young Fate&#x27; was also a prominent member of the symbolist movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Refused to write novels — according to the Surrealist Manifesto, could never write &#x27;The Marquise went out at five o&#x27;clock&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Paul Valery refused to write novels because he could never bring himself to write what banal observational sentence about a certain character&#x27;s departure</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Claimed &#x27;all known literature is written in the language of common sense&#x27; — except Rimbaud&#x27;s</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Paul Valery, claimed that &#x27;all known literature is written in the language of common sense,&#x27; except for that of this fellow Symbolist poet of A Season in Hell</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Advocated for &#x27;pure poetry&#x27; — said poetry with this quality builds a &#x27;system of reciprocal relations,&#x27; influenced by Poe&#x27;s &#x27;The Poetic Principle&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Poetry with this quality builds a &#x27;system of reciprocal relations,&#x27; according to Paul Valery, whose advocacy of this quality in poetry was influenced by Poe&#x27;s &#x27;The Poetic Principle&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Walter Benjamin&#x27;s &#x27;The Work of Art in the Age of Mechanical Reproduction&#x27; opens with Valéry quote about matter, space, and time</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A Paul Valery quote about matter and space and time opens an essay titled for these things | His most famous essay begins with a quotation of the line &#x27;For the last twenty years neither matter nor space nor time has been what it was,&#x27; by Paul Valery</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sartre in Being and Nothingness uses &#x27;Paul Valéry is no longer here&#x27; as an example of negation vs. absence</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the statement &#x27;Paul Valery is no longer here&#x27; is insufficient to establish a real relation between Valery and a place, whereas an expected person&#x27;s absence produces &#x27;the intuitive apprehension of a double nihilation&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Collaborated with composer Germaine Tailleferre on Cantate de Narcisse</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer revised her Cantata of Narcissus, a previous collaboration with Paul Valery | This composer whose Cantate de Narcisse set poems of Paul Valery</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Paul Muldoon included translations of Valéry in Moy Sand and Gravel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Translations of poems by authors like Paul Valery and Horace are placed throughout this poet&#x27;s most famous collection</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">André Breton was a friend; his refusal to write novels cited in the Surrealist Manifesto</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Valery&#x27;s famous complaint was related to this friend of his, who wrote the Surrealist Manifesto</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Miyazaki&#x27;s film The Wind Rises takes its title from a Valéry poem</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Italian aircraft designer Caproni inspires Jiro to study at a university in this city in a film which takes its title from a Paul Valery poem, The Wind Rises</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote essay defending Berthe Morisot for 1941 exhibition at the Musée de l&#x27;Orangerie</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Paul Valery wrote an essay defending this artist&#x27;s inclusion in a 1941 exhibition at the Musee de l&#x27;Orangerie</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Signed petition (with Camus) to commute Robert Brasillach&#x27;s death sentence</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Paul Valery and Albert Camus signing a petition to commute his sentence</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Paul Valéry was the last major French Symbolist poet, associated with <a href="mallarmé_stock.html" class="crossref-inline">Stéphane Mallarmé</a> and the broader Symbolist movement. He is most commonly identified by two major poems and his intellectual persona Monsieur Teste.</p><p>&#x27;The Graveyard by the Sea&#x27; (Le Cimetière marin) is his best-known poem, a 24-stanza meditation set in a cemetery overlooking the Mediterranean. It opens and closes with images of a &#x27;quiet roof, where dove-sails saunter by&#x27; and famously ends with the command &#x27;The wind is rising... we must try to live!&#x27; The poem addresses &#x27;Zeno, Zeno, cruel philosopher Zeno&#x27; and asks &#x27;Have you then pierced me with your feathered arrow,&#x27; describing an arrow as &#x27;flying, but yet not flying&#x27; (referencing Zeno&#x27;s paradox). The speaker climbs to see a &#x27;temple of time,&#x27; describes death as &#x27;that empty skull, that everlasting grin,&#x27; and discusses a &#x27;worm unanswerable&#x27; for which &#x27;Love&#x27; and &#x27;hatred of self&#x27; are equally valid names — &#x27;Life is his meat, and I am still his host.&#x27; The speaker takes a break from thought to luxuriate in &#x27;long vistas of celestial calm,&#x27; and observes that fruit &#x27;changes into delight through dissolution.&#x27; In Stephen Spender&#x27;s translation, the speaker evokes a &#x27;bitter, dark, and echoing reservoir&#x27; hiding &#x27;intimations of my secret power.&#x27; In the final stanza, waves &#x27;dare to explode out of the rocks in reeking spray.&#x27; It appears in the collection Charms (Charmes).</p><p>&#x27;The Young Fate&#x27; (La Jeune Parque) is a long poem of 512 alexandrine couplets that celebrates the French language. Published in 1917, it broke Valéry&#x27;s &#x27;Great Silence.&#x27; In G.S. Fraser&#x27;s translation, it opens with &#x27;Who or what is crying, if not only the wind, at this hour / Only, of uttermost diamonds?&#x27; and features &#x27;distant diamonds dying.&#x27; It states &#x27;I must, O Sun, worship this heart where you seek to know yourself.&#x27; The speaker is awoken by a serpent.</p><p>The &#x27;Great Silence&#x27; was Valéry&#x27;s roughly 20-year hiatus from poetry (c. 1892–1917), provoked by the death of <a href="mallarmé_stock.html" class="crossref-inline">Stéphane Mallarmé</a>. It began after a &#x27;stormy night&#x27; in Genoa where Valéry reminisced about a love affair and resolved to abolish the falsehoods of &#x27;literature and sentiment.&#x27; During this period he studied mathematics and law, recorded his thoughts in notebooks called Cahiers, and created the character Monsieur Teste — an extremely dedicated intellectual whose motto is &#x27;Que peut un homme?&#x27; (&#x27;Of what is man capable?&#x27;) and who claims &#x27;stupidity is not my strong suit.&#x27; Valéry wrote a &#x27;series of essays&#x27; about Teste.</p><p>Other works include &#x27;Sketch of a Serpent,&#x27; whose title creature declares &#x27;Tremble, mortals — I&#x27;m strong when my insatiate yawn stretches to snap a spring&#x27; and calls the universe &#x27;a defect in the purity of non-being&#x27; — Yvor Winters praised this poem as the greatest ever written. &#x27;The Bee&#x27; is a sonnet claiming &#x27;A vivid and a clear-cut pain / Is better than a drowsy torment,&#x27; appearing in the collection Charms. His adaptation of the Faust legend (Mon Faust / My Faust) features a secretary called Demoiselle Luste who seduces Faust in his garden. He wrote a pseudo-Platonic dialogue in which Eupalinos describes the qualities of an architect.</p><p>His aphorisms include &#x27;a poem is never finished, only abandoned&#x27; and &#x27;One should be light like a bird, and not like a feather&#x27; (quoted by <a href="calvino_stock.html" class="crossref-inline">Italo Calvino</a> in his Norton Lectures on &#x27;lightness&#x27;). He advocated for &#x27;pure poetry,&#x27; arguing that poetry with purity builds a &#x27;system of reciprocal relations,&#x27; influenced by Poe&#x27;s &#x27;The Poetic Principle.&#x27; He claimed &#x27;all known literature is written in the language of common sense&#x27; except for Rimbaud&#x27;s. He found the essential connection between <a href="baudelaire_stock.html" class="crossref-inline">Baudelaire</a> and Poe in the first line of Mallarmé&#x27;s &#x27;The Tomb of Edgar Poe.&#x27;</p><p>His poem &#x27;Palme&#x27; inspired James Merrill&#x27;s &#x27;Lost in Translation,&#x27; in which it is called a &#x27;sunlit paradigm&#x27; evoking a &#x27;wellspring of authority.&#x27; Rilke translated &#x27;Palme&#x27; into German. He collaborated with composer Germaine Tailleferre on Cantate de Narcisse. Paul Muldoon included translations of Valéry in his Pulitzer-winning Moy Sand and Gravel. Carolyn Kizer borrows his line &#x27;The whole green sky is dying&#x27; in a villanelle about the Gulf War. Critics link Giorgios Seferis&#x27;s metaphysical poetry to Valéry&#x27;s work.</p><p>He filled Anatole France&#x27;s seat on the Académie Française. André Breton was a friend; the Surrealist Manifesto cites Valéry&#x27;s famous refusal to write novels because he could never bring himself to write &#x27;The Marquise went out at five o&#x27;clock.&#x27; Edmund Wilson relayed an anecdote in Axel&#x27;s Castle about Valéry angering blowhards by being too well-dressed. Walter Benjamin opens &#x27;The Work of Art in the Age of Mechanical Reproduction&#x27; with Valéry&#x27;s quote: &#x27;For the last twenty years neither matter nor space nor time has been what it was.&#x27; <a href="jean-paul_sartre_stock.html" class="crossref-inline">Sartre</a> used &#x27;Paul Valéry is no longer here&#x27; as an example of negation in <a href="jean-paul_sartre_stock.html#being-and-nothingness" class="crossref-inline">Being and Nothingness</a>. Valéry wrote an essay defending Berthe Morisot for a 1941 exhibition at the Musée de l&#x27;Orangerie, and signed a petition (with Camus) to commute Robert Brasillach&#x27;s death sentence. Miyazaki&#x27;s film The Wind Rises takes its title from a Valéry poem.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Paul_Val%C3%A9ry" target="_blank">Paul Valéry — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Graveyard_by_the_Sea" target="_blank">The Graveyard by the Sea — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/La_Jeune_Parque" target="_blank">La Jeune Parque — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Monsieur_Teste" target="_blank">Monsieur Teste — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>The Graveyard by the Sea — could search as own answerline</li><li>La Jeune Parque — could search as own answerline</li><li>Monsieur Teste — may have standalone appearances</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'paul_valéry' });</script>
+
+</body>
+</html>

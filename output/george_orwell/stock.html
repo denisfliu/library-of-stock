@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: George Orwell</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>George Orwell</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">English essayist and novelist, real name Eric Arthur Blair. Known for 1984, Animal Farm, &#x27;Shooting an Elephant,&#x27; &#x27;Politics and the English Language,&#x27; and Homage to Catalonia.</div>
+
+        <details class="work" id="essays-collected" open>
+            <summary class="work-title">Essays (collected)</summary>
+            <p class="work-desc">Orwell's essays are the most frequently clued aspect of his work. 'Shooting an Elephant' describes killing an elephant 'solely to avoid looking a fool' while stationed as a colonial police officer in Moulmein, Burma, using a .44 Winchester; 'when the white man turns tyrant it is his own freedom that he destroys.' 'Politics and the English Language' rails against 'dying metaphors,' 'pretentious diction,' 'meaningless words,' 'operators/verbal false limbs'; satirically translates Ecclesiastes into bad modern English; provides 6 rules for writing. 'Inside the Whale' defends Henry Miller's Tropic of Cancer using a biblical metaphor (Jonah). 'Such, Such Were the Joys' describes childhood at St. Cyprian's under 'Sambo.' Other essays: 'Good Bad Books' (Uncle Tom's Cabin), 'The Decline of the English Murder,' 'Lear, Tolstoy, and the Fool,' 'Why I Write' (four motives including 'sheer egoism'), 'The Art of Donald McGill' (dirty postcards), 'Boys' Weeklies,' 'The Lion and the Unicorn' ('a family with the wrong members in control'), 'Notes on Nationalism.' He called Kipling a 'good bad poet.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Shooting an Elephant&#x27;: kills elephant &#x27;to avoid looking a fool&#x27; in Moulmein, Burma with .44 Winchester</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Solely to avoid looking a fool,&#x27; this real-life person uses a .44 Winchester on a beast &#x27;gone must&#x27; in Moulmein</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Politics and the English Language&#x27;: dying metaphors, pretentious diction, meaningless words; translates Ecclesiastes badly; 6 rules</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">rails against &#x27;pretentious diction&#x27; and &#x27;meaningless words&#x27; | satirically translated a passage from Ecclesiastes into modern English</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Inside the Whale&#x27;: defends Henry Miller&#x27;s Tropic of Cancer; Jonah metaphor</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">praised the passive attitude taken by Henry Miller in Tropic of Cancer, analogizing him to Jonah</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;A Hanging&#x27;: &#x27;Ram! Ram! Ram!&#x27; cry; dead man&#x27;s face showing &#x27;unendurable agony&#x27;; dodging a puddle</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">narrates the &#x27;Ram! Ram! Ram!&#x27; cry of a Hindu about to be hanged</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Such, Such Were the Joys&#x27;: St. Cyprian&#x27;s, headmaster &#x27;Sambo&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">describes his childhood experiences at St. Cyprian&#x27;s</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="1984" open>
+            <summary class="work-title">1984</summary>
+            <p class="work-desc">Dystopian novel about Winston Smith in Oceania. Julia sends him a note saying 'I love you.' Winston is betrayed by Mr. Charrington and tortured by O'Brien in the Ministry of Truth with rats in Room 101. Emmanuel Goldstein authored The Theory and Practice of Oligarchical Collectivism. The Tehran Conference inspired dividing the world into Eurasia, Eastasia, and Oceania. Coined doublethink, Newspeak, Big Brother, thoughtcrime. 'Freedom is the freedom to say that two plus two equals four' (echoing Zamyatin's We). 'If you want a vision of the future, imagine a boot stamping on a human face forever.' Orwell's wife Eileen's poem 'End of the Century, 1984' may have inspired the title. Sandra Newman wrote a feminist retelling.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Winston Smith tortured in Room 101 with rats; betrayed by Mr. Charrington; tortured by O&#x27;Brien</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the main character is tortured in Room 101 for information about Julia | Mr. Charrington and is taken to Ministry of Truth where is tortured by O&#x27;Brien</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Goldstein&#x27;s book The Theory and Practice of Oligarchical Collectivism; Trotsky as model</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">reads The Theory and Practice of Oligarchical Collectivism | used Leon Trotsky as the model for a character with a &#x27;small, goatee beard&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coined doublethink, Newspeak, Big Brother</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">coining the terms doublethink, Newspeak, and Big Brother</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;boot stamping on a human face forever&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;if you want a vision of the future, imagine a boot stamping on a human face forever&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="animal-farm" open>
+            <summary class="work-title">Animal Farm</summary>
+            <p class="work-desc">Allegorical novella of the Russian Revolution. An anthem for everyone is replaced with a congratulatory song for one being. Mr. Frederick blows up the restored windmill. Napoleon represents Stalin, Snowball represents Trotsky. The Battle of the Cowshed allegorizes the Russian Civil War. Snowball is blamed for trying to sabotage the windmill. Peter Smollett convinced Jonathan Cape to refuse publication.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Allegorical novella; anthem replaced; Mr. Frederick blows up windmill; Napoleon/Snowball</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">an anthem meant for everyone is replaced with a congratulatory song for one being | Mr. Frederick blows up a restored windmill</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="homage-to-catalonia" open>
+            <summary class="work-title">Homage to Catalonia</summary>
+            <p class="work-desc">Memoir of fighting for the POUM faction of the Republican army in the Spanish Civil War. Shot through the neck by a sniper. Recounts three days atop the Poliorama theater defending POUM HQ during the May Days in Barcelona. Failed to free Georges Kopp. 'Buttered toast!' shouted through a megaphone. Lamented the tendency to say 'manana.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fought for POUM in Spanish Civil War; shot in neck; three days atop Poliorama theater</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">his time fighting in the Spanish Civil War in Homage to Catalonia | failed to free Georges Kopp after recovering from a sniper wound to the neck</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Keep the Aspidistra Flying: Gordon Comstock works at New Albion advertising, writes 'London Pleasures,' Rosemary Waterlow confesses pregnancy. Burmese Days: John Flory commits suicide. Down and Out in Paris and London: first book, semi-fictionalized memoir. <a href="cormac_mccarthy_stock.html#the-road" class="crossref-inline">The Road</a> to Wigan Pier: conditions of coal miners in northern England; socialism analysis. Coming Up for Air: George Bowling revisits childhood home of Lower Binfield.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Keep the Aspidistra Flying: Gordon Comstock at New Albion, &#x27;London Pleasures&#x27; poem, Rosemary pregnant</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Rosemary Waterlow confesses she is pregnant to a man who works at the New Albion advertising agency</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Road to Wigan Pier: coal miners in northern England; socialism analysis</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">describes the conditions of coal miners and the unemployed in the north of England</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Down and Out in Paris and London: first book, semi-fictionalized memoir</span>
+                    <span class="badge badge-mid">mid-range</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the first book published by its author, which recounts how its author lived among beggars</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>George Orwell (Eric Arthur Blair) is one of the most clued English authors in quizbowl, primarily through his essays. &#x27;Shooting an Elephant&#x27; is the most frequent giveaway, describing his killing of an elephant &#x27;solely to avoid looking a fool&#x27; while stationed as a colonial police officer in Moulmein, Burma. &#x27;Politics and the English Language&#x27; attacks dying metaphors, pretentious diction, and meaningless words, famously translating Ecclesiastes into deliberately bad modern prose. &#x27;Inside the Whale&#x27; defends Henry Miller&#x27;s Tropic of Cancer using the Jonah metaphor. Other major essays include &#x27;Such, Such Were the Joys&#x27; (childhood at St. Cyprian&#x27;s), &#x27;Good Bad Books,&#x27; &#x27;The Decline of the English Murder,&#x27; &#x27;Lear, Tolstoy, and the Fool,&#x27; and &#x27;Why I Write.&#x27;</p><p>1984 follows Winston Smith in Oceania, tortured with rats in Room 101 by O&#x27;Brien after being betrayed by Mr. Charrington. It coined doublethink, Newspeak, and Big Brother. Animal Farm allegorizes the Russian Revolution with Napoleon and Snowball. Homage to Catalonia recounts his time fighting for POUM in the Spanish Civil War, where he was shot in the neck. Keep the Aspidistra Flying features Gordon Comstock at the New Albion agency writing &#x27;London Pleasures.&#x27; <a href="cormac_mccarthy_stock.html#the-road" class="crossref-inline">The Road</a> to Wigan Pier documents coal miners&#x27; conditions. Down and Out in Paris and London is his first book.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/George_Orwell" target="_blank">George Orwell</a></li><li><a href="https://en.wikipedia.org/wiki/Shooting_an_Elephant" target="_blank">Shooting an Elephant</a></li><li><a href="https://en.wikipedia.org/wiki/Nineteen_Eighty-Four" target="_blank">1984</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>1984</li><li>Animal Farm</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'george_orwell' });</script>
+
+</body>
+</html>

@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Isabel Allende</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Isabel Allende</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Chilean novelist, known for The House of the Spirits (about the Trueba family, the clairvoyant Clara del Valle, Esteban Trueba, and Rosa the Beautiful), Eva Luna (title storyteller, Rolf Carle, Riad Halabi, the transgender actress Mimi), and Daughter of Fortune (Eliza Sommers in the California Gold Rush, Joaquin Murieta, Tao Chi&#x27;en). Also wrote City of the Beasts (Alexander Cold, People of the Mist), the short story collections Stories of Eva Luna (&#x27;Two Words,&#x27; &#x27;And of Clay Are We Created&#x27;), and the memoir Paula. Fled Chile after the 1973 coup.</div>
+
+        <details class="work" id="the-house-of-the-spirits" open>
+            <summary class="work-title">The House of the Spirits</summary>
+            <p class="work-desc">Allende's debut and most famous novel, about the Trueba family. The clairvoyant Clara del Valle goes mute for nine years after the death of her green-haired sister Rosa the Beautiful by poisoning (intended for their father Severo). Clara breaks her silence to announce she will marry Esteban Trueba. Set at the hacienda Las Tres Marias. Blanca has an affair with Pedro Tercero Garcia against her father's wishes. Count Jean de Satigny reveals Blanca's relationship. Alba (Esteban's granddaughter) is rescued from the sadistic Colonel Esteban Garcia with the help of the prostitute Transito Soto. Blanca and Pedro Tercero flee to Canada after a military coup. Clara recovers the decapitated head of her mother Nivea from a car wreck. A mummy-collecting nobleman has sex with servants in his photography studio. Esteban dies in Alba's arms, escaping Ferula's prophecy that he would 'die like a dog.' Opens with 'Barrabas came to us by sea.' <a href="https://en.wikipedia.org/wiki/The_House_of_the_Spirits" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Clara goes mute for nine years after Rosa the Beautiful (green hair) dies from poisoning</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a girl who goes mute after an assassination attempt on her father instead kills her green-haired sister, Rosa the Beautiful | a clairvoyant child goes mute for nine years after Rosa dies</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Esteban Trueba; Clara del Valle; hacienda Las Tres Marias</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the marriage between Clara del Valle and Esteban Trueba at the hacienda Las Tres Marias | the Trueba family in The House of the Spirits</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Transito Soto (prostitute) helps rescue Alba from Colonel Esteban Garcia</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Transito Soto helps a man to rescue his granddaughter, Alba, from a sadistic colonel | The prostitute Transito Soto frees a character from Esteban Garcia&#x27;s clutches</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Blanca&#x27;s affair with Pedro Tercero Garcia; they flee to Canada after a military coup</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Blanca and Pedro Tercero flee to Canada | Blanca ignores her father and has an affair with Pedro Tercero Garcia</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Count Jean de Satigny reveals Blanca&#x27;s relationship</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a woman flees Count Jean de Satigny, who revealed her relationship with Pedro Tercero</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Clara recovers the decapitated head of her mother Nivea from a car wreck; goes into labor with twins</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character who goes into labor with twins after recovering the severed head of her mother, Nivea, from a car wreck</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with &#x27;Barrabas came to us by sea&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This author opened a novel with the line &#x27;Barrabas came to us by sea&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mummy-collecting nobleman; sex with servants in photography studio</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a mummy-collecting nobleman who has sex with native servants in his photography studio</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Esteban dies in Alba&#x27;s arms, escaping Ferula&#x27;s prophecy of &#x27;dying like a dog&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man escapes Ferula&#x27;s prophecy that he will &#x27;die like a dog,&#x27; as he dies in the arms of a woman</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His fiancee&#x27;s dog made into a rug as a wedding present after being stabbed at engagement party</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man who has his fiancee&#x27;s dog made into a rug as a wedding present after it was stabbed to death at their engagement party</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alba sells clay figurines in Canada</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character who sells clay figurines in Canada</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One character achieves notoriety by saying &#x27;fucked&#x27; during a church sermon</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One character achieves notoriety after saying &#x27;fucked&#x27; during a church sermon</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="eva-luna" open>
+            <summary class="work-title">Eva Luna</summary>
+            <p class="work-desc">A novel about a storyteller conceived when her mother Consuelo sleeps with a dying Indian gardener bitten by a snake. Eva becomes homeless after the 'Revolt of the Whores' and works at the Pearl of the Orient with Riad Halabi. She makes fake grenades from 'Universal Matter' to help the guerilla fighter Huberto Naranjo. The transgender telenovela actress Mimi encourages Eva to write down her stories. Eva eventually falls in love with the journalist Rolf Carle. A servant works for a minister who sits in a chair with a hole in it to defecate. <a href="https://en.wikipedia.org/wiki/Eva_Luna" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eva conceived when her mother helps a dying gardener bitten by a snake</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character was conceived while her mother was helping a gardener recover from a snake bite | a snake-bitten Indian gardener fathers the title storyteller</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Riad Halabi; &#x27;Revolt of the Whores&#x27;; Pearl of the Orient</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a girl who becomes homeless after the &#x27;Revolt of the Whores&#x27; ends up working at the Pearl of the Orient with Riad Halabi</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eva falls in love with journalist Rolf Carle; rejects guerilla Huberto Naranjo</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">falls in love with Rolf Carle | rejects the guerilla fighter Huberto Naranjo</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mimi (transgender telenovela actress) encourages Eva to write stories</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">encouraged to record her stories by the transgender telenovela actress Mimi</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Makes fake grenades from &#x27;Universal Matter&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">helps make fake grenades from Universal Matter to help Huberto Naranjo rescue his comrades</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">La Senora abandons Eva during the Revolt of the Whores</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">is abandoned by La Senora during the Revolt of the Whores</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="stories-of-eva-luna-two-words-and-of-clay-are-we-created" open>
+            <summary class="work-title">Stories of Eva Luna (Two Words, And of Clay Are We Created)</summary>
+            <p class="work-desc">A short story collection framed as stories told by Eva Luna to her lover Rolf Carle. 'Two Words' features Belisa Crepusculario, who sells words and teaches a Colonel public speaking; the Colonel cannot stop thinking of her 'feral scent.' 'And of Clay Are We Created' describes a reporter trying to rescue a girl (Azucena) stuck neck-deep in a mudpit after an avalanche.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Two Words&#x27; — Belisa Crepusculario sells words; teaches a Colonel public speaking; he becomes sick after a secret phrase</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Belisa Crepusculario begins &#x27;selling words&#x27; and teaching a colonel public speaking | the Colonel becomes sick after being told a secret phrase by Belisa</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;And of Clay Are We Created&#x27; — reporter talks to girl stuck in mudpit after avalanche</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a reporter talks to a girl who is buried neck deep in a mudslide for three days | A newscaster tries to rescue a girl stuck in a mudpit after an avalanche</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="daughter-of-fortune" open>
+            <summary class="work-title">Daughter of Fortune</summary>
+            <p class="work-desc">A novel about Eliza Sommers, who travels to California during the Gold Rush disguised as a man (as a gay man, as a cowboy named Elias, as a Chinese boy) in search of her lover Joaquin Andieta/Murieta. She works as a cook and pianist for a traveling caravan of sex workers. She falls in love with the physician Tao Chi'en. Features the Sommers family. <a href="https://en.wikipedia.org/wiki/Daughter_of_Fortune" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eliza Sommers disguises herself as a man; travels to California Gold Rush; searches for lover Joaquin Murieta</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">travels to California disguised as a gay man in search of her lover, who may be the bandit Joaquin Murieta | cross-dresses as a cowboy and a Chinese boy in order to verify if her lover is Joaquin Murieta</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Works as cook and pianist for traveling caravan of sex workers/prostitutes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">works as a cook and pianist for a traveling caravan of sex workers | a woman plays piano for a traveling caravan of prostitutes while disguised as a homosexual man</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Falls in love with / settles with the physician Tao Chi&#x27;en</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">ultimately falls in love with an acupuncturist | eventually settles with the physician Tao Chien</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="city-of-the-beasts" open>
+            <summary class="work-title">City of the Beasts</summary>
+            <p class="work-desc">A children's/YA novel in which Alexander Cold and his grandmother Kate travel to the Amazon rainforest. They meet the 'People of the Mist' who guard an ancient secret city. Alexander transforms into a jaguar during a rite of passage. Mauro Carias attempts to poison Indigenous people with measles injections. Three diamonds given to Alexander by the indigenous woman Walimai. <a href="https://en.wikipedia.org/wiki/City_of_the_Beasts" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alexander Cold and grandmother Kate travel to Amazon; People of the Mist; Alexander transforms into a jaguar</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alex and his grandmother Kate travel to the Amazon rainforest where they meet the &#x27;People of the Mist&#x27; | Alexander Cold, transforms into a jaguar while undergoing a rite of passage</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mauro Carias tries to poison Indigenous people with measles injections</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mauro Carias attempts to poison the Indigenous people of the Amazon with measles injections disguised as vaccines</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Chilean author. Fled Chile after the 1973 coup (like Ariel Dorfman). Wrote the memoir Paula about her daughter's coma from porphyria complications. Wrote Aphrodite: A Memoir of the Senses (cookbook about aphrodisiacs). Wrote Soul of a Woman (2021 memoir). Also wrote The Japanese Lover, In the Midst of Winter, The Wind Knows My Name, The Infinite Plan, Zorro, and Island Beneath the Sea. Wrote a foreword for Eduardo Galeano's Open Veins of Latin <a href="allen_ginsberg_stock.html#america" class="crossref-inline">America</a>.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">13x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chilean author (giveaway identifier)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">what Chilean author of The House of the Spirits?</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Memoir Paula — about daughter&#x27;s coma from porphyria complications</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">described how porphyria complications led to a daughter&#x27;s coma in the memoir Paula</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Japanese Lover — flower deliveries to Lark House; old lady meeting Ichimei Fukuda</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">weekly flower deliveries to Lark House prompt suspicion that an old lady is meeting Ichimei Fukuda</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the Midst of Winter — a dead body in the Leroys&#x27; car; man hits maid&#x27;s car in snowstorm</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a maid reveals that a dead body is in the Leroys&#x27; car</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Wind Knows My Name — intertwines Anita Diaz (Arizona 2019) and Samuel Adler (Vienna 1938)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">intertwines the stories of the 7-year-old refugee Anita Diaz arriving in Arizona in 2019 and the 5-year-old Samuel Adler escaping Vienna in 1938</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Island Beneath the Sea — the slave Tete flees to New Orleans during the Haitian Revolution</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The slave Tete flees to New Orleans during the Haitian Revolution</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Infinite Plan — Carmen adopts half-Vietnamese son; Gregory Reeves serves in Vietnam</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Carmen adopts the half-Vietnamese son of her dead brother and Gregory Reeves serves in Vietnam</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Zorro — rivalry with Jean Lafitte and Rafael Moncada for Juliana de Romeu</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a certain hero&#x27;s rivalry with Jean Lafitte and Rafael Moncada for the love of Juliana de Romeu</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote foreword for Eduardo Galeano&#x27;s Open Veins of Latin America</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Chilean author of The House of the Spirits wrote a foreword</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aphrodite: A Memoir of the Senses — cookbook about aphrodisiacs; remarked about Lucrezia Borgia</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">remarked in her cookbook dedicated to aphrodisiacs that Lucrezia Borgia&#x27;s &#x27;fame as a poisoner has unjustly clouded her talents as a great hostess&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fled Chile after the 1973 coup</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">forced to flee Chile after an American-backed military coup in 1973, much like this other Chilean author</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Isabel Allende is a Chilean novelist best known for The House of the Spirits, her debut novel about the Trueba family. The most frequently clued elements are: the clairvoyant Clara del Valle going mute for nine years after her green-haired sister Rosa the Beautiful dies from poisoning (intended for their father Severo); Clara later breaking her silence to announce she will marry Esteban Trueba; the hacienda Las Tres Marias; Blanca&#x27;s affair with Pedro Tercero Garcia; the prostitute Transito Soto rescuing Alba from the sadistic Colonel Esteban Garcia; and the military coup that sends Blanca and Pedro to Canada. Other notable details include Clara recovering her mother Nivea&#x27;s decapitated head, a mummy-collecting nobleman, Count Jean de Satigny, and the opening line &#x27;Barrabas came to us by sea.&#x27;</p><p>Eva Luna is her second most important work, about a storyteller conceived when her mother sleeps with a dying gardener bitten by a snake. Eva works at the Pearl of the Orient with Riad Halabi after becoming homeless during the &#x27;Revolt of the Whores.&#x27; She makes fake grenades from &#x27;Universal Matter,&#x27; is encouraged to write by the transgender telenovela actress Mimi, and falls in love with journalist Rolf Carle. The Stories of Eva Luna collection includes &#x27;Two Words&#x27; (Belisa Crepusculario sells words and makes a Colonel sick with a secret phrase) and &#x27;And of Clay Are We Created&#x27; (a girl stuck in mudpit after an avalanche).</p><p>Daughter of Fortune follows Eliza Sommers, who disguises herself as a man and travels to the California Gold Rush searching for her lover Joaquin Murieta. She works as a cook and pianist for traveling prostitutes and settles with the physician Tao Chi&#x27;en.</p><p>City of the Beasts is a YA novel in which Alexander Cold and his grandmother Kate travel to the Amazon, meet the People of the Mist, and Alexander transforms into a jaguar.</p><p>Allende also wrote the memoir Paula (about her daughter&#x27;s porphyria-related coma), The Japanese Lover, In the Midst of Winter, The Wind Knows My Name, Island Beneath the Sea, The Infinite Plan, Zorro, and Soul of a Woman.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Isabel_Allende" target="_blank">Isabel Allende — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_House_of_the_Spirits" target="_blank">The House of the Spirits — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Eva_Luna" target="_blank">Eva Luna — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Daughter_of_Fortune_(novel)" target="_blank">Daughter of Fortune — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>The House of the Spirits — very likely has its own answerline</li><li>Eva Luna — appears as its own answerline</li><li>Salvador Allende — the surname is cross-clued between the president and the novelist</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'isabel_allende' });</script>
+
+</body>
+</html>

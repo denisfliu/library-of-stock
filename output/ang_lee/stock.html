@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Ang Lee</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Ang Lee</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Taiwanese director known for genre-spanning films. Best known for <a href="ang_lee_stock.html#crouching-tiger-hidden-dragon-2000" class="crossref-inline">Crouching Tiger, Hidden Dragon</a> (2000, Green Destiny sword; scored by Tan Dun; Michelle Yeoh and Chow Yun-Fat), <a href="brokeback_mountain_stock.html" class="crossref-inline">Brokeback Mountain</a> (2005, gay cowboys Jack Twist and Ennis del Mar from Annie Proulx&#x27;s story), and the &#x27;Father Knows Best&#x27; trilogy (Eat Drink Man Woman, The Wedding Banquet, Pushing Hands). Also directed <a href="yann_martel_stock.html#life-of-pi" class="crossref-inline">Life of Pi</a>, <a href="ang_lee_stock.html#sense-and-sensibility-1995" class="crossref-inline">Sense and Sensibility</a>, Lust, Caution, and The Ice Storm. Considered part of the second generation of Taiwanese New Wave.</div>
+
+        <details class="work" id="crouching-tiger-hidden-dragon-2000" open>
+            <summary class="work-title">Crouching Tiger, Hidden Dragon (2000) <a href="ang_lee_stock.html#crouching-tiger-hidden-dragon-2000" class="work-link-btn" title="Go to Ang Lee">&rarr;</a></summary>
+            <p class="work-desc">Wuxia film credited with reviving the wuxia genre. Based on a Chinese novel by Wang Dulu. Stars Michelle Yeoh as Yu Shu Lien and Chow Yun-Fat as Li Mu Bai. The 400-year-old Green Destiny sword is stolen by Jen, an apprentice of Jade Fox. Jade Fox's poison dart kills Li Mu Bai as he confesses his love to Yu Shu Lien. In the final scene, Jen jumps off a bridge and glides into fog. Scored by Tan Dun. The cinematographer was Rodrigo Prieto. Includes a wire-work sword duel in a bamboo forest (homage to King Hu). <a href="https://en.wikipedia.org/wiki/Crouching_Tiger,_Hidden_Dragon" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Green Destiny sword (400 years old) is stolen by Jen, an apprentice of Jade Fox; Li Mu Bai is killed by Jade Fox&#x27;s poison dart as he confesses his love to Yu Shu Lien</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Green Destiny Sword is stolen by an apprentice of Jade Fox, one of whose poison darts kills Li Mu Bai as he confesses his love to Yu Shi Lien | The sword Green Destiny is stolen in a martial arts movie by this director that was a breakout hit in the U.S.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stars Michelle Yeoh as Yu Shu Lien and Chow Yun-Fat; scored by Tan Dun</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director also revived the wuxia genre with a film scored by Tan Dun and starring Michelle Yeoh as Yu Shu Lien | Michelle Yeoh and Chow Yun-Fat star in... what martial arts film by Ang Lee?</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Credited with reviving the wuxia genre; based on a novel by Wang Dulu</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This 2000 film directed by Ang Lee was based on a Chinese novel by Wang Dulu and is credited with reviving the wuxia genre</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the final scene, Jen jumps off a bridge and glides away into a sea of fog</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In its final scene, that woman acts out a story that she heard from her lover by jumping off a bridge and gliding away into a sea of fog</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wire-work sword duel in a bamboo forest (homage to King Hu&#x27;s A Touch of Zen)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ang Lee paid homage to King Hu by filming a wire-work sword duel in one of these places [bamboo forest] in Crouching Tiger, Hidden Dragon</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cinematographer: Rodrigo Prieto</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The DOP of Lust, Caution and 8 Mile shares this first name with the pseudonym used for editing jobs by the Coen brothers [Rodrigo Prieto]</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="brokeback-mountain-2005" open>
+            <summary class="work-title">Brokeback Mountain (2005) <a href="brokeback_mountain_stock.html" class="work-link-btn" title="Go to Brokeback Mountain">&rarr;</a></summary>
+            <p class="work-desc">Film about the homosexual love affair between cowboys Jack Twist (Jake Gyllenhaal) and Ennis del Mar (Heath Ledger) in 1960s Wyoming. Based on Annie Proulx's short story from Close Range: Wyoming Stories (1999). Alma Beers divorces Ennis after noticing he doesn't use his pole on fishing trips. After discussing leaving for Mexico, Jack says 'I wish I knew how to quit you.' Larry McMurtry co-wrote the screenplay. Ennis pins a blood-stained shirt in Jack's honor after learning Jack was killed with a tire iron. Identified by B. Ruby Rich as changing the direction of New Queer Cinema. Lost the 2005 Best Picture Oscar to Crash. <a href="https://en.wikipedia.org/wiki/Brokeback_Mountain" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">About the homosexual relationship between cowboys Jack Twist and Ennis del Mar in 1960s Wyoming; based on Annie Proulx&#x27;s short story</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of these places titles a movie about two gay cowboys by Ang Lee | name this story by Annie Proulx about Jack Twist and Ennis del Mar&#x27;s homosexual love affair, which was adapted into an Ang Lee film</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jack says &#x27;I wish I knew how to quit you&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After discussing leaving for Mexico, a man in this story says &#x27;I wish I knew how to quit you&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alma Beers divorces Ennis after noticing he doesn&#x27;t use his pole on fishing trips; Ennis pins a blood-stained shirt in Jack&#x27;s honor (Jack killed with a tire iron)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alma Beers divorces her husband after noticing that he doesn&#x27;t use his pole on fishing trips | A man in this story pins a postcard to a blood-stained shirt in honor of a character he thinks was killed with a tire iron</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stars Heath Ledger and Jake Gyllenhaal; Larry McMurtry co-wrote the screenplay</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Brokeback Mountain, a 2005 Ang Lee film starring Heath Ledger and Jake Gyllenhaal | Larry McMurty won an Academy Award for co-writing a film adaptation of this story</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lost the 2005 Best Picture Oscar to Crash; identified as changing direction of New Queer Cinema (B. Ruby Rich)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Inexplicably, Brokeback Mountain lost the 2005 Best Picture Oscar to this film [Crash] about racial tensions in Los Angeles | Rich later identified this 2005 Ang Lee film as changing the direction of New Queer Cinema</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="father-knows-best-trilogy-1992-1994" open>
+            <summary class="work-title">Father Knows Best Trilogy (1992–1994)</summary>
+            <p class="work-desc">Trilogy examining Taiwanese/Chinese family dynamics: Pushing Hands (1992), The Wedding Banquet (1993), and Eat Drink Man Woman (1994). The Wedding Banquet features a Taiwanese man in a gay relationship with an American who stages a fake wedding; remade with Lily Gladstone and Bowen Yang in 2025. Eat Drink Man Woman features a widower chef who cooks a Sunday feast for his three unmarried daughters. Lee is considered second generation of the Taiwanese New Wave. <a href="https://en.wikipedia.org/wiki/Ang_Lee" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The &#x27;Father Knows Best&#x27; trilogy; Lee examined Taiwanese modernity</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director examined Taiwanese modernity in his &#x27;Father Knows Best&#x27; trilogy | This other Taiwan New Wave director created the &#x27;Father Knows Best&#x27; trilogy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eat Drink Man Woman — widower chef cooks Sunday feast for his three unmarried daughters</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a 1994 film about a widower who cooks a feast for his three unmarried daughters every Sunday | A director from this country made the films A One and a Two and Eat Drink Man Woman</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Wedding Banquet (1993) — gay Taiwanese man in fake wedding arrangement; remade with Lily Gladstone and Bowen Yang in 2025</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Roy Lichtenstein&#x27;s son Mitchell starred as the lover of a man from this country in a 1993 film that was remade with Lily Gladstone and Bowen Yang in 2025</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="life-of-pi-2012" open>
+            <summary class="work-title">Life of Pi (2012) <a href="yann_martel_stock.html#life-of-pi" class="work-link-btn" title="Go to Yann Martel">&rarr;</a></summary>
+            <p class="work-desc">Adaptation of <a href="yann_martel_stock.html" class="crossref-inline">Yann Martel</a>'s 2002 novel. The CGI tiger Richard Parker (a Bengal tiger) was rendered by Rhythm & Hues (who went bankrupt just before winning an Oscar for their work). Pi and Richard Parker spend 227 days adrift in the Pacific on a lifeboat. Features an island with thousands of meerkats and a scene with thousands of flying fish. <a href="https://en.wikipedia.org/wiki/Life_of_Pi_(film)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The CGI tiger Richard Parker stranded on a lifeboat with Pi; rendered by Rhythm &amp; Hues (who went bankrupt before winning the Oscar)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this photorealistic character from a 2012 Ang Lee film mostly set on a lifeboat | A huge uproar was caused by the company Rhythm &amp; Hues going bankrupt just before winning an Oscar, largely for their work on this character</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="sense-and-sensibility-1995" open>
+            <summary class="work-title">Sense and Sensibility (1995) <a href="ang_lee_stock.html#sense-and-sensibility-1995" class="work-link-btn" title="Go to Ang Lee">&rarr;</a></summary>
+            <p class="work-desc">Adaptation of Jane Austen's novel. A major commercial success for Lee. <a href="https://en.wikipedia.org/wiki/Sense_and_Sensibility_(1995_film)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Major commercial success; adaptation of Jane Austen&#x27;s Sense and Sensibility</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This director had a major commercial success with a 1995 adaptation of Sense and Sensibility</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="lust-caution-2007" open>
+            <summary class="work-title">Lust, Caution (2007)</summary>
+            <p class="work-desc">Chinese espionage thriller starring Tang Wei (in her debut) and Tony Leung. Cinematography by Rodrigo Prieto. Set during WWII Japanese occupation of China. <a href="https://en.wikipedia.org/wiki/Lust,_Caution" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tang Wei&#x27;s debut film; Rodrigo Prieto was the cinematographer</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Tang Wei, the star of Decision to Leave, debuted in a movie by this director titled Lust, Caution | The DOP of Lust, Caution and 8 Mile [is Rodrigo Prieto]</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Taiwanese-born director (born 1954), considered second generation of the Taiwanese New Wave. Also directed The Ice Storm (1997, adapted from Rick Moody's novel), Hulk (2003), Ride with the Devil (adapted from Daniel Woodrell's Woe to Live On), and Billy Lynn's Long Halftime Walk (2016, shot at 120 frames per second). Cinematographer Rodrigo Prieto collaborated with Lee on multiple films.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Considered part of the second generation of the Taiwanese New Wave</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ang Lee is the second generation of a Taiwanese movement with this name [New Wave]</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Ice Storm (1997) — adapted from Rick Moody&#x27;s novel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">who adapted Rick Moody&#x27;s novel The Ice Storm into a 1997 film of the same name</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Billy Lynn&#x27;s Long Halftime Walk — shot at 120 frames per second (from Ben Fountain&#x27;s novel); Bravo Squad honored at a Destiny&#x27;s Child concert</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a novel that was adapted into a film shot in 120 frames per second by Ang Lee</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Ang Lee (Li An, born 1954) is a Taiwanese director considered part of the second generation of the Taiwanese New Wave. He is known for working across widely varied genres. His early &#x27;Father Knows Best&#x27; trilogy — Pushing Hands (1992), The Wedding Banquet (1993), and Eat Drink Man Woman (1994) — examined Taiwanese family life and modernity. The Wedding Banquet depicts a gay Taiwanese man in a fake wedding arrangement; it was remade in 2025 with Lily Gladstone and Bowen Yang. Eat Drink Man Woman follows a widower chef who cooks Sunday feasts for his three unmarried daughters.</p><p><a href="ang_lee_stock.html#crouching-tiger-hidden-dragon-2000" class="crossref-inline">Crouching Tiger, Hidden Dragon</a> (2000), based on a novel by Wang Dulu and scored by Tan Dun, is credited with reviving the wuxia genre. Michelle Yeoh plays Yu Shu Lien and Chow Yun-Fat plays Li Mu Bai. The 400-year-old Green Destiny sword is stolen by Jen, an apprentice of the villain Jade Fox; Jade Fox&#x27;s poison dart kills Li Mu Bai as he confesses his love to Yu Shu Lien. In the final scene, Jen jumps off a bridge and glides into a sea of fog. The film includes a wire-work sword duel in a bamboo forest (homage to King Hu&#x27;s A Touch of Zen). Rodrigo Prieto was the cinematographer.</p><p><a href="brokeback_mountain_stock.html" class="crossref-inline">Brokeback Mountain</a> (2005) is based on Annie Proulx&#x27;s short story from Close Range: Wyoming Stories (1999). Heath Ledger plays Ennis del Mar and Jake Gyllenhaal plays Jack Twist, who share a homosexual love affair across decades in Wyoming. Jack says the iconic line &#x27;I wish I knew how to quit you.&#x27; Alma Beers divorces Ennis after noticing he doesn&#x27;t use his pole on fishing trips. Ennis later learns Jack was killed with a tire iron. Larry McMurtry co-wrote the screenplay. The film was identified by critic B. Ruby Rich as changing the direction of New Queer Cinema; it controversially lost the 2005 Best Picture Oscar to Crash. <a href="yann_martel_stock.html#life-of-pi" class="crossref-inline">Life of Pi</a> (2012), adapted from <a href="yann_martel_stock.html" class="crossref-inline">Yann Martel</a>&#x27;s novel, follows Pi and the CGI Bengal tiger Richard Parker adrift for 227 days; Rhythm &amp; Hues won an Oscar for their work on Richard Parker just after going bankrupt. <a href="ang_lee_stock.html#sense-and-sensibility-1995" class="crossref-inline">Sense and Sensibility</a> (1995) was a major commercial success. Lust, Caution (2007) starred Tang Wei (in her debut) with cinematography by Rodrigo Prieto. Other films include The Ice Storm (1997, from Rick Moody&#x27;s novel), Hulk (2003), Ride with the Devil (from Daniel Woodrell&#x27;s Woe to Live On), and Billy Lynn&#x27;s Long Halftime Walk (2016, shot at 120 fps).</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Ang_Lee" target="_blank">Ang Lee — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Crouching_Tiger,_Hidden_Dragon" target="_blank">Crouching Tiger, Hidden Dragon — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Brokeback_Mountain_(film)" target="_blank">Brokeback Mountain (film) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Eat_Drink_Man_Woman" target="_blank">Eat Drink Man Woman — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Life_of_Pi_(film)" target="_blank">Life of Pi (film) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Crouching Tiger, Hidden Dragon — appears as its own answerline; deep search likely productive for wuxia/sword details</li><li>Brokeback Mountain — appears as its own answerline (both film and story); could merit deep search</li><li>Annie Proulx — &#x27;Brokeback Mountain&#x27; story from Close Range: Wyoming Stories; appears in lit context</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'ang_lee' });</script>
+
+</body>
+</html>

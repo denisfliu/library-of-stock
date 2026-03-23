@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Man Ray</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Man Ray</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">American Dadaist and Surrealist photographer born Emmanuel Radnitzky. Known for Le Violon d&#x27;Ingres (Kiki de Montparnasse&#x27;s back with f-holes), photograms called &#x27;rayographs,&#x27; solarization technique, and photographing Marcel Duchamp as cross-dressing alter-ego Rrose Selavy. Also made readymades including The Gift (iron with tacks) and Object to Be Destroyed (metronome with an eye). Spent most of his career in Paris.</div>
+
+        <details class="work" id="le-violon-d-ingres-1924" open>
+            <summary class="work-title">Le Violon d&#x27;Ingres (1924)</summary>
+            <p class="work-desc">Man Ray's most famous photograph. Depicts his model and lover Kiki de Montparnasse (Alice Prin) nude from behind, with two f-holes painted on her back to evoke a violin. Sold in May 2022 for $12.4 million, then the most expensive photograph ever sold at auction. <a href="https://en.wikipedia.org/wiki/Le_Violon_d%27Ingres" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/Le_Violon_d%27Ingres" target="_blank">View: Le Violon d&#x27;Ingres (1924)</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kiki de Montparnasse nude from the back with two f-holes painted on her skin to evoke a violin</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a photo by this man, Kiki de Montparnasse&#x27;s nude back has two f-holes painted on it. | This photographer&#x27;s most famous image depicts Kiki de Montparnasse nude with f-holes on her back, titled Le Violon d&#x27;Ingres.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sold in May 2022 for the then-record price for a photograph at auction</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In May 2022, this artist&#x27;s photograph Le Violon d&#x27;Ingres, which depicts Kiki de Montparnasse, became the most expensive photograph ever sold.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kiki de Montparnasse (Alice Ernestine Prin), &#x27;Queen of Montparnasse&#x27;, was the model</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This female model posed for Man Ray&#x27;s Le Violon d&#x27;Ingres. You can give either the real name of the mononym of this &#x27;Queen of Montparnasse.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="rayographs-photograms" open>
+            <summary class="work-title">Rayographs (Photograms)</summary>
+            <p class="work-desc">Man Ray's camera-less photographs, made by placing objects directly on photosensitive paper and exposing them to light. He named the technique after himself: 'rayographs.' Subjects included hands, springs, rolls of film, and a slinky. <a href="https://en.wikipedia.org/wiki/Rayograph" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/Rayograph" target="_blank">View: Rayograph (Man Ray)</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Named camera-less photographs (photograms) after himself: &#x27;rayographs&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this American Dadaist who created namesake &#x27;graphs&#x27; with photosensitive paper | This pioneer of the photogram painted two f-holes onto a model&#x27;s back for a 1924 photograph. | This man named a class of photograms after himself, and made many of hands, springs, and rolls of film.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Used a slinky in one of his best-known rayographs</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist of Glass Tears used a slinky in his best-known photogram</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Made film Return to Reason without a camera, throwing salt and pepper onto film</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This photographer threw salt and pepper onto a piece of film for one scene of a film he made without a camera, Return to Reason.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="noir-et-blanche-1926" open>
+            <summary class="work-title">Noir et Blanche (1926)</summary>
+            <p class="work-desc">Photograph of Kiki de Montparnasse resting her white head horizontally next to an upright African mask. Frequent quizbowl clue pairing the two contrasting forms. <a href="https://en.wikipedia.org/wiki/Man_Ray" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/Man_Ray" target="_blank">View: Noir et Blanche (1926)</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Woman rests her white head horizontally next to an upright African mask</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A woman rests her head next to an upright African mask in this photographer&#x27;s Noir et blanche | A frequent model of this photographer lays her head down horizontally next to a vertical African mask in Noir et Blanche.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="marcel-duchamp-rrose-selavy-photographs" open>
+            <summary class="work-title">Marcel Duchamp / Rrose Selavy Photographs</summary>
+            <p class="work-desc">Man Ray photographed Marcel Duchamp dressed in drag as his female alter-ego Rrose Selavy. One portrait of Rrose Selavy appeared on a Belle Haleine perfume bottle label. <a href="https://en.wikipedia.org/wiki/Rrose_S%C3%A9lavy" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/Rrose_S%C3%A9lavy" target="_blank">View: Marcel Duchamp as Rrose Selavy (Man Ray)</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Photographed Marcel Duchamp cross-dressed as female alter-ego Rrose Selavy</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Known for photographing Marcel Duchamp as Rrose Selavy | This artist photographed a cross-dressing Marcel Duchamp, his fellow Dadaist. | he also photographed Marcel Duchamp in drag as his alter-ego Rrose Selavy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Portrait of Rrose Selavy appeared as the label on the Belle Haleine perfume bottle</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">his portrait of an artist wearing a hat and pearls is the label of the Belle Haleine perfume bottle</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="meret-oppenheim-photographs" open>
+            <summary class="work-title">Meret Oppenheim Photographs</summary>
+            <p class="work-desc">Man Ray photographed Meret Oppenheim nude at an etching/printing press, with ink over her palm and forearm. One photograph shows a nude woman's torso with arms raised to look like a minotaur. <a href="https://en.wikipedia.org/wiki/Man_Ray" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/Man_Ray" target="_blank">View: Meret Oppenheim at the printing press (Man Ray)</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Photographed Meret Oppenheim nude at an etching/printing press, with ink over her palm and forearm</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This photographer captured another artist nude with ink over her palm and forearm, standing behind a printing wheel. | Meret Oppenheim was photographed nude at an etching press by this photographer.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="solarization-technique" open>
+            <summary class="work-title">Solarization Technique</summary>
+            <p class="work-desc">Man Ray developed the solarization (Sabattier effect) technique with his lover Lee Miller — exposing a developing image to a flash of light to partially reverse tones. Lee Miller's torso appears in one of his photograms. <a href="https://en.wikipedia.org/wiki/Solarisation" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/Solarisation" target="_blank">View: Solarization example (Man Ray)</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Developed solarization technique with lover Lee Miller — exposing a developing image to a flash of light</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">With their lover, this photographer developed a technique of exposing a developing image to a flash of light called solarisation. | Meret Oppenheim posed nude for him in a few photographs, and he invented the solarization technique.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lee Miller&#x27;s torso appears in one of his solarized photograms</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The torso of that lover, Lee Miller, appears in one of this photographer&#x27;s namesake photograms.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="object-to-be-destroyed-1923-1966" open>
+            <summary class="work-title">Object to Be Destroyed (1923/1966)</summary>
+            <p class="work-desc">Readymade/assemblage: a metronome with a photograph of an eye attached to the pendulum. Student protesters actually destroyed the original in 1957; Man Ray then created an edition called 'Indestructible Object.' Inspired by a line from Lautréamont about the chance meeting of an umbrella and a sewing machine on a dissecting table. <a href="https://en.wikipedia.org/wiki/Object_to_Be_Destroyed" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <a href="https://en.wikipedia.org/wiki/Object_to_Be_Destroyed" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Caf%C3%A9_Man_Ray_%281968%29_-_Man_Ray_%281890_-_1976%29_%2823464981861%29.jpg/500px-Caf%C3%A9_Man_Ray_%281968%29_-_Man_Ray_%281890_-_1976%29_%2823464981861%29.jpg" alt="Object to Be Destroyed (Man Ray)" loading="lazy"></a>
+                        <figcaption>Object to Be Destroyed (Man Ray)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Metronome with a photograph of an eye on the pendulum; actually destroyed by student protesters in 1957</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Dadaist combined a metronome and a photograph of an eye into the readymade Object To Be Destroyed, which student protesters actually destroyed in 1957.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A sculpture by this man was inspired by Lautréamont&#x27;s line about the chance meeting of an umbrella on a dissecting table</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A sculpture by this man was inspired by a certain novel&#x27;s line about the chance meeting of an umbrella on a dissecting table.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-enigma-of-isidore-ducasse-1920" open>
+            <summary class="work-title">The Enigma of Isidore Ducasse (1920)</summary>
+            <p class="work-desc">Wrapped a sewing machine in an army blanket (or wool) and tied it with yellow string — the title refers to Isidore Ducasse (Comte de Lautréamont), from whose work the 'umbrella and dissecting table' line comes. <a href="https://en.wikipedia.org/wiki/The_Enigma_of_Isidore_Ducasse" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <a href="https://en.wikipedia.org/wiki/The_Enigma_of_Isidore_Ducasse" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Caf%C3%A9_Man_Ray_%281968%29_-_Man_Ray_%281890_-_1976%29_%2823464981861%29.jpg/500px-Caf%C3%A9_Man_Ray_%281968%29_-_Man_Ray_%281890_-_1976%29_%2823464981861%29.jpg" alt="The Enigma of Isidore Ducasse (1920)" loading="lazy"></a>
+                        <figcaption>The Enigma of Isidore Ducasse (1920)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrapped a sewing machine in an army blanket/wool and tied it with yellow string</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He wrapped a sewing machine in an army blanket and tied it with yellow string to create The Enigma of Isidore Ducasse. | He wrapped a sewing machine in wool and string in one work.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-gift-1921" open>
+            <summary class="work-title">The Gift (1921)</summary>
+            <p class="work-desc">Readymade: an iron with a row of metal tacks glued to the bottom. Presented at the Cabaret Voltaire in Zurich. Archetype of Dadaist humor — a domestic object rendered useless. <a href="https://en.wikipedia.org/wiki/The_Gift_(Man_Ray)" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <a href="https://en.wikipedia.org/wiki/The_Gift_(Man_Ray)" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Gadeau_%28Gift%29%2C_gelatin_silver_print_by_Man_Ray%2C_1921%2C_private_collection.jpg/500px-Gadeau_%28Gift%29%2C_gelatin_silver_print_by_Man_Ray%2C_1921%2C_private_collection.jpg" alt="The Gift (1921)" loading="lazy"></a>
+                        <figcaption>The Gift (1921)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Iron with a row of tacks attached to the bottom; presented at the Cabaret Voltaire</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An iron with a row of tacks attached to the bottom called The Gift was a readymade at the Cabaret by this Dada photographer</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Born Emmanuel Radnitzky in Philadelphia; spent most of his career in Paris. Member of Dada and Surrealism. Associate of Marcel Duchamp; co-founder of Société Anonyme with Duchamp and Katherine Dreier. Berenice Abbott worked as his assistant. Known for discovering/championing Eugene Atget.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Born Emmanuel Radnitzky</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this American Dadaist who...was born Emmanuel Radnitzky | for 10 points, identify this surrealist and Dadaist who was born Emmanuel Radnitzky</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Berenice Abbott worked as his assistant; both championed Eugene Atget&#x27;s street photography</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Berenice Abbot worked as an assistant to this photographer, who, like her, championed the empty street views of Eugene Atget. | Abbott served as this artist&#x27;s assistant while studying in Paris.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Passionate chess player; designed the first modern chess set of purely abstract geometrical forms</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This photographer and passionate chess player designed the first modern chess set to be composed entirely of abstract geometrical forms.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Self-portrait Autoportrait: a handprint on a white pentagon above a doorbell</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A self-portrait by this photographer consists of a handprint on a piece of cardboard above a doorbell. | This man put his handprint on a white pentagon in a work titled Autoportrait</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-founded the Société Anonyme with Marcel Duchamp and Katherine Dreier</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist was a co-founder of the Societe Anonyme with Katherine Drier.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Bill Brandt studied in his studio</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Brandt once worked in the studio of this Dada photographer | Bill Brandt, who achieved distortion in his photos of nudes via wide-angle close-ups, studied under this artist.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Made aerographs (1919 onwards) — paintings using an airbrush; Seguidilla was the first</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s 1919 gouache called Seguidilla was the first of his &#x27;aerographs,&#x27; which he made using an airbrush. | This Dadaist created a series of abstract paintings he called &#x27;aerographs&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Man Ray (1890–1976), born Emmanuel Radnitzky in Philadelphia, was one of the most inventive and wide-ranging artists associated with both Dada and Surrealism. He spent the most significant decades of his career in Paris, where he became embedded in the avant-garde milieu alongside Marcel Duchamp, with whom he co-founded the Société Anonyme.</p><p>His most iconic photograph, Le Violon d&#x27;Ingres (1924), depicts his muse and lover Kiki de Montparnasse (Alice Ernestine Prin) — the &#x27;Queen of Montparnasse&#x27; — nude from the back, with two f-holes painted on her skin to transform her body into a visual pun on a violin. In May 2022, it sold for the record price of $12.4 million. Another famous photograph, Noir et Blanche (1926), shows Kiki&#x27;s white face resting horizontally next to an upright African mask, a juxtaposition of Western and African forms typical of Surrealist primitivism.</p><p>Man Ray was instrumental in developing cameraless photography. He named his version of photograms &#x27;rayographs&#x27; after himself, creating images by placing objects such as springs, rolls of film, and a slinky directly on photosensitive paper. He also developed the solarization (Sabattier effect) technique together with his lover Lee Miller — partially reversing tonal values by exposing a developing image to a sudden flash of light. Lee Miller&#x27;s torso appears in one of his photograms. Man Ray also photographed Meret Oppenheim nude with ink on her palm and forearm at an etching press, one of his celebrated series of photographs of that Surrealist artist.</p><p>As a Dadaist, Man Ray created several celebrated readymades and assemblages. The Gift (1921) is an iron with a row of metal tacks glued to the bottom, making it useless. The Enigma of Isidore Ducasse (1920) is a sewing machine wrapped in an army blanket and tied with yellow string, referencing Lautréamont&#x27;s famous Surrealist image of an umbrella and a sewing machine meeting on a dissecting table. Object to Be Destroyed (1923) combined a metronome with a photograph of an eye; in 1957, student protesters actually destroyed the original in his Paris studio, after which Man Ray created an edition titled Indestructible Object.</p><p>Among Man Ray&#x27;s collaborative and documentary work, his photographs of Marcel Duchamp dressed as the cross-dressing female alter-ego Rrose Selavy are iconic; one appeared on the label of the Belle Haleine perfume bottle. Man Ray helped discover and champion the Parisian street photographer Eugène Atget alongside Berenice Abbott, who worked as his studio assistant. Bill Brandt also trained in his studio. Man Ray was a passionate chess player and designed the first modern chess set composed entirely of abstract geometrical forms. His aerographs — paintings made with an airbrush — date from 1919, with Seguidilla as the first.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Man_Ray" target="_blank">Man Ray — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Le_Violon_d%27Ingres" target="_blank">Le Violon d&#x27;Ingres — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Rayograph" target="_blank">Rayograph — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Object_to_Be_Destroyed" target="_blank">Object to Be Destroyed — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Enigma_of_Isidore_Ducasse" target="_blank">The Enigma of Isidore Ducasse — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Rrose_S%C3%A9lavy" target="_blank">Rrose Sélavy — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Solarisation" target="_blank">Solarisation — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Marcel Duchamp — frequent collaborator; Rrose Selavy alter-ego, chess, Dada</li><li>Meret Oppenheim — Man Ray photographed her; Object (fur teacup) appears in same clues</li><li>Kiki de Montparnasse — model for Le Violon d&#x27;Ingres and Noir et Blanche</li><li>Lee Miller — Man Ray&#x27;s lover; developed solarization together</li><li>Berenice Abbott — worked as Man Ray&#x27;s assistant; championed Atget</li><li>Surrealism — broader movement Man Ray belonged to alongside Duchamp, Oppenheim, etc.</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'man_ray' });</script>
+
+</body>
+</html>

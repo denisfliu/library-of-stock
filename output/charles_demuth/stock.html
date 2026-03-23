@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Charles Demuth</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Charles Demuth</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">American Precisionist painter from Lancaster, Pennsylvania. Best known for I Saw the Figure 5 in Gold (inspired by <a href="william_carlos_williams_stock.html" class="crossref-inline">William Carlos Williams</a> poem). Created &#x27;poster portraits&#x27; of friends. Also painted My Egypt, watercolor illustrations of <a href="henry_james_stock.html" class="crossref-inline">Henry James</a>. Associated with hard-edged American modernism.</div>
+
+        <details class="work" id="i-saw-the-figure-5-in-gold-1928" open>
+            <summary class="work-title">I Saw the Figure 5 in Gold (1928)</summary>
+            <p class="work-desc">Poster portrait inspired by <a href="william_carlos_williams_stock.html" class="crossref-inline">William Carlos Williams</a>'s poem 'The Great Figure.' Features the number 5 (appearing three times, becoming smaller) on a fire truck with the word 'BILL,' 'W.C.W.' initials, 'Art Co.' on right edge, and diagonal light beams. Depicts Williams's visit to Marsden Hartley's apartment. <a href="https://en.wikipedia.org/wiki/I_Saw_the_Figure_5_in_Gold" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <a href="https://en.wikipedia.org/w/index.php?search=I+Saw+the+Figure+5+in+Gold+Charles+Demuth" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/NY_Met_demuth_figure_5_gold.JPG/500px-NY_Met_demuth_figure_5_gold.JPG" alt="I Saw the Figure 5 in Gold" loading="lazy"></a>
+                        <figcaption>I Saw the Figure 5 in Gold</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The word &#x27;BILL&#x27; appears above an abstract fire truck inspired by a William Carlos Williams poem; the title numeral appears in gold three times, becoming smaller to evoke a speeding fire truck</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the name &#x27;BILL&#x27; appears above an abstract fire truck inspired by a William Carlos Williams poem | placed the fragmented word &#x27;BILL&#x27; in the upper left of a painting that features scattered streetlights and a red shape resembling the fire truck | The word &#x27;BILL&#x27; is written in billboard font on the top of this painting</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title taken from William Carlos Williams&#x27;s poem &#x27;The Great Figure&#x27;; &#x27;W.C.W.&#x27; initials at the bottom; &#x27;Art Co.&#x27; inscribed on right edge</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This painting&#x27;s title was taken from William Carlos Williams&#x27; poem The Great Figure | The initials &#x27;W.C.W.&#x27; at the bottom of this painting refer to the poet who inspired it | inscribed the words &#x27;Art Co.&#x27; on its right edge</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two street lamps in upper corners; black lines depict heavy rain; criss-crossing diagonal shards represent motion; depicts visit to Marsden Hartley&#x27;s apartment</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two street lamps lie in the upper corners of this painting, in which black lines depict a heavy rain | It depicts a visit by its subject to Marsden Hartley&#x27;s apartment using criss-crossing diagonal shards to represent motion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Incised graphite ink into Upsom wallboard material used in advertising; pinholes visible from pinboard use</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This painting&#x27;s artist imitated sculptural depth by incising graphite ink into Upsom wallboard material used in advertising</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Robert Indiana made five variations with &#x27;EAT,&#x27; &#x27;DIE,&#x27; &#x27;HUG,&#x27; &#x27;ERR&#x27; encircling central image on a red star; titled for &#x27;American Dream&#x27; of Demuth</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a set of five variations on this painting, the words &#x27;EAT,&#x27; &#x27;DIE,&#x27; &#x27;HUG,&#x27; and &#x27;ERR&#x27; encircle its central image superimposed on a red star | Robert Indiana titled a series for the &#x27;American dream&#x27; of the artist of this painting</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">On the cover of the novel Uncle Petros and Goldbach&#x27;s Conjecture; Jasper Johns&#x27;s Figure 7 was a similar painting with Mona Lisa reproduction</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This painting is on the cover of the novel Uncle Petros and Goldbach&#x27;s Conjecture</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="my-egypt" open>
+            <summary class="work-title">My Egypt</summary>
+            <p class="work-desc">Painting of grain elevators (owned by John W. Eshelman & Sons) in Lancaster, Pennsylvania, with beams of light, linking industrial architecture to Egyptian pyramids.</p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Charles_Demuth_-_My_Egypt.jpg/500px-Charles_Demuth_-_My_Egypt.jpg" alt="My Egypt" loading="lazy">
+                        <figcaption>My Egypt</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Grain elevators with diagonal light beams in Lancaster, Pennsylvania; links industrial buildings to Egyptian pyramids; two cylindrical structures rise from the bottom</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">used diagonal, fragmented planes to suggest an inspirational, spiritual dimension of a structure, thereby linking it with the pyramids | intersecting bands of light in front of a large grain elevator | depicted several beams of light shining on a massive building with two cylindrical structures rising from the bottom</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicts concrete and steel grain elevator/silo owned by John W. Eshelman &amp; Sons in Lancaster</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of these structures owned by John W. Eshelman &amp; Sons in Lancaster, Pennsylvania is depicted in Charles Demuth&#x27;s painting My Egypt</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="poster-portraits" open>
+            <summary class="work-title">Poster Portraits</summary>
+            <p class="work-desc">Series of eight 'poster portraits' of friends. Subjects include <a href="william_carlos_williams_stock.html" class="crossref-inline">William Carlos Williams</a>, Arthur Dove, Georgia O'Keeffe, Gertrude Stein, and vaudevillian Bert Savoy.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Created eight &#x27;poster portraits&#x27; of friends; one shows a scythe and the word &#x27;DOVE&#x27; for Arthur Dove; subjects include O&#x27;Keeffe, Stein, Williams</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">created &#x27;poster portraits&#x27; of his friends include one with the word &#x27;Bill&#x27; on it | painted a portrait of Arthur Dove showing a giant scythe dominating a people-less landscape where the word &#x27;Dove&#x27; appears | This painting is one of a series of eight &#x27;poster portraits&#x27; its artist created of important figures in the 1920s, including Arthur Dove and Georgia O&#x27;Keeffe</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Love Love Love: homage to Gertrude Stein; mask, numbers &#x27;1 2 3,&#x27; &#x27;Love Love Love&#x27; repeated three times</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This word is repeated three times next to a mask and the numbers &#x27;1, 2, 3&#x27; in an &#x27;homage to Gertrude Stein&#x27; by Charles Demuth | A mask symbolizing this person hovers over the numbers &#x27;1 2 3&#x27; and the words &#x27;Love Love Love&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poster portrait of &#x27;female impersonator&#x27; Bert Savoy: two calla lilies emerge from a shell; borrowed calla lilies from Marsden Hartley as a symbol of homosexuality</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two of these objects emerge from a shell in Charles Demuth&#x27;s cryptic portrait of &#x27;female impersonator&#x27; Bert Savoy | Two of these objects emerge from a shell atop a wave in a &#x27;poster portrait&#x27; of vaudevillian Bert Savoy</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Demuth is identified. Precisionist painter from Lancaster, Pennsylvania. Works housed at the Whitney Museum.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Precisionist painter from Lancaster, Pennsylvania; Precisionism emphasized hard edges</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Precisionist painter | portrayed Lancaster, Pennsylvania in his works | this American art movement known for its hard edges, exemplified by I Saw The Figure Five in Gold by Charles Demuth</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Painted watercolor illustrations of Henry James stories (The Beast in the Jungle, The Turn of the Screw); Boat Ride from Sorrento inspired by Beast in the Jungle</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Henry James&#x27;s The Beast in the Jungle inspired this artist to paint the watercolor Boat Ride from Sorrento</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Homosexuality portrayed in Turkish Bath with Self Portrait</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">homosexuality was portrayed in his work Turkish Bath with Self Portrait</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Distinguished Air: watercolor depicting two gay sailors and a woman studying Brancusi&#x27;s Princess X; inspired by Robert McAlmon story</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two gay sailors and a woman in a red dress study this sculpture in the painting Distinguished Air by Charles Demuth | A scene from a Robert McAlmon story, in which a couple looks at a depiction of a woman with this surname, inspired Charles Demuth&#x27;s watercolor Distinguished Air</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">After Christopher Wren: painting of the Provincetown Heritage Museum, inspired by Wren&#x27;s architecture</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man inspired the design of the Provincetown Heritage Museum, which appears in a Charles Demuth painting titled After this man</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Influenced Georgia O&#x27;Keeffe&#x27;s skyscraper paintings; fellow Precisionists include Charles Sheeler and Elsie Driggs</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The work of Charles Demuth influenced a painting by this artist which depicts the building she lived in &#x27;with sunspots&#x27; | Elsie Driggs worked in this movement</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Works housed at the Whitney Museum of American Art</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This museum in Manhattan showcases 20th and 21st century American art, such as the works of Edward Hopper, Stuart Davis, and Charles Demuth</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Charles Demuth (1883-1935) was an American Precisionist painter from Lancaster, Pennsylvania. Precisionism was an American art movement emphasizing hard edges, also including Charles Sheeler and Elsie Driggs. His works are housed at the Whitney Museum of American Art.</p><p>His most famous work is I Saw the Figure 5 in Gold (1928), a poster portrait inspired by <a href="william_carlos_williams_stock.html" class="crossref-inline">William Carlos Williams</a>&#x27;s poem &#x27;The Great Figure.&#x27; The number 5 appears three times, becoming smaller to evoke a speeding fire truck. The word &#x27;BILL&#x27; appears at the top in billboard font, &#x27;W.C.W.&#x27; initials are at the bottom, and &#x27;Art Co.&#x27; is inscribed on the right edge. Two street lamps appear in the upper corners, black lines depict heavy rain, and criss-crossing diagonal shards represent motion. It depicts Williams&#x27;s visit to Marsden Hartley&#x27;s apartment. The artist incised graphite ink into Upsom wallboard material. <span class="crossref-inline-red" title="No page yet: Robert Indiana">Robert Indiana</span> created five variations with &#x27;EAT,&#x27; &#x27;DIE,&#x27; &#x27;HUG,&#x27; and &#x27;ERR&#x27; superimposed on red stars, titled for the &#x27;American Dream&#x27; of Demuth. Jasper Johns made a similar painting, Figure 7, with a Mona Lisa reproduction.</p><p>My Egypt depicts grain elevators (owned by John W. Eshelman &amp; Sons) in Lancaster with diagonal light beams and two cylindrical structures, linking industrial architecture to Egyptian pyramids.</p><p>Demuth created eight &#x27;poster portraits&#x27; of friends including Williams, Arthur Dove (showing a scythe and the word &#x27;DOVE&#x27;), Georgia O&#x27;Keeffe, and Gertrude Stein. Love Love Love is an homage to Stein featuring a mask, numbers &#x27;1 2 3,&#x27; and the word &#x27;Love&#x27; repeated three times. A poster portrait of &#x27;female impersonator&#x27; Bert Savoy shows two calla lilies emerging from a shell, borrowed from Marsden Hartley as a symbol of homosexuality.</p><p>Other works include Distinguished Air, a watercolor depicting two gay sailors and a woman studying Brancusi&#x27;s Princess X (inspired by a Robert McAlmon story), After Christopher Wren (painting of the Provincetown Heritage Museum), Turkish Bath with Self Portrait (portraying his homosexuality), and watercolor illustrations of <a href="henry_james_stock.html" class="crossref-inline">Henry James</a> stories including Boat Ride from Sorrento (inspired by <a href="henry_james_stock.html#the-beast-in-the-jungle" class="crossref-inline">The Beast in the Jungle</a>). His work influenced Georgia O&#x27;Keeffe&#x27;s skyscraper paintings.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Charles_Demuth" target="_blank">Charles Demuth — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/I_Saw_the_Figure_5_in_Gold" target="_blank">I Saw the Figure 5 in Gold — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Precisionism — the movement Demuth led</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'charles_demuth' });</script>
+
+</body>
+</html>

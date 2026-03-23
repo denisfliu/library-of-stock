@@ -42,8 +42,8 @@ def main():
     # Build a lookup from all analysis JSONs: normalized topic name -> (topic, slug)
     output_dir = ROOT / 'output'
     index = {}  # normalized name -> (canonical_topic, slug)
-    for json_path in output_dir.glob('*_analysis.json'):
-        slug = json_path.stem.replace('_analysis', '')
+    for json_path in output_dir.glob('*/analysis.json'):
+        slug = json_path.parent.name
         with open(json_path) as f:
             data = json.load(f)
         canonical = data.get('topic', '')
@@ -110,7 +110,7 @@ Add cross_refs to these topics (working directory: /home/laufey/code/stock):
 {topic_list}
 
 For each topic:
-1. Read output/{{slug}}_analysis.json
+1. Read output/{{slug}}/analysis.json
 2. Read output/topic_index.json
 3. Scan all text fields for mentions of indexed topics/works
 4. Add cross_refs array

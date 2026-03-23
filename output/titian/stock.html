@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Titian</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Titian</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Venetian Renaissance painter. Known for Venus of Urbino, Rape of Europa, Equestrian Portrait of Charles V, poesie paintings for Philip II (including Diana and Actaeon, Danaë), The Flaying of Marsyas, and numerous portraits. Student of <span class="crossref-inline-red" title="No page yet: Giorgione">Giorgione</span> (collaborated on Pastoral Concert). Court painter to the Habsburgs.</div>
+
+        <details class="work" id="venus-of-urbino-1538" open>
+            <summary class="work-title">Venus of Urbino (1538)</summary>
+            <p class="work-desc">Reclining nude on a bed with a sleeping dog; a maid rummages through a chest in the background. Inspired by <span class="crossref-inline-red" title="No page yet: Giorgione">Giorgione</span>'s Sleeping Venus. <a href="https://en.wikipedia.org/wiki/Venus_of_Urbino" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg/500px-Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg" alt="Venus of Urbino (1538)" loading="lazy">
+                        <figcaption>Venus of Urbino (1538)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Reclining nude woman on a bed; a maid rummages through a chest behind a sleeping dog</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a maid rummaging through a chest behind a sleeping dog | a maid looking in a chest behind a bed where a little dog sleeps near a reclining nude woman</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by Giorgione&#x27;s painting of a nude reclining against a red pillow</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A painting by this artist&#x27;s teacher that depicts a nude reclining against a red pillow likely inspired him</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="poesie-paintings-for-philip-ii-rape-of-europa-dana-diana-and-actaeon-etc" open>
+            <summary class="work-title">Poesie Paintings for Philip II (Rape of Europa, Danaë, Diana and Actaeon, etc.)</summary>
+            <p class="work-desc">Series of mythological paintings for King Philip II of Spain, called 'poesie.' <a href="https://en.wikipedia.org/wiki/Poesie_(Titian)" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg/500px-Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg" alt="Rape of Europa (1560-62)" loading="lazy">
+                        <figcaption>Rape of Europa (1560-62)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rape of Europa — a cherub rides a fish as Europa clings to the horn of a white bull</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a cherub riding a fish looking on as the title woman clings to the horn of a white bull | Habsburg patrons also commissioned his Rape of Europa</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Danaë — a maid watches a gold cloud approach the reclining nude; first version for a Farnese, later version for Philip II</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this artist&#x27;s &#x27;poesie&#x27; paintings include one where a maid watches a gold cloud approach Danae | painted his first version of Danae for a member of this family before sending a later version to Philip II</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Diana and Actaeon — two-part depiction of the myth for Philip II</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this artist made a two-part depiction of the Diana and Actaeon story</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="equestrian-portrait-of-charles-v-1548" open>
+            <summary class="work-title">Equestrian Portrait of Charles V (1548)</summary>
+            <p class="work-desc">Depicts Emperor Charles V in full armor on horseback at the Battle of Mühlberg, despite the subject being gouty. <a href="https://en.wikipedia.org/wiki/Equestrian_Portrait_of_Charles_V" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Carlos_V_en_M%C3%BChlberg%2C_by_Titian%2C_from_Prado_in_Google_Earth.jpg/500px-Carlos_V_en_M%C3%BChlberg%2C_by_Titian%2C_from_Prado_in_Google_Earth.jpg" alt="Equestrian Portrait of Charles V (1548)" loading="lazy">
+                        <figcaption>Equestrian Portrait of Charles V (1548)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicts a gouty man in full armor carrying a spear and riding a horse at the Battle of Mühlberg</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">unrealistically depicted a gouty man in full armor, carrying a spear and riding a horse at the Battle of Muhlberg | massive Equestrian Portrait of Charles V</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-flaying-of-marsyas" open>
+            <summary class="work-title">The Flaying of Marsyas</summary>
+            <p class="work-desc">Late work. A dog laps blood being caught in a bucket; contains a self-portrait as Midas watching Apollo kneel beside the upside-down Marsyas.</p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Titian_-_The_Flaying_of_Marsyas.jpg/500px-Titian_-_The_Flaying_of_Marsyas.jpg" alt="The Flaying of Marsyas" loading="lazy">
+                        <figcaption>The Flaying of Marsyas</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A dog laps blood being caught in a bucket; self-portrait as Midas watching Apollo kneel beside the upside-down title figure</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A bucket is being brought for the blood being lapped by a dog; contains a self-portrait as Midas watching Apollo kneel beside the upside-down title figure</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="portrait-of-a-man-with-a-blue-sleeve-man-with-a-quilted-sleeve" open>
+            <summary class="work-title">Portrait of a Man with a Blue Sleeve / Man with a Quilted Sleeve</summary>
+            <p class="work-desc">Portrait in which the subject leans a blue quilted sleeve over a parapet. Vasari incorrectly claimed it depicted the poet Ariosto. Quoted by <span class="crossref-inline-red" title="No page yet: Rembrandt">Rembrandt</span>'s Self-portrait at the Age of 40.</p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg/500px-Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg" alt="Portrait of a Man with a Blue Sleeve / Man with a Quilted Sleeve" loading="lazy">
+                        <figcaption>Portrait of a Man with a Blue Sleeve / Man with a Quilted Sleeve</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Subject leans blue quilted sleeve over a parapet; Vasari incorrectly claimed it depicted Ariosto; quoted by Rembrandt</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a bearded young man looks sidelong at the viewer and rests his right elbow on a parapet while wearing a huge blue sleeve | Rembrandt&#x27;s Self-portrait at the Age of 40 quotes a painting by this artist that Vasari incorrectly claims depicts the poet Ariosto</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Titian is identified and biographical clues.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Venetian Renaissance painter</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Venetian painter | this Venetian artist of The Rape of Europa and The Venus of Urbino</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Student of Giorgione; collaborated on Pastoral Concert (lute player and lyricist next to a nude woman)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s teacher likely helped him on a painting that depicts a lute player and a lyricist next to a nude woman, titled Pastoral Concert</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Portrait of Isabella d&#x27;Este — depicted 62-year-old as baby-faced young woman</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">portrayed his 62-year-old subject as a baby-faced, curly-haired young woman in his portrait of Isabella d&#x27;Este</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Signature includes &#x27;as I can&#x27; punning on his name</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Allegory of Prudence — heads of dog, lion, wolf under heads of youth, mature man, old man (triple portrait of Titian, son Orazio, cousin Marco)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">depicts the heads of a dog, a lion, and a wolf under the heads of a youth, a mature man, and an old man</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Titian (Tiziano Vecellio, c. 1488-1576) was the leading Venetian Renaissance painter. His most commonly clued work is Venus of Urbino (1538), depicting a reclining nude on a bed with a sleeping dog while a maid rummages through a chest, inspired by his teacher <span class="crossref-inline-red" title="No page yet: Giorgione">Giorgione</span>&#x27;s Sleeping Venus.</p><p>His &#x27;poesie&#x27; paintings for King Philip II of Spain include Rape of Europa (a cherub rides a fish as Europa clings to the horn of a white bull), Danaë (a maid watches a gold cloud approach the reclining nude), and Diana and Actaeon. The Equestrian Portrait of Charles V (1548) unrealistically depicts the gouty emperor in full armor on horseback at the Battle of Mühlberg. The Flaying of Marsyas is a late masterpiece featuring a self-portrait as Midas watching Apollo flay the upside-down Marsyas, with a dog lapping blood.</p><p>His portrait of a man with a blue quilted sleeve (Man with a Quilted Sleeve) was incorrectly attributed by Vasari as depicting Ariosto and was quoted by <span class="crossref-inline-red" title="No page yet: Rembrandt">Rembrandt</span>. He portrayed Isabella d&#x27;Este at age 62 as a baby-faced young woman. His Allegory of Prudence shows heads of a dog, lion, and wolf beneath heads of three men (thought to be Titian, his son Orazio, and cousin Marco). He was a student of <span class="crossref-inline-red" title="No page yet: Giorgione">Giorgione</span> and collaborated on Pastoral Concert.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Titian" target="_blank">Titian — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Venus_of_Urbino" target="_blank">Venus of Urbino — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Rape_of_Europa_(Titian)" target="_blank">Rape of Europa (Titian) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Venus of Urbino — has its own answerline</li><li>Rape of Europa — has its own answerline</li><li>Giorgione — Titian&#x27;s teacher, often paired</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'titian' });</script>
+
+</body>
+</html>

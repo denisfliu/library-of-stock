@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Jean Racine</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Jean Racine</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Jean Racine is a 17th-century <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> neoclassical tragedian best known for his play Phedre, which is by far his most frequently clued work.</div>
+
+        <details class="work" id="phedre" open>
+            <summary class="work-title">Phedre</summary>
+            <p class="work-desc">Phedre is Racine's most famous tragedy, depicting the title character's incestuous love for her stepson Hippolytus. The play is based on <a href="euripides_stock.html" class="crossref-inline">Euripides</a>' Hippolytus but introduces the character Aricie as Hippolytus's love interest. Key plot points include Phedre's confession to nurse Oenone, Theseus invoking Neptune's curse, the sea monster attacking Hippolytus's chariot (described by Theramene), Oenone drowning, and Phedre poisoning herself. The famous line describing Phedre as 'the daughter of Minos and Pasiphae' is repeatedly clued as untranslatable.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Phedre described as &#x27;the daughter of Minos and Pasiphae&#x27; -- called Racine&#x27;s finest/only tolerable line by Theophile Gautier; described as untranslatable</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hippolytus&#x27;s chariot attacked by a sea monster (half-bull, half-snake/horned), described offstage by Theramene; horses drag Hippolytus to death</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The nurse Oenone convinces Phedre to declare her love for Hippolytus / hatches the plot to accuse Hippolytus of rape; Oenone later drowns herself</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title character&#x27;s incestuous love for stepson Hippolytus, wife of Theseus</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Phedre poisons herself after Hippolytus&#x27;s death / after Theseus discovers her love</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Aricie is Hippolytus&#x27;s love interest, a notable addition not in Euripides&#x27; Hippolytus</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on Euripides&#x27; Hippolytus</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Theseus invokes Neptune&#x27;s curse against his own son</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ted Hughes spent his last months translating Phedre</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Theramene described as Hippolytus&#x27;s lecherous tutor</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Like virtue, crime has its degrees&#x27; -- line from the play</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="andromaque" open>
+            <summary class="work-title">Andromaque</summary>
+            <p class="work-desc">Andromaque is Racine's retelling of the Trojan War aftermath. Hermione asks Orestes to kill Pyrrhus, who loves the title character Andromaque. After Pyrrhus dies, Hermione kills herself, and Orestes <a href="hugo_van_der_goes_stock.html" class="crossref-inline">Goes</a> insane. The role was written for actress Therese du Parc, Racine's lover. The play features nobly-born servants Cleone and Cephisa, and Andromaque marries Pyrrhus to protect her son Astyanax.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hermione asks Orestes to kill Pyrrhus, who loves the title character; after Pyrrhus dies, Hermione kills herself and Orestes goes insane</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hermione tells Cleone she &#x27;loved Pyrrhus too much not to hate him&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title role written for actress Therese du Parc, Racine&#x27;s lover, whom he stole from Moliere&#x27;s company</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Andromaque marries Pyrrhus to protect her son Astyanax</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features nobly-born servants Cleone and Cephisa (Cephise)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="athalie" open>
+            <summary class="work-title">Athalie</summary>
+            <p class="work-desc">Athalie is a biblical tragedy that <a href="voltaire_stock.html" class="crossref-inline">Voltaire</a> called 'the supreme achievement of the human mind.' The high priest Joad and Jehoshebath conspire to dethrone the title queen, who worships Baal, and install Joash as king of the Jews. The title character describes her mother wearing makeup to 'repair the irreparable ravages of time.' Racine was commissioned to write it for Madame de Maintenon's girls' <a href="ashcan_school_stock.html" class="crossref-inline">School</a>.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Voltaire called it &#x27;the supreme achievement of the human mind&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">High priest Joad installs Joash (Joas) as king; title queen worships Baal and is dethroned/killed</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written for Madame de Maintenon&#x27;s girls&#x27; boarding school (along with Esther)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Includes extensive musical choruses</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Title character describes her mother wearing makeup to &#x27;repair the irreparable ravages of time&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="britannicus" open>
+            <summary class="work-title">Britannicus</summary>
+            <p class="work-desc">Britannicus depicts the Roman Emperor Nero, who abducts Junia (the title character's fiancee) and poisons Britannicus at a feast. At the end, Junia becomes a Vestal Virgin and Nero's tutor Narcisse is killed by an angry mob. A woman predicts her son will murder her next.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nero poisons the title character and abducts his fiancee Junia; Junia becomes a Vestal Virgin</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">An angry mob kills Narcisse (Nero&#x27;s tutor) at the end</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A woman predicts her son will murder her next and try to drown his remorse by committing fresh atrocities</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="les-plaideurs-the-litigants" open>
+            <summary class="work-title">Les Plaideurs (The Litigants)</summary>
+            <p class="work-desc">Les Plaideurs is Racine's only comedy, adapted from <a href="aristophanes_stock.html" class="crossref-inline">Aristophanes</a>' <a href="aristophanes_stock.html#the-wasps" class="crossref-inline">The Wasps</a>. It features the mad Judge Dandin, the <a href="katherine_anne_porter_stock.html" class="crossref-inline">Porter</a> Petit Jean, and includes a trial of the dog Citron for eating a chicken. Leander and Isabelle trick Chicaneau and Dandin into allowing their marriage.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Racine&#x27;s only comedy; adapted from Aristophanes&#x27; The Wasps</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Judge rules against a dog (Citron) for eating a chicken, but pardons it after pleas from its puppies</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Features the mad Judge Dandin and porter Petit Jean</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Racine's other clued works include Esther (a three-act play about the biblical Esther convincing King Ahasuerus to stop a massacre of Jews), Berenice (about the Roman Emperor Titus renouncing the Queen of Judaea because 'Rome took a hatred to the name of King'), Bajazet, and Mithridates (about Xiphares and Monime inheriting the kingdom). La Thebaide was his first play performed live, premiered by Moliere's troupe in 1664.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Esther: three-act play; title character convinces King Ahasuerus to stop a plotted massacre of Jews; written for Madame de Maintenon&#x27;s school</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Berenice: Roman Emperor Titus forced to renounce the Queen of Judaea because &#x27;Rome took a hatred to the name of King&#x27;</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">La Thebaide: first play performed live, premiered by Moliere&#x27;s troupe in 1664</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mithridates: Xiphares and Monime inherit the kingdom</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Racine is identified as a 17th-century <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> neoclassical tragedian, known for his alexandrine verse (twelve-syllable lines with a caesura) and strict adherence to the dramatic unities. He was a contemporary of Moliere and Corneille. Roland Barthes wrote a psychoanalysis-inflected study On Racine, which was attacked by Raymond Picard in '<a href="new_criticism_stock.html" class="crossref-inline">New Criticism</a> or New Fraud?' -- the resulting controversy helped legitimize literary theory. Lucien Goldmann's The Hidden God analyzed Racine's social class. In Proust's In Search of Lost Time, the actress Berma specializes in Racine's plays. Racine sided with the Ancients in the Quarrel between Ancients and Moderns. He converted to Jansenism late in life.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">French neoclassical tragedian; author of Andromaque, Phedre, etc.</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Used alexandrine verse (twelve syllables, caesura dividing two hemistichs of six)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Roland Barthes&#x27; On Racine attacked by Raymond Picard in &#x27;New Criticism or New Fraud?&#x27;; the controversy helped legitimize literary theory</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lucien Goldmann&#x27;s The Hidden God compares the decline of Racine&#x27;s social class to his characters rejecting the world</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Proust&#x27;s In Search of Lost Time, the narrator befriends Berma, an actress specializing in Racine&#x27;s plays; schoolgirls assigned to write letters from Sophocles to Racine</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Converted to Jansenism; spent last years writing Spiritual Canticles</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sided with the Ancients in the Quarrel between Ancients and Moderns</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Known for small vocabulary and simple diction; characters &#x27;trapped&#x27; by passion</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Closely adhered to the dramatic unities (time, place, action)</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alan Hollinghurst&#x27;s best-known translations are of Racine&#x27;s plays; John Cairncross (Cambridge Five spy) translated for Penguin Classics</span>
+                    <span class="badge badge-mid">mid</span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Jean Racine is a 17th-century <a href="daniel_chester_french_stock.html" class="crossref-inline">French</a> neoclassical tragedian best known for his play Phedre, which is by far his most frequently clued work. He is consistently identified alongside Moliere and Pierre Corneille as one of the three great French dramatists of the period, and is particularly associated with his use of alexandrine verse (lines of twelve syllables divided by a caesura into two hemistichs of six).</p><p>Phedre, his most famous tragedy, depicts the title character&#x27;s incestuous love for her stepson Hippolytus (Hippolyte), the son of her husband Theseus (Thesee). Key plot points include Phedre confessing her love to her nurse Oenone, who then concocts a scheme to accuse Hippolytus of raping Phedre. Theseus invokes Neptune&#x27;s curse against his own son, leading to a climactic scene in which Hippolytus&#x27;s chariot is attacked by a horned sea monster (described by Theramene as half-bull, half-snake), causing the horses to drag him to his death. Oenone drowns herself, and Phedre poisons herself. The play introduces the character Aricie as Hippolytus&#x27;s love interest, a notable difference from its source, <a href="euripides_stock.html" class="crossref-inline">Euripides</a>&#x27; Hippolytus. Theophile Gautier called the line describing Phedre as &#x27;the daughter of Minos and Pasiphae&#x27; Racine&#x27;s finest (or only &#x27;tolerable&#x27;) verse, and it is frequently described as untranslatable. <a href="ted_hughes_stock.html" class="crossref-inline">Ted <a href="langston_hughes_stock.html" class="crossref-inline">Hughes</a></a> spent his last months translating the play.</p><p>Andromaque is his second most clued tragedy, adapted from the Trojan War story. In it, Hermione asks her cousin Orestes to kill Pyrrhus, who loves the title character Andromaque. After Pyrrhus dies, Hermione vows to kill herself, which causes Orestes to go insane. The play includes nobly-born servant characters Cleone and Cephisa. The role of Andromaque was written for actress Therese du Parc, Racine&#x27;s lover, whom he controversially stole from Moliere&#x27;s company.</p><p>Athalie is another major tragedy, which <a href="voltaire_stock.html" class="crossref-inline">Voltaire</a> called &#x27;the supreme achievement of the human mind.&#x27; In this play, the high priest Joad and Jehoshebath conspire to dethrone the title queen, who worships Baal, and install Joash (Joas) as king of the Jews. The play includes extensive musical choruses. Racine was commissioned to write it and Esther as religious pieces for Madame de Maintenon&#x27;s girls&#x27; boarding <a href="ashcan_school_stock.html" class="crossref-inline">School</a>.</p><p>Britannicus is a tragedy about the Roman Emperor Nero, who abducts Junia (fiancee of the title character) and poisons Britannicus at a feast. At the end, Junia becomes a Vestal Virgin, and Nero&#x27;s tutor Narcisse is killed by an angry mob.</p><p>Esther is a three-act play (unconventional for Racine) in which the title character convinces King Ahasuerus to stop a plotted massacre of Jews, with Hydaspes and Asaph as officers of the king.</p><p>Les Plaideurs (The Litigants) is Racine&#x27;s only comedy, adapted from <a href="aristophanes_stock.html" class="crossref-inline">Aristophanes</a>&#x27; <a href="aristophanes_stock.html#the-wasps" class="crossref-inline">The Wasps</a>. It features the mad Judge Dandin, the <a href="katherine_anne_porter_stock.html" class="crossref-inline">Porter</a> Petit Jean, and culminates when a judge rules against a dog named Citron for eating a chicken but pardons it after pleas from its puppies. Leander and Isabelle trick Chicaneau and Dandin into allowing their marriage.</p><p>Racine was also the subject of a major literary controversy when Roland Barthes published a psychoanalysis-inflected study (On Racine), which was attacked by Raymond Picard in the article &#x27;<a href="new_criticism_stock.html" class="crossref-inline">New Criticism</a> or New Fraud?&#x27; Racine&#x27;s response through Criticism and Truth helped legitimize literary theory as a discipline. Lucien Goldmann&#x27;s study The Hidden God compared the decline of Racine&#x27;s social class to how his characters reject the world in which they are compelled to live. In Proust&#x27;s In Search of Lost Time, the narrator befriends Berma, an actress specializing in Racine&#x27;s plays, and schoolgirls are assigned to write a letter from <a href="sophocles_stock.html" class="crossref-inline">Sophocles</a> to Racine from the <a href="don_delillo_stock.html#underworld" class="crossref-inline">Underworld</a>. Racine sided with the Ancients in the Quarrel between the Ancients and the Moderns. He converted to Jansenism late in life and spent his final years writing the Spiritual Canticles. He closely adhered to the dramatic unities.</p>
+        </section>
+        
+
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'jean_racine' });</script>
+
+</body>
+</html>

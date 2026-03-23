@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Metropolis</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Metropolis</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">1927 German Expressionist science fiction silent film directed by <a href="fritz_lang_stock.html" class="crossref-inline">Fritz Lang</a>. Set in a futuristic dystopian city ruled by a capitalist elite above ground while workers toil below. Features the inventor Rotwang, who builds a robot in the likeness of labor leader Maria, and the protagonist Freder, who imagines workers being fed to the machine-god Moloch. Also the title of an <a href="otto_dix_stock.html" class="crossref-inline">Otto Dix</a> triptych (1928) depicting Weimar Germany nightlife alongside crippled WWI veterans.</div>
+
+        <details class="work" id="metropolis-1927-film-fritz-lang" open>
+            <summary class="work-title">Metropolis (1927 film, Fritz Lang) <a href="fritz_lang_stock.html" class="work-link-btn" title="Go to Fritz Lang">&rarr;</a></summary>
+            <p class="work-desc">Landmark 1927 German Expressionist silent sci-fi film directed by <a href="fritz_lang_stock.html" class="crossref-inline">Fritz Lang</a>. The story depicts an oppressive future city where workers toil underground while the elite live above. The inventor Rotwang creates a robot double of the labor leader Maria. A significant portion of the original film was lost and rediscovered in Buenos Aires in 2008. <a href="https://en.wikipedia.org/wiki/Metropolis_(1927_film)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The New Tower of Babel stands over the central city; the inventor Rotwang builds a &#x27;machine human&#x27; (robot) in the likeness of the labor leader Maria</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The New Tower of Babel stands over one of these places in a silent film in which Rotwang constructs a &#x27;machine human.&#x27; | In a famous shot from this film, the likeness of the labor leader Maria is given to a robot.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The protagonist Freder has a hallucination of workers being fed to the machine-god Moloch</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a character imagines workers who pull levers resembling clock faces being fed to Moloch | IBM makes machines like the one that is seen as Moloch in a hallucination by Freder in this German Expressionist sci-fi film by Fritz Lang</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eugen Schufftan invented the Schufftan process (combining miniatures and mirrors) for this film</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Eugen Schufftan invented a process that combines miniatures and mirrors for a film titled for one of these places</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sometimes screened with a score by Giorgio Moroder</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">which is sometimes shown with a score by Giorgio Moroder</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Significant lost reels were rediscovered in Buenos Aires in 2008</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another significant moment in the rediscovery of lost silent films was the 2008 find of the lost reels of this 1927 sci-fi film in Buenos Aires.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Heinz Schulz-Neudamm&#x27;s poster for the film is the most expensive film poster ever sold; Boris Balinsky&#x27;s poster was inspired by Piranesi</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Piranesi inspired Boris Balinsky&#x27;s poster for this film, while Heinz Schulz-Neudamm&#x27;s poster for it is the most expensive film poster ever sold.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The tallest building in the film&#x27;s city is the Bruegel-inspired New Tower of Babel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The tallest building in this film&#x27;s central city is the Breughel-inspired New Tower of Babel.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chris Burden&#x27;s kinetic sculpture &#x27;Metropolis II&#x27; uses Lego bricks, Lincoln Logs, and thousands of model cars</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Burden used Lego bricks, Lincoln Logs, and thousands of model cars in a kinetic sculpture named for this word. This word also titles a film featuring the inventor Rotwang, who makes a robotic likeness of Maria.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Directed by Fritz Lang</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">IBM makes machines like the one that is seen as Moloch in a hallucination by Freder in this German Expressionist sci-fi film by Fritz Lang, titled for a machine-filled city. | name this triptych by Otto Dix that shares its title with a pioneering science fiction film by Fritz Lang</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="metropolis-1928-painting-otto-dix" open>
+            <summary class="work-title">Metropolis (1928 painting, Otto Dix) <a href="otto_dix_stock.html" class="work-link-btn" title="Go to Otto Dix">&rarr;</a></summary>
+            <p class="work-desc">A triptych by <a href="otto_dix_stock.html" class="crossref-inline">Otto Dix</a>, a leading New Objectivity artist, depicting the social contradictions of Weimar Germany. The central panel shows a glamorous dance at a ball; the outer panels show crippled WWI veterans begging while being ignored by prostitutes. Shares its title with the <a href="fritz_lang_stock.html" class="crossref-inline">Fritz Lang</a> film. <a href="https://en.wikipedia.org/wiki/Metropolis_(Dix)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A triptych; the central panel shows musicians (tubas and saxophones, including Alfred Schulze on saxophone) playing to well-off society women dancing the Charleston at a Weimar Germany ball</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the center of this triptych, musicians in mid-motion play tubas and saxophones to well-off society women dancing the Charleston during a ball in Weimar Germany. | The central panel of this painting shows Alfred Schulze playing saxophone in a band at a nightclub.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The outer panels show crippled WWI veterans on wooden peg legs begging, attacked by a dog, being ignored by prostitutes wearing fur</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This New Objectivity painting depicts crippled veterans of World War I on its left and right being ignored by prostitutes wearing fur. | The artist included himself on the left as a wounded, begging veteran with two wooden pegs for legs, getting attacked by a dog</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dix included a self-portrait on the left as a wounded veteran with two wooden peg legs, attacked by a dog</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The artist of this painting included himself on the left as a wounded, begging veteran with two wooden pegs for legs, getting attacked by a dog, referencing a subject he also explored in his The Trench and the series War.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A hefty blonde woman with her right breast exposed by a pink coat clutches a wad of cash; a man wears a dress and pearls and waves a huge pink ostrich feather</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">On the right of this painting, a hefty blonde woman with her right breast exposed by a pink coat clutches a wad of cash as she walks next to a man with an upturned cap in his lap. | In this painting, a man wearing a dress and pearls waves a huge pink ostrich feather behind his head.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Painted by Otto Dix, associated with New Objectivity and Weimar Germany</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this triptych by Otto Dix that shares its title with a pioneering science fiction film by Fritz Lang</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="metropolis-michael-daugherty-symphony" open>
+            <summary class="work-title">Metropolis (Michael Daugherty symphony)</summary>
+            <p class="work-desc">A symphony by American composer Michael Daugherty, his only symphony, described as a 'fantasy in blue' on the city of Metropolis. Also referenced in a tuba concerto and a programmatic symphony about Superman. <a href="https://en.wikipedia.org/wiki/Michael_Daugherty" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Daugherty&#x27;s only symphony; an early Ferde Grofé piece is also a &#x27;fantasy in blue&#x27; on a city of this name</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another early Grofe piece is a &#x27;fantasy in blue&#x27; on a city of this name. A fictional American city of this name titles Daugherty&#x27;s only symphony.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>The topic &#x27;Metropolis&#x27; in Fine Arts quizbowl primarily refers to two works: <a href="fritz_lang_stock.html" class="crossref-inline">Fritz Lang</a>&#x27;s 1927 German Expressionist silent film and <a href="otto_dix_stock.html" class="crossref-inline">Otto Dix</a>&#x27;s 1928 New Objectivity triptych painting.</p><p><a href="fritz_lang_stock.html" class="crossref-inline">Fritz Lang</a>&#x27;s Metropolis (1927) is one of the most significant silent science fiction films ever made. The film is set in a future dystopian city (the &#x27;Metropolis&#x27;) where the wealthy elite live above ground while workers toil in underground factories. The tallest structure is the Bruegel-inspired New Tower of Babel. The central conflict involves the inventor Rotwang, who constructs a &#x27;machine human&#x27; — a robot — in the likeness of the underground workers&#x27; leader, Maria. The protagonist Freder (son of the city&#x27;s ruler) witnesses a hallucination of workers being fed into the machine-god Moloch as they pull levers resembling clock faces. The film&#x27;s cinematography was made possible partly by the Schufftan process, a technique invented by Eugen Schufftan that combines miniatures with mirrors to create the illusion of massive scale. A significant portion of the original film was long considered lost, until the missing reels were discovered in Buenos Aires in 2008. The film is sometimes screened with a score by Giorgio Moroder. Two notable posters were made for it: one by Heinz Schulz-Neudamm (the most expensive film poster ever sold) and one by Boris Balinsky (inspired by <a href="piranesi_stock.html" class="crossref-inline">Piranesi</a>). American artist Chris Burden paid homage with his kinetic sculpture &#x27;Metropolis II,&#x27; which used Lego bricks, Lincoln Logs, and thousands of model cars. In the history of science fiction film, the film stands alongside works like Ridley Scott&#x27;s Blade Runner and <a href="jean_luc_godard_stock.html" class="crossref-inline">Jean-Luc Godard</a>&#x27;s <a href="jean_luc_godard_stock.html#alphaville-1965" class="crossref-inline">Alphaville</a> as an influence on the genre.</p><p><a href="otto_dix_stock.html" class="crossref-inline">Otto Dix</a>&#x27;s Metropolis (1928) is a triptych painting in the New Objectivity style, depicting the social contradictions of Weimar-era Germany. The large central panel shows a glamorous ball scene where well-off society women dance the Charleston to a jazz band — musicians including Alfred Schulze on saxophone play tubas and saxophones in mid-motion. The flanking outer panels show the dark reverse of this prosperity: crippled World War I veterans reduced to begging on wooden peg legs, ignored by passing prostitutes in fur coats. Dix included a self-portrait on the left panel, depicting himself as one of these disabled veterans with two wooden peg legs, attacked by a dog — a reference to themes he also explored in his painting The Trench and his series War. Other figures include a hefty blonde woman with her right breast exposed through a pink coat, clutching a wad of cash, and a man in a dress and pearls waving a pink ostrich feather. The triptych shares its title with the <a href="fritz_lang_stock.html" class="crossref-inline">Fritz Lang</a> film.</p><p>Michael Daugherty&#x27;s only symphony is also named Metropolis, described as a &#x27;fantasy in blue&#x27;; Ferde Grofé wrote an earlier &#x27;fantasy in blue&#x27; piece sharing this city name.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Metropolis_(1927_film)" target="_blank">Metropolis (1927 film) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Fritz_Lang" target="_blank">Fritz Lang — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Metropolis_(Dix)" target="_blank">Metropolis (Otto Dix painting) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Otto_Dix" target="_blank">Otto Dix — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Fritz Lang — director of the film; likely has extensive quizbowl clues. Search: &#x27;Fritz Lang&#x27;, category: Fine Arts</li><li>Otto Dix — painter of the triptych; also clued for The Trench and War series. Search: &#x27;Otto Dix&#x27;, category: Fine Arts</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'metropolis' });</script>
+
+</body>
+</html>

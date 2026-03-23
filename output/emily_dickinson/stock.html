@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Emily Dickinson</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.play-abc-btn, .stop-abc-btn {
+    font-size: 0.78rem;
+    padding: 0.1rem 0.45rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Emily Dickinson</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Reclusive American poet known as the &#x27;Belle of Amherst,&#x27; famous for her dashes, non-standard capitalization, and poems about death, nature, and the self. She corresponded with Thomas Wentworth Higginson and wrote the Master Letters to a mysterious addressee. Her poems were published posthumously by Mabel Loomis Todd.</div>
+
+        <details class="work" id="because-i-could-not-stop-for-death" open>
+            <summary class="work-title">Because I could not stop for Death</summary>
+            <p class="work-desc">Dickinson's most famous poem, in which Death 'kindly stopped for me' in a carriage holding 'just Ourselves - / And Immortality.' The speaker 'passed the Fields of Gazing Grain' and 'the Setting Sun,' and 'first surmised the Horses' Heads / Were toward Eternity.' The speaker puts away 'My labor and my leisure too' for Death's 'Civility.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Death &#x27;kindly stopped for me&#x27; in a carriage with Immortality</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a figure who &#x27;kindly stopped for me&#x27; | rides in a carriage that carries Immortality</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Passed the Fields of Gazing Grain&#x27; and &#x27;the Setting Sun&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;passed the Fields of Gazing Grain&#x27; | &#x27;the Setting Sun&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;First surmised the Horses&#x27; Heads / Were toward Eternity&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;first surmised the Horses&#x27; Heads / Were toward Eternity&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="i-heard-a-fly-buzz-when-i-died" open>
+            <summary class="work-title">I heard a Fly buzz - when I died</summary>
+            <p class="work-desc">A poem imagining the speaker's own death, ending with 'I could not see to see.' The fly arrives with a 'Blue - uncertain - stumbling Buzz.' The speaker signs away 'What portion of me be / Assignable' and describes 'the Stillness in the Room / Was like the Stillness in the Air / Between the Heaves of Storm.' 'Breaths were gathering firm for that last Onset - when the King / Be witnessed.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ends with &#x27;I could not see to see&#x27; after a fly&#x27;s &#x27;Blue - uncertain - stumbling Buzz&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;I could not see to see&#x27; | &#x27;Blue - uncertain - stumbling Buzz&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Stillness in the Room / Was like the Stillness in the Air&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;the Stillness in the Room / Was like the Stillness in the Air&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Speaker signs away &#x27;What portion of me be / Assignable&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">signing away &#x27;What portion of me be / Assignable&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="i-felt-a-funeral-in-my-brain" open>
+            <summary class="work-title">I felt a Funeral, in my Brain</summary>
+            <p class="work-desc">A poem set inside the speaker's brain where 'Mourners, to and fro' keep treading. 'Boots of Lead' cause a creaking sound, 'all the Heavens were a Bell,' and 'a Plank in Reason, broke' causing the speaker to drop 'down, and down - And hit a World, at every plunge.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Mourners, to and fro&#x27; tread in the brain; &#x27;a Plank in Reason, broke&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;mourners, to and fro&#x27; that &#x27;kept treading&#x27; | &#x27;a Plank in Reason, broke&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;All the Heavens were a Bell&#x27;; speaker drops &#x27;down, and down&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;all the Heavens were a Bell&#x27; | &#x27;dropped down&#x27; and &#x27;hit a World&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="there-s-a-certain-slant-of-light" open>
+            <summary class="work-title">There&#x27;s a certain Slant of light</summary>
+            <p class="work-desc">A poem about winter light that inflicts a 'Heavenly Hurt' with the 'Heft of Cathedral Tunes.' It was 'not Night' and 'not Frost' but 'tasted, like them all.' The light creates 'an imperial affliction' and when it goes, ''tis like the Distance / On the look of Death.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Light with the &#x27;Heft of Cathedral Tunes&#x27; inflicts a &#x27;Heavenly Hurt&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;the Heft / of Cathedral Tunes&#x27; | inflicts a scarless &#x27;heavenly hurt&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes a feeling &#x27;not Night,&#x27; &#x27;not Frost,&#x27; an &#x27;imperial affliction&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;was not Night&#x27; and &#x27;was not Frost&#x27; | &#x27;imperial affliction&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="hope-is-the-thing-with-feathers" open>
+            <summary class="work-title">Hope is the thing with feathers</summary>
+            <p class="work-desc">A poem describing hope as a bird that 'perches in the soul' and 'sings the tune without the words.' The speaker hears it 'in the chillest land - / And on the strangest Sea' and says 'sore must be the storm / That could abash the little Bird.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hope as a bird that &#x27;perches in the soul&#x27; and &#x27;sings the tune without the words&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;the tune without the words... that kept so many warm&#x27; | a bird who &#x27;perches in the soul&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Heard &#x27;in the chillest land - / And on the strangest Sea&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">hears the title entity &#x27;in the chillest land&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="i-m-nobody-who-are-you" open>
+            <summary class="work-title">I&#x27;m Nobody! Who are you?</summary>
+            <p class="work-desc">A playful poem in which the speaker discovers a fellow 'Nobody' and warns 'Don't tell! They'd advertise - you know!' The poem asks 'How dreary - to be - Somebody!' and imagines an 'admiring Bog.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Then there&#x27;s a pair of us! / Don&#x27;t tell!&#x27;; &#x27;How dreary - to be - Somebody!&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Then there&#x27;s a pair of us! / Don&#x27;t tell!&#x27; | &#x27;How dreary - to be - somebody!&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="my-life-had-stood-a-loaded-gun" open>
+            <summary class="work-title">My Life had stood - a Loaded Gun</summary>
+            <p class="work-desc">A poem in which the speaker is a loaded gun carried by an 'Owner' through 'Sovereign Woods.' When the speaker fires, 'the Mountains straight reply' with an echo. The speaker has 'the power to kill, / Without - the power to die.' The smile produces 'cordial light' likened to a 'Vesuvian face.' <a href="adrienne_rich_stock.html" class="crossref-inline">Adrienne Rich</a> wrote about this poem in 'Vesuvius at Home.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The power to kill, / Without - the power to die&#x27;; &#x27;Mountains straight reply&#x27; when fired</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;the power to kill / without the power to die&#x27; | &#x27;Mountains straight reply&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Smile produces &#x27;cordial light&#x27; from a &#x27;Vesuvian face&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the &#x27;cordial light&#x27; from the speaker&#x27;s smile is likened to a &#x27;Vesuvian face&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="wild-nights-wild-nights" open>
+            <summary class="work-title">Wild Nights - Wild Nights!</summary>
+            <p class="work-desc">An erotic poem with the lines 'Rowing in Eden!' and 'Done with the Compass - / Done with the Chart!' ending controversially with 'Might I but moor - tonight - / In Thee!' Susan Gilbert's name was erased from associated letters. The 2018 film Wild Nights with Emily by Madeleine Olnek is titled after this poem.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Rowing in Eden!&#x27;; &#x27;Done with the Compass - / Done with the Chart!&#x27;; &#x27;Might I but moor - tonight - / In Thee!&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Done with the Compass - / Done with the Chart!&#x27; | &#x27;might I but moor tonight in thee!&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-soul-selects-her-own-society" open>
+            <summary class="work-title">The Soul selects her own Society</summary>
+            <p class="work-desc">A poem in which the soul 'shuts the Door - / To her divine Majority - / Present no more.' The soul 'selects her own society' and the speaker sees 'the Chariots - pausing - / At her low Gate.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The soul &#x27;shuts the Door&#x27; and &#x27;selects her own society&#x27;; &#x27;Chariots - pausing - / At her low Gate&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;selects her own society&#x27; | &#x27;shuts the Door - / To her divine Majority&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="a-narrow-fellow-in-the-grass" open>
+            <summary class="work-title">A narrow Fellow in the Grass</summary>
+            <p class="work-desc">A riddle poem about a snake that leaves the speaker 'Zero at the Bone.' The Republican newspaper altered its punctuation, omitting a dash after 'his notice sudden is.' Susan Gilbert (Dickinson's sister-in-law) edited this poem.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A snake leaves the speaker &#x27;Zero at the Bone&#x27;; the Republican altered its punctuation</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Zero at the Bone&#x27; | complained that The Republican&#x27;s changes in punctuation altered the meaning</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="master-letters" open>
+            <summary class="work-title">Master Letters</summary>
+            <p class="work-desc">Three passionate, ecstatic letters addressed to a mysterious 'Master' figure, in which Dickinson refers to herself as 'Daisy.' One opens 'If you saw a bullet hit a Bird - and he told you he was'nt shot.' Possible addressees include Charles Wadsworth, Samuel Bowles, and Otis Lord. The first letter suggests walking with the dog Carlo. Lucie Brock-Broido titled a poetry collection after them.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three passionate letters to a mysterious &#x27;Master&#x27;; author calls herself &#x27;Daisy&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">three ecstatic love letters addressed to a mysterious male figure | refers to herself in the third person as &#x27;Daisy&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One opens &#x27;If you saw a bullet hit a Bird&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">opens &#x27;If you saw a bullet hit a Bird&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Possible addressees: Charles Wadsworth, Samuel Bowles, Otis Lord</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">often theorized to be Otis Lord or Charles Wadsworth</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Dickinson lived reclusively in Amherst, Massachusetts, earning the nickname 'Belle of Amherst.' She corresponded with Thomas Wentworth Higginson after reading his Atlantic Monthly essay 'Letter to a Young Contributor,' sending four poems and asking if her 'Verse is alive.' Her sister Lavinia found over a hundred poems posthumously; Mabel Loomis Todd (who never met Dickinson) edited the first volumes, standardizing her dashes and capitalization. Thomas Johnson's 1955 edition restored the original punctuation. Susan Gilbert was Dickinson's sister-in-law with whom she had a potentially romantic relationship revealed by infrared technology. Dickinson's herbarium contained 424 pressed flower specimens. She allegedly only wore white cotton dresses. Films include A Quiet Passion (with Cynthia Nixon) and Dickinson (Apple TV+, with Hailee Steinfeld). Camille Paglia called her the American Marquis de Sade in Sexual Personae.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nicknamed the &#x27;Belle of Amherst&#x27;; lived reclusively in Amherst, Massachusetts</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">reclusive &#x27;Belle of Amherst&#x27; | the &#x27;Belle of Amherst&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Corresponded with Thomas Wentworth Higginson; asked &#x27;if my Verse is alive&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">correspondence with Thomas Wentworth Higginson | asked &#x27;are you too deeply occupied to say if my Verse is alive?&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Poems published posthumously by Mabel Loomis Todd, who standardized dashes</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Mabel Loomis Todd | Todd and Higginson standardized the dashes</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Susan Gilbert relationship revealed by infrared technology removing dedications</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Infrared technology revealed that dedications had been posthumously removed</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Liberal use of dashes as distinctive punctuation</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this dash-loving poet | frequently used dashes</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Herbarium contained 424 pressed flower specimens</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">over 424 pressed flower specimens</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-poems" open>
+            <summary class="work-title">Other Poems</summary>
+            <p class="work-desc">Other frequently clued poems include: 'After great pain, a formal feeling comes' (nerves sit 'ceremonious, like Tombs'); 'Tell all the truth but tell it slant' (truth must 'dazzle gradually'); 'A Bird came down the Walk' (bird bites an 'Angle Worm in halves'); 'I like to see it lap the miles' (a train riddle poem); 'Fame is a fickle food' and 'Fame is a bee' ('It has a sting'); 'I tasted a liquor never brewed' ('Debauchee of Dew'); 'They shut me up in Prose'; volcano poems connecting to Rich's 'Vesuvius at Home.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;After great pain, a formal feeling comes&#x27;; nerves sit &#x27;ceremonious, like Tombs&#x27;; &#x27;This is the Hour of Lead&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;After great pain, a formal feeling comes&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Tell all the truth but tell it slant&#x27; - truth must &#x27;dazzle gradually / Or every man be blind&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;must dazzle gradually / Or every man be blind&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;I tasted a liquor never brewed&#x27; - speaker is a &#x27;Debauchee of Dew&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;tasted a liquor never brewed&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Emily Dickinson is one of the most heavily clued American poets, known for her reclusive life in Amherst, Massachusetts (the &#x27;Belle of Amherst&#x27;), her distinctive dashes and non-standard capitalization, and her posthumous publication history.</p><p>&#x27;Because I could not stop for Death&#x27; is her most frequently giveaway poem: Death &#x27;kindly stopped for me&#x27; in a carriage with Immortality, they &#x27;passed the Fields of Gazing Grain&#x27; and &#x27;the Setting Sun,&#x27; and the speaker &#x27;first surmised the Horses&#x27; Heads / Were toward Eternity.&#x27; &#x27;I heard a Fly buzz - when I died&#x27; ends with &#x27;I could not see to see&#x27; after a &#x27;Blue - uncertain - stumbling Buzz,&#x27; with &#x27;the Stillness in the Room.&#x27; &#x27;I felt a Funeral, in my Brain&#x27; features &#x27;Mourners, to and fro,&#x27; &#x27;Boots of Lead,&#x27; and &#x27;a Plank in Reason, broke.&#x27;</p><p>&#x27;There&#x27;s a certain Slant of light&#x27; inflicts a &#x27;Heavenly Hurt&#x27; with the &#x27;Heft of Cathedral Tunes.&#x27; &#x27;Hope is the thing with feathers&#x27; describes a bird that &#x27;perches in the soul&#x27; and &#x27;sings the tune without the words.&#x27; &#x27;My Life had stood - a Loaded Gun&#x27; declares &#x27;the power to kill, / Without - the power to die,&#x27; with a &#x27;Vesuvian face&#x27; smile. &#x27;Wild Nights - Wild Nights!&#x27; contains &#x27;Rowing in Eden!&#x27; and &#x27;Done with the Compass.&#x27;</p><p>Dickinson&#x27;s Master Letters -- three passionate letters to a mysterious figure in which she calls herself &#x27;Daisy&#x27; -- are frequently clued. Her correspondence with Thomas Wentworth Higginson began when she asked &#x27;are you too deeply occupied to say if my Verse is alive?&#x27; Her sister Lavinia found her poems after her death; Mabel Loomis Todd edited the first volumes, standardizing dashes. Thomas Johnson&#x27;s 1955 edition restored original punctuation. Susan Gilbert was her sister-in-law with a potentially romantic relationship. Infrared technology revealed dedications had been removed. Her herbarium contained 424 pressed flowers. She allegedly only wore white. <a href="adrienne_rich_stock.html" class="crossref-inline">Adrienne Rich</a> wrote &#x27;Vesuvius at Home&#x27; about her. Billy Collins wrote &#x27;Taking Off Emily Dickinson&#x27;s Clothes.&#x27; Camille Paglia called her the American Marquis de Sade in Sexual Personae.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Emily_Dickinson" target="_blank">Emily Dickinson</a></li><li><a href="https://en.wikipedia.org/wiki/Because_I_could_not_stop_for_Death" target="_blank">Because I could not stop for Death</a></li><li><a href="https://en.wikipedia.org/wiki/I_heard_a_Fly_buzz_%E2%80%93_when_I_died_%E2%80%93" target="_blank">I heard a Fly buzz - when I died</a></li></ul>
+            
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'emily_dickinson' });</script>
+
+</body>
+</html>
