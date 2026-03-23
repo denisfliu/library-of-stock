@@ -19,28 +19,47 @@ def _sanitize(name: str) -> str:
     return re.sub(r'[^\w\-]', '_', name.strip().lower())
 
 
-def render_questions_html(cache_data: dict, output_path: str | Path,
-                          topic_display: str = "", stock_link: str = "") -> Path:
-    """
-    Render cached API data into an HTML page showing all tossups and bonuses.
-    """
-    output_path = Path(output_path)
-    query = cache_data.get("query_string", "Unknown")
-    topic = topic_display or query
+def _tab_label(cache_data: dict, is_mentions: bool) -> str:
+    """Short human-readable label for a cache file tab."""
+    query = cache_data.get("query_string", "?")
+    diffs = cache_data.get("difficulties") or []
+    if diffs:
+        label = f"{query} (d{min(diffs)}–{max(diffs)})"
+    else:
+        label = query
+    if is_mentions:
+        label += " mentions"
+    return label
 
-    tossups = cache_data.get("answer_matches", {}).get("tossups", [])
-    bonuses = cache_data.get("answer_matches", {}).get("bonuses", [])
 
-    # Build tossup HTML
+def _highlight_query(text: str, query: str) -> str:
+    """Wrap all case-insensitive occurrences of query in <mark> tags."""
+    if not query:
+        return text
+    return re.sub(
+        r'(' + re.escape(query) + r')',
+        r'<mark>\1</mark>',
+        text,
+        flags=re.IGNORECASE,
+    )
+
+
+def _questions_html_for_cache(cache_data: dict, tab_idx: int, is_mentions: bool = False) -> str:
+    """Render tossups + bonuses for one cache source into HTML."""
+    # Mentions files store results under 'text_mentions'; answer files use 'answer_matches'
+    matches = cache_data.get("answer_matches") or cache_data.get("text_mentions") or {}
+    tossups = matches.get("tossups", [])
+    bonuses = matches.get("bonuses", [])
+    query = cache_data.get("query_string", "") if is_mentions else ""
+
     tossups_html = ""
     for i, t in enumerate(tossups, 1):
         set_name = t.get("set", {}).get("name", "")
         year = t.get("set", {}).get("year", "")
         diff = t.get("difficulty", "")
         cat = t.get("category", "")
-        question = t.get("question", "")
+        question = _highlight_query(t.get("question", ""), query)
         answer = t.get("answer", "")
-
         tossups_html += f"""
         <div class="question">
             <div class="q-header">
@@ -50,29 +69,25 @@ def render_questions_html(cache_data: dict, output_path: str | Path,
             </div>
             <div class="q-text">{question}</div>
             <div class="q-answer">ANSWER: {answer}</div>
-        </div>
-        """
+        </div>"""
 
-    # Build bonus HTML
     bonuses_html = ""
     for i, b in enumerate(bonuses, 1):
         set_name = b.get("set", {}).get("name", "")
         year = b.get("set", {}).get("year", "")
         diff = b.get("difficulty", "")
         cat = b.get("category", "")
-        leadin = b.get("leadin", "")
+        leadin = _highlight_query(b.get("leadin", ""), query)
         parts = b.get("parts", [])
         answers = b.get("answers", [])
-
         parts_html = ""
-        for j, (part, ans) in enumerate(zip(parts, answers)):
+        for part, ans in zip(parts, answers):
+            part = _highlight_query(part, query)
             parts_html += f"""
             <div class="b-part">
                 <div class="b-part-text">[10] {part}</div>
                 <div class="q-answer">ANSWER: {ans}</div>
-            </div>
-            """
-
+            </div>"""
         bonuses_html += f"""
         <div class="question">
             <div class="q-header">
@@ -82,12 +97,53 @@ def render_questions_html(cache_data: dict, output_path: str | Path,
             </div>
             <div class="q-text">{leadin}</div>
             {parts_html}
-        </div>
-        """
+        </div>"""
+
+    stats = f"{len(tossups)} tossup{'s' if len(tossups) != 1 else ''} &middot; {len(bonuses)} bonus{'es' if len(bonuses) != 1 else ''}"
+    empty_msg = '<p style="color:#808790;font-style:italic;padding:0.5rem 0;">No questions.</p>'
+
+    return f"""
+<div class="tab-stats">{stats}</div>
+<h2>Tossups</h2>
+{tossups_html or empty_msg}
+<h2>Bonuses</h2>
+{bonuses_html or empty_msg}"""
+
+
+def render_questions_html(cache_sources: "list[dict] | dict", output_path: str | Path,
+                          topic_display: str = "", stock_link: str = "",
+                          is_mentions: "list[bool] | None" = None) -> Path:
+    """
+    Render cached API data into an HTML page with one tab per cache source.
+    cache_sources: list of cache dicts (one per query), or a single dict for back-compat.
+    is_mentions: parallel list of bools indicating which sources are mention searches.
+    """
+    output_path = Path(output_path)
+
+    # Back-compat: accept a single dict
+    if isinstance(cache_sources, dict):
+        cache_sources = [cache_sources]
+        is_mentions = [False]
+    if is_mentions is None:
+        is_mentions = [False] * len(cache_sources)
+
+    topic = topic_display or cache_sources[0].get("query_string", "Unknown")
 
     back_link = ""
     if stock_link:
         back_link = f'<div class="back-link"><a href="../../index.html">&larr; Home</a> · <a href="{escape(stock_link)}">Study guide</a></div>'
+
+    # Build tab headers and panels
+    tabs_html = ""
+    panels_html = ""
+    for i, (data, mentions) in enumerate(zip(cache_sources, is_mentions)):
+        label = escape(_tab_label(data, mentions))
+        active_cls = " active" if i == 0 else ""
+        tabs_html += f'<button class="tab-btn{active_cls}" onclick="showTab({i})">{label}</button>\n'
+        display = "block" if i == 0 else "none"
+        panels_html += f'<div class="tab-panel" id="tab-{i}" style="display:{display}">{_questions_html_for_cache(data, i, is_mentions=mentions)}</div>\n'
+
+    single = len(cache_sources) == 1
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -122,13 +178,37 @@ h1 {{
     display: inline-block;
     margin-bottom: 1rem;
     font-size: 0.88rem;
-    text-decoration: none;
 }}
-.back-link:hover {{ text-decoration: underline; }}
-.stats {{
+.tab-bar {{
+    display: {'none' if single else 'flex'};
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    margin: 0.8rem 0 0.2rem;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0;
+}}
+.tab-btn {{
+    background: none;
+    border: 1px solid transparent;
+    border-bottom: none;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+    color: #808790;
+    cursor: pointer;
+    border-radius: 3px 3px 0 0;
+    margin-bottom: -1px;
+}}
+.tab-btn:hover {{ color: #c8ccd1; }}
+.tab-btn.active {{
+    color: #6b9eff;
+    border-color: #3a3f47;
+    border-bottom-color: #101418;
+    background: #101418;
+}}
+.tab-stats {{
     font-size: 0.85rem;
     color: #808790;
-    margin-bottom: 1.2rem;
+    margin: 0.6rem 0 1rem;
 }}
 h2 {{
     font-family: 'Linux Libertine', Georgia, serif;
@@ -157,55 +237,30 @@ h2 {{
     border-bottom: 1px solid #3a3f47;
     font-size: 0.82rem;
 }}
-.q-num {{
-    font-weight: bold;
-    color: #6b9eff;
-    min-width: 2rem;
-}}
-.q-source {{
-    color: #c8ccd1;
-}}
-.q-meta {{
-    color: #808790;
-    margin-left: auto;
-}}
-.q-text {{
-    padding: 0.6rem 0.8rem;
-    font-size: 0.9rem;
-    line-height: 1.6;
-}}
-.q-text b {{
-    color: #e0e0e0;
-}}
-.q-answer {{
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
-    border-top: 1px solid #2a2f37;
-    color: #9aa0a7;
-}}
-.q-answer b, .q-answer u {{
-    color: #6bcf8e;
-}}
-.b-part {{
-    border-top: 1px solid #2a2f37;
-}}
-.b-part-text {{
-    padding: 0.5rem 0.8rem;
-    font-size: 0.9rem;
-    line-height: 1.6;
-}}
+.q-num {{ font-weight: bold; color: #6b9eff; min-width: 2rem; }}
+.q-source {{ color: #c8ccd1; }}
+.q-meta {{ color: #808790; margin-left: auto; }}
+.q-text {{ padding: 0.6rem 0.8rem; font-size: 0.9rem; line-height: 1.6; }}
+.q-text b {{ color: #e0e0e0; }}
+.q-answer {{ padding: 0.4rem 0.8rem; font-size: 0.85rem; border-top: 1px solid #2a2f37; color: #9aa0a7; }}
+.q-answer b, .q-answer u {{ color: #6bcf8e; }}
+.b-part {{ border-top: 1px solid #2a2f37; }}
+.b-part-text {{ padding: 0.5rem 0.8rem; font-size: 0.9rem; line-height: 1.6; }}
+mark {{ background: #5a4a00; color: #ffd54f; border-radius: 2px; padding: 0 2px; }}
 </style>
 </head>
 <body>
 {back_link}
 <h1>Questions: {escape(topic)}</h1>
-<div class="stats">{len(tossups)} tossups &middot; {len(bonuses)} bonuses</div>
-
-<h2>Tossups</h2>
-{tossups_html}
-
-<h2>Bonuses</h2>
-{bonuses_html}
+<div class="tab-bar">
+{tabs_html}</div>
+{panels_html}
+<script>
+function showTab(i) {{
+    document.querySelectorAll('.tab-panel').forEach((p, j) => p.style.display = j === i ? 'block' : 'none');
+    document.querySelectorAll('.tab-btn').forEach((b, j) => b.classList.toggle('active', j === i));
+}}
+</script>
 </body>
 </html>"""
 
@@ -316,63 +371,61 @@ def build_all(force: bool = False):
             analysis = json.load(f)
         topic_display = analysis.get("topic", topic_key.replace("_", " ").title())
 
-        # Locate cache file: check topic directory first, then cache/ directory
-        recorded = analysis.get("cache_file")
-        cache_file = None
-        if recorded:
-            # Check topic directory first (post-migration location)
-            candidate_topic = analysis_file.parent / recorded
-            if candidate_topic.exists():
-                cache_file = candidate_topic
-            else:
-                # Fall back to cache/ directory
-                candidate_cache = Path("cache") / recorded
-                if candidate_cache.exists():
-                    cache_file = candidate_cache
-                    # Copy to topic directory for future builds
-                    import shutil
-                    shutil.copy2(candidate_cache, candidate_topic)
-                    cache_file = candidate_topic
-                else:
-                    print(f"  Warning: recorded cache_file '{recorded}' not found for {topic_key}, falling back to fuzzy match")
-                    cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
-        else:
-            # Check topic dir first for cache files saved via --outdir
-            topic_jsons = [f for f in analysis_file.parent.glob("*.json")
-                           if f.name != "analysis.json" and "_mentions" not in f.name]
-            if topic_jsons:
-                cache_file = sorted(topic_jsons)[0]
-            else:
-                cache_file = find_cache_for_topic(topic_key, topic_name=topic_display)
-            # Write back the discovered cache filename so future builds use direct lookup
-            if cache_file:
-                analysis["cache_file"] = cache_file.name
-                with open(analysis_file, "w") as fw:
-                    json.dump(analysis, fw, indent=2, ensure_ascii=False)
-        if not cache_file:
-            print(f"  Skipping {topic_key}: no cache file found")
-            continue
+        # Collect all cache files in the topic directory
+        # Sort: non-mentions first (alphabetically), then mentions
+        all_jsons = [f for f in analysis_file.parent.glob("*.json")
+                     if f.name != "analysis.json"]
+        non_mentions = sorted(f for f in all_jsons if "_mentions" not in f.name)
+        mentions = sorted(f for f in all_jsons if "_mentions" in f.name)
+        cache_files = non_mentions + mentions
+
+        # If nothing in topic dir, fall back to fuzzy match in cache/
+        if not cache_files:
+            fallback = find_cache_for_topic(topic_key, topic_name=topic_display)
+            if fallback:
+                cache_files = [fallback]
+
+        if not cache_files:
+            # Check recorded cache_file as last resort
+            recorded = analysis.get("cache_file")
+            if recorded:
+                candidate = analysis_file.parent / recorded
+                if not candidate.exists():
+                    candidate = Path("cache") / recorded
+                if candidate.exists():
+                    cache_files = [candidate]
+            if not cache_files:
+                print(f"  Skipping {topic_key}: no cache file found")
+                continue
 
         questions_path = analysis_file.parent / "questions.html"
 
-        # Incremental: skip if questions HTML is newer than both JSON and cache file
+        # Incremental: skip if questions.html is newer than all cache files and analysis
         if not force and questions_path.exists():
             html_mtime = questions_path.stat().st_mtime
             if (html_mtime >= analysis_file.stat().st_mtime
-                    and html_mtime >= cache_file.stat().st_mtime):
+                    and all(html_mtime >= cf.stat().st_mtime for cf in cache_files)):
                 skipped += 1
                 continue
 
-        with open(cache_file) as f:
-            cache_data = json.load(f)
+        sources = []
+        is_mentions_flags = []
+        for cf in cache_files:
+            with open(cf) as f:
+                sources.append(json.load(f))
+            is_mentions_flags.append("_mentions" in cf.name)
 
         stock_link = "stock.html"
-        render_questions_html(cache_data, questions_path,
+        render_questions_html(sources, questions_path,
                               topic_display=topic_display,
-                              stock_link=stock_link)
-        print(f"  {topic_display}: {len(cache_data.get('answer_matches', {}).get('tossups', []))}T "
-              f"{len(cache_data.get('answer_matches', {}).get('bonuses', []))}B "
-              f"-> {questions_path}")
+                              stock_link=stock_link,
+                              is_mentions=is_mentions_flags)
+        def _counts(s):
+            m = s.get("answer_matches") or s.get("text_mentions") or {}
+            return len(m.get("tossups", [])), len(m.get("bonuses", []))
+        total_t = sum(_counts(s)[0] for s in sources)
+        total_b = sum(_counts(s)[1] for s in sources)
+        print(f"  {topic_display}: {len(sources)} source(s), {total_t}T {total_b}B -> {questions_path}")
         count += 1
     print(f"Built {count} question pages" + (f" ({skipped} up-to-date)" if skipped else ""))
 
