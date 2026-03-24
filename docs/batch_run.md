@@ -60,6 +60,18 @@ The builder reads blocks, concatenates in order, renumbers steps sequentially, a
 
 Non-VFA categories (Literature, Philosophy, Science) don't need Phase 2.
 
+## Queue File Locations
+
+All queue data files live in `queue/` at the project root — **never** in `lib/queue/`:
+
+| File | Purpose |
+|---|---|
+| `queue/queue_first_pass.json` | Global first-pass backlog |
+| `queue/queue_second_pass.json` | Global second-pass backlog |
+| `queue/current_batch.json` | Active batch state (read by progress page) |
+
+`lib/queue/` contains only Python source files (no `.json`). The scripts use `ROOT = Path(__file__).parent.parent.parent` to reach the project root.
+
 ## Controller Workflow
 
 ### 1. Check queues
@@ -133,7 +145,8 @@ These mistakes were made before — do NOT repeat them:
 8. **Empty summary field**: Agents wrote comprehensive_summary but left the "summary" field empty, causing blank blurbs on the page. **Fix**: "summary" is now in the required fields list and self-check.
 9. **Forgot cross-ref backfill**: Controller skipped the Sonnet cross-ref step after agents finished. **Fix**: Run `python3 post_batch.py` immediately when the last agent finishes — it automates index rebuild + deterministic backfill and prints the Sonnet prompt. Don't report "done" until all steps complete.
 10. **verify_images.py runs multiple times**: The script silently backgrounds itself when not in a TTY, so the Bash tool returns immediately with a background job ID. **Fix**: Run it once, then wait for the background task notification — do NOT re-run if the shell returns immediately. Check the task output file when notified.
-11. **Subitem query results scattered into top-level `output/` dirs**: Second-pass agents ran `python3 lib/run.py "Work Name" "7,8,9,10"` without `--outdir`, creating `output/guernica/`, `output/mona_lisa/`, etc. as orphan directories alongside real topic dirs. **Fix**: Always pass `--outdir output/{slug}` for every `lib/run.py` call so cache files land inside the parent topic's folder. If orphan dirs already exist: **move** their files into the correct parent directory — never delete them, as the cache JSONs are needed by the questions page renderer.
+11. **Queue JSON written to `lib/queue/` instead of `queue/`**: After the `lib/` refactor, `ROOT` in the queue scripts briefly pointed to `lib/` instead of the project root, silently writing data to `lib/queue/*.json` while the real files (and the progress page) lived in `queue/`. **Fix**: Scripts now use `.parent.parent.parent` for ROOT. Queue data belongs exclusively in `queue/` — there should be no `.json` files in `lib/queue/`.
+12. **Subitem query results scattered into top-level `output/` dirs**: Second-pass agents ran `python3 lib/run.py "Work Name" "7,8,9,10"` without `--outdir`, creating `output/guernica/`, `output/mona_lisa/`, etc. as orphan directories alongside real topic dirs. **Fix**: Always pass `--outdir output/{slug}` for every `lib/run.py` call so cache files land inside the parent topic's folder. If orphan dirs already exist: **move** their files into the correct parent directory — never delete them, as the cache JSONs are needed by the questions page renderer.
 
 ## Permissions
 

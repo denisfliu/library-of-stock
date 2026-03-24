@@ -14,9 +14,8 @@ from pathlib import Path
 from datetime import datetime
 import re
 
-ROOT = Path(__file__).parent.parent
-PROJECT_ROOT = ROOT.parent
-sys.path.insert(0, str(PROJECT_ROOT))
+ROOT = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(ROOT))
 BATCH_FILE = ROOT / 'queue' / 'current_batch.json'
 LOCK_FILE = ROOT / 'queue' / '.batch.lock'
 
