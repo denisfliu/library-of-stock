@@ -8,6 +8,7 @@ Usage:
     python render_cards.py <analysis_json>    # build one
 """
 
+import hashlib
 import json
 import sys
 from html import escape
@@ -104,7 +105,7 @@ def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
         clue = dict(clue)
         if clue.get("mp3"):
             mp3_path = output_path.parent / clue["mp3"]
-            clue["mp3_v"] = int(mp3_path.stat().st_mtime) if mp3_path.exists() else 0
+            clue["mp3_v"] = hashlib.md5(mp3_path.read_bytes()).hexdigest()[:8] if mp3_path.exists() else 0
         score_clues_with_v.append(clue)
 
     html = f"""<!DOCTYPE html>
