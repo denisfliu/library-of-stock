@@ -17,7 +17,7 @@ import json, sys, re
 from pathlib import Path
 from datetime import date
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).parent.parent.parent
 FIRST_PASS = ROOT / 'queue' / 'queue_first_pass.json'
 SECOND_PASS = ROOT / 'queue' / 'queue_second_pass.json'
 
