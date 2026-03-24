@@ -11,8 +11,12 @@ Usage:
 import json, sys
 from pathlib import Path
 
-# Add parent to path so we can import from lib
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root to path; remove lib/ to avoid shadowing stdlib queue
+_project_root = str(Path(__file__).resolve().parent.parent.parent)
+_lib_dir = str(Path(__file__).resolve().parent.parent.parent / "lib")
+sys.path.insert(0, _project_root)
+if _lib_dir in sys.path:
+    sys.path.remove(_lib_dir)
 from lib.images.images import find_image, set_work_image, API_DELAY
 import lib.images.images as img_module
 
