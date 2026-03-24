@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: William Byrd</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>William Byrd</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">English Renaissance composer (c. 1543–1623), student of <a href="thomas_tallis_stock.html" class="crossref-inline">Thomas Tallis</a> at the Chapel Royal. Catholic composer who prospered under the Protestant Elizabethan regime. With Tallis, held a 21-year royal monopoly on music printing. Prolific composer of keyboard music (especially for the virginal), motets, masses, and consort songs. Known as &#x27;Britanniae Musicae Parens&#x27; (Father of British Music).</div>
+
+        <details class="work" id="my-ladye-nevells-booke" open>
+            <summary class="work-title">My Ladye Nevells Booke</summary>
+            <p class="work-desc">A collection of 42 keyboard works dedicated to "My Ladye Nevell," including ten paired pavanes and galliards. One of the most important collections of keyboard music from the English Renaissance, alongside the Fitzwilliam Virginal Book. Contains works such as "The Battle" (a nine-movement battaglia) and "The Barley Break." <a href="https://en.wikipedia.org/wiki/My_Ladye_Nevells_Booke" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">11x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Collection of 42 keyboard works dedicated to &#x27;My Ladye Nevell&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this English composer of My Ladye Nevells Booke | this student of Thomas Tallis, who also wrote My Ladye Nevells Booke</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains ten paired pavanes and galliards; one of the most important English Renaissance keyboard collections</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ten paired pavanes and galliards appear in a work by him that is, besides the Fitzwilliam Virginal Book, the most important collection of keyboard music of the English Renaissance.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains &#x27;The Battle&#x27; (nine-movement battaglia) and a mock battaglia &#x27;The Barley Break&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This English composer included the nine-movement piece &#x27;The Battle&#x27; and a mock battaglia depicting a couples&#x27; game called &#x27;The Barley Break&#x27; in a set of 42 keyboard pieces dedicated to &#x27;My Ladye Nevell.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Battle&#x27; is a nine-movement piece; the fourth section includes &#x27;the marche of horsemen&#x27; and &#x27;the flute &amp; the drome&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The fourth section of a keyboard work by this composer is split up into sections such as &#x27;the marche of horsemen&#x27; and &#x27;the flute &amp; the drome.&#x27; | one of this composer&#x27;s collections contains a nine-part piece that begins with &#x27;the soldier summons&#x27; and concludes with &#x27;the retreat&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains variations on &#x27;Sellinger&#x27;s Round&#x27; and &#x27;Carman&#x27;s Whistle&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He included variations on &#x27;Sellinger&#x27;s Round&#x27; and &#x27;Carman&#x27;s Whistle&#x27; in one instrumental collection. | This composer created a set of eight variations on the tune The Carman&#x27;s Whistle.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains the song &#x27;Will You Walk the Woods so Wild&#x27; and a hexachord fantasia</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The song &#x27;Will Yow Walke the Woods soe Wylde&#x27; appears in a book of pieces for the virginal called My Ladye Nevells Booke. | Byrd also included a hexachord fantasia in his book of virginal music titled for a lady with this surname.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Keyboard music for the virginal</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this man composed a book of keyboard music that contains ten pavans and ten galliards | composed the English collection Psalms, Songs, and Sonnets and the Latin motets of Gradualia, also known for studying under the composer of Spem in Alium</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="cantiones-sacrae" open>
+            <summary class="work-title">Cantiones Sacrae</summary>
+            <p class="work-desc">A collection of Latin motets co-published with <a href="thomas_tallis_stock.html" class="crossref-inline">Thomas Tallis</a> in 1575, dedicated to Queen Elizabeth I, who granted the two composers their 21-year monopoly on music printing. Byrd also published his own later sets of Cantiones Sacrae (1589, 1591). <a href="https://en.wikipedia.org/wiki/Cantiones_Sacrae_(Tallis_and_Byrd)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-published with Thomas Tallis, dedicated to Queen Elizabeth I</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">With his mentor, this composer published Cantiones sacrae after they were given a monopoly on the printing and marketing of music by Elizabeth I | This contemporary of Thomas Tallis collaborated with him on a series of motets called Cantiones Sacrae.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Byrd contributed 17 motets to this collection</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Like his teacher, this composer contributed 17 motets to a collection of pieces dedicated to Elizabeth I.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Cantiones Sacrae monopoly was the first-ever letters patent on music printing</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The joint work Cantiones Sacrae resulted from the first-ever letters patent on printing music.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="thomas-tallis-teacher-and-collaborator" open>
+            <summary class="work-title">Thomas Tallis (teacher and collaborator) <a href="thomas_tallis_stock.html" class="work-link-btn" title="Go to Thomas Tallis">&rarr;</a></summary>
+            <p class="work-desc"><a href="thomas_tallis_stock.html" class="crossref-inline">Thomas Tallis</a> (c. 1505–1585) was Byrd's teacher at the Chapel Royal. The two shared a royal monopoly on music printing from Queen Elizabeth I. Tallis composed the famous 40-part motet <em>Spem in Alium</em>. Byrd wrote the elegy <em>Ye Sacred Muses</em> on Tallis's death. Tallis's hymn melody later formed the basis of Vaughan Williams's <em>Fantasia on a Theme by Thomas Tallis</em>. <a href="https://en.wikipedia.org/wiki/Thomas_Tallis" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">14x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Byrd studied under Thomas Tallis at the Chapel Royal</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Thomas Tallis taught a composer with this first name and the last name Byrd. | name this Renaissance composer of My Ladye Nevells Booke and student of Thomas Tallis</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Byrd and Tallis were granted a 21-year monopoly on printing polyphonic music by Elizabeth I</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He and his teacher were granted a 21-year monopoly on printing polyphonic music by Elizabeth I. | this composer is the younger of the two who were granted a 21 year monopoly for the printing of music in England by Queen Elizabeth I</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Byrd wrote &#x27;Ye Sacred Muses&#x27; as an elegy on Tallis&#x27;s death; ends with &#x27;Tallis is dead, and Music dies&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An elegy on the death of this composer&#x27;s mentor concludes with the line &#x27;[the mentor] is dead, and Music dies&#x27;, which is entitled Ye Sacred Muses. | This student of Tallis, who shared a 21-year patent on publishing polyphonic music in England, wrote Ye Sacred Muses to commemorate Tallis&#x27;s death.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tallis composed the 40-part motet Spem in Alium; Byrd was his student</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this organist at the Chapel Royal who composed the English collection Psalms, Songs, and Sonnets and the Latin motets of Gradualia, also known for studying under the composer of Spem in Alium | This composer of the motet collection Cantiones sacrae was mentored by the composer of the forty-part Spem in alium.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="ave-verum-corpus" open>
+            <summary class="work-title">Ave Verum Corpus</summary>
+            <p class="work-desc">A motet in G Aeolian mode (G minor). Notable for stressing 'verum' rather than 'corpus,' and for using a 'false relation' between an F-sharp in the Superius and an F in the Bassus. Written in 4/2 time. <a href="https://en.wikipedia.org/wiki/Ave_verum_corpus_(Byrd)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written in G Aeolian mode; interestingly stresses &#x27;verum&#x27; rather than &#x27;corpus&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s setting of &#x27;Ave verum corpus&#x27; is written in the G Aeolian mode and interestingly stresses the word &#x27;verum&#x27; instead of &#x27;corpus.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Uses a &#x27;false relation&#x27; between F-sharp in the Superius and F in the Bassus in the opening phrase; in G minor and 4/2 time</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He employed a &#x27;false relation&#x27; between an F-sharp in the Superius and an F in the Bassus in the opening phrase of his setting of Ave Verum Corpus, which is in G minor and 4/2 time.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opening chords are G minor, D major, then unexpectedly F major (creating an F-sharp / F-natural cross-relation); at the end, a tenor F-sharp and bass F-natural form a false relation on &#x27;Miserere mei&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The chords G minor, D major, then unexpectedly F major begin a setting of this text from the first Gradualia by William Byrd. | At the end of a 1605 setting of this text, a tenor F-sharp followed closely by a bass F-natural forms a dissonant false relation on the repeated words &#x27;Miserere mei&#x27;.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Setting of the 14th-century Latin Eucharistic hymn; opening words translate as &#x27;Hail, true body&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He composed a G minor, 4/2 time setting of this 14th-century Latin text about the physical presence of Jesus Christ during the Eucharist, whose opening words translate as &#x27;Hail, true body.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="gradualia" open>
+            <summary class="work-title">Gradualia</summary>
+            <p class="work-desc">A 109-piece collection providing complete Mass Propers for the major feasts of the Roman liturgy, published in two volumes (1605, 1607). Remarkable given Byrd's precarious position as a Catholic under the Protestant Elizabethan regime. <a href="https://en.wikipedia.org/wiki/Gradualia" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">109-piece collection of Mass Propers for the major feasts of the Roman liturgy</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer provided the complete mass Propers for the major feasts of the Roman liturgy in his 109-piece Gradualia. | Despite being Catholic and publishing Mass Propers in his Gradualia, this composer managed to prosper under a Protestant regime for decades.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="mass-settings-three-masses" open>
+            <summary class="work-title">Mass Settings (Three Masses)</summary>
+            <p class="work-desc">Byrd composed three complete Mass settings, for three, four, and five voices respectively. His Mass for Four Voices is the most widely known. These were published without title pages, likely because Catholic liturgical music was sensitive under Protestant rule. <a href="https://en.wikipedia.org/wiki/Mass_for_Four_Voices_(Byrd)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Three completed masses: for three, four, and five voices</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s three completed masses are for three, four and five voices. | This composer&#x27;s Mass for Four Voices was one of three settings he composed for the Mass Ordinary.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Philip Brett compared a work by Byrd to John Taverner&#x27;s Missa the Mean</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the musicologist Philip Brett is noted for his study of this composer, and wrote an article comparing a work by this composer to John Taverner&#x27;s Missa the Mean</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="earl-of-salisbury-pavans-keyboard-works" open>
+            <summary class="work-title">Earl of Salisbury Pavans / Keyboard Works</summary>
+            <p class="work-desc">A pair of dances (pavan and galliard) composed for Robert Cecil, 1st Earl of Salisbury, inspired by his death. Byrd also wrote the earliest known hexachord fantasia, and composed variations on popular tunes. The Fitzwilliam Virginal Book contains further keyboard works. <a href="https://en.wikipedia.org/wiki/William_Byrd" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The death of Robert Cecil inspired a pair of dances titled for the &#x27;Earl of Salisbury&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The death of Robert Cecil inspired a pair of dances by him titled for the &#x27;Earl of Salisbury&#x27;.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Byrd wrote the earliest hexachord fantasia, preceding John Bull and Jan Sweelinck</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer preceded John Bull and Jan Sweelinck in writing what is thought to be the earliest hexachord fantasia.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Byrd&#x27;s keyboard music also appears in the Fitzwilliam Virginal Book</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Byrd appears alongside John Bull, Peter Philips, and Giles Farnaby in the Fitzwilliam [Virginal] Book</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gordon Jacob composed a suite that &#x27;freely transcribes&#x27; six of Byrd&#x27;s pieces for orchestra/symphonic wind band</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Gordon Jacob composed a suite named after this composer that &#x27;freely transcribes&#x27; six of his pieces for orchestra, though its more famous version is for symphonic wind band.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">William Byrd (c. 1543–1623) was an English Renaissance composer, organist at the Chapel Royal, and devout Catholic who nonetheless prospered under Protestant Queen Elizabeth I. He was a student of <a href="thomas_tallis_stock.html" class="crossref-inline">Thomas Tallis</a>, and the most notable composer of consort songs. Known as 'Britanniae Musicae Parens.' Byrd's Catholicism is reflected in his liturgical works despite his precarious position.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">English Renaissance composer, Catholic, prospered under Protestant Elizabeth I</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Despite being Catholic and publishing Mass Propers in his Gradualia, this composer managed to prosper under a Protestant regime for decades. | This Renaissance English composer of lots of virginal music</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Organist at the Chapel Royal in London</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this organist at the Chapel Royal who composed the English collection Psalms, Songs, and Sonnets</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He was perhaps the most notable composer of consort songs</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He was perhaps the most notable composer of consort songs.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Known as &#x27;Britanniae Musicae Parens&#x27; (Father of British Music)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Answer: William Byrd [or Britanniae Musicae Parens]</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Taught Thomas Morley (author of Plain and Easy Introduction to Practical Music)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer taught the writer of Plain and Easy Introduction to Practical Music, Thomas Morley.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A work by this composer opens homophonically with the motif G, G, F, G, A-flat, G, F, G</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One work by this composer opens homophonically with the motif G, G, F, G, A-flat, G, F, G.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contributed two pavanes and four galliards to Parthenia, the first printed collection of keyboard music in England</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That composer contributed two pavanes and four galliards to the first printed collection of keyboard music from this country.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Composed a lullaby (berceuse / cradle song)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Tallis&#x27;s contemporary William Byrd wrote one of these compositions, which are known in French as berceuses, meaning &#x27;cradle songs.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>William Byrd (c. 1543–1623) was the foremost English composer of the Renaissance, known by the honorific &#x27;Britanniae Musicae Parens&#x27; (Father of British Music). He studied under <a href="thomas_tallis_stock.html" class="crossref-inline">Thomas Tallis</a> at the Chapel Royal in London, and together the two were granted a 21-year royal monopoly on music printing by Queen Elizabeth I — the first-ever letters patent on music printing — leading to their jointly published Cantiones Sacrae (1575), a collection of Latin motets dedicated to the queen. Despite being a devout Catholic in Protestant England, Byrd managed to prosper under Elizabeth I&#x27;s patronage. His keyboard works are central to his legacy: My Ladye Nevells Booke (1591) is a collection of 42 keyboard pieces dedicated to Lady Nevell, containing ten paired pavanes and galliards, variations on popular tunes like &#x27;Carman&#x27;s Whistle&#x27; and &#x27;Sellinger&#x27;s Round,&#x27; the song &#x27;Will You Walk the Woods so Wild,&#x27; a hexachord fantasia, and the nine-movement battaglia &#x27;The Battle&#x27; (whose fourth section includes &#x27;the marche of horsemen&#x27; and &#x27;the flute &amp; the drome&#x27;). Alongside the Fitzwilliam Virginal Book (in which Byrd appears with John Bull, Peter Philips, and Giles Farnaby), My Ladye Nevells Booke is considered the most important collection of English Renaissance keyboard music. Byrd also contributed two pavanes and four galliards to Parthenia, the first printed collection of keyboard music in England. He composed three complete Mass settings (for three, four, and five voices), which circulated without title pages under the dangerous Catholic climate. His Gradualia (two volumes, 1605–07) provided 109 pieces of Mass Propers for the major feasts of the Roman liturgy. His motet Ave Verum Corpus is written in G Aeolian (G minor) and stresses &#x27;verum&#x27; rather than &#x27;corpus.&#x27; Its opening moves through G minor, D major, and then the unexpected F major, creating an F-sharp/F-natural cross-relation between the superius and bass; a similar false relation appears at the close on the repeated words &#x27;Miserere mei.&#x27; The motet sets a 14th-century Latin Eucharistic text whose opening words translate as &#x27;Hail, true body.&#x27; On Tallis&#x27;s death, Byrd composed the elegy Ye Sacred Muses, concluding with &#x27;Tallis is dead, and Music dies.&#x27; He preceded John Bull and Jan Sweelinck in composing the earliest known hexachord fantasia, he wrote a lullaby (berceuse), and he taught Thomas Morley, author of the Plain and Easy Introduction to Practical Music. A pair of dances was inspired by the death of Robert Cecil, Earl of Salisbury. Gordon Jacob later composed a suite &#x27;freely transcribing&#x27; six of Byrd&#x27;s pieces, more famous in its version for symphonic wind band.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/William_Byrd" target="_blank">William Byrd — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/My_Ladye_Nevells_Booke" target="_blank">My Ladye Nevells Booke — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Cantiones_Sacrae_(Tallis_and_Byrd)" target="_blank">Cantiones Sacrae (Tallis and Byrd) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Gradualia" target="_blank">Gradualia — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Ave_verum_corpus_(Byrd)" target="_blank">Ave Verum Corpus (Byrd) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Thomas_Tallis" target="_blank">Thomas Tallis — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Thomas Tallis — Byrd&#x27;s teacher; co-composer of Cantiones Sacrae; composer of Spem in Alium; linked in nearly every tossup</li><li>Fitzwilliam Virginal Book — major keyboard anthology containing Byrd&#x27;s works alongside John Bull, Peter Philips, and Giles Farnaby</li><li>Ralph Vaughan Williams — composed Fantasia on a Theme by Thomas Tallis, frequently mentioned as a downstream consequence of the Tallis–Byrd connection</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'william_byrd' });</script>
+
+</body>
+</html>

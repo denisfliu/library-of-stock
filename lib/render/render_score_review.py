@@ -6,6 +6,7 @@ Usage:
     # Output: dev/score_clues_review.html
 """
 
+import hashlib
 import json
 from html import escape
 from pathlib import Path
@@ -35,7 +36,7 @@ def collect_clues():
             # mp3 is relative to topic dir (e.g. "audio/0.mp3")
             # dev/ pages need: ../output/{slug}/audio/0.mp3
             mp3_abs = OUTPUT_DIR / slug / mp3 if mp3 else None
-            mtime = int(mp3_abs.stat().st_mtime) if mp3_abs and mp3_abs.exists() else 0
+            mtime = hashlib.md5(mp3_abs.read_bytes()).hexdigest()[:8] if mp3_abs and mp3_abs.exists() else 0
             mp3_rel = f"../output/{slug}/{mp3}" if mp3 else ""
             clues.append({
                 "topic": topic,

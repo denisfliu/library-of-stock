@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Thomas Tallis</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Thomas Tallis</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Thomas Tallis (c. 1505–1585) was an English Renaissance composer and organist who served the Chapel Royal under Henry VIII, Edward VI, Mary I, and Elizabeth I. He is best known for the 40-voice motet Spem in alium, the Phrygian psalm tune &#x27;Why Fum&#x27;th in Fight&#x27; (which inspired Vaughan Williams&#x27; Fantasia on a Theme by Thomas Tallis), and the Lamentations of Jeremiah. Along with his student <a href="william_byrd_stock.html" class="crossref-inline">William Byrd</a>, he held a 21-year royal monopoly on polyphonic music printing.</div>
+
+        <details class="work" id="spem-in-alium" open>
+            <summary class="work-title">Spem in alium</summary>
+            <p class="work-desc">Tallis's most celebrated work — a 40-voice motet scored for eight choirs of five voices each. Its title means 'I have never put my hope in any other.' Its text is drawn from the Book of Judith and ends 'respice humilitatem nostram.' Likely written for Elizabeth I's 40th birthday; may have been commissioned by the Duke of Norfolk to outdo Alessandro Striggio's Ecce beatam lucem. The Egerton and Gresham manuscripts are its principal sources; its structure may have been inspired by the architecture of Nonsuch Palace. The length of the work may reflect the gematria value of 'Judith' and the composer's surname (both = 69). The Kronos Quartet recorded it for their album Black Angels; Peter Gregson used multitracking to perform all 40 voices on a single cello. Janet Cardiff created a contemporary sound installation based on it. <a href='https://en.wikipedia.org/wiki/Spem_in_alium' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">14x</td>
+                <td class="clue-body">
+                    <span class="clue-text">40-voice motet scored for eight choirs of five voices each</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a work scored for eight choirs of five voices and was written for a monarch&#x27;s fortieth birthday | this English composer of the 40-person motet Spem in alium | a 40-part Renaissance motet</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Text drawn from the Book of Judith; ends &#x27;respice humilitatem nostram&#x27;; title means &#x27;I have never put my hope in any other&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A work by this composer that ends &#x27;respice humilitatem nostram&#x27; is scored for eight choirs of five voices | sets to music a prayer adapted from the Book of Judith | a 1570 piece for a horseshoe-shaped arrangement of eight choirs of five voices that sing &#x27;I have never put my hope in any other&#x27; in Latin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Possibly written for Elizabeth I&#x27;s 40th birthday; possibly commissioned by the Duke of Norfolk to outdo Alessandro Striggio&#x27;s Ecce beatam lucem</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alessandro Striggio&#x27;s Ecce Beatam Lucem possibly inspired the number of performers | One of his works was commissioned by Thomas Howard to outdo Alessandro Striggio&#x27;s Ecce beatam lucem | possibly scored Spem in alium for 40 voices in honor of Elizabeth I&#x27;s 40th birthday</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eight choirs arranged in a horseshoe around the audience; melodies pass between choirs before all forty voices join</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">likely intended for eight five-voice choirs to stand in a horseshoe around the audience | melodies are gradually passed between eight different choirs before a passage in which all forty voices sing together</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Janet Cardiff created a contemporary installation — 40 speakers each playing a different voice — at the National Gallery of Canada (Rideau Street Chapel) and in the Fuentiduena Chapel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This piece is featured in a permanent exhibit at the National Gallery of Canada where each speaker in the Rideau Street Chapel plays a different voice | Janet Cardiff&#x27;s Forty Part Motet consists of playing the forty parts of Spem in Alium from different locations | This work formed the basis of a sound installation that Janet Cardiff exhibited in the Fuentiduena Chapel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Egerton and Gresham manuscripts are the principal sources; structure may have been inspired by the architecture of Nonsuch Palace</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Egerton and Gresham manuscripts are the principal sources of this work, whose structure may have been inspired by the architecture of Nonsuch Palace</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Length may reflect the gematria value of the name &#x27;Judith&#x27; and the composer&#x27;s surname — both equal 69; Peter Gregson used multitracking to perform all 40 voices on a single cello</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The length of this work may be a play on the total value, in gematria, of the name &#x27;Judith&#x27; and the name of this work&#x27;s composer, both of which equal 69 | To play all 40 voices of Spem in Alium on a single cello, Peter Gregson used this technique to record each voice separately</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Recorded by the Kronos Quartet for their album Black Angels</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Kronos Quartet recorded this work for their album Black Angels</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="fantasia-on-a-theme-by-thomas-tallis-vaughan-williams" open>
+            <summary class="work-title">Fantasia on a Theme by Thomas Tallis (Vaughan Williams)</summary>
+            <p class="work-desc">An orchestral fantasia by Ralph Vaughan Williams (1910) for double string orchestra and string quartet, based on Tallis's Phrygian psalm tune 'Why Fum'th in Fight.' Premiered at the Three Choirs Festival in 1910. Divides the string orchestra into three sections. <a href='https://en.wikipedia.org/wiki/Fantasia_on_a_Theme_by_Thomas_Tallis' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ralph Vaughan Williams composed a Fantasia based on Tallis&#x27;s &#x27;Why Fum&#x27;th in Fight&#x27; / &#x27;Third Mode Melody&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">inspired a Fantasia by Ralph Vaughan Williams | this English composer who wrote a theme used in a Vaughan Williams Fantasia | Fantasia on a Theme by Thomas Tallis was by this English composer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Work for double string orchestra and string quartet; splits the orchestra into three sections of differing size</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a work based on this tune opens with two string orchestras instructed to play pianissimo and molto sostenuto | Name this work that divides the string orchestra into three sections</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Premiered at the 1910 Three Choirs Festival, held at Gloucester Cathedral</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">another piece of this type for double string orchestra and string quartet was premiered at the 1910 Three Choirs Festival | Vaughan Williams&#x27; Fantasia on a Theme by Thomas Tallis premiered at this festival&#x27;s 1910 iteration, held at Gloucester Cathedral</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="why-fum-th-in-fight-third-mode-melody-tallis-canon" open>
+            <summary class="work-title">&quot;Why Fum&#x27;th in Fight&quot; / Third Mode Melody / Tallis Canon</summary>
+            <p class="work-desc">Tallis's setting of Psalm 2 in the Phrygian mode, the third of nine tunes he wrote for Archbishop Matthew Parker's Psalter. Also called the 'Third Mode Melody.' Became the basis of Vaughan Williams' Fantasia. A related tune from Parker's Psalter is known as 'Tallis Canon,' used as the hymn tune 'Glory to thee, my God, this night.' <a href='https://en.wikipedia.org/wiki/Why_Fum%27th_in_Fight' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written for Archbishop Matthew Parker&#x27;s Psalter; one of nine psalm tunes Tallis set</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a Phrygian melody that this composer wrote in honor of Archbishop Parker, &#x27;Why fum&#x27;th in fight&#x27; | this composer set nine psalm tunes in memory of Archbishop Matthew Parker, including &#x27;Why Fum&#x27;th in Fight&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the Phrygian mode; also called the &#x27;Third Mode Melody&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer&#x27;s Phrygian mode setting of Psalm 2 | the Tallis theme used in Vaughan Williams&#x27; Fantasia is in the Phrygian example of this musical feature</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Tallis Canon — hymn tune &#x27;Glory to thee, my God, this night&#x27; / &#x27;All praise to you, my God, this night&#x27;; also from Parker&#x27;s Psalter</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The hymn &#x27;All praise to you, my God, this night&#x27; is based on this composer&#x27;s Canon | known as this composer&#x27;s namesake Canon</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="lamentations-of-jeremiah" open>
+            <summary class="work-title">Lamentations of Jeremiah</summary>
+            <p class="work-desc">Tallis's two settings of the first and second lessons from the Tenebrae on Maundy Thursday, set for five voices (ATTBB). Tallis began each verse with a Hebrew letter. Used as evidence of Tallis's enduring Catholic sympathies. <a href='https://en.wikipedia.org/wiki/Lamentations_of_Jeremiah_(Tallis)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set to the first and second lessons from the Tenebrae for Maundy Thursday; five voices (ATTBB scoring)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer used the first and second lessons from the Tenebrae on Maundy Thursday to set Lamentations to music | This composer employed one alto, two tenors, and two basses in the scoring for his liturgical setting of texts from the book of Lamentations</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Each verse begins with a Hebrew letter</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer began each verse with a Hebrew letter in five-voice settings of the first two lessons of the Tenebrae</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Richard Terry argued the Lamentations showed Tallis had lifelong allegiance to the Roman Catholic church</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s setting of Lamentations for five voices may support Richard Terry&#x27;s argument in Downside Review that this composer had lifelong allegiance to the Roman Catholic church</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="cantiones-sacrae" open>
+            <summary class="work-title">Cantiones Sacrae <a href="william_byrd_stock.html#cantiones-sacrae" class="work-link-btn" title="Go to William Byrd">&rarr;</a></summary>
+            <p class="work-desc">A joint collection of 34 motets co-composed by Tallis and his student <a href="william_byrd_stock.html" class="crossref-inline">William Byrd</a>, published in 1575 — the same year Elizabeth I granted them the monopoly on polyphonic music printing. The collection was dedicated to Elizabeth I and was a commercial failure. <a href='https://en.wikipedia.org/wiki/Cantiones_sacrae_(Tallis_and_Byrd)' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Joint motet collection by Tallis and William Byrd, published 1575; dedicated to Elizabeth I</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The joint work Cantiones Sacrae resulted from the first-ever letters patent on printing music | This composer collaborated with a student on the motet collection Cantiones sacrae | This composer contributed to a set of 34 motets, which was a financial failure despite holding a monopoly</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Was a commercial failure despite the monopoly</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a set of 34 motets, which was a financial failure despite holding a monopoly on printed music alongside his most famous pupil, William Byrd</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="william-byrd-relationship-music-monopoly" open>
+            <summary class="work-title">William Byrd relationship / Music Monopoly <a href="william_byrd_stock.html" class="work-link-btn" title="Go to William Byrd">&rarr;</a></summary>
+            <p class="work-desc">Tallis taught <a href="william_byrd_stock.html" class="crossref-inline">William Byrd</a>, who wrote the elegy 'Ye Sacred Muses' commemorating Tallis's death. Elizabeth I granted Tallis and Byrd a joint 21-year monopoly on printing polyphonic music in 1575. Byrd outlived Tallis and continued the polyphonic tradition. <a href='https://en.wikipedia.org/wiki/Thomas_Tallis#Relationship_with_Byrd' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Elizabeth I granted Tallis and William Byrd a 21-year monopoly on publishing/printing polyphonic music (1575)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer and his student, William Byrd, were given a monopoly on publishing polyphonic music by Elizabeth I | Along with one of his students, this composer was granted a 21-year monopoly on printing music in 1575</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Byrd wrote the elegy &#x27;Ye Sacred Muses&#x27; to commemorate Tallis&#x27;s death</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The elegy Ye Sacred Muses was written to commemorate this composer by his student William Byrd | William Byrd, who dedicated Ye Sacred Muses to this composer</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="tallis-scholars" open>
+            <summary class="work-title">Tallis Scholars</summary>
+            <p class="work-desc">A British a cappella vocal ensemble specializing in Renaissance polyphony, founded by Peter Phillips. Named after Tallis. Helped repopularize early a cappella vocal music. Records on the Gimell Records label. <a href='https://en.wikipedia.org/wiki/The_Tallis_Scholars' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A British a cappella ensemble named for Tallis, founded by Peter Phillips; records on Gimell Records</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A contemporary ensemble named for this composer&#x27;s &#x27;Scholars&#x27; helped to repopularize early a cappella vocal music | The Gimell Records label records the work of an early music ensemble founded by Peter Phillips called this musician&#x27;s &#x27;Scholars&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="salve-intemerata" open>
+            <summary class="work-title">Salve intemerata</summary>
+            <p class="work-desc">An early Tallis antiphon to the Virgin Mary, written in the Phrygian mode. He later used its motifs in his five-part mass of the same name. <a href='https://en.wikipedia.org/wiki/Salve_intemerata' target='_blank'>Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">An antiphon to the Virgin Mary in the Phrygian mode; motifs reused in a five-part mass of the same name</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In an early piece, this composer used the Phrygian mode for an antiphon to the Virgin Mary, Salve intemerata | This composer used motifs from his Phrygian antiphon Salve intemerata for a five-part mass of the same name</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Tallis served as organist and composer for the Chapel Royal through four Tudor monarchs. His first critical biography was published in 2016 by John Harley. He was a composer of flexible religious taste, writing Catholic polyphony under Mary Tudor and Protestant psalm tunes for Parker under Elizabeth I. He also wrote 'If ye love me,' a four-part anthem with vernacular text.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Served the Chapel Royal through four Tudor monarchs (Henry VIII, Edward VI, Mary I, Elizabeth I)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This chapel composer dominated royal commissions throughout the Tudor period | embraced polyphony for hymns to the Virgin as that cult was prevalent during the reign of Mary Tudor, only to abandon it for the puritanical Psalter of Archbishop Parker during Elizabeth I&#x27;s reign</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;If ye love me&#x27; — a four-part motet/anthem setting a vernacular text from the Gospel of John</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer used a vernacular text from the Gospel of John for his four-part motet &#x27;If ye love me&#x27; | this composer followed the syllabic style of setting religious texts [in] the anthem If ye love me</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Short Service in the Dorian Mode — includes Magnificat and Nunc Dimittis sections</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer included &#x27;Magnificat&#x27; and &#x27;Nunc dimittis&#x27; sections in his Short Service in the Dorian Mode</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">O nata lux de lumine — notable for a cross relationship (false relation) in the final cadence</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer used false relation in the final cadence of the piece &#x27;O Nata lux&#x27; | One work by this composer ends with the highest voice singing an F-sharp to G while the tenor sings a descending F-E-flat-D, a cross relationship that ends his work O nata lux de lumine</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">First critical biography published in 2016 by John Harley</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first critical biography of this composer was published in 2016 and written by John Harley</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Signum Records began as an effort to record this composer&#x27;s work</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Signum Records began as an effort to record this composer&#x27;s work</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Christmas Mass &#x27;Puer natus est nobis&#x27; — written for Mary I, possibly in preparation for the hoped birth of an heir</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Tallis wrote music for this Catholic ruler of England who succeeded Lady Jane Grey, including the Christmas Mass Puer natus est nobis, possibly in preparation for the hoped birth of an heir</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote a Miserere nostri</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this composer of a Miserere nostri who wrote a tune called &#x27;Third Mode Melody&#x27; that would inspire a work by a later composer</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Thomas Tallis (c. 1505–1585) was an English Renaissance composer and organist who served the Chapel Royal under four successive Tudor monarchs: Henry VIII, Edward VI, Mary I, and Elizabeth I. He adapted his religious style to each reign — writing elaborate Catholic polyphony under Mary Tudor, including a Christmas Mass &#x27;Puer natus est nobis&#x27; possibly composed in anticipation of an heir, and plainer vernacular settings under Elizabeth I.</p><p>His greatest work, Spem in alium, is a 40-voice motet scored for eight separate choirs of five voices arranged in a horseshoe around the audience. The title means &#x27;I have never put my hope in any other,&#x27; and the text is adapted from the Book of Judith, ending &#x27;respice humilitatem nostram.&#x27; The work was likely written for Elizabeth I&#x27;s 40th birthday and was likely commissioned by the Duke of Norfolk to outdo Alessandro Striggio&#x27;s Ecce beatam lucem. The Egerton and Gresham manuscripts are the work&#x27;s principal sources, and its structure may have been inspired by the architecture of Nonsuch Palace. The length of the work may play on the gematria value of &#x27;Judith&#x27; and the composer&#x27;s surname, both equalling 69. The Kronos Quartet recorded it for their album Black Angels, and Peter Gregson used multitracking to perform all 40 voices on a single cello. Janet Cardiff created a celebrated contemporary sound installation, placing forty speakers (each playing one voice) in the Fuentiduena Chapel and at the National Gallery of Canada&#x27;s permanent Rideau Street Chapel exhibit.</p><p>Tallis is also closely associated with his Phrygian psalm tune &#x27;Why Fum&#x27;th in Fight&#x27; (also called the &#x27;Third Mode Melody&#x27;), one of nine tunes he wrote for Archbishop Matthew Parker&#x27;s Psalter. This melody became the thematic basis of Ralph Vaughan Williams&#x27; Fantasia on a Theme by Thomas Tallis (1910), a work for double string orchestra and string quartet — scored in three sections of differing size — premiered at the 1910 Three Choirs Festival held at Gloucester Cathedral. A related tune from Parker&#x27;s Psalter — the &#x27;Tallis Canon&#x27; — is used as the hymn &#x27;Glory to thee, my God, this night.&#x27; His early antiphon Salve intemerata, also in the Phrygian mode, later supplied material for a five-part mass of the same name.</p><p>Tallis&#x27;s Lamentations of Jeremiah set the first and second Tenebrae lessons for Maundy Thursday in a distinctive ATTBB scoring; he began each verse with a Hebrew letter, and the work has been cited as evidence of his enduring Catholic sympathies. Richard Terry argued in Downside Review that the Lamentations demonstrated Tallis&#x27;s lifelong allegiance to Rome. Like Gregorio Allegri, Tallis composed two settings of the Lamentations. His four-part anthem &#x27;If ye love me&#x27; is a widely-known syllabic setting with a vernacular text from the Gospel of John. His Short Service in the Dorian Mode includes Magnificat and Nunc Dimittis sections. His motet O nata lux de lumine is notable for a striking cross-relationship (false relation) in its final cadence. He also wrote a Miserere nostri.</p><p>Tallis taught <a href="william_byrd_stock.html" class="crossref-inline">William Byrd</a>, who later wrote the elegy &#x27;Ye Sacred Muses&#x27; commemorating his teacher&#x27;s death. In 1575, Elizabeth I granted Tallis and Byrd a joint 21-year monopoly on the printing of polyphonic music in England. They co-published the <a href="william_byrd_stock.html#cantiones-sacrae" class="crossref-inline">Cantiones Sacrae</a>, a collection of 34 motets dedicated to Elizabeth I, which was a commercial failure despite the monopoly. The Tallis Scholars, an a cappella ensemble specializing in Renaissance polyphony, was founded by Peter Phillips and records on the Gimell Records label. The first critical biography of Tallis was published in 2016 by John Harley.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Thomas_Tallis" target="_blank">Thomas Tallis — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Spem_in_alium" target="_blank">Spem in alium — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Fantasia_on_a_Theme_by_Thomas_Tallis" target="_blank">Fantasia on a Theme by Thomas Tallis — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Lamentations_of_Jeremiah_(Tallis)" target="_blank">Lamentations of Jeremiah (Tallis) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Cantiones_sacrae_(Tallis_and_Byrd)" target="_blank">Cantiones sacrae (Tallis and Byrd) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Tallis_Scholars" target="_blank">The Tallis Scholars — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Ralph Vaughan Williams — Fantasia on a Theme by Thomas Tallis is one of his most frequently tested works</li><li>William Byrd — frequent co-answerline; shares the monopoly and Cantiones Sacrae with Tallis</li><li>Cantiones Sacrae — could be tested as its own topic</li><li>Janet Cardiff — contemporary artist whose Forty Part Motet installation appears in clues</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'thomas_tallis' });</script>
+
+</body>
+</html>
