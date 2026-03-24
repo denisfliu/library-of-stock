@@ -20,7 +20,7 @@ if _lib_dir in sys.path:
 from lib.images.images import find_image, set_work_image, API_DELAY
 import lib.images.images as img_module
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 
 # Indicators that represent visual works (should have images)
 VISUAL_INDICATORS = {'Painting', 'Sculpture', 'Fresco', 'Print', 'Engraving',
