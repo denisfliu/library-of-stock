@@ -179,7 +179,7 @@ Saves to `output/{{slug}}/mentions_clues.txt`
 
 For each major work listed (skip "General / Biographical", "Other Works"):
 `python3 lib/run.py "WORK NAME" "7,8,9,10" --outdir output/{{slug}}`
-This saves the clue file inside the parent topic's directory. Clue file will be at `output/{{slug}}/{work_slug}_clues.txt`.
+This saves the clue file inside the parent topic's directory. Clue file will be at `output/{{slug}}/{{work_slug}}_clues.txt`.
 Strip dates and parentheticals from work names. If 0 results, skip.
 
 ### Merge and update analysis
