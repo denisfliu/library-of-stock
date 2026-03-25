@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Allan Kaprow</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Allan Kaprow</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">American performance artist and critic (1927-2006) who pioneered the &#x27;Happening&#x27; as an art form. Studied under John Cage; taught at Rutgers and later <a href="../claes_oldenburg_stock.html" class="crossref-inline">Claes Oldenburg</a>. Coined the term &#x27;environments&#x27; for transformed gallery spaces — a precursor to installation art — and coined &#x27;happenings&#x27; to describe participatory, improvisatory performance events. His essay &#x27;The Legacy of Jackson Pollock&#x27; laid out the theoretical basis for happenings and called for &#x27;concrete art&#x27; made of everyday materials. Member of Fluxus. Called his practice &#x27;un-art.&#x27;</div>
+
+        <details class="work" id="happenings-as-a-form-18-happenings-in-6-parts-1959" open>
+            <summary class="work-title">Happenings (as a form) / 18 Happenings in 6 Parts (1959)</summary>
+            <p class="work-desc">The art form Kaprow coined: participatory, improvisatory performances in which audiences act as participants in a temporary event. Kaprow introduced the term in his essay 'The Legacy of Jackson Pollock.' His seminal work '18 Happenings in 6 Parts' was presented at the Reuben Gallery in 1959 and documented by Michael Kirby. The form discards the hierarchy between audience and artist; Yoko Ono's Cut Piece is sometimes classified as a happening. <a href="https://en.wikipedia.org/wiki/18_Happenings_in_6_Parts" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coined the term &#x27;happenings&#x27; to describe early performance art pieces involving audience participation</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this American performance artist who developed the genre of the &#x27;Happening&#x27; | Kaprow coined this generic-sounding term to describe early performance art pieces</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">18 Happenings in 6 Parts (1959), presented at the Reuben Gallery, documented by Michael Kirby</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Michael Kirby documented a 1959 exhibition at the Reuben Gallery in which this man presented 18 works &#x27;in 6 parts.&#x27; | made a work titled &#x27;Eighteen [these] in Six Parts&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Happenings discard the hierarchy between audience and artist; term defined as &#x27;a game, an adventure, a number of activities engaged in by participants for the sake of playing&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this art form...that discarded the hierarchy between audience and artist | coined a term defined as &#x27;a game, an adventure, a number of activities engaged in by participants for the sake of playing&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Words (Happening) — people tear fragments of two rolls of cloth printed with random texts</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One titled &#x27;Words&#x27; saw people tear of fragments of two rolls of cloth printed with random texts</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coined the term &#x27;happenings&#x27; in 1957</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">coined the term &#x27;Happenings&#x27; in 1957 to describe audience participation with artwork</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-legacy-of-jackson-pollock-essay" open>
+            <summary class="work-title">&quot;The Legacy of Jackson Pollock&quot; (essay)</summary>
+            <p class="work-desc">Kaprow's foundational essay, written while teaching at Rutgers, that laid out the theory behind happenings. It argues that after Pollock, artists should pursue a more spontaneous 'new concrete art' rather than creating 'near-paintings' mimicking Pollock's scale and form. It called for art made of 'paint, chairs, food, electric and neon lights, smoke, water, old socks, a dog, and movies.' The essay introduced the concepts of 'environments' and 'happenings.' Collected in Kaprow's 2001 essay anthology The Blurring of Art and Life. <a href="https://en.wikipedia.org/wiki/Allan_Kaprow" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Essay &#x27;The Legacy of Jackson Pollock&#x27; introduced both the concept of &#x27;environments&#x27; and the concept of &#x27;happenings&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this man introduced the genre of &#x27;environments&#x27; along with another art form...in his essay &#x27;The Legacy of Jackson Pollock.&#x27; | He described the theory behind another form of art he coined in his essay &#x27;The Legacy of Jackson Pollock.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written while Kaprow was teaching at Rutgers</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this critic who wrote &#x27;The Legacy of Jackson Pollock&#x27; while teaching at Rutgers</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Essay collected in the 2001 anthology The Blurring of Art and Life</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This critic&#x27;s 2001 essay collection The Blurring of Art and Life opens with an essay arguing that, in light of the passing of the title painter, artists should pursue a more spontaneous &#x27;new concrete art&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called for concrete art made of &#x27;paint, chairs, food, electric and neon lights, smoke, water, old socks, a dog, and movies&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In an essay, this artist called for &#x27;concrete art&#x27; made of &#x27;paint, chairs, food, electric and neon lights, smoke, water, old socks, a dog,&#x27; and &#x27;movies.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Essay argues that &#x27;failure&#x27; cannot be applied to happenings: &#x27;when something goes wrong, something far more right may emerge&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One essay argues the word &#x27;failure&#x27; cannot be applied to this art form &#x27;for when something goes wrong, something far more right, may emerge.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="eat-1964" open>
+            <summary class="work-title">Eat (1964)</summary>
+            <p class="work-desc">A Kaprow happening set in a cave in the Bronx. Visitors were offered wine and fruit and led to a cave where Kaprow served boiled potatoes; a girl fried bananas while two other girls offered visitors red or white wine. <a href="https://en.wikipedia.org/wiki/Allan_Kaprow" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Took place in a cave in the Bronx; a girl fried bananas while two other girls offered visitors red or white wine</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this artist&#x27;s works took place in a cave in the Bronx, in which a girl fried bananas while two other girls offered visitors red or white wine. | visitors were offered wine and fruit and led to a cave where Kaprow served boiled potatoes</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="household-1964" open>
+            <summary class="work-title">Household (1964)</summary>
+            <p class="work-desc">A Kaprow happening famously photographed by Sol Goldberg that took place at Cornell. Involved building a wooden tower and a nest of saplings and strings, culminating in the burning of a car off of whose hood women licked strawberry jam. Kaprow also used jam in other works, including one where women lick jam off a smoking car wreck. <a href="https://en.wikipedia.org/wiki/Allan_Kaprow" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Women lick jam off a car; several works involve covering bodies or cars with jam</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Several of this artist&#x27;s works involve covering bodies or cars with jam, including a work in which women lick jam off of a smoking car wreck. | Women licked jam off of a car in one of Allan Kaprow&#x27;s 18 original Happenings</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Involved building a wooden tower and a nest of saplings; culminated in burning a car; photographed by Sol Goldberg; took place at Cornell</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of these events began with the building of a wooden tower and a nest of saplings and strings, but devolved in the burning of a car off of whose hood women licked strawberry jam. That event was famously photographed by Sol Goldberg and took place at Cornell.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="environments-yard" open>
+            <summary class="work-title">Environments / Yard</summary>
+            <p class="work-desc">Kaprow coined the term 'environments' to refer to his transformed gallery spaces, which he considered a precursor to installation art. In Yard, car tires filled the space behind the Martha Jackson Gallery. The concept was introduced alongside 'happenings' in 'The Legacy of Jackson Pollock.' <a href="https://en.wikipedia.org/wiki/Allan_Kaprow" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coined the term &#x27;environments&#x27; for transformed gallery spaces — a precursor to installation art</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">pioneer of installation art, who coined the term &#x27;environments&#x27; to refer to his transformed spaces | created the term &#x27;Environment&#x27; to describe a precursor to &#x27;installation art&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Yard — car tires filled the space behind the Martha Jackson Gallery</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Objects usually attached to these larger things were used to fill the space behind the Martha Jackson Gallery in Yard, one of the Environments by the inventor of Happenings</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Allan Kaprow (1927-2006) was an American performance artist, critic, and theorist. He studied under composer John Cage and later taught at Rutgers. He is credited as a teacher of <a href="../claes_oldenburg_stock.html" class="crossref-inline">Claes Oldenburg</a>. He coined both 'happenings' and 'environments,' was a member of Fluxus, and described his own practice as 'un-art.' His essay 'Art Which Can't Be Art' explained how everyday acts like brushing one's teeth can be artistic practice. He influenced the development of socially engaged art in the United States.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">American performance artist who coined the term &#x27;happenings&#x27; and &#x27;environments&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this American performance artist who developed the genre of the &#x27;Happening&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Studied under composer John Cage</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This American artist who studied under John Cage created hundreds of &#x27;Happening&#x27; throughout his career</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Taught Claes Oldenburg; Happenings inspired Oldenburg</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist of Eat and Household taught Claes Oldenburg. | Allan Kaprow&#x27;s &#x27;Happenings&#x27; originated in this country, and inspired an artist who works in this country named Claes Oldenburg.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Member of Fluxus</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Performance art was a major part of this art movement, of which Kaprow and Ono were members.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Called his practice &#x27;un-art&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">claimed that he practiced &#x27;un-art&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Essay &#x27;Art Which Can&#x27;t Be Art&#x27; — argues brushing one&#x27;s teeth can be an artistic practice</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist explained the way in which brushing his teeth can be an artistic practice in his essay &#x27;Art Which Can&#x27;t Be Art.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Influenced development of socially engaged art in the United States (per Pablo Helguera&#x27;s Education for Socially Engaged Art)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The introduction of Pablo Helguera&#x27;s Education for Socially Engaged Art describes the influence of this artist on the development of socially engaged art in the United States.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Allan Kaprow (1927-2006) was the American artist-theorist who invented the &#x27;Happening&#x27; and transformed mid-century ideas about what art could be. Trained as a painter, Kaprow studied with composer John Cage in the 1950s and channeled Cage&#x27;s ideas about chance and audience participation into a new visual practice. While teaching at Rutgers, he wrote &#x27;The Legacy of Jackson Pollock,&#x27; a landmark essay arguing that after Pollock&#x27;s radical act-of-painting, artists should abandon &#x27;near-paintings&#x27; mimicking Pollock&#x27;s scale and instead make spontaneous &#x27;concrete art&#x27; from everyday materials — &#x27;paint, chairs, food, electric and neon lights, smoke, water, old socks, a dog, and movies.&#x27; That essay introduced both the concept of &#x27;environments&#x27; (transformed gallery or real-world spaces that preceded installation art) and the &#x27;happening&#x27; (a participatory, improvisatory event in which viewers become performers). Kaprow&#x27;s landmark 1959 work 18 Happenings in 6 Parts, staged at the Reuben Gallery and documented by Michael Kirby, broke the event into concurrent compartments and drew participants into the art rather than keeping them as observers. His happening Eat took place in a cave in the Bronx, where a girl fried bananas while visitors were offered red or white wine, and Kaprow served boiled potatoes. His happening Household, photographed by Sol Goldberg at Cornell, began with the construction of a wooden tower and a nest of saplings before culminating in women licking strawberry jam off the hood of a burning car — an image that recurs across Kaprow&#x27;s work as a signature motif of bodies, vehicles, and condiments. His Environment Yard filled the Martha Jackson Gallery with car tires. Kaprow also taught <a href="../claes_oldenburg_stock.html" class="crossref-inline">Claes Oldenburg</a>, and was a member of Fluxus alongside Yoko Ono and Nam June Paik. He described his own practice as &#x27;un-art&#x27; and in his essay &#x27;Art Which Can&#x27;t Be Art&#x27; argued that everyday activities like brushing one&#x27;s teeth could constitute artistic practice. His work is collected in the 2001 anthology The Blurring of Art and Life. Kaprow&#x27;s influence extends to socially engaged art, relational aesthetics, and installation art, and his happenings are credited as a direct precursor to performance art broadly.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Allan_Kaprow" target="_blank">Allan Kaprow — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/18_Happenings_in_6_Parts" target="_blank">18 Happenings in 6 Parts — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Happening" target="_blank">Happening (art) — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Fluxus" target="_blank">Fluxus — Wikipedia</a></li><li><a href="https://www.moma.org/learn/moma_learning/themes/happenings/" target="_blank">The Legacy of Jackson Pollock (essay) — MoMA</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Happenings — appears frequently as its own answerline; closely linked to Kaprow</li><li>Fluxus — Kaprow was a member; Yoko Ono, Nam June Paik, Joseph Beuys also appear as related artists</li><li>Jackson Pollock — Kaprow&#x27;s foundational essay is about Pollock&#x27;s legacy; appears together frequently</li><li>Claes Oldenburg — taught by Kaprow; Happenings directly inspired his work</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'allan_kaprow' });</script>
+
+</body>
+</html>

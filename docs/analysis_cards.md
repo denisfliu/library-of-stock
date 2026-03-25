@@ -13,7 +13,7 @@ Each card object has:
 - **`back`**: the card back text
 - **`work`**: which work/subtopic the card is from
 - **`frequency`**: the approximate frequency of the underlying clue
-- **`tags`**: empty list by default `[]` — user adds tags interactively in the card editor
+- **`tags`**: ALWAYS set to empty list `[]` — do NOT copy from topic-level tags or work names. The user adds card tags interactively in the card editor.
 
 ### Basic cards (work-based clues)
 
