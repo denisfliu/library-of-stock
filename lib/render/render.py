@@ -47,7 +47,7 @@ def _linkify(text, cross_refs, self_topic, escaped=True):
 
         if ref.get('exists'):
             slug = ref.get('target_slug', '')
-            href = f"{slug}_stock.html"
+            href = f"../{slug}_stock.html"
             # If linking to a specific work within a page, add anchor
             target_work = ref.get('target_work')
             if target_work:
@@ -252,7 +252,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
             ref_name = ref.get('name', '')
             if ref.get('exists') and ref_name and ref_name.lower() in work_name_lower:
                 slug = ref.get('target_slug', '')
-                href = f"{slug}_stock.html"
+                href = f"../{slug}_stock.html"
                 # If the ref points to a work (not the topic itself), add anchor
                 target_work = ref.get('target_work')
                 if target_work:
@@ -275,7 +275,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                             or work_name_lower.startswith(iname_lower + ' ')
                             or work_name_lower.startswith(iname_lower + '(')):
                         slug = entry.get('slug', '')
-                        work_link_btn = f' <a href="{slug}_stock.html" class="work-link-btn" title="Go to {escape(indexed_name)}">&rarr;</a>'
+                        work_link_btn = f' <a href="../{slug}_stock.html" class="work-link-btn" title="Go to {escape(indexed_name)}">&rarr;</a>'
                         break
 
         # Generate anchor ID from work name
