@@ -17,13 +17,7 @@ Read `output/{slug}/analysis.json`. Note:
 python3 lib/run.py "TOPIC" "5,6,7,8,9,10" --mentions --outdir output/{slug}
 ```
 
-**Subitem answerline queries** — for each major work listed in the analysis (skip "General / Biographical", "Other Works"):
-```bash
-python3 lib/run.py "WORK NAME" "7,8,9,10" --outdir output/{slug}
-```
-Always use `--outdir output/{slug}` (the parent topic's directory) to keep subitem results inside the parent folder, not scattered into their own top-level directories.
-
-For sparse topics, expand to difficulties 5-6 here too. Strip dates and parentheticals from work names before querying. For example:
+**Subitem answerline queries** — for each major work listed in the analysis (skip "General / Biographical", "Other Works"), query it directly. For sparse topics, expand to difficulties 5-6 here too. Strip dates and parentheticals from work names before querying. For example:
 - "The Course of Empire (1833–1836)" → query "The Course of Empire"
 - "Vltava / The Moldau" → query "The Moldau" (use the more specific/English name)
 
