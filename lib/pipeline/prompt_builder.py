@@ -8,7 +8,7 @@ renumbers steps sequentially, and wraps in the agent loop template.
 Usage:
     python3 lib/pipeline/prompt_builder.py first --category Literature
     python3 lib/pipeline/prompt_builder.py second --category Philosophy
-    python3 lib/pipeline/prompt_builder.py first --category "Fine Arts" --max-topics 5
+    python3 lib/pipeline/prompt_builder.py first --category "Fine Arts"
 """
 import re
 import sys
@@ -23,11 +23,6 @@ CATEGORY_SUPPLEMENTS = {
     'auditory fine arts': 'analysis_afa.md',
     'philosophy': 'analysis_philosophy.md',
     'science': 'analysis_science.md',
-}
-
-DEFAULT_MAX_TOPICS = {
-    'first': 10,
-    'second': 5,
 }
 
 
@@ -85,61 +80,47 @@ def build_protocol(pass_type: str, category: str) -> str:
 # Loop templates — the operational steps agents execute per topic
 # ---------------------------------------------------------------------------
 
-FIRST_PASS_LOOP = """## LOOP: Pop and process topics (up to {max_topics})
+FIRST_PASS_LOOP = """## Process one topic
 
-### Pop next topic
-Run: `python3 lib/queue/batch_worker.py pop first --category "{category}"`
-If output is "EMPTY", you are done — exit.
-Parse the JSON output to get the full topic name and metadata.
+### Pop topic
+```bash
+python3 lib/queue/batch_worker.py pop first --category "{category}"
+```
+If output is "EMPTY", queue is empty — exit.
+Parse JSON output to get the full topic name and metadata.
 
 ### Derive slug
-Derive the canonical slug from the full proper name:
 `slug = full_topic_name.lower().replace(" ", "_")`
 Examples: "Samuel Beckett" → `samuel_beckett` | "Béla Bartók" → `béla_bartók` | "Bong Joon-ho" → `bong_joon-ho`
 
-The slug names the output directory. **Always use the slug directory, not the search term directory.**
-
 ### Fetch clues
-Use the minimally identifiable search term (usually last name or common name), passing `--outdir` to save into the canonical slug directory:
 ```
 python3 lib/run.py "SEARCH TERM" "7,8,9,10" --outdir output/{{slug}}
 ```
-Example: `python3 lib/run.py "Falconet" "7,8,9,10" --outdir output/étienne_maurice_falconet`
-This saves `output/{{slug}}/clues.txt`.
+Use the minimally identifiable search term (usually last name or common name). Saves `output/{{slug}}/clues.txt`.
 
-### Expand search if sparse
-If the initial fetch returned fewer than **10 total tossups + bonuses**, run two additional queries:
-1. Expanded difficulty: `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --outdir output/{{slug}}`
-2. Text mentions: `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{{slug}}`
-   Saves to `output/{{slug}}/mentions_clues.txt`
-Read all output files and incorporate into your analysis. Text mention clues should be labeled as contextual.
+### Expand if sparse
+If fewer than **10 total tossups + bonuses**, run:
+1. `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --outdir output/{{slug}}`
+2. `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{{slug}}`
 
-### Read clues and create analysis JSON
+Read all output files. Label text mention clues as contextual.
+
+### Analyze and write analysis.json
 Read `output/{{slug}}/clues.txt`. Create `output/{{slug}}/analysis.json` following the analysis protocol above.
-IMPORTANT: Set "topic" to the FULL proper name (from the answerline), not the search term.
-Reference `output/emily_carr/analysis.json` for JSON formatting.
+Set "topic" to the FULL proper name (from the answerline). Reference `output/emily_carr/analysis.json` for formatting.
 
-Required top-level fields:
-- "topic": full proper name
-- "summary": concise paragraph (DO NOT LEAVE EMPTY)
-- "works": array of work sections
-- "comprehensive_summary": multi-paragraph prose
-- "cards": array of flashcards
-- "category", "subcategory", "year", "continent", "country", "tags"
-- "links": Wikipedia links
-- "recursive_suggestions": topics worth deeper investigation
+Required fields: `topic`, `summary` (non-empty), `works`, `comprehensive_summary`, `cards`, `category`, `subcategory`, `year`, `continent`, `country`, `tags`, `links`, `recursive_suggestions`
 
 ### Self-check (MANDATORY)
-- [ ] "summary" field is filled (concise paragraph blurb — NOT empty)
-- [ ] More than 1 work section (if data mentions multiple works/ideas)
-- [ ] Cards array is non-empty
-- [ ] Every work/concept mentioned 3+ times has its own section
-- [ ] Indicator field set on every work
-- [ ] Description is a mini-paragraph (not a terse phrase)
-- [ ] comprehensive_summary is real prose (multiple sentences)
-- [ ] Metadata present: category, subcategory, year, continent, country, tags
-- [ ] Each card tests ONE fact
-- [ ] Every card has `"type": "basic"` or `"type": "image"` — NEVER a work type like "Fanfare", "Symphony", "Painting"
+- [ ] `summary` filled (concise blurb — NOT empty)
+- [ ] More than 1 work section if clues mention multiple works/ideas
+- [ ] Cards array non-empty; each card tests ONE fact
+- [ ] Every work mentioned 3+ times has its own section
+- [ ] `indicator` set on every work; description is a mini-paragraph
+- [ ] `comprehensive_summary` is real prose
+- [ ] All metadata present: category, subcategory, year, continent, country, tags
+- [ ] Every card has `"type": "basic"` or `"type": "image"` — never a work type
 
 ### Render
 ```bash
@@ -153,48 +134,47 @@ python3 lib/queue/batch_worker.py complete "FULL TOPIC NAME"
 python3 lib/queue/topic_queue.py remove-first "FULL TOPIC NAME"
 ```
 
-Then go back to Pop and process the next topic. Stop after {max_topics} topics or when queue is empty.
-
 ## RULES
-- Do NOT search for images. Images are handled separately after analysis.
-- Do NOT use WebSearch for images or construct Wikimedia URLs.
-- Process ALL steps for each topic before popping the next.
-- If 0 results, mark complete with "(no results)" and move on.
-- ALWAYS run `python3 lib/run.py` to fetch clues — NEVER write clues.txt manually. The run.py call saves the raw API cache JSON to the output dir, which is required for the questions page renderer."""
+- Do NOT search for images — handled separately after analysis.
+- ALWAYS run `python3 lib/run.py` to fetch clues — NEVER write clues.txt manually. The API cache JSON is required for the questions page renderer.
+- If 0 results: mark complete with "(no results)" and exit."""
 
-SECOND_PASS_LOOP = """## LOOP: Pop and process topics (up to {max_topics})
+SECOND_PASS_LOOP = """## Process one topic
 
-### Pop next topic
-Run: `python3 lib/queue/batch_worker.py pop second --category "{category}"`
-If output is "EMPTY", you are done — exit.
-Parse the JSON output to get the topic name and slug.
+### Pop topic
+```bash
+python3 lib/queue/batch_worker.py pop second --category "{category}"
+```
+If output is "EMPTY", queue is empty — exit.
+Parse JSON output to get the topic name and slug.
 
 ### Load existing analysis
-Read `output/{{slug}}/analysis.json`. Note how many work sections, cards, and which works have thin coverage.
+Read `output/{{slug}}/analysis.json`. Note work sections, card count, and thin-coverage works.
 
 ### Fetch additional data
-If the page is sparse (<10 original tossups+bonuses or <4 work sections):
-`python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{{slug}}`
-Saves to `output/{{slug}}/mentions_clues.txt`
+If sparse (<10 original tossups+bonuses or <4 work sections):
+```bash
+python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{{slug}}
+```
 
-For each major work listed (skip "General / Biographical", "Other Works"):
-`python3 lib/run.py "WORK NAME" "7,8,9,10" --outdir output/{{slug}}`
-This saves the clue file inside the parent topic's directory. Clue file will be at `output/{{slug}}/{{work_slug}}_clues.txt`.
-Strip dates and parentheticals from work names. If 0 results, skip.
+For each major work (skip "General / Biographical" and "Other Works"):
+```bash
+python3 lib/run.py "WORK NAME" "7,8,9,10" --outdir output/{{slug}}
+```
+Always use `--outdir output/{{slug}}` — never let subitem results land in their own top-level directories.
+Strip dates and parentheticals (e.g. "The Course of Empire (1833–1836)" → "The Course of Empire").
+Skip works with 5+ clues already. If 0 results, skip.
 
-### Merge and update analysis
-Read ALL new clue files from their locations above.
-Follow the merge protocol in the analysis protocol above.
-Reference `output/emily_carr/analysis.json` for JSON formatting.
+### Merge and update analysis.json
+Read ALL new clue files. Follow the merge protocol above.
+Reference `output/emily_carr/analysis.json` for formatting.
 
 ### Self-check (MANDATORY)
-- [ ] All existing work sections preserved
-- [ ] No frequency counts reduced
-- [ ] New clues added to appropriate sections
-- [ ] Cards generated for new clues
-- [ ] comprehensive_summary rewritten to include new info
-- [ ] "summary" blurb is filled and high quality
-- [ ] second_pass tracking field added
+- [ ] All existing work sections preserved; no frequency counts reduced
+- [ ] New clues added to appropriate sections; cards generated for them
+- [ ] `comprehensive_summary` rewritten to include new info
+- [ ] `summary` blurb filled and high quality
+- [ ] `second_pass` tracking field added
 - [ ] Each card tests ONE fact
 
 ### Render
@@ -209,15 +189,12 @@ python3 lib/queue/batch_worker.py complete "FULL TOPIC NAME"
 python3 lib/queue/topic_queue.py remove-second "FULL TOPIC NAME"
 ```
 
-Then go back to Pop and process the next topic. Stop after {max_topics} topics or when queue is empty.
-
 ## RULES
-- Do NOT search for images. Images are handled separately after analysis.
-- Do NOT remove existing data — only add to it.
-- Process ALL steps for each topic before popping the next."""
+- Do NOT search for images — handled separately after analysis.
+- Do NOT remove existing data — only add to it."""
 
 
-AGENT_TEMPLATE = """You are a {pass_label} agent for {category} topics. Process topics from the shared batch queue. Do NOT ask for confirmation.
+AGENT_TEMPLATE = """You are a {pass_label} agent for {category} topics. Process one topic from the shared batch queue, then exit. Do NOT ask for confirmation.
 
 ## ANALYSIS PROTOCOL
 
@@ -226,19 +203,16 @@ AGENT_TEMPLATE = """You are a {pass_label} agent for {category} topics. Process 
 {loop}"""
 
 
-def build_prompt(pass_type: str, category: str, max_topics: int = None) -> str:
+def build_prompt(pass_type: str, category: str) -> str:
     """Build the full agent prompt for a given pass type and category."""
-    if max_topics is None:
-        max_topics = DEFAULT_MAX_TOPICS[pass_type]
-
     protocol = build_protocol(pass_type, category)
 
     if pass_type == 'first':
         pass_label = 'stock guide generation'
-        loop = FIRST_PASS_LOOP.format(category=category, max_topics=max_topics)
+        loop = FIRST_PASS_LOOP.format(category=category)
     else:
         pass_label = 'second-pass enrichment'
-        loop = SECOND_PASS_LOOP.format(category=category, max_topics=max_topics)
+        loop = SECOND_PASS_LOOP.format(category=category)
 
     return AGENT_TEMPLATE.format(
         pass_label=pass_label,
@@ -260,14 +234,10 @@ if __name__ == '__main__':
         sys.exit(1)
 
     category = None
-    max_topics = None
     i = 1
     while i < len(args):
         if args[i] == '--category' and i + 1 < len(args):
             category = args[i + 1]
-            i += 2
-        elif args[i] == '--max-topics' and i + 1 < len(args):
-            max_topics = int(args[i + 1])
             i += 2
         else:
             i += 1
@@ -276,4 +246,4 @@ if __name__ == '__main__':
         print('--category is required')
         sys.exit(1)
 
-    print(build_prompt(pass_type, category, max_topics))
+    print(build_prompt(pass_type, category))

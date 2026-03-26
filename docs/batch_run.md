@@ -6,13 +6,13 @@ How to launch agents to bulk-generate stock guides. Read this fully before start
 
 Tell the controller (Claude Code conversation):
 
-> Start a batch with N first pass agents and M second pass agents.
+> Start a batch with N parallel agents for first pass / second pass.
 
 The controller will:
 1. Create `queue/current_batch.json` from the global queues
 2. Build agent prompts using `lib/pipeline/prompt_builder.py`
-3. Launch N+M agents with assembled prompts
-4. Monitor agents, relaunch when one finishes (if queue not empty)
+3. Launch N agents, each processing one topic and exiting
+4. Relaunch agents as they finish until the queue is empty
 5. After all done, run `python3 post_batch.py` (rebuilds index, runs deterministic backfill, prints Sonnet prompt)
 6. Launch the Sonnet crossref agent with the printed prompt
 7. Run `./build.sh`
@@ -50,9 +50,9 @@ The builder reads blocks, concatenates in order, renumbers steps sequentially, a
 ## Batch Rules
 
 ### Sizing
-- **First pass: 10 topics per agent maximum.** Larger batches cause context exhaustion — later topics get shallow analysis.
-- **Second pass: 5 topics per agent maximum.** Enrichment is more context-intensive.
-- For **big topics** (20+ tossups like Picasso, Beethoven, Shakespeare): limit to **5 per agent** (first pass) or **3 per agent** (second pass).
+- **One topic per agent.** Each agent pops one topic, processes it fully, and exits.
+- Launch as many parallel agents as topics you want to process simultaneously.
+- This eliminates context accumulation (later topics getting shallow analysis) and reduces API cost.
 
 ### Two-Phase Pipeline (VFA only)
 - **Phase 1**: Analysis agents — fetch, analyze, render. **No image searching.**
