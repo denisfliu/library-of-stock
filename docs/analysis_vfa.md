@@ -101,5 +101,5 @@ For works not on Commons (most 20th/21st century art): `{"url": "", "link": "htt
 
 - Many artists share subjects (Crucifixion, Annunciation, Saint George) — always verify the image is the right artist's version
 - 20th/21st century works are almost always copyrighted — use Wikipedia links
-- For architects (Alberti), use `Architect` for person cards and `Building` for their works, not `Painting` or `Architecture`
+- For architects (Alberti), use `Architect` for person cards, `Building` for physical structures, and `Location` for non-building designed spaces (parks, urban plans). Never use `Architecture:` as an indicator.
 - Some VFA topics cross into literature (William Blake poems, Rossetti sonnets) — use appropriate indicators for each work type
