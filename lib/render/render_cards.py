@@ -31,13 +31,14 @@ def _synthesize_image_cards(analysis: dict, cards: list) -> list:
         if url:
             work_image_urls[work["name"]] = url
 
-    # Attach image to the back of basic cards whose work has an image
+    # Attach image URL to any card whose work has an image and is missing image_url
     for card in cards:
-        if card.get("type") == "basic" and not card.get("image_url"):
+        if not card.get("image_url"):
             url = work_image_urls.get(card.get("work", ""))
             if url:
                 card["image_url"] = url
-                card["image_side"] = "back"
+                if "image_side" not in card:
+                    card["image_side"] = "front" if card.get("type") == "image" else "back"
 
     # Generate standalone image recognition cards
     existing_image_works = {

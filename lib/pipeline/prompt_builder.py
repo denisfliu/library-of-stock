@@ -48,7 +48,8 @@ def build_protocol(pass_type: str, category: str) -> str:
     """Assemble the analysis protocol from building blocks.
 
     Concatenation order:
-        analysis_core → analysis_{pass_type} → category_supplement → analysis_cards
+        analysis_core → analysis_{pass_type} → category_supplement
+    Note: card generation is handled by a separate card agent after analysis completes.
     """
     blocks = []
 
@@ -67,9 +68,6 @@ def build_protocol(pass_type: str, category: str) -> str:
         sup_path = DOCS_DIR / CATEGORY_SUPPLEMENTS[cat_key]
         if sup_path.exists():
             blocks.append(read_block(sup_path))
-
-    # 4. Card generation rules
-    blocks.append(read_block(DOCS_DIR / 'analysis_cards.md'))
 
     # Concatenate with dividers and renumber all steps sequentially
     combined = '\n\n---\n\n'.join(b for b in blocks if b)
@@ -112,20 +110,19 @@ Set "topic" to the FULL proper name (from the answerline). Reference `output/emi
 
 Required fields: `topic`, `summary` (non-empty), `works`, `comprehensive_summary`, `cards`, `category`, `subcategory`, `year`, `continent`, `country`, `tags`, `links`, `recursive_suggestions`
 
+Leave `cards` as an empty array `[]` — a dedicated card agent will generate them after the batch.
+
 ### Self-check (MANDATORY)
 - [ ] `summary` filled (concise blurb — NOT empty)
 - [ ] More than 1 work section if clues mention multiple works/ideas
-- [ ] Cards array non-empty; each card tests ONE fact
 - [ ] Every work mentioned 3+ times has its own section
 - [ ] `indicator` set on every work; description is a mini-paragraph
 - [ ] `comprehensive_summary` is real prose
 - [ ] All metadata present: category, subcategory, year, continent, country, tags
-- [ ] Every card has `"type": "basic"` or `"type": "image"` — never a work type
 
 ### Render
 ```bash
 python3 -c "from lib.render.render import render_html; import json; f=open('output/{{slug}}/analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
-python3 lib/render/render_cards.py
 ```
 
 ### Mark complete
@@ -169,18 +166,18 @@ Skip works with 5+ clues already. If 0 results, skip.
 Read ALL new clue files. Follow the merge protocol above.
 Reference `output/emily_carr/analysis.json` for formatting.
 
+Do NOT regenerate or modify the `cards` array — a dedicated card agent will handle cards after the batch.
+
 ### Self-check (MANDATORY)
 - [ ] All existing work sections preserved; no frequency counts reduced
-- [ ] New clues added to appropriate sections; cards generated for them
+- [ ] New clues added to appropriate sections
 - [ ] `comprehensive_summary` rewritten to include new info
 - [ ] `summary` blurb filled and high quality
 - [ ] `second_pass` tracking field added
-- [ ] Each card tests ONE fact
 
 ### Render
 ```bash
 python3 -c "from lib.render.render import render_html; import json; f=open('output/{{slug}}/analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
-python3 lib/render/render_cards.py
 ```
 
 ### Mark complete
@@ -190,8 +187,35 @@ python3 lib/queue/topic_queue.py remove-second "FULL TOPIC NAME"
 ```
 
 ## RULES
-- Do NOT search for images — handled separately after analysis.
+- VFA and Other Fine Arts (architecture) agents: run `python3 lib/images/fix_images.py --slug {{slug}}` after updating analysis.json — same as first pass. All other categories: no image steps.
 - Do NOT remove existing data — only add to it."""
+
+
+CARD_AGENT_TEMPLATE = """\
+You are a card generation agent for the topic "{topic}". Generate its `cards` array from scratch, then exit. Do NOT ask for confirmation.
+
+Working directory: /home/laufey/code/stock
+
+## Card Rules
+
+{cards_block}
+
+---
+
+### 1. Read the analysis
+Read `output/{slug}/analysis.json`. Study all work sections and clues carefully.
+
+### 2. Generate cards
+Following the card rules above, produce a complete `cards` array. Every clue with specific learnable content gets a card. Do not skip clues.
+
+### 3. Write back
+Replace ONLY the `cards` field in `output/{slug}/analysis.json`. Do not modify any other field.
+
+### 4. Render
+```bash
+python3 lib/render/render_cards.py
+```\
+"""
 
 
 AGENT_TEMPLATE = """You are a {pass_label} agent for {category} topics. Process one topic from the shared batch queue, then exit. Do NOT ask for confirmation.
@@ -201,6 +225,30 @@ AGENT_TEMPLATE = """You are a {pass_label} agent for {category} topics. Process 
 {protocol}
 
 {loop}"""
+
+
+def build_card_prompt(topic: str, category: str | None = None) -> str:
+    """Build the card agent prompt for a single topic.
+
+    Injects analysis_cards.md and the category supplement (if known) directly
+    into the prompt — same pattern as build_protocol().
+    """
+    slug = topic.lower().replace(' ', '_')
+    cards_block = read_block(DOCS_DIR / 'analysis_cards.md')
+
+    supplement_block = ''
+    if category:
+        cat_key = category.lower()
+        if cat_key in CATEGORY_SUPPLEMENTS:
+            sup_path = DOCS_DIR / CATEGORY_SUPPLEMENTS[cat_key]
+            if sup_path.exists():
+                supplement_block = '\n\n---\n\n' + read_block(sup_path)
+
+    return CARD_AGENT_TEMPLATE.format(
+        topic=topic,
+        slug=slug,
+        cards_block=cards_block + supplement_block,
+    ).strip()
 
 
 def build_prompt(pass_type: str, category: str) -> str:

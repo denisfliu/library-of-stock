@@ -9,9 +9,9 @@ After analysis, generate a default set of Anki cards from the clues. Store them 
 Each card object has:
 - **`type`**: MUST be `"basic"` or `"image"` — never the indicator value, never a work type like "Fanfare" or "Symphony"
 - **`indicator`**: the type indicator for the front (e.g., `"Play"`, `"Novel"`, `"Composer"`, `"Painting"`)
-- **`front`**: the full card front text including indicator (e.g., `"Play: the protagonist tricks..."`)
+- **`front`**: for `"basic"` cards, the full card front text including indicator (e.g., `"Play: the protagonist tricks..."`). For `"image"` cards, always `""` — the image is the front.
 - **`back`**: the card back text
-- **`work`**: which work/subtopic the card is from
+- **`work`**: the EXACT `name` of the work section this card belongs to (must match character-for-character). The renderer uses this to automatically attach the work's image to the card — missing or wrong `work` = no image on card back.
 - **`frequency`**: the approximate frequency of the underlying clue
 - **`tags`**: ALWAYS set to empty list `[]` — do NOT copy from topic-level tags or work names. The user adds card tags interactively in the card editor.
 
