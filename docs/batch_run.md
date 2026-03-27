@@ -55,8 +55,10 @@ The builder reads blocks, concatenates in order, renumbers steps sequentially, a
 - This eliminates context accumulation (later topics getting shallow analysis) and reduces API cost.
 
 ### Two-Phase Pipeline (VFA only)
-- **Phase 1**: Analysis agents — fetch, analyze, render. **No image searching.**
-- **Phase 2**: Run `python3 lib/images/fix_images.py` **once, sequentially** after all analysis agents finish. Then LLM reviews `cache/pending_images.json`.
+- **Phase 1**: Analysis agents — fetch, analyze, run `fix_images.py --slug {slug}`, render. The file lock serializes image lookups across parallel agents automatically.
+- **Phase 2**: After all agents finish, run `python3 lib/images/fix_images.py` once to catch stragglers (works that went pending or were added late). Then LLM reviews `cache/pending_images.json`.
+
+Known failures are cached — `fix_images.py` skips them by default. Use `--retry` to re-try them.
 
 Non-VFA categories (Literature, Philosophy, Science) don't need Phase 2.
 
@@ -135,9 +137,9 @@ for f in sorted(Path('output').glob('*/analysis.json')):
 
 These mistakes were made before — do NOT repeat them:
 
-1. **Shallow analyses**: Agents with 60+ queries crammed everything into single sections with no cards. **Fix**: 10/5 items to query max per agent (1st pass / 2nd pass).
-2. **Guessed image URLs**: Agents constructed Wikimedia URLs that were 404s or showed the wrong artist's painting. **Fix**: No image searching during analysis. Use `lib/images/fix_images.py` after.
-3. **Rate limiting**: Parallel agents all hitting Wikimedia caused hours-long blocks. **Fix**: Image search is always sequential, never in parallel agents.
+1. **Shallow analyses**: Agents with 60+ queries crammed everything into single sections with no cards. **Fix**: One topic per agent.
+2. **Guessed image URLs**: Agents constructed Wikimedia URLs that were 404s or showed the wrong artist's painting. **Fix**: Always use `fix_images.py --slug {slug}` — never construct URLs manually.
+3. **Rate limiting**: Parallel agents all hitting Wikimedia caused hours-long blocks. **Fix**: The file lock in `images.py` serializes all API calls automatically — always go through `fix_images.py`, never call the Wikimedia API directly.
 4. **Terse descriptions**: Agents wrote one-line descriptions like "His most famous work." **Fix**: Self-check requires mini-paragraph descriptions.
 5. **Multi-clue cards**: Cards with 3+ semicolons packing multiple facts. **Fix**: Self-check — each card tests one fact.
 6. **Missing question pages**: Agents forgot to render. **Fix**: Always run `./build.sh` after the batch — it covers all four renderers.
