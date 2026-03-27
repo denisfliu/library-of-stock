@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Tempera</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Tempera</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">A painting medium in which pigments are mixed with a water-soluble binder, most commonly egg yolk (&quot;egg tempera&quot;). The dominant panel-painting medium in medieval and early Renaissance Europe before being supplanted by oil painting around 1500. Associated most closely with Duccio and the Sienese school; revived in the 20th century by artists including <a href="../andrew_wyeth/stock.html" class="crossref-inline">Andrew Wyeth</a>, Paul Cadmus, <a href="../jacob_lawrence/stock.html" class="crossref-inline">Jacob Lawrence</a>, and <a href="../leonora_carrington/stock.html" class="crossref-inline">Leonora Carrington</a>.</div>
+
+        <details class="work" id="tempera-general-medium" open>
+            <summary class="work-title">Tempera (General / Medium)</summary>
+            <p class="work-desc">Egg tempera is a paint medium in which pigments are bound in egg yolk (and sometimes casein glue). It must be applied in thin layers, producing a translucent, matte appearance. It was the primary European panel-painting medium in the Middle Ages and early Renaissance, before being supplanted by oil painting around 1500. The technique was described in detail by Cennino Cennini in Il libro dell'arte (The Craftsman's Handbook), which gave ratios for mixing and was the first extensive European document on the medium. Gesso — a mixture of plaster and rabbit-skin glue — was first developed as a ground for tempera paintings. A 20th-century revival was led by Paul Cadmus, <a href="../jacob_lawrence/stock.html" class="crossref-inline">Jacob Lawrence</a>, and <a href="../andrew_wyeth/stock.html" class="crossref-inline">Andrew Wyeth</a> (who learned from Peter Hurd). The Birmingham Group learned the technique from a handbook translated by Edwardian artist Christiana Herringham.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pigments are mixed into binders such as egg yolk</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">For 10 points, what medium mixes pigments into binders such as egg yolk? | This medium often involves the use of egg yolks. | This thin and matte-colored paint was made using eggs.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Supplanted by oil painting during the Renaissance (around 1500)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Medieval panel painting like the gold-leaf-adorned work of Duccio was painted in this medium, which was fully supplanted by oil painting during the Renaissance. | Before being supplanted by oil painting, this was the most popular painting medium in Medieval Europe. | This medium was largely replaced by oil painting.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cennino Cennini&#x27;s Craftsman&#x27;s Handbook (Il libro dell&#x27;arte) provided ratios for the medium; first extensive document to discuss it</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cennino Cennini&#x27;s Craftsman&#x27;s Handbook provided ratios for this medium. | Cennini&#x27;s Handbook is the first extensive document to discuss this paint medium, which uses egg yolk as a binder. | Name this first European author to write extensively about the use of egg tempera in painting, doing so in his Il libro dell&#x27;arte.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Gesso (plaster and rabbit-skin glue) was first developed as a ground for tempera</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A plaster and rabbit-skin glue mixture called gesso was first developed as a ground for this medium, which may use casein glue.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Must be applied in thin layers; creates a translucent appearance; prevents cracking</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In order to prevent it from cracking, it must be applied in thin layers, which often creates a translucent appearance.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">20th-century revival: Paul Cadmus, Jacob Lawrence; Andrew Wyeth learned the technique from Peter Hurd</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Paul Cadmus and Jacob Lawrence contributed to a 20th-century revival of this technique, which Andrew Wyeth learned from Peter Hurd and used for Christina&#x27;s World.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Birmingham Group learned the technique from a handbook translated by Edwardian artist Christiana Herringham</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Birmingham Group learned this technique from a handbook translated by Edwardian artist Christiana Herringham.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Used with encaustic for the Fayum mummy portraits</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cennino Cennini&#x27;s Craftsman&#x27;s Handbook provided ratios for this medium, which was used with encaustic for the Fayum mummy portraits.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Andrew Wyeth&#x27;s Christina&#x27;s World is painted in this medium</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Paul Cadmus and Jacob Lawrence contributed to a 20th-century revival of this technique, which Andrew Wyeth learned from Peter Hurd and used for Christina&#x27;s World.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="duccio-and-the-sienese-school" open>
+            <summary class="work-title">Duccio and the Sienese School</summary>
+            <p class="work-desc"><a href="../duccio_di_buoninsegna/stock.html" class="crossref-inline">Duccio di Buoninsegna</a> was the foremost medieval artist who worked in egg tempera and gold leaf. His <a href="../duccio_di_buoninsegna/stock.html#rucellai-madonna" class="crossref-inline">Rucellai Madonna</a> (1285, Siena) depicts three angels on either side of the Virgin and Child and is an early example of gold leaf combined with egg tempera in the Byzantine icon tradition. His <a href="../duccio_di_buoninsegna/stock.html#maesta-1308-1311" class="crossref-inline">Maesta</a> is another major altarpiece in this medium. Medieval Russian icons also used egg tempera.</p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/Rucellai_Madonna" target="_blank">View: Rucellai Madonna (Duccio, 1285)</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Duccio&#x27;s gold-leaf-adorned medieval panel paintings used tempera</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Medieval panel painting like the gold-leaf-adorned work of Duccio was painted in this medium. | Gold leaf ornaments egg tempera paintings such as the Rucellai Madonna, the Maesta, and other Duccio artworks made in the vein of Byzantine icon tradition.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Rucellai Madonna (1285, Siena) uses egg tempera and gold leaf; depicts three angels on either side of Virgin and Child</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A panel painting named for this family uses gold leaf and egg tempera to depict three angels on either side of the Virgin and Child and was made in 1285 in Siena. | That Rucellai Madonna was painted by this foremost of the Sienese School artists.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Medieval Russian icons were also painted in egg tempera; the medium was the most popular in medieval Europe before oil painting</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Like other panel works at the time, most medieval Russian icons were painted using this medium. Before being supplanted by oil painting, this was the most popular painting medium in Medieval Europe.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="leonardo-da-vinci-s-last-supper" open>
+            <summary class="work-title">Leonardo da Vinci&#x27;s Last Supper <a href="../leonardo_da_vinci/stock.html" class="work-link-btn" title="Go to Leonardo da Vinci">&rarr;</a></summary>
+            <p class="work-desc"><a href="../leonardo_da_vinci/stock.html" class="crossref-inline">Leonardo da Vinci</a>'s Last Supper (in the refectory of Santa Maria delle Grazie, Milan) used an experimental mixture of oil paint and tempera, applied with white lead undercoat in a fresco-secco technique. This was a departure from the standard method and caused the painting to begin deteriorating almost immediately. Giorgio Vasari described it as a 'muddle of blots' less than 60 years after it was painted. <a href="../henry_james/stock.html" class="crossref-inline">Henry James</a> called it the 'saddest work of art in the world' and it has a 15-minute viewing limit.</p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/The_Last_Supper_(Leonardo_da_Vinci)" target="_blank">View: The Last Supper (Leonardo da Vinci)</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Leonardo&#x27;s Last Supper used an innovative but unstable mixture of oil paints with tempera, causing deterioration</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A primary reason for the Last Supper&#x27;s deterioration is its innovative but unstable mixture of oil paints with this other type of paint. | This later artist&#x27;s decision to use that technique throughout his work on a painting in the refectory of the Santa Maria delle Grazie caused it to start peeling off the wall almost immediately.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cennini recommended white lead undercoat in fresco-secco, the technique Leonardo used throughout the Last Supper</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Cennini also recommended the use of white lead as an undercoat in the finishing stages of fresco-secco. This later artist&#x27;s decision to use that technique throughout his work on a painting in the refectory of the Santa Maria delle Grazie caused it to start peeling off the wall almost immediately.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="leonora-carrington-s-tempera-paintings" open>
+            <summary class="work-title">Leonora Carrington&#x27;s Tempera Paintings <a href="../leonora_carrington/stock.html" class="work-link-btn" title="Go to Leonora Carrington">&rarr;</a></summary>
+            <p class="work-desc">The Surrealist artist <a href="../leonora_carrington/stock.html" class="crossref-inline">Leonora Carrington</a> used egg tempera in several of her paintings, including The Giantess (The Guardian of the Egg), which depicts a giantess enshrouded in golden wheat circled by geese, and The Kitchen Garden on the Eyot, in which a white figure emerges from an orange tree. She used eggs as a material to depict eggs in these works. Carrington wrote that the egg was 'the dividing line between the Big and the Small' during her time in a sanatorium during the Spanish Civil War.</p>
+            <div class="work-images">
+                    <figure class="image-link">
+                        <a href="https://en.wikipedia.org/wiki/Leonora_Carrington" target="_blank">View: Leonora Carrington tempera paintings</a>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Giantess (The Guardian of the Egg) depicts a giantess enshrouded in golden wheat circled by geese; painted in tempera</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A giantess enshrouded in golden wheat is circled by geese in a 20th-century painting in this medium.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Kitchen Garden on the Eyot: a white figure emerges from an orange tree</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A white figure emerges from an orange tree in a painting in this medium titled The Kitchen Garden on the Eyot.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Carrington used eggs to depict eggs in her tempera paintings</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist used eggs to depict eggs in her tempera paintings The Giantess (The Guardian of the Egg) and The Kitchen Garden on the Eyot.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Carrington wrote that the egg was &#x27;the dividing line between the Big and the Small&#x27; during the Spanish Civil War</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Carrington wrote that the egg was &#x27;the dividing line between the Big and the Small&#x27; during her stay at a sanatorium during this conflict.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Tempera (egg tempera) is a painting medium in which dry pigments are ground and mixed with a water-soluble binder, most commonly egg yolk — hence the name. The medium must be applied in thin, careful layers, which produces a characteristic translucent and matte surface; thick applications crack. Gesso — a mixture of plaster and rabbit-skin glue — was first developed specifically as a ground for tempera panel paintings. Casein glue is another binder sometimes used in the medium.</p><p>Tempera was the dominant panel-painting medium in medieval Europe, especially in Italy, and was used extensively in the Byzantine icon tradition. The great Sienese artist <a href="../duccio_di_buoninsegna/stock.html" class="crossref-inline">Duccio di Buoninsegna</a> exemplifies its medieval use: his <a href="../duccio_di_buoninsegna/stock.html#rucellai-madonna" class="crossref-inline">Rucellai Madonna</a> (1285) combines gold leaf and egg tempera to depict three angels on either side of the Virgin and Child, and his <a href="../duccio_di_buoninsegna/stock.html#maesta-1308-1311" class="crossref-inline">Maesta</a> altarpiece similarly employs the medium. Gold leaf was frequently combined with tempera in these devotional works. Medieval Russian icons were also typically painted in egg tempera. Tempera was fully supplanted by oil painting during the Renaissance, a transition largely complete by around 1500. <a href="../leonardo_da_vinci/stock.html" class="crossref-inline">Leonardo da Vinci</a>&#x27;s Last Supper in Milan&#x27;s Santa Maria delle Grazie is a cautionary tale: Leonardo innovated by mixing oil paint with tempera (using a white-lead undercoat in fresco-secco), which caused the work to begin deteriorating almost immediately. Giorgio Vasari described it as a &#x27;muddle of blots&#x27; fewer than 60 years after it was painted; <a href="../henry_james/stock.html" class="crossref-inline">Henry James</a> called it &#x27;the saddest work of art in the world,&#x27; and today viewers have only 15 minutes to see it.</p><p>The primary literary source for the tempera technique is Cennino Cennini&#x27;s Il libro dell&#x27;arte (translated as The Craftsman&#x27;s Handbook), the first extensive European text on the subject. Cennini provided precise ratios for mixing the medium, advised on pigments (warning that vermilion should be tempered or it turns black), and recommended white lead as an undercoat in fresco-secco finishing. The text also discusses recipes for azure pigments and notes that a &#x27;country-laid&#x27; egg yolk improves pale azures.</p><p>In the 20th century, tempera underwent a notable revival. <a href="../andrew_wyeth/stock.html" class="crossref-inline">Andrew Wyeth</a> — who famously used it for <a href="../andrew_wyeth/stock.html#christina-s-world-1948" class="crossref-inline">Christina&#x27;s World</a> — learned the technique from fellow artist Peter Hurd. Paul Cadmus and <a href="../jacob_lawrence/stock.html" class="crossref-inline">Jacob Lawrence</a> also contributed to this revival. The British Birmingham Group learned tempera from a handbook translated by Edwardian artist Christiana Herringham. The Surrealist painter <a href="../leonora_carrington/stock.html" class="crossref-inline">Leonora Carrington</a> used egg tempera for several of her mythological and fantastical works, including The Giantess (The Guardian of the Egg) — depicting a giantess enshrouded in golden wheat circled by geese — and The Kitchen Garden on the Eyot, in which a white figure emerges from an orange tree. Carrington used actual eggs as a material to paint eggs in these works, and wrote that the egg represented &#x27;the dividing line between the Big and the Small.&#x27; Contemporary artist Kerry James Marshall also worked in egg tempera for a monochrome self-portrait featuring a prominent smile with a missing tooth.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Tempera" target="_blank">Tempera — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Cennino_Cennini" target="_blank">Cennino Cennini — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Duccio" target="_blank">Duccio — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Rucellai_Madonna" target="_blank">Rucellai Madonna — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Christina&#x27;s World (Andrew Wyeth) — mentioned as key 20th-century tempera example; search &#x27;Christina&#x27;s World&#x27;</li><li>Duccio di Buoninsegna — foremost medieval tempera painter; Rucellai Madonna and Maesta frequently clued; search &#x27;Duccio&#x27;</li><li>Cennino Cennini — author of Il libro dell&#x27;arte, the primary source on tempera technique; search &#x27;Cennini&#x27;</li><li>Leonora Carrington — major 20th-century tempera user with multiple specific clued works; search &#x27;Leonora Carrington&#x27;</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'tempera' });</script>
+
+</body>
+</html>

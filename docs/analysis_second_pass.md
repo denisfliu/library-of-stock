@@ -56,7 +56,27 @@ Read ALL new clue files and merge following these rules:
 }
 ```
 
+## Step 4: Card Audit (MANDATORY)
+
+Before appending new cards, audit the **existing** cards array for quality violations and fix them in place:
+
+1. **Wrong indicators** — if any card uses a genre/category name as indicator (`Architecture`, `Design`, etc.) instead of a proper type indicator, fix it. Update both the `indicator` field and the `front` text:
+   - For works: `Building:`, `Painting:`, `Symphony:`, etc.
+   - For person/biographical: `Architect:`, `Artist:`, `Composer:`, etc.
+
+2. **Multi-fact fronts** — if a card front contains a semicolon bundling two distinct facts, split it into two separate cards (one per fact). Keep both in the array.
+
+3. **Missing image cards** — for any work section with a non-empty `images` array that has no corresponding `"type": "image"` card, add one.
+
+4. **Missing `work` field** — every card must have a `work` field whose value is the exact `name` of the work section it belongs to (character-for-character match). This is how the renderer automatically attaches the work's image to the card back. If any card is missing `work`, add it. Building cards belong to their specific work section; biographical/general cards belong to the biographical section.
+
+5. **Image card fronts** — every `"type": "image"` card must have `"front": ""`. If any image card has clue text on the front, clear it.
+
+6. **Uppercase clue starts** — the clue text after `Indicator: ` must start lowercase, unless the first word is a proper noun (person name, place name, title, proper adjective like "Greek" or "Finnish"). Fix any common words that are incorrectly capitalized (e.g. `Building: This cathedral...` → `Building: this cathedral...`, `Architect: Designed the...` → `Architect: designed the...`).
+
+Do NOT remove or rewrite cards that are substantively correct — only fix structural violations.
+
 ## What NOT to Do
 
 - Don't re-derive existing clues from scratch — add to them
-- Don't search for images — that's handled by `lib/images/fix_images.py` separately
+- VFA and Other Fine Arts (architecture): run `lib/images/fix_images.py --slug {slug}` after updating analysis.json. All other categories: don't search for images — handled by `lib/images/fix_images.py` post-batch.

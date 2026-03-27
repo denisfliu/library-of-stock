@@ -10,9 +10,14 @@ Organize by **individual works or work groups** (series, chapel cycles, etc.):
 - "Other Works" for infrequently clued pieces
 - "General / Biographical" for common identifiers
 
-Every work section needs an `indicator` field: `Painting`, `Sculpture`, `Fresco`, `Print`, `Engraving`, `Mural`, `Installation`.
+Every work section needs an `indicator` field: `Painting`, `Sculpture`, `Fresco`, `Print`, `Engraving`, `Mural`, `Installation`, `Building`, `Architect`.
 
 For movements (Ashcan School, YBA, etc.): use `Movement` indicator and organize by key members/exhibitions.
+
+For **architect topics** (Bramante, Aalto, Wren, etc.):
+- Use `Building:` for ALL architectural works — churches, museums, palaces, courtyards, staircases, etc. Never use a more specific type (`Church:`, `Cathedral:`) and never use `Architecture:` (the genre name) as an indicator.
+- Use `Architect:` for general/biographical sections about the person.
+- Image cards: for every work with a non-empty `images` array, generate an image card (`"type": "image"`).
 
 ## Cards
 
@@ -95,5 +100,5 @@ For works not on Commons (most 20th/21st century art): `{"url": "", "link": "htt
 
 - Many artists share subjects (Crucifixion, Annunciation, Saint George) — always verify the image is the right artist's version
 - 20th/21st century works are almost always copyrighted — use Wikipedia links
-- For architects (Alberti), use `Architect` or `Theorist` indicator, not `Painting`
+- For architects (Alberti), use `Architect` for person cards and `Building` for their works, not `Painting` or `Architecture`
 - Some VFA topics cross into literature (William Blake poems, Rossetti sonnets) — use appropriate indicators for each work type

@@ -18,6 +18,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+from lib.pipeline.prompt_builder import build_card_prompt
+
 ROOT = Path(__file__).parent
 BATCH_FILE = ROOT / 'queue' / 'current_batch.json'
 
@@ -83,31 +86,52 @@ def main():
         print("No completed topics found in current batch.")
         sys.exit(0)
 
+    # Infer single category if batch is homogeneous (enables supplement injection)
+    categories = {item.get('category') for item in completed if item.get('category')}
+    batch_category = categories.pop() if len(categories) == 1 else None
+
     print(f"Batch: {batch.get('name', 'unknown')}")
     print(f"Completed topics: {len(topics)}")
 
     # Step 1: Rebuild cross-ref index
-    print("\n[1/3] Rebuilding cross-reference index...")
+    print("\n[1/4] Rebuilding cross-reference index...")
     result = subprocess.run("python3 lib/crossref/crossref.py", shell=True, cwd=ROOT)
     if result.returncode != 0:
         print("ERROR: crossref rebuild failed")
         sys.exit(1)
 
     # Step 2: Deterministic backfill (fast, no LLM needed)
-    print("\n[2/3] Running deterministic crossref backfill (lib/crossref/backfill_crossrefs.py)...")
+    print("\n[2/4] Running deterministic crossref backfill (lib/crossref/backfill_crossrefs.py)...")
     result = subprocess.run("python3 lib/crossref/backfill_crossrefs.py", shell=True, cwd=ROOT)
     if result.returncode != 0:
         print("ERROR: backfill_crossrefs.py failed")
         sys.exit(1)
 
-    # Step 3: Print Sonnet agent prompt (for semantic links the script misses)
-    topic_list = "\n".join(f"- {t}" for t in topics)
-    print("\n[3/3] Launch this Sonnet crossref backfill agent for richer semantic links:\n")
+    topic_list_str = "\n".join(f"- {t}" for t in topics)
+
+    # Step 3: Print one card agent prompt per topic (launch all in parallel with crossref agent)
+    print(f"\n[3/4] Launch {len(topics)} card generation agent(s) in parallel with the crossref agent:\n")
+    for topic in topics:
+        # Infer per-topic category from its analysis.json if batch is mixed
+        topic_category = batch_category
+        if not topic_category:
+            slug = topic.lower().replace(' ', '_')
+            json_path = ROOT / 'output' / slug / 'analysis.json'
+            if json_path.exists():
+                with open(json_path) as f:
+                    topic_category = json.load(f).get('category')
+        print("=" * 60)
+        print(build_card_prompt(topic, category=topic_category))
+        print("=" * 60)
+        print()
+
+    # Step 4: Print Sonnet crossref agent prompt
+    print("\n[4/4] Launch this Sonnet crossref backfill agent for richer semantic links:\n")
     print("=" * 60)
     print(f"""Read /home/laufey/code/stock/docs/crossref_backfill.md for full instructions.
 
 Add cross_refs to these topics (working directory: /home/laufey/code/stock):
-{topic_list}
+{topic_list_str}
 
 For each topic:
 1. Read output/{{slug}}/analysis.json
@@ -120,7 +144,7 @@ Important: Don't modify any field except cross_refs. Don't add refs for the topi
 Do not run any render scripts — the controller will run ./build.sh after you finish.""")
     print("=" * 60)
     print()
-    print("After the Sonnet agent finishes, run:")
+    print("After BOTH agents finish, run:")
     print("  ./build.sh")
 
 

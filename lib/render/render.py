@@ -180,12 +180,22 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         clues_html = ""
         for clue in clue_list:
             freq = clue.get("frequency", 1)
-            tendency = clue.get("tendency", "mid")
+            # Old schema uses string frequencies ("very common", "common")
+            freq_display = f"{freq}x" if isinstance(freq, int) else str(freq)
+            # Old schema uses "power" bool; new schema uses "tendency" string
+            if "tendency" in clue:
+                tendency = clue["tendency"]
+            elif clue.get("power"):
+                tendency = "power"
+            else:
+                tendency = "mid"
             badge_class = {
                 "power": "badge-power",
                 "giveaway": "badge-giveaway",
                 "mid": "badge-mid",
             }.get(tendency, "badge-mid")
+            # Old schema uses "text" key; new schema uses "clue"
+            clue_text = clue.get("clue") or clue.get("text", "")
 
             examples = clue.get("examples", [])
             ex_html = ""
@@ -197,9 +207,9 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
             inline_clips = "".join(_score_clip_html(c) for c in clip_for_clue.get(ci, []))
             clues_html += f"""
             <tr class="clue-row">
-                <td class="clue-freq">{freq}x</td>
+                <td class="clue-freq">{freq_display}</td>
                 <td class="clue-body">
-                    <span class="clue-text">{escape(clue.get("clue", ""))}</span>
+                    <span class="clue-text">{escape(clue_text)}</span>
                     <span class="badge {badge_class}">{tendency}</span>{ex_html}{inline_clips}
                 </td>
             </tr>
