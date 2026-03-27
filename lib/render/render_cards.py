@@ -19,16 +19,34 @@ OUTPUT_DIR = Path("output")
 
 def _synthesize_image_cards(analysis: dict, cards: list) -> list:
     """Auto-generate image cards from works that have images, deduplicating
-    against any image cards already present in the JSON."""
+    against any image cards already present in the JSON.
+    Also attaches the image URL to the back of matching basic cards."""
     topic = analysis.get("topic", "Unknown")
+
+    # Build work_name -> url map for all works that have images
+    work_image_urls = {}
+    for work in analysis.get("works", []):
+        images = work.get("images", [])
+        url = images[0].get("url", "") if images else ""
+        if url:
+            work_image_urls[work["name"]] = url
+
+    # Attach image to the back of basic cards whose work has an image
+    for card in cards:
+        if card.get("type") == "basic" and not card.get("image_url"):
+            url = work_image_urls.get(card.get("work", ""))
+            if url:
+                card["image_url"] = url
+                card["image_side"] = "back"
+
+    # Generate standalone image recognition cards
     existing_image_works = {
         c.get("work", "") for c in cards
         if c.get("type") == "image" and c.get("work")
     }
     extra = []
     for work in analysis.get("works", []):
-        img = work.get("image", {})
-        url = img.get("url", "") if isinstance(img, dict) else ""
+        url = work_image_urls.get(work["name"], "")
         if not url:
             continue
         if work["name"] in existing_image_works:
@@ -1061,7 +1079,7 @@ def build_all(force: bool = False):
             analysis = json.load(fh)
         # Render if there are cards, images, or score clips to show
         has_images = any(
-            isinstance(w.get("image"), dict) and w["image"].get("url")
+            w.get("images") and w["images"][0].get("url")
             for w in analysis.get("works", [])
         )
         has_clips = bool(analysis.get("score_clues"))
