@@ -23,9 +23,25 @@ For movements (Ashcan School, YBA, etc.): use `Movement` indicator and organize 
 
 ## Images
 
+### Agent image step
+
+After writing `analysis.json`, run the image finder scoped to your topic:
+```bash
+python3 lib/images/fix_images.py --slug {slug}
+```
+The file lock in `images.py` serializes concurrent agents automatically — no rate limiting risk even when multiple VFA agents run in parallel. Run this **before** rendering so the HTML includes any found images.
+
+**After `fix_images.py` finishes**, check each visual work section. For any work still missing an image (`"images": []`), add a Wikipedia link object:
+```json
+{"url": "", "link": "https://en.wikipedia.org/wiki/Work_Title", "caption": "Work Title"}
+```
+The link must point to the specific work's article, not the artist's general page. Use `Artist_Name#Section` only if no dedicated article exists. Most 20th/21st century works are copyrighted and won't be on Commons — always add a Wikipedia link for these.
+
+Post-batch `fix_images.py` (without `--slug`) catches any remaining stragglers and handles pending LLM review.
+
 ### Core rule
 
-**Agents do NOT search for images during analysis.** Images are handled as a separate, sequential step after all analysis is complete. This prevents Wikimedia rate limiting.
+**Agents do NOT manually construct or guess Wikimedia URLs.** All image lookups go through `fix_images.py` which uses the verified API search pipeline.
 
 ### Image pipeline
 

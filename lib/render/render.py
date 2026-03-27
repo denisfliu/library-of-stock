@@ -4,7 +4,7 @@ render.py — Generate HTML study guide from analysis data.
 Takes a structured analysis dict and renders it as a self-contained HTML file.
 """
 
-import json, re
+import hashlib, json, re
 from pathlib import Path
 from html import escape
 
@@ -143,8 +143,8 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         audio_el = ""
         if mp3:
             mp3_path = output_path.parent / mp3
-            mtime = int(mp3_path.stat().st_mtime) if mp3_path.exists() else 0
-            mp3_src = f"{escape(mp3)}?v={mtime}"
+            v = hashlib.md5(mp3_path.read_bytes()).hexdigest()[:8] if mp3_path.exists() else 0
+            mp3_src = f"{escape(mp3)}?v={v}"
             audio_el = f'<audio controls preload="none" src="{mp3_src}" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio>'
         return (f'<div class="score-clip" data-abc={abc_json}>'
                 f'<div class="score-clip-header">'

@@ -135,7 +135,7 @@ python3 lib/queue/topic_queue.py remove-first "FULL TOPIC NAME"
 ```
 
 ## RULES
-- Do NOT search for images — handled separately after analysis.
+- Do NOT manually construct or guess image URLs. VFA agents: run `fix_images.py --slug {{slug}}` after writing analysis.json as instructed in the protocol above. All other categories: no image steps.
 - ALWAYS run `python3 lib/run.py` to fetch clues — NEVER write clues.txt manually. The API cache JSON is required for the questions page renderer.
 - If 0 results: mark complete with "(no results)" and exit."""
 
