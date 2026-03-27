@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stats</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    padding: 1.5rem 1.5rem 3rem;
+    line-height: 1.5;
+    font-size: 14px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+a { color: #6b9eff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── header ── */
+.page-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.5rem;
+}
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: normal;
+    color: #e0e0e0;
+}
+.back { font-size: 0.8rem; color: #808790; }
+
+/* ── section headers ── */
+h2 {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #505860;
+    margin: 2rem 0 0.75rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid #1e2328;
+}
+
+/* ── summary pills ── */
+.summary-row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+.stat-pill {
+    background: #1a1f25;
+    border: 1px solid #2a2f37;
+    border-radius: 6px;
+    padding: 0.7rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 120px;
+}
+.stat-pill .val {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #e0e0e0;
+    line-height: 1.1;
+}
+.stat-pill .lbl {
+    font-size: 0.72rem;
+    color: #505860;
+    margin-top: 0.2rem;
+}
+
+/* ── category grid ── */
+.cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1rem;
+}
+.cat-card {
+    background: #1a1f25;
+    border: 1px solid #2a2f37;
+    border-radius: 6px;
+    padding: 1rem 1.1rem;
+}
+.cat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.8rem;
+}
+.cat-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e0e0e0;
+}
+.cat-total {
+    font-size: 0.78rem;
+    color: #505860;
+}
+
+/* subcat bars */
+.subcat-list { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.9rem; }
+.subcat-row { display: grid; grid-template-columns: 140px 1fr 32px; gap: 0.5rem; align-items: center; }
+.subcat-name {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bar-track {
+    background: #151a20;
+    border-radius: 2px;
+    height: 7px;
+    overflow: hidden;
+}
+.bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s;
+}
+.subcat-count {
+    font-size: 0.72rem;
+    color: #505860;
+    text-align: right;
+}
+
+/* progress bars (2nd pass, images) */
+.progress-section { display: flex; flex-direction: column; gap: 0.45rem; }
+.progress-row { display: grid; grid-template-columns: 100px 1fr 60px; gap: 0.5rem; align-items: center; }
+.progress-label { font-size: 0.73rem; color: #808790; }
+.progress-value { font-size: 0.73rem; color: #505860; text-align: right; }
+
+/* ── image completion ── */
+.img-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+.img-table th {
+    text-align: left;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #505860;
+    border-bottom: 1px solid #2a2f37;
+}
+.img-table td {
+    padding: 0.4rem 0.7rem;
+    border-bottom: 1px solid #1e2328;
+    color: #9aa0a7;
+    vertical-align: middle;
+}
+.img-table tr:last-child td { border-bottom: none; }
+.img-table td.num { text-align: right; color: #c8ccd1; font-variant-numeric: tabular-nums; }
+.img-table td.subcat-cell { color: #6a7080; padding-left: 1.4rem; }
+.img-table tr.cat-row td { color: #e0e0e0; background: #1a1f25; font-weight: 500; }
+.img-table .mini-bar { display: flex; align-items: center; gap: 0.4rem; }
+.img-table .mini-bar .bar-track { flex: 1; height: 6px; }
+
+/* ── score clues ── */
+.sc-summary {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+.sc-stat { font-size: 0.82rem; color: #808790; }
+.sc-stat span { color: #e0e0e0; font-weight: 600; }
+
+.sc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+.sc-table th {
+    text-align: left;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #505860;
+    border-bottom: 1px solid #2a2f37;
+}
+.sc-table td {
+    padding: 0.4rem 0.7rem;
+    border-bottom: 1px solid #1e2328;
+    color: #9aa0a7;
+    vertical-align: middle;
+}
+.sc-table tr:last-child td { border-bottom: none; }
+.sc-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.15rem 0.45rem;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+.badge.review { background: #2a2010; color: #ffb74d; border: 1px solid #3a2e10; }
+.badge.ok     { background: #0f2018; color: #4caf50; border: 1px solid #1a3020; }
+.badge.mixed  { background: #1a1f25; color: #9aa0a7; border: 1px solid #2a2f37; }
+.sc-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; gap: 1px; }
+.sc-bar .reviewed { background: #4caf50; }
+.sc-bar .needs-review { background: #ffb74d; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+    <h1>Stats</h1>
+    <span class="back"><a href="../index.html">← index</a></span>
+</div>
+
+<div id="root"></div>
+
+<script>
+fetch('stats_data.json')
+    .then(r => r.json())
+    .then(render);
+
+const CAT_COLORS = {
+    'Literature':  '#6b9eff',
+    'Fine Arts':   '#ce93d8',
+    'Philosophy':  '#ffb74d',
+    'Science':     '#4caf50',
+    'Unknown':     '#808790',
+};
+function catColor(cat) { return CAT_COLORS[cat] || '#808790'; }
+
+function pct(a, b) { return b ? Math.round(100 * a / b) : 0; }
+
+function render(data) {
+    const root = document.getElementById('root');
+    root.innerHTML = [
+        renderSummary(data.summary),
+        renderCategories(data.categories),
+        renderImages(data.categories),
+        renderScoreClues(data.score_clues, data.summary),
+    ].join('');
+}
+
+// ── summary ──────────────────────────────────────────────────────────────────
+function renderSummary(s) {
+    const pills = [
+        [s.total_topics, 'topics'],
+        [s.total_works, 'works'],
+        [s.total_cards, 'cards'],
+        [`${s.second_pass_done} / ${s.total_topics}`, 'second pass done'],
+        [`${s.topics_with_images} / ${s.total_topics}`, 'topics with images'],
+        [`${s.works_with_images} / ${s.total_works}`, 'works with images'],
+        [s.score_clues_total, 'score clues'],
+    ];
+    return `<h2>Overview</h2>
+<div class="summary-row">
+${pills.map(([val, lbl]) => `
+  <div class="stat-pill">
+    <div class="val">${val}</div>
+    <div class="lbl">${lbl}</div>
+  </div>`).join('')}
+</div>`;
+}
+
+// ── categories ────────────────────────────────────────────────────────────────
+function renderCategories(cats) {
+    const maxTopics = Math.max(...cats.map(c => c.topics));
+    const cards = cats.map(cat => {
+        const color = catColor(cat.name);
+        const subcatBars = cat.subcategories
+            .filter(s => s.name !== '(none)')
+            .map(s => `
+            <div class="subcat-row">
+              <div class="subcat-name" title="${s.name}">${s.name}</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${pct(s.topics, cat.topics)}%;background:${color}55;"></div>
+              </div>
+              <div class="subcat-count">${s.topics}</div>
+            </div>`).join('');
+
+        const noneRow = cat.subcategories.find(s => s.name === '(none)');
+        const noneExtra = noneRow ? `
+            <div class="subcat-row">
+              <div class="subcat-name" style="color:#3a4050;">(unclassified)</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${pct(noneRow.topics, cat.topics)}%;background:#3a4050;"></div>
+              </div>
+              <div class="subcat-count" style="color:#3a4050;">${noneRow.topics}</div>
+            </div>` : '';
+
+        const spPct = pct(cat.second_pass, cat.topics);
+        const imgPct = pct(cat.topics_with_images, cat.topics);
+        const showImages = cat.topics_with_images > 0;
+
+        return `<div class="cat-card">
+          <div class="cat-card-header">
+            <div class="cat-name" style="color:${color}">${cat.name}</div>
+            <div class="cat-total">${cat.topics} topics · ${cat.total_works} works</div>
+          </div>
+          <div class="subcat-list">${subcatBars}${noneExtra}</div>
+          <div class="progress-section">
+            <div class="progress-row">
+              <div class="progress-label">second pass</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${spPct}%;background:${color};"></div>
+              </div>
+              <div class="progress-value">${cat.second_pass} / ${cat.topics}</div>
+            </div>
+            ${showImages ? `<div class="progress-row">
+              <div class="progress-label">topics w/ images</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${imgPct}%;background:${color};"></div>
+              </div>
+              <div class="progress-value">${cat.topics_with_images} / ${cat.topics}</div>
+            </div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+
+    return `<h2>Categories</h2>
+<div class="cat-grid">${cards}</div>`;
+}
+
+// ── image completion ──────────────────────────────────────────────────────────
+function renderImages(cats) {
+    // Only show categories that actually have images
+    const relevant = cats.filter(c => c.works_with_images > 0);
+    if (!relevant.length) return '';
+
+    const rows = relevant.flatMap(cat => {
+        const color = catColor(cat.name);
+        const topicPct = pct(cat.topics_with_images, cat.topics);
+        const workPct  = pct(cat.works_with_images, cat.total_works);
+        const catRow = `<tr class="cat-row">
+          <td style="color:${color}">${cat.name}</td>
+          <td class="num">${cat.topics_with_images} / ${cat.topics}</td>
+          <td>
+            <div class="mini-bar">
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${topicPct}%;background:${color};"></div>
+              </div>
+              <span style="font-size:0.72rem;color:#505860;width:32px;text-align:right">${topicPct}%</span>
+            </div>
+          </td>
+          <td class="num">${cat.works_with_images} / ${cat.total_works}</td>
+          <td>
+            <div class="mini-bar">
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${workPct}%;background:${color}88;"></div>
+              </div>
+              <span style="font-size:0.72rem;color:#505860;width:32px;text-align:right">${workPct}%</span>
+            </div>
+          </td>
+        </tr>`;
+
+        const subcatRows = cat.subcategories
+            .filter(s => s.name !== '(none)' && s.works_with_images > 0)
+            .map(s => {
+                const stPct = pct(s.topics_with_images, s.topics);
+                const swPct = pct(s.works_with_images, s.total_works);
+                return `<tr>
+                  <td class="subcat-cell">${s.name}</td>
+                  <td class="num">${s.topics_with_images} / ${s.topics}</td>
+                  <td>
+                    <div class="mini-bar">
+                      <div class="bar-track">
+                        <div class="bar-fill" style="width:${stPct}%;background:${color};"></div>
+                      </div>
+                      <span style="font-size:0.72rem;color:#505860;width:32px;text-align:right">${stPct}%</span>
+                    </div>
+                  </td>
+                  <td class="num">${s.works_with_images} / ${s.total_works}</td>
+                  <td>
+                    <div class="mini-bar">
+                      <div class="bar-track">
+                        <div class="bar-fill" style="width:${swPct}%;background:${color}88;"></div>
+                      </div>
+                      <span style="font-size:0.72rem;color:#505860;width:32px;text-align:right">${swPct}%</span>
+                    </div>
+                  </td>
+                </tr>`;
+            }).join('');
+
+        return [catRow, subcatRows];
+    });
+
+    return `<h2>Image Completion</h2>
+<table class="img-table">
+  <thead>
+    <tr>
+      <th>Category</th>
+      <th style="text-align:right">Topics w/ Images</th>
+      <th style="min-width:160px"></th>
+      <th style="text-align:right">Works w/ Images</th>
+      <th style="min-width:160px"></th>
+    </tr>
+  </thead>
+  <tbody>${rows.join('')}</tbody>
+</table>`;
+}
+
+// ── score clues ───────────────────────────────────────────────────────────────
+function renderScoreClues(rows, summary) {
+    if (!rows.length) return '';
+
+    const reviewed = summary.score_clues_total - summary.score_clues_needs_review;
+
+    const tableRows = rows.map(r => {
+        const reviewedFrac = r.total ? r.reviewed / r.total : 0;
+        const badgeHtml = r.needs_review === 0
+            ? `<span class="badge ok">reviewed</span>`
+            : r.reviewed === 0
+                ? `<span class="badge review">needs review</span>`
+                : `<span class="badge mixed">${r.reviewed}/${r.total} reviewed</span>`;
+
+        const barHtml = `<div class="sc-bar">
+            <div class="reviewed" style="flex:${r.reviewed}"></div>
+            <div class="needs-review" style="flex:${r.needs_review}"></div>
+        </div>`;
+
+        return `<tr>
+          <td><a href="../output/${r.slug}/stock.html">${r.topic}</a></td>
+          <td style="color:#6a7080">${r.subcategory}</td>
+          <td class="num">${r.total}</td>
+          <td style="min-width:120px">${barHtml}</td>
+          <td>${badgeHtml}</td>
+        </tr>`;
+    }).join('');
+
+    return `<h2>Score Clues</h2>
+<div class="sc-summary">
+  <div class="sc-stat">total <span>${summary.score_clues_total}</span></div>
+  <div class="sc-stat">reviewed <span style="color:#4caf50">${reviewed}</span></div>
+  <div class="sc-stat">needs review <span style="color:#ffb74d">${summary.score_clues_needs_review}</span></div>
+  <div class="sc-stat">topics with score clues <span>${rows.length}</span></div>
+</div>
+<table class="sc-table">
+  <thead>
+    <tr>
+      <th>Topic</th>
+      <th>Subcategory</th>
+      <th style="text-align:right">Clues</th>
+      <th style="min-width:120px"></th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>${tableRows}</tbody>
+</table>`;
+}
+</script>
+</body>
+</html>

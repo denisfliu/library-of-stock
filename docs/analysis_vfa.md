@@ -15,7 +15,8 @@ Every work section needs an `indicator` field: `Painting`, `Sculpture`, `Fresco`
 For movements (Ashcan School, YBA, etc.): use `Movement` indicator and organize by key members/exhibitions.
 
 For **architect topics** (Bramante, Aalto, Wren, etc.):
-- Use `Building:` for ALL architectural works — churches, museums, palaces, courtyards, staircases, etc. Never use a more specific type (`Church:`, `Cathedral:`) and never use `Architecture:` (the genre name) as an indicator.
+- Use `Building:` for architectural works that are physical structures — churches, museums, palaces, courtyards, staircases, etc. Never use a more specific type (`Church:`, `Cathedral:`) and never use `Architecture:` (the genre name) as an indicator.
+- Use `Location:` for non-building works — urban plans, parks, master plans, landscapes, or other designed spaces that are not themselves structures (e.g., Central Park, Battery Park City).
 - Use `Architect:` for general/biographical sections about the person.
 - Image cards: for every work with a non-empty `images` array, generate an image card (`"type": "image"`).
 
