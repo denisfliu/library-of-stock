@@ -26,7 +26,8 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 
 # Indicators that represent visual works (should have images)
 VISUAL_INDICATORS = {'Painting', 'Sculpture', 'Fresco', 'Print', 'Engraving',
-                     'Mural', 'Drawing', 'Installation', 'Relief', 'Mosaic'}
+                     'Mural', 'Drawing', 'Installation', 'Relief', 'Mosaic',
+                     'Building', 'Architect', 'Architecture'}
 
 SKIP_NAME_FRAGMENTS = ['General', 'Biographical', 'Other Works', 'sonnet',
                        'poem', 'Poem', 'symphony', 'Symphony']
