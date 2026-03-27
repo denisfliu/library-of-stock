@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Exeter Book</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Exeter Book</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">The largest surviving collection of Old English (Anglo-Saxon) poetry, housed at Exeter Cathedral. Contains elegies, riddles, allegorical beast poems, and religious verse. Major works include The Seafarer, The Wanderer, The Ruin, The Wife&#x27;s Lament, and the Lament of Deor. Also called the Exeter Codex or Codex Exoniensis.</div>
+
+        <details class="work" id="general-overview" open>
+            <summary class="work-title">General / Overview</summary>
+            <p class="work-desc">The Exeter Book is the largest surviving codex of Old English poetry, preserved at Exeter Cathedral (also called the Exeter Codex or Codex Exoniensis). It contains over 90 riddles, elegies, religious verse, and allegorical beast poems. It is one of four major codices of Old English literature, alongside the <a href="../vercelli_codex/stock.html" class="crossref-inline">Vercelli Book</a>, the <a href="../nowell_codex/stock.html" class="crossref-inline">Nowell Codex</a> (which includes <a href="../nowell_codex/stock.html#beowulf-as-contained-in-the-nowell-codex" class="crossref-inline">Beowulf</a>), and the <a href="../caedmon/stock.html" class="crossref-inline">Caedmon</a> manuscript. <a href="https://en.wikipedia.org/wiki/Exeter_Book" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Named for a cathedral in southwestern England (Exeter Cathedral); also called the Exeter Codex or Codex Exoniensis</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">which codex of Old English literature, named for a cathedral in southwestern England? | Name this codex, the source for such anonymous works as &#x27;The Whale&#x27;, &#x27;The Wanderer&#x27;, and &#x27;The Wife&#x27;s Lament&#x27;.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The largest surviving collection of Anglo-Saxon verse</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This collection of Anglo-Saxon verse, the largest still in existence, contains The Wanderer, The Ruin, and The Seafarer, as well as 95 shorter riddles.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One of four major codices of Old English literature; others include the Vercelli Book, the Nowell Codex (containing Beowulf), and the Caedmon manuscript</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The poems in the Exeter Book were written in this language, which was also used to write the poems in the Vercelli Book and the Nowell Codex, the latter of which includes Beowulf.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains over 90 (sometimes cited as 94 or 95) riddles, many with double-entendre content; the key and the onion are cited examples</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a key and an onion are described suggestively in two of its over 90 riddles | In addition to ninety often double-entendre-heavy riddles, this collection&#x27;s contents include three allegorical poems about animals | Examples of these things concerning icebergs and onions are among the 94 of them in the Exeter Book, written in Old English.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains four major poems in the ubi sunt genre</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Four major poems in the ubi sunt genre can be found in this collection, in which a key and an onion are described suggestively in two of its over 90 riddles.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains three allegorical beast poems: &#x27;The Phoenix&#x27;, &#x27;The Panther&#x27;, and &#x27;The Whale&#x27; (about the Fastitocalon)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In addition to ninety often double-entendre-heavy riddles, this collection&#x27;s contents include three allegorical poems about animals, including &#x27;The Phoenix&#x27;, &#x27;The Panther&#x27;, and one describing the &#x27;Fastitocalon&#x27;.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-ruin" open>
+            <summary class="work-title">The Ruin</summary>
+            <p class="work-desc">An Old English elegy found in the Exeter Book lamenting the decay of a ruined city (likely Roman Bath). An unfinished poem. Famous for the phrase 'the work of giants is decaying.' Old English words from it — including enta (giants) and orþonc — inspired J.R.R. Tolkien's character and place names. <a href="https://en.wikipedia.org/wiki/The_Ruin_(poem)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains the line &#x27;the work of giants is decaying&#x27; (or &#x27;the work of giants is ruined&#x27;); the poem is unfinished</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An unfinished poem near the end of this collection laments that &#x27;the work of giants is decaying&#x27;. | The speaker of a poem included in this codex describes &#x27;the citadels crumbled&#x27; and &#x27;the work of giants ruined&#x27; in a poem that focuses on a &#x27;well-crafted ancient-work.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">An elegy; &#x27;master artisans&#x27; lie buried for &#x27;a hundred generations&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;Master artisans&#x27; lie buried for &#x27;a hundred generations&#x27; in &#x27;The Ruin,&#x27; a poem from this codex.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Old English words from The Ruin (enta, orþonc) inspired character and place names in J.R.R. Tolkien&#x27;s work; Tolkien also likened Beowulf to an elegy in &#x27;The Monsters and the Critics&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Old English words used in &#x27;The Ruin,&#x27; including enta and orþonc (&#x27;or-thonk&#x27;), inspired character and place names used by this author. This author likened Beowulf to an elegy in the essay &#x27;The Monsters and the Critics.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-seafarer" open>
+            <summary class="work-title">The Seafarer</summary>
+            <p class="work-desc">One of the most famous Old English elegies in the Exeter Book. Narrates the hardships of a life at sea. Translated in 1911 by Ezra Pound. Ends with the single word 'Amen.' <a href="https://en.wikipedia.org/wiki/The_Seafarer_(poem)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Appears in the Exeter Book; frequently cited as one of its main contents</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;The Lament of Deor&#x27; and &#x27;The Seafarer&#x27; appear in, for 10 points, which codex of Old English literature? | Name this codex of Old English poems including &#x27;The Seafarer.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Translated in 1911 by Ezra Pound; the poem ends with the single word &#x27;Amen&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This collection contains a poem ending with the single word &#x27;Amen&#x27;, which was translated in 1911 by Ezra Pound.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The narrator &#x27;drives the foam-furrow furthest from land&#x27;; describes hardships for those far out to sea</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character of another poem in this language reminisces that &#x27;Blithe heart cannot know, / through its happiness, what hardships they suffer / who drive the foam-furrow furthest from land.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-wanderer" open>
+            <summary class="work-title">The Wanderer</summary>
+            <p class="work-desc">An Old English elegy in the Exeter Book about an exile longing for his lord. Contains the passage predicting that 'those doomed to die' will be killed by the 'sword's hatred.' Part of the ubi sunt tradition. <a href="https://en.wikipedia.org/wiki/The_Wanderer_(poem)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cited as a major poem in the Exeter Book alongside The Ruin and The Seafarer</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This collection of Anglo-Saxon verse...contains The Wanderer, The Ruin, and The Seafarer | Name this codex, the source for such anonymous works as &#x27;The Whale&#x27;, &#x27;The Wanderer&#x27;, and &#x27;The Wife&#x27;s Lament&#x27;.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains the passage predicting that &#x27;those doomed to die&#x27; will be killed by the &#x27;sword&#x27;s hatred&#x27;; notes &#x27;I do not believe that the riches of the world will stand forever&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A poem in this collection predicts that &#x27;those doomed to die&#x27; will be killed by the &#x27;sword&#x27;s hatred&#x27; after noting that &#x27;I do not believe that the riches of the world will stand forever&#x27;.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-lament-of-deor-deor" open>
+            <summary class="work-title">The Lament of Deor (Deor)</summary>
+            <p class="work-desc">An Old English poem in the Exeter Book told by a scop (poet) named Deor. Narrates how the 'skilful poet' Heorrenda received lands that Deor had been promised. The poem's refrain is 'that passed away, so may this.' <a href="https://en.wikipedia.org/wiki/Deor" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The narrator recalls how the &#x27;skilful poet&#x27; Heorrenda received lands that were promised to him; the refrain is &#x27;that passed away, so may this&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In this book, the narrator of one poem recalls how the &#x27;skilful poet&#x27; Heorrenda received lands that he was promised; that poem repeats &#x27;that passed away, so may this&#x27;.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Named as one of the main poems in the Exeter Book, alongside The Seafarer</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;The Lament of Deor&#x27; and &#x27;The Seafarer&#x27; appear in, for 10 points, which codex of Old English literature?</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-wife-s-lament-the-husband-s-message" open>
+            <summary class="work-title">The Wife&#x27;s Lament / The Husband&#x27;s Message</summary>
+            <p class="work-desc">Two related Old English elegies in the Exeter Book. 'The Wife's Lament' is a woman's lament for her exile from her husband. 'The Husband's Message' is a companion piece. Both are cited as examples of Old English elegy. <a href="https://en.wikipedia.org/wiki/The_Wife%27s_Lament" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Wife&#x27;s Lament&#x27; and &#x27;The Husband&#x27;s Message&#x27; are both in the Exeter Book and are examples of the Old English elegy genre</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">&#x27;The Wife&#x27;s Lament&#x27; and &#x27;The Husband&#x27;s Message,&#x27; both of which are in the Exeter Book, are other examples of these poetic laments for the dead.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;The Wife&#x27;s Lament&#x27; cited alongside &#x27;The Wanderer&#x27; as a source work from the Exeter Book</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this codex, the source for such anonymous works as &#x27;The Whale&#x27;, &#x27;The Wanderer&#x27;, and &#x27;The Wife&#x27;s Lament&#x27;.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="christ-i-and-middle-earth-connection" open>
+            <summary class="work-title">Christ I and Middle-earth Connection</summary>
+            <p class="work-desc">A religious poem in the Exeter Book. The line 'Hail Earendel brightest of Angels / over Middle Earth sent to men' inspired J.R.R. Tolkien's use of 'Middle-earth' as the name of his fictional world. <a href="https://en.wikipedia.org/wiki/Christ_I" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Christ I contains the line &#x27;Hail Earendel brightest of Angels / over Middle Earth sent to men,&#x27; which inspired Tolkien&#x27;s &#x27;Middle-earth&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This fictional world takes its name from a line in the poem Christ I, which is included in the Exeter Book. The line in question is preceded by one that declares &#x27;Hail Earendel brightest of Angels&#x27;.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>The Exeter Book (also called the Exeter Codex or Codex Exoniensis) is the largest surviving codex of Old English poetry, preserved at Exeter Cathedral in southwestern England. It is one of four major codices of Old English literature — the others being the <a href="../vercelli_codex/stock.html" class="crossref-inline">Vercelli Book</a>, the <a href="../nowell_codex/stock.html" class="crossref-inline">Nowell Codex</a> (containing <a href="../nowell_codex/stock.html#beowulf-as-contained-in-the-nowell-codex" class="crossref-inline">Beowulf</a>), and the <a href="../caedmon/stock.html" class="crossref-inline">Caedmon</a> manuscript.</p><p>The collection contains over 90 riddles (sometimes cited as 94 or 95), many of which are noted for their double-entendre content; riddles about a key and an onion are frequently cited examples. In addition to these riddles, the book contains four major poems in the ubi sunt genre and three allegorical beast poems: &#x27;The Phoenix,&#x27; &#x27;The Panther,&#x27; and one describing the &#x27;Fastitocalon&#x27; (also known as &#x27;The Whale&#x27;).</p><p>Among the most famous elegies in the Exeter Book are &#x27;The Seafarer,&#x27; &#x27;The Wanderer,&#x27; and &#x27;The Ruin.&#x27; &#x27;The Seafarer&#x27; is a poem about the hardships of life at sea, whose narrator says &#x27;Blithe heart cannot know, through its happiness, what hardships they suffer / who drive the foam-furrow furthest from land.&#x27; It ends with the single word &#x27;Amen&#x27; and was famously translated in 1911 by Ezra Pound. &#x27;The Wanderer&#x27; contains the passage predicting that &#x27;those doomed to die&#x27; will be killed by the &#x27;sword&#x27;s hatred,&#x27; and the narrator notes &#x27;I do not believe that the riches of the world will stand forever.&#x27; &#x27;The Ruin&#x27; is an unfinished elegy lamenting a decayed city (probably Roman Bath), containing the famous phrase &#x27;the work of giants is decaying&#x27;; it notes that &#x27;master artisans&#x27; lie buried for &#x27;a hundred generations.&#x27; Old English words from &#x27;The Ruin&#x27; — including enta (giants) and orþonc — inspired character and place names in J.R.R. Tolkien&#x27;s writing; Tolkien also likened <a href="../nowell_codex/stock.html#beowulf-as-contained-in-the-nowell-codex" class="crossref-inline">Beowulf</a> to an elegy in the essay &#x27;The Monsters and the Critics.&#x27;</p><p>Other elegies include &#x27;The Wife&#x27;s Lament,&#x27; &#x27;The Husband&#x27;s Message,&#x27; and &#x27;The Lament of Deor.&#x27; In &#x27;Deor,&#x27; the narrator recalls how the &#x27;skilful poet&#x27; Heorrenda received lands that were promised to him; the poem&#x27;s refrain is &#x27;that passed away, so may this.&#x27; The religious poem &#x27;Christ I&#x27; contains the line &#x27;Hail Earendel brightest of Angels / over Middle Earth sent to men,&#x27; which gave Tolkien the name &#x27;Middle-earth&#x27; for his fictional world.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Exeter_Book" target="_blank">Exeter Book — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>The Seafarer — major poem, Ezra Pound translated it in 1911; specific sea imagery and &#x27;Amen&#x27; ending clues suggest it is queryable on its own</li><li>The Wanderer — cited multiple times alongside The Seafarer and The Ruin; part of the ubi sunt tradition with distinct clue phrases</li><li>The Ruin — multiple specific detail clues (Tolkien connection, &#x27;work of giants,&#x27; unfinished status); likely queryable as its own answerline</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'exeter_book' });</script>
+
+</body>
+</html>

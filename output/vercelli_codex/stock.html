@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Vercelli Book</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Vercelli Book</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">A 10th-century Old English manuscript (codex) found in Vercelli, Italy. Contains The Dream of the Rood, alliterative poems by Cynewulf (including Elene and The Fates of the Apostles), and a collection of prose homilies. One of the four major codices of Old English literature.</div>
+
+        <details class="work" id="the-dream-of-the-rood" open>
+            <summary class="work-title">The Dream of the Rood</summary>
+            <p class="work-desc">The most-clued text in the Vercelli Book. An Old English poem in alliterative verse in which the narrator has a vision of the Cross (the 'rood'), which then narrates Christ's crucifixion from its own perspective. The cross is depicted as covered in gems and gold, and as bleeding on its right side. Variously attributed to <a href="../caedmon/stock.html" class="crossref-inline">Caedmon</a> or Cynewulf. Part of the poem is also inscribed in runic characters on the 8th-century Ruthwell Cross in Scotland. <a href="https://en.wikipedia.org/wiki/The_Dream_of_the_Rood" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cross narrates Christ&#x27;s crucifixion from its own perspective; cross is covered in gems and gold, bleeds on right side</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In a poem about the &#x27;best of dreams&#x27; collected in the Vercelli Codex, a jewel-encrusted object that was central to this event recounts the story of its own creation. | That poem is about an object that begins bleeding on the right side and is bedecked with gems and gold.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Preserved (partly) on the Ruthwell Cross — a stone cross in a Scottish border town — predating any manuscript</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The first printed version of a poem about this event antedates a version carved onto a stone monument in Ruthwell. | Predating any Old English manuscripts, this large eighth-century stone cross, named for the Scottish border town where it still stands, is believed to independently preserve part of The Dream of the Rood.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Attributed variously to Caedmon or Cynewulf; attribution to Caedmon based on circumstantial evidence in Bede&#x27;s Ecclesiastical History</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Variously attributed to Caedmon and Cynewulf, this poem is primarily preserved in the Vercelli Codex. | The attribution of the poem to Caedmon is based primarily on circumstantial evidence in the Ecclesiastical History of the English People, a work by this &#x27;venerable&#x27; monk of Jarrow.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Written in alliterative verse (Old English poetic meter)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this verse form used to write The Dream of the Rood and most other Old English poetry. | The Dream of the Rood uses this device to underpin its poetic meter. Beowulf also uses this device.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with narrator&#x27;s vision of the Cross (&#x27;best of dreams&#x27;); first section is the narrator&#x27;s vision, second is the cross speaking</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Its first section describes the narrator&#x27;s vision of the Cross, while its second part describes Christ&#x27;s crucifixion from the perspective of the cross itself. | In a poem titled for this phenomenon from the Vercelli Codex, an inanimate wooden object praises God after narrating how it was pierced with nails.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One of the oldest surviving Old English poems</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">thought to be one of the oldest surviving in the Old English corpus</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Complete text discovered in 1822 as part of the Vercelli Book</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The complete text of this poem was discovered in 1822 as part of the 10th century Vercelli Book.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="cynewulf-s-poems-elene-the-fates-of-the-apostles-etc" open>
+            <summary class="work-title">Cynewulf&#x27;s Poems (Elene, The Fates of the Apostles, etc.)</summary>
+            <p class="work-desc">The Vercelli Book also contains alliterative poems signed by Cynewulf, one of the few named Old English poets. Included are Elene, in which a character is renamed Cyriacus after finding three crosses underground, and The Fates of the Apostles. Cynewulf also wrote Juliana and Christ II (in the <a href="../exeter_book/stock.html" class="crossref-inline">Exeter Book</a>). <a href="https://en.wikipedia.org/wiki/Cynewulf" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Elene: a character is renamed Cyriacus after finding three crosses underground</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the poem Elene, a character is renamed Cyriacus after finding three of these objects underground. | In a poem sometimes titled for one of these objects, a character has his name changed after helping the protagonist dig up three of these objects.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cynewulf is one of the few named Old English authors; he signed his poems (Juliana, Christ II, Elene, Fates of the Apostles) using runic letters</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He is one of the only Old English authors whose name is known, as he signed his poems Juliana and Christ II. | The Vercelli Book also includes this author&#x27;s poems The Fates of the Apostles and Elene.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-codex-identity" open>
+            <summary class="work-title">General / Codex Identity</summary>
+            <p class="work-desc">Identification clues for the Vercelli Book as a whole — a 10th-century codex named for the Italian city of Vercelli where it is held. Contains The Dream of the Rood, Cynewulf's alliterative poems, and prose homilies. One of four major Old English codices (alongside the <a href="../exeter_book/stock.html" class="crossref-inline">Exeter Book</a>, the <a href="../nowell_codex/stock.html" class="crossref-inline">Nowell Codex</a>, and the Junius Manuscript). <a href="https://en.wikipedia.org/wiki/Vercelli_Book" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Named for an Italian city; holds Old English literature (poems + prose homilies)</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Dream of the Rood appears alongside alliterative poems by Cynewulf and a group of prose homilies in this Old English literature codex named for an Italian city. | Along with Cynewulf&#x27;s Elene, that poem about a tree that becomes one of these objects appears in the Vercelli Codex.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains The Dream of the Rood as its most famous text</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this poem is primarily preserved in the Vercelli Codex | a poem about the &#x27;best of dreams&#x27; collected in the Vercelli Codex</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also contains prose homilies alongside the poetry</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Dream of the Rood appears alongside alliterative poems by Cynewulf and a group of prose homilies in this Old English literature codex.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>The Vercelli Book (also called the Vercelli Codex) is a 10th-century manuscript of Old English literature, named for the Italian city of Vercelli where it is held. It is one of the four major surviving codices of Old English writing, alongside the <a href="../exeter_book/stock.html" class="crossref-inline">Exeter Book</a>, the <a href="../nowell_codex/stock.html" class="crossref-inline">Nowell Codex</a> (which contains <a href="../nowell_codex/stock.html#beowulf-as-contained-in-the-nowell-codex" class="crossref-inline">Beowulf</a>), and the Junius Manuscript.</p><p>The codex&#x27;s most-clued contents are The Dream of the Rood, alliterative poems by Cynewulf, and a collection of prose homilies. The Dream of the Rood is considered one of the oldest surviving Old English poems and is thought to be one of the finest examples of Old English alliterative verse. In this poem, the narrator recounts a &#x27;best of dreams&#x27; vision of the Cross (the rood), which then narrates the crucifixion of Christ from its own perspective — describing how it was forced to participate, how it bled on the right side, and how it was adorned with gems and gold. The poem is in two main sections: the narrator&#x27;s vision, then the cross&#x27;s first-person account. Authorship is attributed variously to <a href="../caedmon/stock.html" class="crossref-inline">Caedmon</a> or Cynewulf; the attribution to Caedmon rests on circumstantial evidence in Bede&#x27;s <a href="../venerable_bede/stock.html#ecclesiastical-history-of-the-english-people" class="crossref-inline">Ecclesiastical History of the English People</a>. An early version of the poem — predating the Vercelli Book manuscript — is inscribed in runic characters on the Ruthwell Cross, an 8th-century stone monument in a Scottish border town. The complete text was discovered in 1822.</p><p>Cynewulf is one of the only named Old English poets, having signed his works using runic letters woven into the text. His poems in the Vercelli Book include Elene, in which Helena&#x27;s discovery of the True Cross is dramatized and a character is renamed Cyriacus after finding three crosses underground, and The Fates of the Apostles. His other known works (in the <a href="../exeter_book/stock.html" class="crossref-inline">Exeter Book</a>) include Juliana and Christ II.</p><p>In quizbowl, the Vercelli Book most frequently appears as a bonus part answer in the context of Old English literature questions, particularly those about The Dream of the Rood and alliterative verse. The giveaway identification is: an Old English codex named for an Italian city that contains The Dream of the Rood alongside Cynewulf&#x27;s poems and prose homilies. W.H. Auden&#x27;s long poem The Age of Anxiety uses a modified form of alliterative verse — the same verse form used in The Dream of the Rood and most Old English poetry.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Vercelli_Book" target="_blank">Vercelli Book — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Dream_of_the_Rood" target="_blank">The Dream of the Rood — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Cynewulf" target="_blank">Cynewulf — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Ruthwell_Cross" target="_blank">Ruthwell Cross — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Elene_(poem)" target="_blank">Elene (poem) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>The Dream of the Rood — appears as its own answerline in many quizbowl questions; deserves dedicated entry</li><li>Cynewulf — named Old English poet whose works appear in both the Vercelli Book and the Exeter Book; may have answerline clues</li><li>Ruthwell Cross — frequently clued in connection with Dream of the Rood; could have its own clue set</li><li>Exeter Book — the other major Old English codex, often compared; contains Beowulf, riddles, etc.</li><li>Alliterative verse — appears as its own answerline in at least one question; Old English poetic form</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'vercelli_codex' });</script>
+
+</body>
+</html>
