@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Joshua Reynolds";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: actress seated on a throne as Melpomene with allegorical figures of Pity (holding a cup) and Terror (holding a dagger) behind her", "back": "Sarah Siddons as the Tragic Muse (Joshua Reynolds)", "work": "Sarah Siddons as the Tragic Muse (1784)", "frequency": 8, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: the title figure wears a string of pearls, a diamond diadem, and a gold dress with scalloped leaves", "back": "Sarah Siddons as the Tragic Muse (Joshua Reynolds)", "work": "Sarah Siddons as the Tragic Muse (1784)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: the artist used himself to model the facial expression of the figure allegorizing Pity", "back": "Sarah Siddons as the Tragic Muse (Joshua Reynolds)", "work": "Sarah Siddons as the Tragic Muse (1784)", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: two versions exist (Dulwich and Huntington)", "back": "Sarah Siddons as the Tragic Muse (Joshua Reynolds)", "work": "Sarah Siddons as the Tragic Muse (1784)", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: the title figure's dress was originally blue, not yellow", "back": "Sarah Siddons as the Tragic Muse (Joshua Reynolds)", "work": "Sarah Siddons as the Tragic Muse (1784)", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Sarah Siddons as the Tragic Muse (Joshua Reynolds)", "work": "Sarah Siddons as the Tragic Muse (1784)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: two aristocrats draw bows in a forest with dead game piling up behind them", "back": "Colonel Acland and Lord Sydney: The Archers (Joshua Reynolds)", "work": "Colonel Acland and Lord Sydney: The Archers (1769)", "frequency": 6, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg/500px-Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg/500px-Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: one wears green, the other yellow", "back": "Colonel Acland and Lord Sydney: The Archers (Joshua Reynolds)", "work": "Colonel Acland and Lord Sydney: The Archers (1769)", "frequency": 6, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg/500px-Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg/500px-Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Colonel Acland and Lord Sydney: The Archers (Joshua Reynolds)", "work": "Colonel Acland and Lord Sydney: The Archers (1769)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg/500px-Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg/500px-Sir_Joshua_Reynolds_-_Colonel_Acland_and_Lord_Sydney-_The_Archers_-_Google_Art_Project.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: naval officer posed in the reverse of the Apollo Belvedere, standing on a crag against a stormy sea", "back": "Portrait of Augustus Keppel (Joshua Reynolds)", "work": "Portrait of Augustus Keppel (1752-53)", "frequency": 4, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Admiral_Augustus_Keppel_1725-86_by_Joshua_Reynolds_1779.jpg/500px-Admiral_Augustus_Keppel_1725-86_by_Joshua_Reynolds_1779.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Admiral_Augustus_Keppel_1725-86_by_Joshua_Reynolds_1779.jpg/500px-Admiral_Augustus_Keppel_1725-86_by_Joshua_Reynolds_1779.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Portrait of Augustus Keppel (Joshua Reynolds)", "work": "Portrait of Augustus Keppel (1752-53)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Admiral_Augustus_Keppel_1725-86_by_Joshua_Reynolds_1779.jpg/500px-Admiral_Augustus_Keppel_1725-86_by_Joshua_Reynolds_1779.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Admiral_Augustus_Keppel_1725-86_by_Joshua_Reynolds_1779.jpg/500px-Admiral_Augustus_Keppel_1725-86_by_Joshua_Reynolds_1779.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: parodies the story of Hercules choosing between virtue and pleasure", "back": "David Garrick Between Tragedy and Comedy (Joshua Reynolds)", "work": "David Garrick Between Tragedy and Comedy (1761)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Reynolds-Garrick_between_tragedy_and_comedy.jpg/500px-Reynolds-Garrick_between_tragedy_and_comedy.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Reynolds-Garrick_between_tragedy_and_comedy.jpg/500px-Reynolds-Garrick_between_tragedy_and_comedy.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a famous actor looks at a blue-robed woman", "back": "David Garrick Between Tragedy and Comedy (Joshua Reynolds)", "work": "David Garrick Between Tragedy and Comedy (1761)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Reynolds-Garrick_between_tragedy_and_comedy.jpg/500px-Reynolds-Garrick_between_tragedy_and_comedy.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Reynolds-Garrick_between_tragedy_and_comedy.jpg/500px-Reynolds-Garrick_between_tragedy_and_comedy.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "David Garrick Between Tragedy and Comedy (Joshua Reynolds)", "work": "David Garrick Between Tragedy and Comedy (1761)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Reynolds-Garrick_between_tragedy_and_comedy.jpg/500px-Reynolds-Garrick_between_tragedy_and_comedy.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Reynolds-Garrick_between_tragedy_and_comedy.jpg/500px-Reynolds-Garrick_between_tragedy_and_comedy.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: character study of a young girl in a yellow dress", "back": "The Age of Innocence (Joshua Reynolds)", "work": "The Age of Innocence (c. 1788)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/The_Age_of_Innocence_-_Reynolds.jpg/500px-The_Age_of_Innocence_-_Reynolds.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/The_Age_of_Innocence_-_Reynolds.jpg/500px-The_Age_of_Innocence_-_Reynolds.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Edith Wharton took her novel title from this work", "back": "The Age of Innocence (Joshua Reynolds)", "work": "The Age of Innocence (c. 1788)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/The_Age_of_Innocence_-_Reynolds.jpg/500px-The_Age_of_Innocence_-_Reynolds.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/The_Age_of_Innocence_-_Reynolds.jpg/500px-The_Age_of_Innocence_-_Reynolds.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "The Age of Innocence (Joshua Reynolds)", "work": "The Age of Innocence (c. 1788)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/The_Age_of_Innocence_-_Reynolds.jpg/500px-The_Age_of_Innocence_-_Reynolds.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/The_Age_of_Innocence_-_Reynolds.jpg/500px-The_Age_of_Innocence_-_Reynolds.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Artist", "front": "Artist: articulated the \"Grand Style\" / \"Grand Manner\" in a lecture series called Discourses on Art, emphasizing idealizing subjects and following Renaissance art", "back": "Joshua Reynolds", "work": "Discourses on Art / Grand Style", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: a three-year-old child dressed to look like a Holbein portrait of Henry VIII, with two dogs nearby", "back": "Master Crewe as Henry VIII (Joshua Reynolds)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: myopic literary critic in brown holds a book directly up to his nose", "back": "Portrait of Giuseppe Baretti (Joshua Reynolds)", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Nathaniel Hone satirized this artist's close friendship with Angelica Kauffman in a painting called The Conjurer", "back": "Joshua Reynolds", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: a myth claims this artist's Eighth Discourse on color theory caused Gainsborough to paint The Blue Boy", "back": "Joshua Reynolds", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: the award statuette in the film All About Eve (the 'Sarah Siddons Award') is modeled after this painting", "back": "Sarah Siddons as the Tragic Muse (Joshua Reynolds)", "work": "Sarah Siddons as the Tragic Muse (1784)", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg/500px-Mrs._Siddons_as_the_Tragic_Muse_%283051182537%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: three grandnieces of Horace Walpole in identical white gowns and gray wigs embroidering silk — an allusion to the Fates", "back": "The Ladies Waldegrave (Joshua Reynolds)", "work": "The Ladies Waldegrave", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Sir_Joshua_Reynolds_-_The_Ladies_Waldegrave_-_Google_Art_Project.jpg/500px-Sir_Joshua_Reynolds_-_The_Ladies_Waldegrave_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Polynesian man in the adlocutio pose; called 'Britain's first grand portrayal of a non-white subject'; jointly purchased by National Portrait Gallery and Getty Museum (2023)", "back": "Portrait of Omai / Portrait of Mai (Joshua Reynolds)", "work": "Portrait of Omai (Mai)", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Joshua_Reynolds_-_Portrait_of_Omai.jpg/500px-Joshua_Reynolds_-_Portrait_of_Omai.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: in Edith Wharton's The House of Mirth, Lily Bart reenacts this Reynolds portrait in a tableaux vivants", "back": "Mrs. Lloyd (Joshua Reynolds)", "work": "Other Works", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Pre-Raphaelites mocked him with the nickname 'Sir Sloshua'", "back": "Joshua Reynolds", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: described Velazquez's Portrait of Innocent X as 'the finest picture in Rome'", "back": "Joshua Reynolds", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: helped Angelica Kauffman escape a fraudulent marriage; they exchanged portraits; Nathaniel Hone mocked their friendship in The Conjurer", "back": "Joshua Reynolds", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "image", "indicator": "Painting", "front": "", "back": "The Ladies Waldegrave (Joshua Reynolds)", "work": "The Ladies Waldegrave", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Sir_Joshua_Reynolds_-_The_Ladies_Waldegrave_-_Google_Art_Project.jpg/500px-Sir_Joshua_Reynolds_-_The_Ladies_Waldegrave_-_Google_Art_Project.jpg", "tags": [], "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Portrait of Omai (Mai) (Joshua Reynolds)", "work": "Portrait of Omai (Mai)", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Joshua_Reynolds_-_Portrait_of_Omai.jpg/500px-Joshua_Reynolds_-_Portrait_of_Omai.jpg", "tags": [], "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

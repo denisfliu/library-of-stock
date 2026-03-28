@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Arthur Miller";
 let cards = [{"type": "basic", "indicator": "Play", "front": "Play: Willy Loman kills himself for insurance money; his son Biff, a former football star, dropped out after discovering his father's infidelity in a Boston hotel", "back": "Death of a Salesman (Arthur Miller)", "work": "Death of a Salesman", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Biff steals Bill Oliver's fountain pen after Oliver fails to remember him during their meeting", "back": "Death of a Salesman (Arthur Miller)", "work": "Death of a Salesman", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the protagonist exclaims 'You can't eat the orange and throw the peel away - a man is not a piece of fruit!' when denied a desk job by Howard Wagner", "back": "Death of a Salesman (Arthur Miller)", "work": "Death of a Salesman", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: set in Red Hook, narrated by Alfieri; the first act ends when Marco lifts a chair over the protagonist's head with one hand after a mock boxing match", "back": "A View from the Bridge (Arthur Miller)", "work": "A View from the Bridge", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Eddie Carbone reports his wife's Italian cousins Marco and Rodolpho to immigration; Marco kills Eddie in a knife fight", "back": "A View from the Bridge (Arthur Miller)", "work": "A View from the Bridge", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: John Proctor is hanged after declaring 'I have given you my soul! Leave me my name'; set during the Salem Witch Trials", "back": "The Crucible (Arthur Miller)", "work": "The Crucible", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Joe Keller ships faulty cylinder heads killing 21 pilots and blames his partner Steve Deever; a tree planted for his son Larry blows down", "back": "All My Sons (Arthur Miller)", "work": "All My Sons", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Larry's letter reveals he suspected his father and purposely crashed his plane; Anne Deever delivers the letter to Kate", "back": "All My Sons (Arthur Miller)", "work": "All My Sons", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: set in Quentin's mind; the only physical objects are a concentration camp tower and a chair; Maggie is a fictionalization of Marilyn Monroe", "back": "After the Fall (Arthur Miller)", "work": "After the Fall", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: set in 1940s France; the psychoanalyst Leduc rallies prisoners; he escapes the Nazis using a white pass given by a businessman", "back": "Incident at Vichy (Arthur Miller)", "work": "Other Plays", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: a character becomes paralyzed from the waist down after reading about Kristallnacht in the newspaper", "back": "Broken Glass (Arthur Miller)", "work": "Other Plays", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: recurring flute motif invokes Willy's flute-maker father; 'Requiem' ends with Linda sobbing 'we're free, we're free'; rubber pipe on gas heater signals suicidal intent", "back": "Death of a Salesman (Arthur Miller)", "work": "Death of a Salesman", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Abigail Williams leads accusations; Betty Parris catatonic after dancing in the forest with Tituba; Proctor forgets 'Thou shalt not commit adultery'; girls mimic accused after seeing a yellow bird in the rafters", "back": "The Crucible (Arthur Miller)", "work": "The Crucible", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Frank Lubey's horoscope says November 25 was a 'favorable day' for Larry; Kate uses an apple tree struck by lightning as proof Larry is alive", "back": "All My Sons (Arthur Miller)", "work": "All My Sons", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Willy idolizes Dave Singleman, who 'drummed merchandise in thirty-one states' and died in green velvet slippers on a train; Willy: 'the jungle is dark but full of diamonds' (quoting Ben)", "back": "Death of a Salesman (Arthur Miller)", "work": "Death of a Salesman", "frequency": 3, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

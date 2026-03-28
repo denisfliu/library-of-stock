@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Allen Ginsberg";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: Part II addresses Moloch, a 'sphinx of cement and aluminum' whose attributes include 'whose fate is a cloud of sexless hydrogen' and 'whose name is the Mind!'", "back": "Howl (Allen Ginsberg)", "work": "Howl", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Part III repeatedly tells Carl Solomon 'I'm with you in Rockland'", "back": "Howl (Allen Ginsberg)", "work": "Howl", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a lengthy footnote proclaims 'the world is holy! the soul is holy!'; includes the line about 'saintly motorcyclists' that triggered an obscenity trial", "back": "Howl (Allen Ginsberg)", "work": "Howl", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: first read at the Six Gallery Reading in October 1955; City Lights Books published it and Lawrence Ferlinghetti was arrested for obscenity", "back": "Howl (Allen Ginsberg)", "work": "Howl", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: originally dedicated to Lucien Carr, who formulated the 'New Vision' of the Beat poets and went to jail for the murder of David Kammerer", "back": "Howl (Allen Ginsberg)", "work": "Howl", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Walt Whitman, a 'childless, lonely old grubber,' asks 'Who killed the pork chops? What price bananas? Are you my angel?' while eyeing grocery boys", "back": "A Supermarket in California (Allen Ginsberg)", "work": "A Supermarket in California", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker asks Garcia Lorca 'what were you doing down by the watermelons?' in a supermarket", "back": "A Supermarket in California (Allen Ginsberg)", "work": "A Supermarket in California", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Whitman ends the poem as a 'lonely old courage-teacher' watching 'the boat disappear on the black waters of Lethe'", "back": "A Supermarket in California (Allen Ginsberg)", "work": "A Supermarket in California", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker is obsessed with Time Magazine, describes being sold garbanzos at a Communist meeting at age seven, and asks 'when will you send your eggs to India?'", "back": "America (Allen Ginsberg)", "work": "America", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens 'I've given you all and now I'm nothing'; the speaker compares his strophes to Henry Ford's automobiles", "back": "America (Allen Ginsberg)", "work": "America", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: elegy for the poet's mother Naomi, opens 'Strange now to think of you, gone without corsets & eyes'; she is blessed 'in tears, in fears, in sickness, in Hospitals, in Death'", "back": "Kaddish (Allen Ginsberg)", "work": "Kaddish", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the mother has a 'Communist Party and a broken stocking' and a 'fear of Hitler'; in a letter she writes 'I have the key' and 'the key is in the bars, in the sunlight'", "back": "Kaddish (Allen Ginsberg)", "work": "Kaddish", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker finds a 'skeleton thick' sunflower in a railyard with Jack Kerouac and has a Blakean revelation that 'we're not our skin of grime'", "back": "Sunflower Sutra (Allen Ginsberg)", "work": "Sunflower Sutra", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: had an auditory hallucination of William Blake's voice in 1948; helped Chogyam Trungpa establish the Naropa Institute; practiced Buddhism", "back": "Allen Ginsberg", "work": "Other Works and General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: invented the 'American Sentence,' a single line of 17 syllables; translated Basho's frog haiku ending with 'Kerplunk!'", "back": "Allen Ginsberg", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: appeared as guest vocalist on The Clash's 'Ghetto Defendant,' reciting a Buddhist sutra", "back": "Allen Ginsberg", "work": "Other Works and General", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

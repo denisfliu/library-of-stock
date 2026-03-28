@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Stendhal";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: Julien Sorel is executed after shooting Madame de Renal in this novel", "back": "The Red and the Black (Stendhal)", "work": "The Red and the Black", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Mathilde de la Mole kisses the severed head of her executed lover and buries it in a marble cave, imitating the legend of her ancestor and Queen Margot", "back": "The Red and the Black (Stendhal)", "work": "The Red and the Black", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Mathilde de la Mole becomes engaged to Monsieur de Croisenois despite loving the protagonist, who courts Madame de Fervaques to make her jealous", "back": "The Red and the Black (Stendhal)", "work": "The Red and the Black", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a carpenter's son becomes tutor to the mayor's children, loses his job when M. Valenod discovers his affair with the mayor's wife", "back": "The Red and the Black (Stendhal)", "work": "The Red and the Black", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the title colors of this novel symbolize the French army (red) and the Catholic church (black)", "back": "The Red and the Black (Stendhal)", "work": "The Red and the Black", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the seminary director Monsieur Pirard resigns in disgust at church politics in this novel", "back": "The Red and the Black (Stendhal)", "work": "The Red and the Black", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the relationship between the protagonist and Mathilde begins when they catch each other stealing volumes of Voltaire from a library", "back": "The Red and the Black (Stendhal)", "work": "The Red and the Black", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel was placed on the Catholic Church's Index of banned books more than a century after publication", "back": "The Red and the Black (Stendhal)", "work": "The Red and the Black", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the epigraph to the American Gigolo screenplay is a quote about this novel's protagonist, and the film's protagonist is named after him", "back": "The Red and the Black (Stendhal) [character: Julien Sorel]", "work": "The Red and the Black", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Fabrice del Dongo puts on a dead hussar's uniform and stumbles into the Battle of Waterloo", "back": "The Charterhouse of Parma (Stendhal)", "work": "The Charterhouse of Parma", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist is imprisoned in a tower and falls in love with the bird-tending Clelia, communicating by holding up large lettered signs", "back": "The Charterhouse of Parma (Stendhal)", "work": "The Charterhouse of Parma", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: features the Countess Gina and her lover Count Mosca, who help the protagonist", "back": "The Charterhouse of Parma (Stendhal)", "work": "The Charterhouse of Parma", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Giletti, protector of the actress Marietta Valsera, is killed in a scuffle with the protagonist", "back": "The Charterhouse of Parma (Stendhal)", "work": "The Charterhouse of Parma", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist joins Napoleon's Hundred Days campaign in this novel, and ultimately becomes a monk", "back": "The Charterhouse of Parma (Stendhal)", "work": "The Charterhouse of Parma", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this treatise describes 'crystallization' as a metaphor for falling in love, inspired by tree branches left in a Salzburg salt mine", "back": "On Love (Stendhal)", "work": "On Love", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this treatise, the author sketched a diagram on a playing card depicting crystallization as a journey from Bologna to Rome", "back": "On Love (Stendhal)", "work": "On Love", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the stages of crystallization in this treatise include Admiration, Acknowledgement, Hope, and Delight", "back": "On Love (Stendhal)", "work": "On Love", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this treatise illustrates the idea that beauty is 'the promise of happiness' with an anecdote about Alberic admiring his mistress's smallpox scar", "back": "On Love (Stendhal)", "work": "On Love", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's namesake 'syndrome' describes the phenomenon of being overwhelmed by great art, inspired by his near-fainting in Florence's Basilica of Santa Croce", "back": "Stendhal", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: W.G. Sebald's novel Vertigo opens with a biography of this author, including a photograph of the plaster cast of Metilde Dembowski's hand from his desk", "back": "Stendhal", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's autobiography The Life of Henry Brulard was disguised as 'a novel imitating The Vicar of Wakefield'", "back": "Stendhal", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author discussed his feelings for Metilde Dembowski in the essay 'Maxims of Love'", "back": "Stendhal", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author described seducing his lovers by reading to them from Rousseau's The New Heloise", "back": "Stendhal", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's first novel Armance follows Octave de Malivert, who falls in love with the title character before leaving to fight for Greek independence", "back": "Stendhal", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's unfinished novel Lamiel follows an orphan who leaves Normandy to find 'what love is all about'", "back": "Stendhal", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: the Cenci murder inspired an 1837 short story by this author", "back": "Stendhal", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author also wrote the novella Vanina Vanini and the unfinished The Pink and the Green", "back": "Stendhal", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Leonora Carrington";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: self-portrait showing the artist in a blue chair reaching toward a hyena", "back": "Self-Portrait / Inn of the Dawn Horse (Leonora Carrington)", "work": "Self-Portrait (Inn of the Dawn Horse) (1937–1938)", "frequency": 6, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: a rocking horse on the wall", "back": "Self-Portrait / Inn of the Dawn Horse (Leonora Carrington)", "work": "Self-Portrait (Inn of the Dawn Horse) (1937–1938)", "frequency": 6, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: white horse gallops through window", "back": "Self-Portrait / Inn of the Dawn Horse (Leonora Carrington)", "work": "Self-Portrait (Inn of the Dawn Horse) (1937–1938)", "frequency": 6, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: massive golden-haired woman with geese flying from her white cape", "back": "The Giantess / The Guardian of the Egg (Leonora Carrington)", "work": "The Giantess (The Guardian of the Egg)", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: tempera", "back": "The Giantess / The Guardian of the Egg (Leonora Carrington)", "work": "The Giantess (The Guardian of the Egg)", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: uses egg imagery", "back": "The Giantess / The Guardian of the Egg (Leonora Carrington)", "work": "The Giantess (The Guardian of the Egg)", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: depicts a man in a red coat with a mermaid tail in a frozen landscape beside a white horse", "back": "Portrait of Max Ernst (Leonora Carrington)", "work": "Portrait of Max Ernst", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: inspired by Lewis Carroll; exists as both a painting and bronze sculpture showing crocodiles in galaxies", "back": "How Doth the Little Crocodile (Leonora Carrington)", "work": "How Doth the Little Crocodile", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Cocodrilo_LeonoraCarrington.jpg/500px-Cocodrilo_LeonoraCarrington.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: memoir Down Below describes being drugged with cardiazol after being deemed 'incurably insane'", "back": "Leonora Carrington", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: stomach became 'mirror of the earth'", "back": "Leonora Carrington", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: friends with Remedios Varo and Kati Horna ('three witches')", "back": "Leonora Carrington", "work": "General / Biographical", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: brewed Surrealist potions in Mexico City", "back": "Leonora Carrington", "work": "General / Biographical", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: grew up at the Gothic mansion Crookhey Hall", "back": "Leonora Carrington", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: called her father 'Lord Candlestick' in paintings", "back": "Leonora Carrington", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: illustrated Elena Poniatowska's Lilus Kikus", "back": "Leonora Carrington", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: 2022 Venice Biennale 'The Milk of Dreams' honored this artist", "back": "Leonora Carrington", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: wrote The Hearing Trumpet, about 90-year-old Marian Leatherby eavesdropping on plans to send her to a retirement home that turns out to be a cult", "back": "Leonora Carrington", "work": "The Hearing Trumpet (novel)", "frequency": 4, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: in The Hearing Trumpet, protagonist acquires the title device while praying to the planet Venus; visitors include wolf-headed Anubeth and immortal postman Taliesin", "back": "Leonora Carrington", "work": "The Hearing Trumpet (novel)", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: portrait of this artist's lover depicts him in a red coat with a mermaid tail in a frozen landscape; subtitled 'Bird Superior'", "back": "Portrait of Max Ernst / Bird Superior (Leonora Carrington)", "work": "Portrait of Max Ernst (Bird Superior)", "frequency": 4, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: both this artist and Meret Oppenheim had affairs with Max Ernst, who pioneered frottage and grattage", "back": "Leonora Carrington", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: this artist's version of The Temptation of St. Anthony depicts the central man as very old, three-headed, and wearing an eggshell-like hood", "back": "The Temptation of St. Anthony (Leonora Carrington)", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: tarot cards discovered by Tere Arcq during 2018 retrospective, published by Fulgur Press in 2021", "back": "Leonora Carrington", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "image", "indicator": "Painting", "front": "", "back": "How Doth the Little Crocodile (Leonora Carrington)", "work": "How Doth the Little Crocodile", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Cocodrilo_LeonoraCarrington.jpg/500px-Cocodrilo_LeonoraCarrington.jpg", "tags": [], "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

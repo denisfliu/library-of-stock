@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Orhan Pamuk";
 let cards = [{"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the murdered miniaturist Elegant Effendi narrates the opening chapter, and other chapters are narrated by a gold coin, Satan, a drawing of a tree, and the color red", "back": "My Name Is Red (Pamuk)", "work": "My Name Is Red", "frequency": 12, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, Black investigates three miniaturists — Butterfly, Stork, and Olive — for the murder of Elegant Effendi while pursuing his cousin Shekure", "back": "My Name Is Red (Pamuk)", "work": "My Name Is Red", "frequency": 5, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, Master Osman blinds himself with a plume needle to paint from memory, inspired by the legend of the miniaturist Bihzad", "back": "My Name Is Red (Pamuk)", "work": "My Name Is Red", "frequency": 3, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the murderer Olive is identified using the 'courtesan method' of examining horse nostrils painted in the Chinese style", "back": "My Name Is Red (Pamuk)", "work": "My Name Is Red", "frequency": 3, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the poet Ka returns from exile in Frankfurt to the town of Kars to investigate suicides among religious girls prompted by a headscarf ban", "back": "Snow (Pamuk)", "work": "Snow", "frequency": 10, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, Kadife shoots the actor Sunay Zaim during a deadly performance of Kyd's The Spanish Tragedy", "back": "Snow (Pamuk)", "work": "Snow", "frequency": 5, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, an assassin steals 19 of the protagonist's 20 poems, whose titles like 'The Place Where God Does Not Exist' appear on a snowflake diagram", "back": "Snow (Pamuk)", "work": "Snow", "frequency": 2, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the narrator 'Orhan Pamuk' reveals that the protagonist Ka was assassinated in Germany for betraying the militant Blue", "back": "Snow (Pamuk)", "work": "Snow", "frequency": 2, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, Kemal obsessively collects 4,213 cigarette butts and other objects belonging to the salesgirl Fusun after she dies in a car crash", "back": "The Museum of Innocence (Pamuk)", "work": "The Museum of Innocence", "frequency": 8, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the protagonist first encounters Fusun while buying a handbag for his fiancee Sibel, and describes Fusun's butterfly-shaped earring as 'the happiest moment of his life'", "back": "The Museum of Innocence (Pamuk)", "work": "The Museum of Innocence", "frequency": 4, "tags": []}, {"type": "clue", "indicator": "Author", "front": "Author: this author established a real-world Museum of Innocence in the Cukurcuma district of Istanbul, displaying 4,213 cigarette butts among other items", "back": "Orhan Pamuk", "work": "The Museum of Innocence", "frequency": 3, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, an Italian scholar is kidnapped by pirates and enslaved by the Ottoman scholar Hoja, who looks exactly like him and is obsessed with building a 'war engine' for the sultan", "back": "The White Castle (Pamuk)", "work": "The White Castle", "frequency": 6, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the lawyer Galip searches for his missing wife Ruya and impersonates the missing journalist Jelal, whose newspaper columns form the even-numbered chapters", "back": "The Black Book (Pamuk)", "work": "The Black Book", "frequency": 4, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: this novella contrasts Ferdowsi's Rostam and Sohrab (filicide) with Sophocles' Oedipus (patricide) through the story of a well-digger's apprentice who drops a bucket onto his boss's head", "back": "The Red-Haired Woman (Pamuk)", "work": "The Red-Haired Woman", "frequency": 4, "tags": []}, {"type": "clue", "indicator": "Author", "front": "Author: this Turkish author was prosecuted under Article 301 for 'insulting Turkishness' after discussing the Armenian Genocide in the Swiss magazine Das Magazin", "back": "Orhan Pamuk", "work": "Other Works and General", "frequency": 3, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: this novel opens 'I read a book one day and my whole life changed' and features Dr. Fine, who leads a conspiracy to assassinate readers of the title book", "back": "The New Life (Pamuk)", "work": "Other Works and General", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

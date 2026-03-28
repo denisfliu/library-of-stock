@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Alfred Lord Tennyson";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: 'tis better to have loved and lost / Than never to have loved at all'", "back": "In Memoriam A.H.H. (Alfred Lord Tennyson)", "work": "In Memoriam A.H.H.", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: asks 'wild bells' to 'ring out' the old, the false, the grief 'to the wild sky'", "back": "In Memoriam A.H.H. (Alfred Lord Tennyson)", "work": "In Memoriam A.H.H.", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Dragons of the prime, / That tare each other in their slime' — 'Dinosaur Cantos'", "back": "In Memoriam A.H.H. (Alfred Lord Tennyson)", "work": "In Memoriam A.H.H.", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: aging hero says 'I am become a name'", "back": "Ulysses (Alfred Lord Tennyson)", "work": "Ulysses", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: leaves 'the scepter and the isle' to his son", "back": "Ulysses (Alfred Lord Tennyson)", "work": "Ulysses", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'sail beyond the sunset'", "back": "Ulysses (Alfred Lord Tennyson)", "work": "Ulysses", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: cursed woman weaves tapestry before mirror reflecting Camelot; 'I am half-sick of shadows'", "back": "The Lady of Shalott (Alfred Lord Tennyson)", "work": "The Lady of Shalott", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: inspired Waterhouse painting of woman in boat", "back": "The Lady of Shalott (Alfred Lord Tennyson)", "work": "The Lady of Shalott", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Christie's The Mirror Crack'd from Side to Side takes title from it", "back": "The Lady of Shalott (Alfred Lord Tennyson)", "work": "The Lady of Shalott", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'rest ye, brother mariners, we will not wander more'", "back": "The Lotos-Eaters (Alfred Lord Tennyson)", "work": "The Lotos-Eaters", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: land 'where all things always seem'd the same'", "back": "The Lotos-Eaters (Alfred Lord Tennyson)", "work": "The Lotos-Eaters", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'beds of amaranth and moly'", "back": "The Lotos-Eaters (Alfred Lord Tennyson)", "work": "The Lotos-Eaters", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: fifteen-line sonnet", "back": "The Kraken (Alfred Lord Tennyson)", "work": "The Kraken", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: creature in 'dreamless, uninvaded sleep' amid 'huge sponges of millennial growth'", "back": "The Kraken (Alfred Lord Tennyson)", "work": "The Kraken", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: inspired Mieville's novel", "back": "The Kraken (Alfred Lord Tennyson)", "work": "The Kraken", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'In the Spring a young man's fancy lightly turns to thoughts of love'", "back": "Locksley Hall (Alfred Lord Tennyson)", "work": "Locksley Hall", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: envisions 'Parliament of man'", "back": "Locksley Hall (Alfred Lord Tennyson)", "work": "Locksley Hall", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Asimov called it best SF poetry", "back": "Locksley Hall (Alfred Lord Tennyson)", "work": "Locksley Hall", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'The woods decay, the woods decay and fall'", "back": "Tithonus (Alfred Lord Tennyson)", "work": "Tithonus", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'after many a summer dies a swan'", "back": "Tithonus (Alfred Lord Tennyson)", "work": "Tithonus", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'The Gods themselves cannot recall their gifts'", "back": "Tithonus (Alfred Lord Tennyson)", "work": "Tithonus", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: contains 'Tears, Idle Tears' ('the days that are no more') and 'Now Sleeps the Crimson Petal' ('slip into my bosom')", "back": "The Princess (Alfred Lord Tennyson)", "work": "The Princess", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: contains 'Come Down, O Maid' — 'moan of doves in immemorial elms, and murmuring of innumerable bees'", "back": "The Princess (Alfred Lord Tennyson)", "work": "The Princess", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'May there be no sadness of farewell, / When I embark'", "back": "Crossing the Bar (Alfred Lord Tennyson)", "work": "Crossing the Bar", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'I hope to see my Pilot face to face'", "back": "Crossing the Bar (Alfred Lord Tennyson)", "work": "Crossing the Bar", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: twelve narrative poems retelling Arthurian legend in Idylls of the King", "back": "Alfred Lord Tennyson", "work": "Other Works and General", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: includes 'Lancelot and Elaine' and 'Guinevere'", "back": "Alfred Lord Tennyson", "work": "Other Works and General", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: 'The Eagle' — 'clasps the crag with crooked hands'", "back": "Alfred Lord Tennyson", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: 'ringed with the azure world'", "back": "Alfred Lord Tennyson", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: 'like a thunderbolt he falls'", "back": "Alfred Lord Tennyson", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: 'Flower in the crannied wall' — 'if I could understand / What you are, root and all... I should know what God and man is'", "back": "Alfred Lord Tennyson", "work": "Other Works and General", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

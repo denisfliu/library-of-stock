@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Oscar Niemeyer";
 let cards = [{"type": "basic", "indicator": "Architect", "front": "Architect: primary architect of Brasilia, Brazil's planned capital; collaborated with urban planner Lucio Costa, who designed the airplane-shaped city layout along the Monumental Axis", "back": "Oscar Niemeyer", "work": "General / Biographical", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: collaborated with Le Corbusier on a joint submission (Plan 23/32) for the United Nations Headquarters; the two reportedly feuded during the project", "back": "Oscar Niemeyer", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: won the Pritzker Prize in 1988; known for bold use of curved reinforced concrete and parabolic vaults", "back": "Oscar Niemeyer", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed the 'Alta' lounge chair in collaboration with his daughter; in 2012 collaborated with Converse on Chuck Taylor trainers printed with a poem about his longing for the 'free and sensual curve'", "back": "Oscar Niemeyer", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed the 2003 Serpentine Pavilion in London; also designed 'The Volcano' cultural center in Le Havre, France", "back": "Oscar Niemeyer", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed the Palacio da Alvorada (presidential residence in Brasilia) and the Brasilia Palace hotel", "back": "Oscar Niemeyer", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: crown-shaped cathedral built from sixteen hyperbolic concrete columns that curve outward and support a glass roof; three angels suspended by steel cables inside", "back": "Cathedral of Brasilia (Oscar Niemeyer)", "work": "Cathedral of Brasilia", "frequency": 8, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Brasilia_by_night%2C_the_cathedral_by_Oscar_Niemeyer_%2811107897843%29.jpg/500px-Brasilia_by_night%2C_the_cathedral_by_Oscar_Niemeyer_%2811107897843%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Cathedral of Brasilia (Oscar Niemeyer)", "work": "Cathedral of Brasilia", "frequency": 8, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Brasilia_by_night%2C_the_cathedral_by_Oscar_Niemeyer_%2811107897843%29.jpg/500px-Brasilia_by_night%2C_the_cathedral_by_Oscar_Niemeyer_%2811107897843%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: dedicated to Our Lady of Aparecida, patroness of Brazil; partially cooled by a reflecting pool on its roof", "back": "Cathedral of Brasilia (Oscar Niemeyer)", "work": "Cathedral of Brasilia", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Brasilia_by_night%2C_the_cathedral_by_Oscar_Niemeyer_%2811107897843%29.jpg/500px-Brasilia_by_night%2C_the_cathedral_by_Oscar_Niemeyer_%2811107897843%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: topped by two white domes — one facing up, one facing down (a bowl and a dome) — symbolizing the bicameral legislature; lies along Brasilia's Monumental Axis", "back": "National Congress of Brazil (Oscar Niemeyer)", "work": "National Congress of Brazil", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Brazilian_National_Congress.jpg/500px-Brazilian_National_Congress.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "National Congress of Brazil (Oscar Niemeyer)", "work": "National Congress of Brazil", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Brazilian_National_Congress.jpg/500px-Brazilian_National_Congress.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: commissioned by President Juscelino Kubitschek; Roberto Burle Marx designed the surrounding gardens", "back": "National Congress of Brazil (Oscar Niemeyer)", "work": "National Congress of Brazil", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Brazilian_National_Congress.jpg/500px-Brazilian_National_Congress.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: part of the Pampulha Project (a suburb complex around a man-made lagoon in Belo Horizonte); made of four concrete parabolas and an inverted obelisk", "back": "Church of Saint Francis of Assisi, Pampulha (Oscar Niemeyer)", "work": "Church of Saint Francis of Assisi (Pampulha)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Igreja_de_S%C3%A3o_Francisco_de_Assis_-_Igrejinha_da_Pampulha.jpg/500px-Igreja_de_S%C3%A3o_Francisco_de_Assis_-_Igrejinha_da_Pampulha.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Church of Saint Francis of Assisi, Pampulha (Oscar Niemeyer)", "work": "Church of Saint Francis of Assisi (Pampulha)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Igreja_de_S%C3%A3o_Francisco_de_Assis_-_Igrejinha_da_Pampulha.jpg/500px-Igreja_de_S%C3%A3o_Francisco_de_Assis_-_Igrejinha_da_Pampulha.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: local bishop called it 'the devil's bomb shelter'; hanger-inspired style scandalized the clergy and delayed its use by a decade", "back": "Church of Saint Francis of Assisi, Pampulha (Oscar Niemeyer)", "work": "Church of Saint Francis of Assisi (Pampulha)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Igreja_de_S%C3%A3o_Francisco_de_Assis_-_Igrejinha_da_Pampulha.jpg/500px-Igreja_de_S%C3%A3o_Francisco_de_Assis_-_Igrejinha_da_Pampulha.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: exterior blue mosaics and murals by quasi-cubist painter Candido Portinari; contains a tapestry copy of Picasso's Guernica inside", "back": "Church of Saint Francis of Assisi, Pampulha (Oscar Niemeyer)", "work": "Church of Saint Francis of Assisi (Pampulha)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Igreja_de_S%C3%A3o_Francisco_de_Assis_-_Igrejinha_da_Pampulha.jpg/500px-Igreja_de_S%C3%A3o_Francisco_de_Assis_-_Igrejinha_da_Pampulha.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: saucer-shaped contemporary art museum in Niteroi likened to a UFO; set on a cliffside above a reflecting pool; reached by a winding red-carpeted ramp", "back": "Niteroi Contemporary Art Museum (Oscar Niemeyer)", "work": "Niteroi Contemporary Art Museum", "frequency": 6, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Contemporary_Art_Museum_in_Niteroi_City_1.jpg/500px-Contemporary_Art_Museum_in_Niteroi_City_1.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Niteroi Contemporary Art Museum (Oscar Niemeyer)", "work": "Niteroi Contemporary Art Museum", "frequency": 6, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Contemporary_Art_Museum_in_Niteroi_City_1.jpg/500px-Contemporary_Art_Museum_in_Niteroi_City_1.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: large residential tower in São Paulo with a distinctive S-shaped (sinuous) facade made of 72 million exterior tiles", "back": "Copan Building / Edificio Copan (Oscar Niemeyer)", "work": "Copan Building (Edificio Copan)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Oscar_Niemeyer%27s_Copan_Building.jpg/500px-Oscar_Niemeyer%27s_Copan_Building.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Copan Building / Edificio Copan (Oscar Niemeyer)", "work": "Copan Building (Edificio Copan)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Oscar_Niemeyer%27s_Copan_Building.jpg/500px-Oscar_Niemeyer%27s_Copan_Building.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: self-designed namesake museum in Curitiba (capital of Parana state); features a wide eye-shaped tower nicknamed 'the Eye' balanced atop a single yellow rectangular-tiled pillar", "back": "Oscar Niemeyer Museum (Oscar Niemeyer)", "work": "Oscar Niemeyer Museum", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/CWB_Olho_Niemeyer_11_2013_7268.JPG/500px-CWB_Olho_Niemeyer_11_2013_7268.JPG", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Oscar Niemeyer Museum (Oscar Niemeyer)", "work": "Oscar Niemeyer Museum", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/CWB_Olho_Niemeyer_11_2013_7268.JPG/500px-CWB_Olho_Niemeyer_11_2013_7268.JPG", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: designed while in political exile in Paris; features a massive underground 'Worker's Hall'; done as a favor for the party", "back": "French Communist Party Headquarters (Oscar Niemeyer)", "work": "French Communist Party Headquarters", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Headquarters_%40_French_Communist_Party_%40_Paris_%2829708090806%29.jpg/500px-Headquarters_%40_French_Communist_Party_%40_Paris_%2829708090806%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "French Communist Party Headquarters (Oscar Niemeyer)", "work": "French Communist Party Headquarters", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Headquarters_%40_French_Communist_Party_%40_Paris_%2829708090806%29.jpg/500px-Headquarters_%40_French_Communist_Party_%40_Paris_%2829708090806%29.jpg", "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

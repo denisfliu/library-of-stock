@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Rumi";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: this six-book poetic work opens with the 'Song of the Reed Flute,' instructing the reader to 'listen to the story told by the reed / of being separated'", "back": "The Masnavi / Spiritual Couplets (Rumi)", "work": "The Masnavi", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this work, Moses erroneously rebukes a shepherd for offering to comb God's hair and pick his lice", "back": "The Masnavi / Spiritual Couplets (Rumi)", "work": "The Masnavi", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this work contains a version of the blind men and the elephant parable, ending with the metaphor of distinguishing foam from the sea", "back": "The Masnavi / Spiritual Couplets (Rumi)", "work": "The Masnavi", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this work contains the biography of Ibrahim ibn Adham, who gave up the crown of Bactria to become an ascetic", "back": "The Masnavi / Spiritual Couplets (Rumi)", "work": "The Masnavi", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this work opens by describing itself as the 'explainer' of the Quran", "back": "The Masnavi / Spiritual Couplets (Rumi)", "work": "The Masnavi", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: scholars identify seven 'voices' in this work, including the 'Hiatus' voice where the author says his true intentions are inexpressible", "back": "The Masnavi / Spiritual Couplets (Rumi)", "work": "The Masnavi", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this collection of ghazals is dedicated to Rumi's teacher Shams of Tabriz, inspired by Shams's disappearance", "back": "Divan-e Shams (Rumi)", "work": "Divan-e Shams", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a poem in this collection describes a field 'out beyond ideas of rightdoing and wrongdoing'; the original references 'religion' and 'infidelity'", "back": "Divan-e Shams (Rumi)", "work": "Divan-e Shams", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the poem 'Like This' asks the 'dissolver of sugar' to 'dissolve me, if this is the time'", "back": "Divan-e Shams (Rumi)", "work": "Divan-e Shams", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'The Guest House' states 'This being human is a guest house / Every morning a new arrival'; Coleman Barks read it on Coldplay's 'Kaleidoscope'", "back": "Divan-e Shams (Rumi)", "work": "Divan-e Shams", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Coleman Barks's free-verse 'translations' of this poet are criticized for erasing Islamic references; Barks neither reads nor writes Persian", "back": "Rumi", "work": "Coleman Barks Translations", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Robert Bly introduced Coleman Barks to this poet by giving him A.J. Arberry's literal translation, saying the poems needed to be 'released from their cages'", "back": "Rumi", "work": "Coleman Barks Translations", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: a 2017 New Yorker article discussed 'The Erasure of Islam from the Poetry of' this poet; Omid Safi called it 'spiritual colonialism'", "back": "Rumi", "work": "Coleman Barks Translations", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this poet was taught by Shams of Tabriz in seclusion for 40 days; Shams later disappeared, inspiring a divan", "back": "Rumi", "work": "General / Biographical", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: in one legend, this poet's teacher threw his books in a pool; they remained dry, and the teacher said 'Something you do not know'", "back": "Rumi", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this poet's tomb in Konya is a shrine for the Mevlevi order, named after him (from his title Mawlana)", "back": "Rumi", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Elif Shafak's novel The Forty Rules of Love was inspired by this poet and his advisor; features homemaker Ella Rosenberg", "back": "Rumi", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this poet befriended a goldsmith (Salah al-Din Zarkub) to replace Shams as his muse after Shams disappeared", "back": "Rumi", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Fihi Ma Fihi — this author wrote a collection of 72 dialogues whose title translates as 'It is what it is'", "back": "Fihi Ma Fihi (Rumi)", "work": "Other Works", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

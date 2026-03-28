@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Donato Bramante";
 let cards = [{"type": "basic", "indicator": "Building", "front": "Building: small perfectly circular martyrium in the courtyard of San Pietro in Montorio in Rome", "back": "The Tempietto (Donato Bramante)", "work": "The Tempietto", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Bramante%27s_Tempietto_%2846150919355%29.jpg/500px-Bramante%27s_Tempietto_%2846150919355%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: commissioned by Ferdinand and Isabella of Spain to commemorate the site of St. Peter's crucifixion", "back": "The Tempietto (Donato Bramante)", "work": "The Tempietto", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Bramante%27s_Tempietto_%2846150919355%29.jpg/500px-Bramante%27s_Tempietto_%2846150919355%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: surrounded by sixteen Doric columns accessible after climbing three steps on its base", "back": "The Tempietto (Donato Bramante)", "work": "The Tempietto", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Bramante%27s_Tempietto_%2846150919355%29.jpg/500px-Bramante%27s_Tempietto_%2846150919355%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: uses several orders including Tuscan columns surrounding a Doric-appearing set of pilasters", "back": "The Tempietto (Donato Bramante)", "work": "The Tempietto", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Bramante%27s_Tempietto_%2846150919355%29.jpg/500px-Bramante%27s_Tempietto_%2846150919355%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "The Tempietto (Donato Bramante)", "work": "The Tempietto", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Bramante%27s_Tempietto_%2846150919355%29.jpg/500px-Bramante%27s_Tempietto_%2846150919355%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: Bramante's original design for this Vatican basilica used a Greek-cross plan with a dome modeled on the Pantheon, commissioned by Julius II", "back": "St. Peter's Basilica (Original Design) (Donato Bramante)", "work": "St. Peter's Basilica (Original Design)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg/500px-Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: after Julius II died, Bramante was replaced as architect by Sangallo, Fra Giocondo, and Raphael", "back": "St. Peter's Basilica (Original Design) (Donato Bramante)", "work": "St. Peter's Basilica (Original Design)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg/500px-Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Michelangelo later retained and simplified Bramante's Greek cross floor plan after reluctantly accepting this commission", "back": "St. Peter's Basilica (Original Design) (Donato Bramante)", "work": "St. Peter's Basilica (Original Design)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg/500px-Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: a medallion by the goldsmith Caradosso is one of the few surviving hints at the original external design of this basilica", "back": "St. Peter's Basilica (Original Design) (Donato Bramante)", "work": "St. Peter's Basilica (Original Design)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg/500px-Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: earned the Roman nickname 'Il Ruinate' for demolishing so many old buildings to make room for new ones", "back": "Donato Bramante", "work": "Other Works and Biographical", "frequency": 3, "tags": []}, {"type": "image", "indicator": "Building", "front": "", "back": "St. Peter's Basilica (Original Design) (Donato Bramante)", "work": "St. Peter's Basilica (Original Design)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg/500px-Basilica_di_San_Pietro_in_Vaticano_September_2015-1a.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: series of terraced outdoor spaces at the Vatican Palace designed for Julius II, where the Apollo Belvedere and Laocoon and His Sons were originally displayed", "back": "Cortile del Belvedere (Belvedere Courtyard) (Donato Bramante)", "work": "Cortile del Belvedere (Belvedere Courtyard)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Stato_della_Citt%C3%A0_del_Vaticano._Palazzo_Apostolico_Exterieur_Donato_Bramante._Cortile_del_Belvedere%2C_GD001922.jpg/500px-Stato_della_Citt%C3%A0_del_Vaticano._Palazzo_Apostolico_Exterieur_Donato_Bramante._Cortile_del_Belvedere%2C_GD001922.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: contains a section below Pirro Ligorio's nicchione — the largest niche built since antiquity — featuring an ancient bronze pinecone", "back": "Cortile del Belvedere (Belvedere Courtyard) (Donato Bramante)", "work": "Cortile del Belvedere (Belvedere Courtyard)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Stato_della_Citt%C3%A0_del_Vaticano._Palazzo_Apostolico_Exterieur_Donato_Bramante._Cortile_del_Belvedere%2C_GD001922.jpg/500px-Stato_della_Citt%C3%A0_del_Vaticano._Palazzo_Apostolico_Exterieur_Donato_Bramante._Cortile_del_Belvedere%2C_GD001922.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Cortile del Belvedere (Belvedere Courtyard) (Donato Bramante)", "work": "Cortile del Belvedere (Belvedere Courtyard)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Stato_della_Citt%C3%A0_del_Vaticano._Palazzo_Apostolico_Exterieur_Donato_Bramante._Cortile_del_Belvedere%2C_GD001922.jpg/500px-Stato_della_Citt%C3%A0_del_Vaticano._Palazzo_Apostolico_Exterieur_Donato_Bramante._Cortile_del_Belvedere%2C_GD001922.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Architect", "front": "Architect: served as court architect to Ludovico Sforza in Milan", "back": "Donato Bramante", "work": "Milan Works", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Milan_pinacoth%C3%A8que_Bramante_le_Christ_%C3%A0_la_colonnae.jpg/500px-Milan_pinacoth%C3%A8que_Bramante_le_Christ_%C3%A0_la_colonnae.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: designed the sixteen-sided dome of Santa Maria delle Grazie in Milan", "back": "Milan Works (Donato Bramante)", "work": "Milan Works", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Milan_pinacoth%C3%A8que_Bramante_le_Christ_%C3%A0_la_colonnae.jpg/500px-Milan_pinacoth%C3%A8que_Bramante_le_Christ_%C3%A0_la_colonnae.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: trompe-l'oeil painting at Santa Maria presso San Satiro makes an alcove appear to be an entire choir around the altar", "back": "Milan Works (Donato Bramante)", "work": "Milan Works", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Milan_pinacoth%C3%A8que_Bramante_le_Christ_%C3%A0_la_colonnae.jpg/500px-Milan_pinacoth%C3%A8que_Bramante_le_Christ_%C3%A0_la_colonnae.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Milan Works (Donato Bramante)", "work": "Milan Works", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Milan_pinacoth%C3%A8que_Bramante_le_Christ_%C3%A0_la_colonnae.jpg/500px-Milan_pinacoth%C3%A8que_Bramante_le_Christ_%C3%A0_la_colonnae.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Architect", "front": "Architect: namesake double-helix staircase in the Vatican Museums was commissioned by Julius II; a later version was designed by Giuseppe Momo", "back": "Donato Bramante", "work": "Other Works and Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed the Palazzo Caprini, which served as Raphael's residence and influenced Palladio's urban palazzi before being demolished in the 17th century", "back": "Donato Bramante", "work": "Other Works and Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: namesake cloister is located in Santa Maria della Pace", "back": "Donato Bramante", "work": "Other Works and Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: according to Condivi, jealously arranged for Michelangelo to paint the Sistine Chapel knowing he had no fresco training, then tried to have him replaced by Raphael when Michelangelo excelled", "back": "Donato Bramante", "work": "Other Works and Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: organized a contest judged by Raphael and won by Jacopo Sansovino to determine the correct orientation of the Laocoon's broken arm", "back": "Donato Bramante", "work": "Other Works and Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Vasari suggests he was the model for the figure of Euclid using a compass on a black slate at the right of Raphael's School of Athens", "back": "Donato Bramante", "work": "Other Works and Biographical", "frequency": 3, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

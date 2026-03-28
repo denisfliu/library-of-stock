@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "E. T. A. Hoffmann";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: Nathanael falls in love with the automaton Olympia created by Coppelius/Spalanzani, who steals children's eyes, in this story", "back": "\"The Sandman\" (E. T. A. Hoffmann)", "work": "The Sandman", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Freud's essay 'The Uncanny' analyzes this story, arguing that castration anxiety underlies the eye-stealing motif", "back": "\"The Sandman\" (E. T. A. Hoffmann)", "work": "The Sandman", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the barometer/telescope salesman Coppola advertises 'pretty eyes, pretty eyes' in this story", "back": "\"The Sandman\" (E. T. A. Hoffmann)", "work": "The Sandman", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, the protagonist shrieks 'Circle of fire! Spin round!' while holding Clara over a ledge, then jumps from a bell-tower to his death", "back": "\"The Sandman\" (E. T. A. Hoffmann)", "work": "The Sandman", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this story's protagonist calls his fiancee Clara 'accursed, inanimate' after she asks him to burn a 'frightful' poem", "back": "\"The Sandman\" (E. T. A. Hoffmann)", "work": "The Sandman", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this story inspired Leo Delibes's ballet Coppelia when combined with 'The Doll'", "back": "\"The Sandman\" (E. T. A. Hoffmann)", "work": "The Sandman", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the barcarolle 'Belle nuit, o nuit d'amour' opens the Venetian act of this Offenbach opera", "back": "The Tales of Hoffmann (Jacques Offenbach)", "work": "The Tales of Hoffmann", "frequency": 9, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the 'Doll Song' ('Les oiseaux dans la charmille') is sung by the automaton Olympia, who must be periodically rewound, in this opera", "back": "The Tales of Hoffmann (Jacques Offenbach)", "work": "The Tales of Hoffmann", "frequency": 9, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this opera, three loves — Olympia, Antonia, Giulietta — are facets of the prima donna Stella", "back": "The Tales of Hoffmann (Jacques Offenbach)", "work": "The Tales of Hoffmann", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this opera, four villains are sung by one bass-baritone; Dapertutto offers a diamond to steal the protagonist's reflection", "back": "The Tales of Hoffmann (Jacques Offenbach)", "work": "The Tales of Hoffmann", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this opera, Nicklausse reveals himself to be the Muse at the end", "back": "The Tales of Hoffmann (Jacques Offenbach)", "work": "The Tales of Hoffmann", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the 'Legend of Kleinzach' describes a hunchbacked dwarf but the singer gets distracted by thoughts of a woman in this opera", "back": "The Tales of Hoffmann (Jacques Offenbach)", "work": "The Tales of Hoffmann", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Dr. Miracle kills Antonia by making a portrait of her dead mother urge her to sing in this opera", "back": "The Tales of Hoffmann (Jacques Offenbach)", "work": "The Tales of Hoffmann", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the clockmaker Drosselmeier creates a toy that defends Marie/Clara from a seven-headed Mouse King in this fairy tale", "back": "The Nutcracker and the Mouse King (E. T. A. Hoffmann)", "work": "The Nutcracker and the Mouse King", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a printer's error splices an intelligent cat's autobiography with pages from a biography of Kapellmeister Kreisler in this novel", "back": "The Life and Opinions of Tomcat Murr (E. T. A. Hoffmann)", "work": "The Life and Opinions of Tomcat Murr", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the student Anselmus spills ink on Archivist Lindhorst's manuscripts and is imprisoned in a crystal bottle in this fairy tale", "back": "\"The Golden Pot\" (E. T. A. Hoffmann)", "work": "The Golden Pot", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novella, often cited alongside Poe as one of the first detective stories, follows the title character solving the mystery of goldsmith Rene Cardillac's death", "back": "\"Mademoiselle de Scuderi\" (E. T. A. Hoffmann)", "work": "Mademoiselle de Scuderi", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the monk Medardus is driven mad by the title concoction and murders Princess Aurelie's family before stabbing her on their wedding day in this novel", "back": "The Devil's Elixirs (E. T. A. Hoffmann)", "work": "The Devil's Elixirs", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's music criticism, collected as Kreisleriana, declared 'Music is the most romantic of all the arts' and praised Beethoven as 'purely romantic'", "back": "E. T. A. Hoffmann", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this German Romantic author changed his middle name from Wilhelm to 'Amadeus' in honor of Mozart", "back": "E. T. A. Hoffmann", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, Erasmus Spikher barters away his reflection, alluding to Chamisso's Peter Schlemihl", "back": "\"A New Year's Eve Adventure\" (E. T. A. Hoffmann)", "work": "A New Year's Eve Adventure", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, a strange man from the Tiergarten sings an aria from blank pages then claims to be a dead composer", "back": "\"Ritter Gluck\" (E. T. A. Hoffmann)", "work": "Ritter Gluck", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this Hoffmann story, Fet-Mats is discovered in a mine; Ziolkowski argues it uses the mine as 'an image of the soul'", "back": "\"The Mines of Falun\" (E. T. A. Hoffmann)", "work": "The Mines of Falun", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the title Hoffmann character forbids his daughter Antonia from singing because she risks death; inspired Act II of The Tales of Hoffmann", "back": "\"Councillor Krespel\" (E. T. A. Hoffmann)", "work": "Councillor Krespel", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Pablo Neruda";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: 'Love is so short, forgetting is so long'; 'The night is starry and the stars are blue and shiver in the distance'", "back": "\"Tonight I Can Write the Saddest Lines\" / Twenty Love Poems and a Song of Despair (Pablo Neruda)", "work": "Twenty Love Poems and a Song of Despair", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: refrains 'in you everything sank!' and 'it is the hour of departure'; opens 'The memory of you emerges from the night around me'; addressee is 'lost discoverer'", "back": "\"The Song of Despair\" / Twenty Love Poems and a Song of Despair (Pablo Neruda)", "work": "Twenty Love Poems and a Song of Despair", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens 'white hills, white thighs, you look like a world, lying in surrender'", "back": "\"Body of a Woman\" / Twenty Love Poems and a Song of Despair (Pablo Neruda)", "work": "Twenty Love Poems and a Song of Despair", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: translated by W. S. Merwin; published when its author was 19; Huidobro accused the poet of plagiarizing Tagore's The Gardener", "back": "Twenty Love Poems and a Song of Despair (Pablo Neruda)", "work": "Twenty Love Poems and a Song of Despair", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 12-part poem beginning 'From breeze to breeze, like an empty net'; the speaker climbs 'up the ladder of the earth' to an Incan ruin and commands 'Arise to birth with me, my brother'", "back": "\"The Heights of Macchu Picchu\" / Canto General (Pablo Neruda)", "work": "Canto General / The Heights of Macchu Picchu", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: sections include 'A Lamp on Earth,' 'The Conquistadors,' 'The Sand Betrayed,' 'The Fugitive'; opens with 'The Invisible Man' declaring 'I laugh / I smile / at the old poets'", "back": "Canto General (Pablo Neruda)", "work": "Canto General / The Heights of Macchu Picchu", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ode to socks knitted by Maru Mori; 'beauty is twice beauty'; socks 'as soft as rabbits'; feet look like 'two long sharks' or 'two immense blackbirds'", "back": "\"Ode to My Socks\" / Elemental Odes (Pablo Neruda)", "work": "Elemental Odes", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ode to a 'bullet from the ocean depths' lying 'among the market greens'; described as 'catafalqued king' and 'navigating the waters of death'", "back": "\"Ode to a Large Tuna in the Market\" / Elemental Odes (Pablo Neruda)", "work": "Elemental Odes", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ode to a vegetable 'dressed up like a warrior' that is stripped 'scale by scale' to eat 'the peaceful mush of its green heart'", "back": "\"Ode to the Artichoke\" / Elemental Odes (Pablo Neruda)", "work": "Elemental Odes", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens 'It so happens I am sick of being a man'; speaker imagines himself as 'a felt swan navigating in water of sources and ashes'; Federico Garcia Lorca drew images to accompany it", "back": "\"Walking Around\" / Residence on Earth (Pablo Neruda)", "work": "Walking Around / I Explain a Few Things / Residence on Earth", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ends 'Come and see the blood in the streets!'; inspired by the Spanish Civil War in Madrid; set 'with bells, and clocks, and trees'", "back": "\"I Explain a Few Things\" / Residence on Earth (Pablo Neruda)", "work": "Walking Around / I Explain a Few Things / Residence on Earth", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Sonnet XVII begins 'I don't love you as if you were a rose of salt, topaz'; 'I love you as one loves certain obscure things, secretly, between the shadow and the soul'", "back": "One Hundred Love Sonnets (Pablo Neruda)", "work": "One Hundred Love Sonnets", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'if suddenly you forget me / do not look for me / for I already have forgotten you'; 'everything that exists, aromas, light, metals, are little boats that sail toward the isles of the addressee'", "back": "\"If You Forget Me\" / The Captain's Verses (Pablo Neruda)", "work": "Other Poems and Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'deny me bread, air, light, spring / but do not take from me your laughter'", "back": "\"Your Laughter\" / The Captain's Verses (Pablo Neruda)", "work": "Other Poems and Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: always wrote in green ink, which he considered the color of hope", "back": "Pablo Neruda", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: appears as a character in Antonio Skarmeta's The Postman, giving advice to Mario on Isla Negra; also appears in Roberto Bolano's By Night in Chile", "back": "Pablo Neruda", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: in his Nobel lecture, rejected Huidobro's creationist slogan 'the poet is a little god'; quoted Rimbaud about 'burning patience'", "back": "Pablo Neruda", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: the Congress for Cultural Freedom tried to discredit this poet by publicizing pro-Stalin sections of Grapes and the Wind", "back": "Pablo Neruda", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: born Ricardo Reyes Basoalto; took pen name from Czech poet Jan Neruda", "back": "Pablo Neruda", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: a proponent of 'impure poetry'; valued 'useful objects in repose' giving 'reality a magnetism that should not be scorned'", "back": "Pablo Neruda", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

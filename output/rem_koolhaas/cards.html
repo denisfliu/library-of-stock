@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Rem Koolhaas";
 let cards = [{"type": "basic", "indicator": "Building", "front": "Building: this glass-and-steel library in Seattle has a diamond-patterned facade and features a four-story 'Books Spiral' ramp numbered 000–999 for the nonfiction collection", "back": "Seattle Central Library (Rem Koolhaas)", "work": "Seattle Central Library", "frequency": "very common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg/500px-Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: in this Seattle library, the Charles Simonyi Mixing Chamber is connected to the 'Living Room' by fluorescent yellow-green escalators", "back": "Seattle Central Library (Rem Koolhaas)", "work": "Seattle Central Library", "frequency": "uncommon", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg/500px-Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: ring-shaped corridors in this Koolhaas-designed Seattle library are painted blood red", "back": "Seattle Central Library (Rem Koolhaas)", "work": "Seattle Central Library", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg/500px-Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: George Legrady's installation 'Making Visible the Invisible,' displaying live data on six plasma screens, is found in this Koolhaas-designed Seattle library", "back": "Seattle Central Library (Rem Koolhaas)", "work": "Seattle Central Library", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg/500px-Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: this Seattle library was co-designed by Koolhaas and Joshua Prince-Ramus, and has capacity for 1.45 million items", "back": "Seattle Central Library (Rem Koolhaas)", "work": "Seattle Central Library", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg/500px-Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Magnusson Klemencic Associates served as structural engineers for this Koolhaas-designed Seattle library", "back": "Seattle Central Library (Rem Koolhaas)", "work": "Seattle Central Library", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg/500px-Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Seattle Central Library (Rem Koolhaas)", "work": "Seattle Central Library", "frequency": "very common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg/500px-Seattle_Central_Library_by_architect_Rem_Koolhaas%2C_view_from_5th_Ave.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: this Beijing building features two slanted towers connected by a 75-meter perpendicular cantilevered section and is nicknamed 'big pants'", "back": "CCTV Headquarters (Rem Koolhaas)", "work": "CCTV Headquarters", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Rem_Koolhaas_CCTV_building_%286233587191%29.jpg/500px-Rem_Koolhaas_CCTV_building_%286233587191%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: this Koolhaas building in Beijing was co-designed with Ole Scheeren", "back": "CCTV Headquarters (Rem Koolhaas)", "work": "CCTV Headquarters", "frequency": "uncommon", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Rem_Koolhaas_CCTV_building_%286233587191%29.jpg/500px-Rem_Koolhaas_CCTV_building_%286233587191%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: before its 'big pants' nickname took hold, this Koolhaas building in Beijing was derided as having been inspired by a pornographic image of a woman on all fours", "back": "CCTV Headquarters (Rem Koolhaas)", "work": "CCTV Headquarters", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Rem_Koolhaas_CCTV_building_%286233587191%29.jpg/500px-Rem_Koolhaas_CCTV_building_%286233587191%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "CCTV Headquarters (Rem Koolhaas)", "work": "CCTV Headquarters", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Rem_Koolhaas_CCTV_building_%286233587191%29.jpg/500px-Rem_Koolhaas_CCTV_building_%286233587191%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Book", "front": "Book: this Koolhaas book, co-designed with Bruce Mau, arranges OMA's projects in order of size, with entries chronologically ordered within each size category", "back": "S,M,L,XL (Rem Koolhaas)", "work": "S,M,L,XL", "frequency": "common", "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: this Koolhaas book contains the essays 'Islam after Einstein' and the poem 'Learning Japanese,' and describes a Yokohama masterplan as 'programmatic lava'", "back": "S,M,L,XL (Rem Koolhaas)", "work": "S,M,L,XL", "frequency": "uncommon", "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: Koolhaas introduced the term 'Manhattanism' — describing an ideology embracing urban congestion — in this book", "back": "S,M,L,XL (Rem Koolhaas)", "work": "S,M,L,XL", "frequency": "uncommon", "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: this Koolhaas book contains an essay criticizing Disneyland for the imperialist assumption that only Westerners can embrace modernity", "back": "S,M,L,XL (Rem Koolhaas)", "work": "S,M,L,XL", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: this Koolhaas 'retroactive manifesto' about Manhattan called it the 'twentieth century's Rosetta Stone'", "back": "Delirious New York (Rem Koolhaas)", "work": "Delirious New York", "frequency": "uncommon", "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: the cover of this Koolhaas book features his wife Madelon Vriesendorp's painting 'Flagrant Delit,' showing two distorted skyscrapers in bed next to the Statue of Liberty's torch", "back": "Delirious New York (Rem Koolhaas)", "work": "Delirious New York", "frequency": "uncommon", "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: this Koolhaas book analyzes a Rockefeller-commissioned project as a 'double paradox' of congestion and space", "back": "Delirious New York (Rem Koolhaas)", "work": "Delirious New York", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: this Koolhaas book praises the 'chance-like' nature of city living", "back": "Delirious New York (Rem Koolhaas)", "work": "Delirious New York", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: co-founded OMA with Elia Zenghelis; OMA is based in Rotterdam", "back": "Rem Koolhaas", "work": "OMA (Office for Metropolitan Architecture)", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Maquette_voor_het_spoortunneltrac%C3%A9%2C_ontwerp_door_Rem_Koolhaas%2C_objectnr_74267.JPG/500px-Maquette_voor_het_spoortunneltrac%C3%A9%2C_ontwerp_door_Rem_Koolhaas%2C_objectnr_74267.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: Joshua Prince-Ramus (REX) and Bjarke Ingels (BIG) both worked at this architect's firm OMA before founding their own practices", "back": "Rem Koolhaas", "work": "OMA (Office for Metropolitan Architecture)", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Maquette_voor_het_spoortunneltrac%C3%A9%2C_ontwerp_door_Rem_Koolhaas%2C_objectnr_74267.JPG/500px-Maquette_voor_het_spoortunneltrac%C3%A9%2C_ontwerp_door_Rem_Koolhaas%2C_objectnr_74267.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: OMA collaborated with Cecil Balmond on the Maison a Bordeaux, a moving house built for a client in a wheelchair", "back": "Rem Koolhaas", "work": "OMA (Office for Metropolitan Architecture)", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Maquette_voor_het_spoortunneltrac%C3%A9%2C_ontwerp_door_Rem_Koolhaas%2C_objectnr_74267.JPG/500px-Maquette_voor_het_spoortunneltrac%C3%A9%2C_ontwerp_door_Rem_Koolhaas%2C_objectnr_74267.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: runs AMO, OMA's think tank, which collaborated with Virgil Abloh on a 2019 MCA exhibition titled 'Figures of Speech'", "back": "Rem Koolhaas", "work": "OMA (Office for Metropolitan Architecture)", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Maquette_voor_het_spoortunneltrac%C3%A9%2C_ontwerp_door_Rem_Koolhaas%2C_objectnr_74267.JPG/500px-Maquette_voor_het_spoortunneltrac%C3%A9%2C_ontwerp_door_Rem_Koolhaas%2C_objectnr_74267.JPG", "image_side": "back"}, {"type": "image", "indicator": "Architect", "front": "", "back": "OMA (Office for Metropolitan Architecture) (Rem Koolhaas)", "work": "OMA (Office for Metropolitan Architecture)", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Maquette_voor_het_spoortunneltrac%C3%A9%2C_ontwerp_door_Rem_Koolhaas%2C_objectnr_74267.JPG/500px-Maquette_voor_het_spoortunneltrac%C3%A9%2C_ontwerp_door_Rem_Koolhaas%2C_objectnr_74267.JPG", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: this concert hall in Porto, Portugal was described as resembling a Jawa sandcrawler", "back": "Casa da Música (Rem Koolhaas)", "work": "Casa da Música", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Casa_da_M%C3%BAsica%2C_Rem_Koolhaas%2C_Porto_%2825496826902%29.jpg/500px-Casa_da_M%C3%BAsica%2C_Rem_Koolhaas%2C_Porto_%2825496826902%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Casa da Música (Rem Koolhaas)", "work": "Casa da Música", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Casa_da_M%C3%BAsica%2C_Rem_Koolhaas%2C_Porto_%2825496826902%29.jpg/500px-Casa_da_M%C3%BAsica%2C_Rem_Koolhaas%2C_Porto_%2825496826902%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: this Koolhaas-designed library in Education City, Doha, completed in 2017, resembles two pieces of paper being separated and folded", "back": "Qatar National Library (Rem Koolhaas)", "work": "Qatar National Library", "frequency": "uncommon", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/QNL.jpg/500px-QNL.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Qatar National Library (Rem Koolhaas)", "work": "Qatar National Library", "frequency": "uncommon", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/QNL.jpg/500px-QNL.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Architect", "front": "Architect: proposed a 'Barcode' redesign of the EU flag in 2002 — never adopted, but praised for being easily updated to reflect new member states", "back": "Rem Koolhaas", "work": "EU Barcode Flag Proposal", "frequency": "uncommon", "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: OMA created the 'Image of Europe' exposition as part of research on rebranding Europe", "back": "Rem Koolhaas", "work": "EU Barcode Flag Proposal", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: won the 2000 Pritzker Prize; was a professor at Harvard and a teacher of Zaha Hadid in London", "back": "Rem Koolhaas", "work": "Biographical", "frequency": "uncommon", "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: wrote the essay 'Junkspace,' whose consequences are illustrated by the Barcelona Airport and Madrid Atocha station", "back": "Rem Koolhaas", "work": "Biographical", "frequency": "uncommon", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: designed De Rotterdam, described as the largest building in the Netherlands", "back": "Rem Koolhaas", "work": "Biographical", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: this Koolhaas building at the Illinois Institute of Technology is topped by a huge tubular metal train tunnel and uses special noise-reducing glass", "back": "McCormick Tribune Campus Center (Rem Koolhaas)", "work": "Other Works", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: this UAE convention center designed by OMA is described as resembling the Death Star", "back": "RAK Convention Center (Rem Koolhaas / OMA)", "work": "Other Works", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: OMA converted a gin distillery into this Milan art foundation, which includes a 'haunted house' covered in gold leaf", "back": "Fondazione Prada (Rem Koolhaas / OMA)", "work": "Other Works", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: OMA designed a movable tetrahedron with differently shaped faces for Prada in Seoul, known as the Prada 'Transformer'", "back": "Prada Transformer, Seoul (Rem Koolhaas / OMA)", "work": "Other Works", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: OMA designed one portion of this Seoul museum alongside Mario Botta and Jean Nouvel", "back": "Leeum (Samsung Museum of Art) (Rem Koolhaas / OMA)", "work": "Other Works", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: this Koolhaas-designed performing arts center in Taipei features a giant orb sticking out of the side", "back": "Taipei Performing Arts Center (Rem Koolhaas / OMA)", "work": "Other Works", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: ran United Nude, a shoe company that in 2015 invited five architects including Zaha Hadid to create 3D-printed women's shoes", "back": "Rem Koolhaas", "work": "Other Works", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: OMA designed a nine-story Prada store in Milan with a triangular notch missing from its side", "back": "Prada Epicenter, Milan (Rem Koolhaas / OMA)", "work": "Other Works", "frequency": "rare", "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

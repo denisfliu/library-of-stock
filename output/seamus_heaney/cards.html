@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Seamus Heaney";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: opens 'Between my finger and my thumb / The squat pen rests; snug as a gun' and ends with 'I'll dig with it'", "back": "\"Digging\" (Seamus Heaney)", "work": "Digging", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker delivers his grandfather 'milk in a bottle / Corked sloppily with paper' while the old man cuts turf on Toner's bog", "back": "\"Digging\" (Seamus Heaney)", "work": "Digging", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ends 'A four-foot box, a foot for every year' describing a dead brother's coffin", "back": "\"Mid-Term Break\" (Seamus Heaney)", "work": "Mid-Term Break", "frequency": 15, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the dead brother wears 'a poppy bruise on his left temple' after 'the bumper knocked him clear'", "back": "\"Mid-Term Break\" (Seamus Heaney)", "work": "Mid-Term Break", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens 'I sat all morning in the college sick bay'; Big Jim Evans says 'it was a hard blow'", "back": "\"Mid-Term Break\" (Seamus Heaney)", "work": "Mid-Term Break", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker's 'palms sticky as Bluebeard's' while picking the title fruit", "back": "\"Blackberry-Picking\" (Seamus Heaney)", "work": "Blackberry-Picking", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'a rat-grey fungus' spoils the harvest; ends 'Each year I hoped they'd keep, knew they would not'", "back": "\"Blackberry-Picking\" (Seamus Heaney)", "work": "Blackberry-Picking", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: frogs described as 'great slime kings' who are 'gathered there for vengeance' at a flax-dam", "back": "\"Death of a Naturalist\" (Seamus Heaney)", "work": "Death of a Naturalist", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker fills 'jampotfuls of the jellied specks' of frogspawn; frogs are 'poised like mud grenades'", "back": "\"Death of a Naturalist\" (Seamus Heaney)", "work": "Death of a Naturalist", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker wants to visit Aarhus to see a 'peat-brown head'; ends 'In the old man-killing parishes / I will feel lost, unhappy and at home'", "back": "\"The Tollund Man\" (Seamus Heaney)", "work": "The Tollund Man and Bog Body Poems", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a figure 'seems to weep the black river of himself'; the speaker asks 'Who will say corpse to his vivid cast?'", "back": "\"The Grauballe Man\" (Seamus Heaney)", "work": "The Tollund Man and Bog Body Poems", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: begins 'Here is the girl's head' — about a decapitated bog body, sharing its title with an Abel Meeropol poem", "back": "\"Strange Fruit\" (Seamus Heaney)", "work": "The Tollund Man and Bog Body Poems", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this poet's verse translation of Beowulf opens with 'So.' in place of 'Hwæt!' and uses a style called 'Scullionspeak'", "back": "Seamus Heaney", "work": "Beowulf (translation)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker's childhood hobby of peering into wells is now 'beneath all adult dignity'; ends 'I rhyme / To see myself, to set the darkness echoing'", "back": "\"Personal Helicon\" (Seamus Heaney)", "work": "Personal Helicon", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the father's shoulders are 'globed like a full sail' and he leaves a 'hobnailed wake'; ends with the father 'stumbling / Behind me, and will not go away'", "back": "\"Follower\" (Seamus Heaney)", "work": "Follower", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes a conversation with 'an English journalist in search of views / On the Irish thing'; asks 'Is there a life before death?'", "back": "\"Whatever You Say, Say Nothing\" (Seamus Heaney)", "work": "North and Political Poems", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: adapted Sophocles' Philoctetes as The Cure at Troy, containing the passage about 'the longed-for tidal wave of justice'; read at Biden's inauguration", "back": "Seamus Heaney", "work": "Other Works and General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: founding member of the Field Day Theatre Company with Brian Friel and Seamus Deane", "back": "Seamus Heaney", "work": "Other Works and General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: declared 'No lyric has ever stopped a tank' in the essay 'The Government of the Tongue'", "back": "Seamus Heaney", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: translated the medieval Irish tale Buile Suibhne as Sweeney Astray; the character Sweeney appears in the collection Station Island", "back": "Seamus Heaney", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes 'Centuries / Of fear and homage to the famine god' and 'stinking potatoes' that 'fouled the land'", "back": "\"At a Potato Digging\" (Seamus Heaney)", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: concludes 'on well-run farms pests have to be kept down'; about the speaker seeing a man drown kittens in a bucket", "back": "\"The Early Purges\" (Seamus Heaney)", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a man 'sure-footed but too sly' was 'blown to bits / out drinking in a curfew'", "back": "\"Casualty\" (Seamus Heaney)", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: dedicated to the poet's mother; describes a felled chestnut tree as 'a soul ramifying and forever / silent, beyond silence listened for'", "back": "\"Clearances\" (Seamus Heaney)", "work": "Other Works and General", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

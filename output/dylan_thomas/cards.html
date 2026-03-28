@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Dylan Thomas";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: villanelle addressed to the speaker's dying father, with refrain 'Rage, rage against the dying of the light'", "back": "Do not go gentle into that good night (Dylan Thomas)", "work": "Do not go gentle into that good night", "frequency": 14, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: categorizes wise men, good men, wild men, and grave men, each resisting death differently", "back": "Do not go gentle into that good night (Dylan Thomas)", "work": "Do not go gentle into that good night", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Blind eyes could blaze like meteors and be gay' — reference to the speaker's father's blindness", "back": "Do not go gentle into that good night (Dylan Thomas)", "work": "Do not go gentle into that good night", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: speaker asks father to 'Curse, bless, me now with your fierce tears' at the end of this villanelle", "back": "Do not go gentle into that good night (Dylan Thomas)", "work": "Do not go gentle into that good night", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ends 'Time held me green and dying / Though I sang in my chains like the sea'", "back": "Fern Hill (Dylan Thomas)", "work": "Fern Hill", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: speaker recalls being 'young and easy under the apple boughs' at his aunt's farm", "back": "Fern Hill (Dylan Thomas)", "work": "Fern Hill", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: speaker is 'honoured among the foxes and pheasants' and 'famous among the barns'", "back": "Fern Hill (Dylan Thomas)", "work": "Fern Hill", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: stanzas each end with a statement beginning 'And I am dumb to tell...'; from the collection 18 Poems", "back": "The force that through the green fuse drives the flower (Dylan Thomas)", "work": "The force that through the green fuse drives the flower", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'of my clay is made the hangman's lime' — the force driving the speaker's 'green age' is also his destroyer", "back": "The force that through the green fuse drives the flower (Dylan Thomas)", "work": "The force that through the green fuse drives the flower", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: title from Paul's epistle to the Romans; title line opens and closes all three stanzas; declares 'Though lovers be lost love shall not'", "back": "And death shall have no dominion (Dylan Thomas)", "work": "And death shall have no dominion", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: concludes 'after the first death, there is no other'; about a child killed in the London Blitz", "back": "A Refusal to Mourn the Death, by Fire, of a Child in London (Dylan Thomas)", "work": "A Refusal to Mourn the Death, by Fire, of a Child in London", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the dead are 'robed in the long friends, the grains beyond age, the dark veins of her mother'", "back": "A Refusal to Mourn the Death, by Fire, of a Child in London (Dylan Thomas)", "work": "A Refusal to Mourn the Death, by Fire, of a Child in London", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: radio 'play for voices' set in the fictional seaside town of Llareggub ('bugger all' reversed); features Captain Cat and Mrs. Ogmore-Pritchard", "back": "Under Milk Wood (Dylan Thomas)", "work": "Under Milk Wood", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: his father, an English teacher in Wales described as 'a cold kind man brave in his narrow pride,' inspired both 'Do not go gentle' and the unfinished poem 'Elegy'", "back": "Dylan Thomas", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Roald Dahl built a replica of this poet's writing shed", "back": "Dylan Thomas", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: 'Poem in October' marks his 'thirtieth year to heaven'", "back": "Dylan Thomas", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

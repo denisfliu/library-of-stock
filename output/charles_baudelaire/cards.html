@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Charles Baudelaire";
 let cards = [{"type": "basic", "indicator": "Poetry Collection", "front": "Poetry Collection: opens with \"To the Reader,\" which addresses the \"hypocrite reader\" as \"my double, my brother\" and describes Ennui as a monster who \"dreams of scaffolds and smokes his hookah pipe\"", "back": "Les Fleurs du Mal (Charles Baudelaire)", "work": "Les Fleurs du Mal (general)", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Poetry Collection", "front": "Poetry Collection: sections include \"Spleen and Ideal,\" \"Wine,\" \"Revolt,\" and \"Death\"; dedicated to Theophile Gautier, \"perfect magician of French letters\"", "back": "Les Fleurs du Mal (Charles Baudelaire)", "work": "Les Fleurs du Mal (general)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Poetry Collection", "front": "Poetry Collection: six poems were censored from the first edition, including \"Lesbos,\" \"The Damned Women,\" and \"The Jewels\"; later republished in Les Epaves", "back": "Les Fleurs du Mal (Charles Baudelaire)", "work": "Les Fleurs du Mal (general)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poetry Collection", "front": "Poetry Collection: \"Tableaux Parisiens\" (Parisian Scenes) was added during Paris's Haussmann renovation; 18 poems comprise a 24-hour cycle critiquing the renovated city", "back": "Les Fleurs du Mal (Charles Baudelaire)", "work": "Les Fleurs du Mal (general)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: compares the Poet to the title bird, a \"prince of the skies\" whose large wings drag like oars when captured; the bird is \"comic\" and \"ugly\"", "back": "\"The Albatross\" (Charles Baudelaire)", "work": "The Albatross", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens with \"Andromache, I think of you!\"; dedicated to Victor Hugo; laments that a city's face \"changes faster than a human heart\"", "back": "\"The Swan\" (Charles Baudelaire)", "work": "The Swan", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the title bird escapes its cage and cries \"homesick for his fair native lake: Rain, when will you fall? Thunder, when will you roll?\"", "back": "\"The Swan\" (Charles Baudelaire)", "work": "The Swan", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Essay", "front": "Essay: examines Constantin Guys (\"Monsieur G\") as a \"passionate spectator\" and \"eternal convalescent\" for whom \"the crowd is his element\"", "back": "\"The Painter of Modern Life\" (Charles Baudelaire)", "work": "The Painter of Modern Life / The Flaneur", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Essay", "front": "Essay: originated the archetype of the flaneur; coined the term \"modernity\"; the flaneur is \"a prince who is everywhere in possession of his incognito\"", "back": "\"The Painter of Modern Life\" (Charles Baudelaire)", "work": "The Painter of Modern Life / The Flaneur", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: Walter Benjamin expanded this author's flaneur concept in the Arcades Project, calling him a \"secret agent\" of bourgeois discontent and theorizing a \"commodity-soul\"", "back": "Charles Baudelaire", "work": "The Painter of Modern Life / The Flaneur", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Essay", "front": "Essay: distinguishes \"ladies\" from \"fallen women\" in its \"Women and Prostitutes\" section; expanded by Griselda Pollock in \"Modernity and the Spaces of Femininity\"", "back": "\"The Painter of Modern Life\" (Charles Baudelaire)", "work": "The Painter of Modern Life / The Flaneur", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: beseeches the \"Wisest of Angels\" to \"take pity on my long despair\" after every couplet; concludes with a prayer to rest by the Tree of Knowledge", "back": "\"The Litanies of Satan\" (Charles Baudelaire)", "work": "The Litanies of Satan", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes nature as a \"temple\" with \"living pillars\" and a \"forest of symbols\"; the Symbolist movement took its name from this poem", "back": "\"Correspondences\" (Charles Baudelaire)", "work": "Correspondences", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: begins \"My child, my sister, think of the rapture of living together there!\"; envisions \"ornate ceilings\" and \"limpid mirrors\"; ends with the word \"volupte\"", "back": "\"Invitation to the Voyage\" (Charles Baudelaire)", "work": "Invitation to the Voyage", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poetry Collection", "front": "Poetry Collection: prose poems inspired by Aloysius Bertrand's Gaspard de la Nuit; includes \"Be Drunk\" and \"Let's Beat Up the Poor!\"", "back": "Paris Spleen (Charles Baudelaire)", "work": "Paris Spleen (Prose Poems)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the narrator has a fistfight with a beggar outside a bar to determine if he is worthy of charity", "back": "\"Let's Beat Up the Poor!\" (Charles Baudelaire)", "work": "Paris Spleen (Prose Poems)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: depicts a sickly \"old man with tattered yellow clothes\"; the speaker's soul becomes \"a ship without a mast on a monstrous, borderless sea\" after encountering identical hobbled men", "back": "\"The Seven Old Men\" (Charles Baudelaire)", "work": "Other Poems", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: eight quatrains (\"medallions\") about the art of Rubens, Da Vinci, Rembrandt, and Michelangelo", "back": "\"The Beacons\" (Charles Baudelaire)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: travelers discover \"an oasis of horror in a desert of boredom\"", "back": "\"The Voyage\" (Charles Baudelaire)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: sexualizes a corpse \"blossoming like a flower\" as \"black battalions\" of creatures emerge from it", "back": "\"A Carcass\" (Charles Baudelaire)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker imagines living \"like a voluptuous cat at the feet of a queen\" near the title figure", "back": "\"The Giantess\" (Charles Baudelaire)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker makes fleeting eye contact with a passing woman; concludes \"O you that I had loved, O you who knew it!\"", "back": "\"A une passante\" (Charles Baudelaire)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: spent twenty years translating Edgar Allan Poe into French; supposedly learned English for that purpose; popularized Poe throughout Europe", "back": "Charles Baudelaire", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: Algernon Swinburne wrote the elegy \"Ave Atque Vale\" for this poet, titled in reference to Catullus", "back": "Charles Baudelaire", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: close friend of Edouard Manet; posed for Courbet's The Artist's Studio; savaged the mechanical nature of photography", "back": "Charles Baudelaire", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: his half-Haitian mistress Jeanne Duval was fictionalized in Nalo Hopkinson's The Salt Roads", "back": "Charles Baudelaire", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: wrote \"Richard Wagner and Tannhauser in Paris\" despite having little musical training", "back": "Charles Baudelaire", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: inspired Lemony Snicket's choice of the surname \"Baudelaire\" for the orphans in A Series of Unfortunate Events", "back": "Charles Baudelaire", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: wrote \"On the Essence of Laughter\" about a Pierrot robbing a cleaning woman in pantomime", "back": "Charles Baudelaire", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Ilya Repin";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: eleven laborers pulling a boat up the Volga River", "back": "Barge Haulers on the Volga (Ilya Repin)", "work": "Barge Haulers on the Volga (1870-1873)", "frequency": 10, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg/500px-Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg/500px-Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Greenberg contrasted it with Picasso in 'Avant-Garde and Kitsch'", "back": "Barge Haulers on the Volga (Ilya Repin)", "work": "Barge Haulers on the Volga (1870-1873)", "frequency": 4, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg/500px-Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg/500px-Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: only person in the central group looking upward is a fair-haired youth in red, contrasting with despondent comrades", "back": "Barge Haulers on the Volga (Ilya Repin)", "work": "Barge Haulers on the Volga (1870-1873)", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg/500px-Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: one man refills his pipe from a blue tobacco pouch; flag has three stripes inverted", "back": "Barge Haulers on the Volga (Ilya Repin)", "work": "Barge Haulers on the Volga (1870-1873)", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg/500px-Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Barge Haulers on the Volga (Ilya Repin)", "work": "Barge Haulers on the Volga (1870-1873)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg/500px-Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg/500px-Ilia_Efimovich_Repin_%281844-1930%29_-_Volga_Boatmen_%281870-1873%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: men at a table laughing as they compose an insulting letter to Ottoman Sultan Mehmed IV; fat man in white fur cap", "back": "Reply of the Zaporozhian Cossacks (Ilya Repin)", "work": "Reply of the Zaporozhian Cossacks (1880-1891)", "frequency": 9, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg/500px-Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg/500px-Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: bought by Alexander III for 35,000 rubles — most expensive painting sold in Russia at the time", "back": "Reply of the Zaporozhian Cossacks (Ilya Repin)", "work": "Reply of the Zaporozhian Cossacks (1880-1891)", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg/500px-Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: shirtless gambler with a kobza (lute) next to a deck of cards; man with quill at center modelled on the historian consulted", "back": "Reply of the Zaporozhian Cossacks (Ilya Repin)", "work": "Reply of the Zaporozhian Cossacks (1880-1891)", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg/500px-Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: letter calls sultan 'Goat-fucker of Alexandria,' 'catamite of Tartary,' and 'the Devil shits and your army swallow it'", "back": "Reply of the Zaporozhian Cossacks (Ilya Repin)", "work": "Reply of the Zaporozhian Cossacks (1880-1891)", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg/500px-Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Reply of the Zaporozhian Cossacks (Ilya Repin)", "work": "Reply of the Zaporozhian Cossacks (1880-1891)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg/500px-Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg/500px-Ilja_Jefimowitsch_Repin_-_Reply_of_the_Zaporozhian_Cossacks_-_Yorck.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: wide-eyed tsar cradles his dying son on a blood-red carpet", "back": "Ivan the Terrible and His Son Ivan (Ilya Repin)", "work": "Ivan the Terrible and His Son Ivan (1885)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/REPIN_Ivan_Terrible%26Ivan.jpg/500px-REPIN_Ivan_Terrible%26Ivan.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/REPIN_Ivan_Terrible%26Ivan.jpg/500px-REPIN_Ivan_Terrible%26Ivan.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: vandalized in 2018 by Igor Podporin with a metal pole", "back": "Ivan the Terrible and His Son Ivan (Ilya Repin)", "work": "Ivan the Terrible and His Son Ivan (1885)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/REPIN_Ivan_Terrible%26Ivan.jpg/500px-REPIN_Ivan_Terrible%26Ivan.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/REPIN_Ivan_Terrible%26Ivan.jpg/500px-REPIN_Ivan_Terrible%26Ivan.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: inspired by the 'Sweetness of Revenge' section of Antar; a museum curator jumped in front of a train upon learning of an earlier attack on it", "back": "Ivan the Terrible and His Son Ivan (Ilya Repin)", "work": "Ivan the Terrible and His Son Ivan (1885)", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/REPIN_Ivan_Terrible%26Ivan.jpg/500px-REPIN_Ivan_Terrible%26Ivan.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Ivan the Terrible and His Son Ivan (Ilya Repin)", "work": "Ivan the Terrible and His Son Ivan (1885)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/REPIN_Ivan_Terrible%26Ivan.jpg/500px-REPIN_Ivan_Terrible%26Ivan.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/REPIN_Ivan_Terrible%26Ivan.jpg/500px-REPIN_Ivan_Terrible%26Ivan.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Orthodox priests carrying icon of Virgin Mary in gilded shrine; hunchbacked boy prevented from joining", "back": "Religious Procession in Kursk Province (Ilya Repin)", "work": "Religious Procession in Kursk Province (1880-1883)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG/500px-1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG/500px-1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: red-haired priest and hunchbacked boy walk at the front of a large crowd", "back": "Religious Procession in Kursk Province (Ilya Repin)", "work": "Religious Procession in Kursk Province (1880-1883)", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG/500px-1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: earlier version set in an oak wood; final version set in sparse drought landscape after returning home to find deforestation", "back": "Religious Procession in Kursk Province (Ilya Repin)", "work": "Religious Procession in Kursk Province (1880-1883)", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG/500px-1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Religious Procession in Kursk Province (Ilya Repin)", "work": "Religious Procession in Kursk Province (1880-1883)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG/500px-1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG/500px-1880-3_Repin_Religioese_Prozession_in_Kursk_anagoria.JPG", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: hunched woman in black sees her gaunt exiled son walk through the door (also: teenage girls look toward a man entering from a hallway; mother rises from armchair)", "back": "They Did Not Expect Him (Ilya Repin)", "work": "General / Biographical", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: mermaid procession and fish (three above the title character's head) on the left; legendary merchant Sadko stands on the right", "back": "Sadko in the Underwater Kingdom (Ilya Repin)", "work": "General / Biographical", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: gleeful couple holding hands amidst crashing waves", "back": "What Freedom! (Ilya Repin)", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: while studying under Marià Fortuny, painted a sitting African woman nicknamed 'Ebony' by critics", "back": "Ilya Repin", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: saint grabs a sword by the blade as a man in chains wonders why he is still alive", "back": "Saint Nicholas Saves Three Innocents (Ilya Repin)", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: malnourished child in background while the central figure looks on angrily", "back": "Duchess Sophia in the Convent (Ilya Repin)", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

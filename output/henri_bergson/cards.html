@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Henri Bergson";
 let cards = [{"type": "basic", "indicator": "Concept", "front": "Concept: this philosopher's central idea of subjective time experience is a qualitative rather than quantitative multiplicity, not spatialized or broken into instances", "back": "Duration / durée (Bergson)", "work": "Duration and Time", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: illustrated duration with the image of two spools with a tape running between them, a color spectrum, and an infinitely small elastic band", "back": "Henri Bergson", "work": "Duration and Time", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: debated Einstein in 1922; published Duration and Simultaneity; called relativity 'a metaphysics grafted upon science, though not science'", "back": "Henri Bergson", "work": "Duration and Time", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: a creative impulse that drives the development of organisms forward, proposed in the 1907 book Creative Evolution", "back": "Élan vital (Bergson)", "work": "Creative Evolution and Elan Vital", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Leopold Senghor likened the Bantu concept of 'Vital Force' to this thinker's concept of élan vital", "back": "Henri Bergson", "work": "Creative Evolution and Elan Vital", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: uses the image of an inverted cone inserted into a plane, with the summit representing present perception, to describe how the past affects perception to varying degrees", "back": "Matter and Memory (Bergson)", "work": "Matter and Memory", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: distinguishes sensori-motor 'habit-memory' from unconscious 'pure-memory'; argues memory is not localized in a specific brain region", "back": "Matter and Memory (Bergson)", "work": "Matter and Memory", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the first notable philosophical work on humor (1900); argues the comic is strictly human and identifies the methods of comedy as repetition, inversion, and reciprocal interference", "back": "Laughter (Bergson)", "work": "Laughter", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: divides morality into 'open' and 'closed' forms corresponding to 'dynamic' and 'static' religion", "back": "The Two Sources of Morality and Religion (Bergson)", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Broadway's first traffic jam was reportedly caused by a lecture given by this thinker", "back": "Henri Bergson", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Gilles Deleuze wrote a book about this thinker exploring the relationship between duration, memory, and élan vital", "back": "Henri Bergson (Bergsonism by Deleuze)", "work": "Creative Evolution and Elan Vital", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

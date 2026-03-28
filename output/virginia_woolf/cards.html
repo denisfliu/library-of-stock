@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Virginia Woolf";
 let cards = [{"type": "basic", "indicator": "Novel", "front": "Novel: Clarissa's 'most exquisite moment' was kissing Sally Seton at Bourton; she learns of Septimus Smith's suicide at her party", "back": "Mrs Dalloway (Virginia Woolf)", "work": "Mrs Dalloway", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: a beggar woman sings 'ee um fah um so / foo swee too eem oo' in Regent's Park; a plane spells 'toffee' overhead", "back": "Mrs Dalloway (Virginia Woolf)", "work": "Mrs Dalloway", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Lily Briscoe finishes her painting; a dinner of Boeuf en Daube declared 'a triumph' by William Bankes in the section 'The Window'", "back": "To the Lighthouse (Virginia Woolf)", "work": "To the Lighthouse", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the section 'Time Passes' reveals in brackets that Prue died in childbirth; a philosopher-father reaches Q but cannot reach R", "back": "To the Lighthouse (Virginia Woolf)", "work": "To the Lighthouse", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: a gender-shifting Elizabethan noble lives 300+ years and writes the poem 'The Oak Tree'; inspired by an affair with Vita Sackville-West", "back": "Orlando (Virginia Woolf)", "work": "Orlando", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist burns 57 manuscripts after Nicholas Greene's satirical review, keeping only 'The Oak Tree'", "back": "Orlando (Virginia Woolf)", "work": "Orlando", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: invents Judith Shakespeare, who runs away from marriage, becomes pregnant by Nick Greene, and commits suicide — to illustrate why women need money and a room to write", "back": "A Room of One's Own (Virginia Woolf)", "work": "A Room of One's Own", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the narrator examines the sentence 'Chloe liked Olivia' from the fictional novel Life's Adventure by Mary Carmichael", "back": "A Room of One's Own (Virginia Woolf)", "work": "A Room of One's Own", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: a 'play-poem' of nine soliloquies by six friends mourning Percival, who dies in a riding accident in India", "back": "The Waves (Virginia Woolf)", "work": "The Waves", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Miss La Trobe directs a history pageant that ends with actors holding mirrors to the audience while a gramophone repeats 'dispersed are we'", "back": "Between the Acts (Virginia Woolf)", "work": "Between the Acts", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the essay 'Modern Fiction' declares 'life is a luminous halo' and attacks H.G. Wells, Galsworthy, and Arnold Bennett as 'materialists'", "back": "\"Modern Fiction\" (Virginia Woolf)", "work": "Essays (Modern Fiction, Mr. Bennett and Mrs. Brown, Death of the Moth, On Not Knowing Greek)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: claims human character changed 'on or about December 1910' in an essay attacking Arnold Bennett's characterization methods", "back": "\"Mr. Bennett and Mrs. Brown\" (Virginia Woolf)", "work": "Essays (Modern Fiction, Mr. Bennett and Mrs. Brown, Death of the Moth, On Not Knowing Greek)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: alternates between four couples' conversations and a snail struggling past a leaf in a flower bed", "back": "\"Kew Gardens\" (Virginia Woolf)", "work": "Short Stories", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the narrator muses whether a mark is a nail or a dried rose petal; it turns out to be a snail", "back": "\"The Mark on the Wall\" (Virginia Woolf)", "work": "Short Stories", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: participated in the 1910 Dreadnought hoax, dressing as Abyssinian ambassadors with brother Adrian and friends", "back": "Virginia Woolf", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

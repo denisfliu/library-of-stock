@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Charlie Chaplin";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: Hynkel (dictator of Tomainia) dances with an inflatable globe set to the Lohengrin prelude; a Jewish barber is mistaken for him", "back": "The Great Dictator (Charlie Chaplin)", "work": "The Great Dictator (1940)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Lohengrin prelude (Wagner) was chosen because both the director and Hitler greatly admired Wagner", "back": "The Great Dictator (Charlie Chaplin)", "work": "The Great Dictator (1940)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the director watched Triumph of the Will at MoMA and used it as source material to mock Hitler's mannerisms", "back": "The Great Dictator (Charlie Chaplin)", "work": "The Great Dictator (1940)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: director reflected that he was 'the comic' while a man born four days after him in April 1889 was 'the madman'", "back": "The Great Dictator (Charlie Chaplin)", "work": "The Great Dictator (1940)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the Tramp raises money to restore a blind flower girl's sight; she had mistaken him for a millionaire", "back": "City Lights (Charlie Chaplin)", "work": "City Lights (1931)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: score uses the habanera 'La Violetera' as a leitmotif for a blind florist; arranged by Alfred Newman", "back": "City Lights (Charlie Chaplin)", "work": "City Lights (1931)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: contains a long boxing sequence where the protagonist hides behind a tall referee opposite Hank Mann", "back": "City Lights (Charlie Chaplin)", "work": "City Lights (1931)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: factory worker is tested by a feeding machine, then trapped in machine gears, then jailed", "back": "Modern Times (Charlie Chaplin)", "work": "Modern Times (1936)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the Tramp is arrested for accidentally waving a red flag that fell from a truck, mistaken for a Communist protest leader", "back": "Modern Times (Charlie Chaplin)", "work": "Modern Times (1936)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: love theme 'Smile' was inspired by the first-act love duet from Tosca; co-composed with David Raksin", "back": "Modern Times (Charlie Chaplin)", "work": "Modern Times (1936)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: 'Smile' was Michael Jackson's favorite song; the film stars Paulette Goddard", "back": "Modern Times (Charlie Chaplin)", "work": "Modern Times (1936)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the Tramp eats a boiled shoe in a wobbling cabin blown off a cliff by a blizzard", "back": "The Gold Rush (Charlie Chaplin)", "work": "The Gold Rush (1925)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: dream sequence shows the protagonist imagining a Dreamland of angels invaded by devils who conjure a woman to seduce him as he strums a harp", "back": "The Gold Rush (Charlie Chaplin)", "work": "The Gold Rush (1925)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: uncharacteristically plays a Parisian bank teller who marries and murders rich wives; James Agee wrote a three-part defense of it", "back": "Monsieur Verdoux (Charlie Chaplin)", "work": "Monsieur Verdoux (1947)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: won only competitive Oscar at age 84 for 'Terry's Theme' / 'Eternally' from Limelight (re-released 1973)", "back": "Charlie Chaplin", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: son of an alcoholic father and asylum patient mother; supported her by clog dancing as a child; uncle of Jefferson Airplane drummer Spencer Dryden", "back": "Charlie Chaplin", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: J. Edgar Hoover orchestrated a smear campaign, including trumped-up Mann Act charges from his relationship with Joan Barry", "back": "Charlie Chaplin", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: married Oona O'Neill in 1943, causing Eugene O'Neill to disown his daughter over the age gap", "back": "Charlie Chaplin", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: Little Tramp persona inspired Raj Kapoor's character in Awaara and Shree 420", "back": "Charlie Chaplin", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: the Lettrist schism began when Guy Debord disrupted one of his press conferences", "back": "Charlie Chaplin", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: Hannah Arendt argued he embodied 'the Jewish pariah mentality' in artistic form despite his non-Jewish heritage", "back": "Charlie Chaplin", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: Hart Crane wrote a poem titled 'Chaplinesque'; Carl Sandburg wrote 'Without the Cane & Derby (For C.C.)'", "back": "Charlie Chaplin", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: borrowed gags from and helped develop gags for French comedic icon Max Linder (referenced in Inglourious Basterds)", "back": "Charlie Chaplin", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: called Cantinflas 'the greatest comedian alive'; asked Upton Sinclair to finance Eisenstein's unfinished Mexico film", "back": "Charlie Chaplin", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

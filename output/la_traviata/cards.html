@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "La Traviata";
 let cards = [{"type": "basic", "indicator": "Opera", "front": "Opera: Verdi opera about the dying courtesan Violetta Valéry and her lover Alfredo Germont; title means 'The Fallen Woman'", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: based on Alexandre Dumas fils's La Dame aux Camélias; libretto by Francesco Maria Piave", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: originally set in the era of Richelieu at Teatro La Fenice's insistence, against the composer's wishes", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: after the unsuccessful premiere, the composer asked 'Was the fault mine or the singers?'", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: the title character is based on Marie Duplessis, who was a lover of Franz Liszt in her last year", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Giorgio Germont sings 'Pura siccome un angelo' while persuading the title character to leave his son for the sake of his daughter's reputation", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Alfredo throws his casino winnings at Violetta's feet in humiliation at Flora's party; Baron Douphol is injured in an offstage duel", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Violetta gives Alfredo a camellia flower and tells him to return it when it wilts (a detail from the Dumas source novel)", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Giorgio Germont sings 'Di Provenza il mar' ('the sea and soil of Provence') to comfort Alfredo after he reads Violetta's farewell letter", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: party scene features gypsy entertainers ('Noi siamo zingarelle') and a matador song about the bold Piquillo from Spain/Biscay", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Carlos Kleiber's only studio recording of a non-German-language opera was this work, with Ileana Cotrubaș", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Willy Decker's 2005 staging at Salzburg featured a massive clock to symbolize the title character's mortality", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: in the only non-sung passage, Violetta shouts 'E tardi!' while reading a letter as a carnival procession passes outside", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: a solo clarinet plays a repeated eighth note, quarter note, eighth note, eighth-note-rest figure as Violetta writes her farewell letter in Act 2", "back": "La Traviata (Verdi)", "work": "La Traviata", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: brindisi (drinking song) in which Alfredo and Violetta toast together at the Act 1 party after Baron Douphol refuses to give a toast", "back": "\"Libiamo ne' lieti calici\" from La Traviata (Verdi)", "work": "\"Libiamo ne' lieti calici\"", "frequency": 9, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: cabaletta at the end of Act 1 in which Violetta resolves to live freely ('frolic from joy to joy'), rejecting love; offstage voice sings of love while she sings", "back": "\"Sempre libera\" from La Traviata (Verdi)", "work": "\"Sempre libera\"", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: preceded by 'Ah, fors' è lui,' in which Violetta wonders if Alfredo was 'the one'", "back": "\"Sempre libera\" from La Traviata (Verdi)", "work": "\"Sempre libera\"", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Act 1 duet in which Alfredo declares love ('torture, torture and delight'); Violetta offers only friendship and gives him a camellia", "back": "\"Un dì, felice, eterea\" from La Traviata (Verdi)", "work": "\"Un dì, felice, eterea\"", "frequency": 3, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

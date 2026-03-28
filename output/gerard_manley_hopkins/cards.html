@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Gerard Manley Hopkins";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: describes 'Brute beauty and valour and act, oh, air, pride, plume' and ends with 'blue-bleak embers' that 'gash gold-vermillion'", "back": "\"The Windhover\" (Gerard Manley Hopkins)", "work": "\"The Windhover\"", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: praises 'the achieve of, the mastery of the thing!' in a poem about a falcon called 'morning's minion'", "back": "\"The Windhover\" (Gerard Manley Hopkins)", "work": "\"The Windhover\"", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the bird 'rung upon the rein of a wimpling wing / In his ecstasy'; various interpretations center on the word 'Buckle'", "back": "\"The Windhover\" (Gerard Manley Hopkins)", "work": "\"The Windhover\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the words 'sheer plod' in the final stanza are marked with diacritics to stress them", "back": "\"The Windhover\" (Gerard Manley Hopkins)", "work": "\"The Windhover\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes 'skies of couple-colour as a brinded cow,' 'rose-moles all in stipple upon trout that swim,' and 'fresh-firecoal chestnut-falls'", "back": "\"Pied Beauty\" (Gerard Manley Hopkins)", "work": "\"Pied Beauty\"", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: praises 'All things counter, original, spare, strange' and ends 'He fathers-forth whose beauty is past change'; uses the curtal sonnet form", "back": "\"Pied Beauty\" (Gerard Manley Hopkins)", "work": "\"Pied Beauty\"", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the ship 'drove in the dark to leeward' and 'struck-not a reef or rock / But the combs of a smother of sand'", "back": "\"The Wreck of the Deutschland\" (Gerard Manley Hopkins)", "work": "\"The Wreck of the Deutschland\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Death declares 'Some find me a sword; some the flange and the rail; flame, fang, or flood'", "back": "\"The Wreck of the Deutschland\" (Gerard Manley Hopkins)", "work": "\"The Wreck of the Deutschland\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ends with the tongue-twisting 'Our hearts' charity's hearth's fire, our thoughts' chivalry's throng's Lord'", "back": "\"The Wreck of the Deutschland\" (Gerard Manley Hopkins)", "work": "\"The Wreck of the Deutschland\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Robert Bridges claimed to have been 'shamefully worsted' by a 'frontal assault' on this 35-stanza poem about five drowned Franciscan nuns", "back": "\"The Wreck of the Deutschland\" (Gerard Manley Hopkins)", "work": "\"The Wreck of the Deutschland\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Elizabeth Bishop was haunted by its 'anvil-ding,' repeating the sound 'Clang' in 'In the Village'", "back": "\"The Wreck of the Deutschland\" (Gerard Manley Hopkins)", "work": "\"The Wreck of the Deutschland\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the editors of a Jesuit magazine 'dared not print' this poem about five Franciscan nuns", "back": "\"The Wreck of the Deutschland\" (Gerard Manley Hopkins)", "work": "\"The Wreck of the Deutschland\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Carrion Comfort' closes with 'That night, that year / Of now done darkness I wretch lay wrestling with (my God!) my God'", "back": "Terrible Sonnets (Gerard Manley Hopkins)", "work": "Terrible Sonnets", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'No Worst, There is None' asks 'Mary, mother of us, where is your relief?' and ends 'all / Life death does end and each day dies with sleep'", "back": "Terrible Sonnets (Gerard Manley Hopkins)", "work": "Terrible Sonnets", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'To Seem the Stranger Lies My Lot' describes three 'Removes' and laments isolation at a 'third Remove' in Ireland", "back": "Terrible Sonnets (Gerard Manley Hopkins)", "work": "Terrible Sonnets", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: this set of six sonnets was described to Robert Bridges as 'the thin gleanings of a long weary while'; never sent to Bridges", "back": "Terrible Sonnets (Gerard Manley Hopkins)", "work": "Terrible Sonnets", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: mourns felled trees with 'aspens dear' 'not spared'; creates the verb 'unselve' to demonstrate 'inscape'", "back": "\"Binsey Poplars\" (Gerard Manley Hopkins)", "work": "\"Binsey Poplars\"", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ends 'Rural scene, a rural scene / Sweet especial rural scene'; mentions 'Ten or twelve, only ten or twelve / Strokes of havoc'", "back": "\"Binsey Poplars\" (Gerard Manley Hopkins)", "work": "\"Binsey Poplars\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the title attribute 'will flame out, like shining from shook foil' and 'gathers to a greatness, like the ooze of oil'", "back": "\"God's Grandeur\" (Gerard Manley Hopkins)", "work": "\"God's Grandeur\"", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: observes 'Generations have trod, have trod, have trod; / And all is seared with trade'", "back": "\"God's Grandeur\" (Gerard Manley Hopkins)", "work": "\"God's Grandeur\"", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Margaret, are you grieving / Over Goldengrove unleaving?'; describes 'worlds of wanwood leafmeal'", "back": "\"Spring and Fall\" (Gerard Manley Hopkins)", "work": "Other Poems", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes a 'Towery city' as 'Cuckoo-echoing, bell-swarmed, lark charmed, rook-racked, river-rounded'; concludes with 'Mary without spot'", "back": "\"Duns Scotus's Oxford\" (Gerard Manley Hopkins)", "work": "Other Poems", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'each mortal thing does one thing and the same' -- 'What I do is me: for that I came'", "back": "\"As Kingfishers Catch Fire\" (Gerard Manley Hopkins)", "work": "Other Poems", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the Leaden Echo ends in 'despair, despair, despair, despair'; the Golden Echo ends 'Yonder, yes yonder, yonder, / Yonder'; asks 'how to keep' beauty from 'vanishing away'", "back": "\"The Leaden Echo and the Golden Echo\" (Gerard Manley Hopkins)", "work": "Other Poems", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes a 'heart's clarion' and 'world's wildfire'; states 'this... poor potsherd, patch, matchwood... is Immortal Diamond'", "back": "\"That Nature is a Heraclitean Fire\" (Gerard Manley Hopkins)", "work": "Other Poems", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: uses the Welsh verse form cynghanedd; 'Left hand, off land, I hear the lark ascend'", "back": "\"The Sea and the Skylark\" (Gerard Manley Hopkins)", "work": "Other Poems", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: concept of 'inscape' (essential uniqueness of a thing) and 'instress' derived from reading Duns Scotus", "back": "Gerard Manley Hopkins", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: poems led off the influential Faber Book of Modern Verse despite being long dead", "back": "Gerard Manley Hopkins", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: last words were reportedly 'I am so happy, I am so happy. I loved my life' despite late-life depression", "back": "Gerard Manley Hopkins", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

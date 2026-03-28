@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "J. M. Coetzee";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: professor David Lurie is fired for sexually pressuring his student Melanie Isaacs", "back": "Disgrace (J. M. Coetzee)", "work": "Disgrace", "frequency": 14, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: after his dismissal, the protagonist moves to his daughter Lucy's farm and works at Bev Shaw's animal shelter", "back": "Disgrace (J. M. Coetzee)", "work": "Disgrace", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: three attackers burn the protagonist's hair and rape his daughter Lucy on their farm", "back": "Disgrace (J. M. Coetzee)", "work": "Disgrace", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: ends with 'Yes, I am giving him up' as the protagonist euthanizes a dog at Bev Shaw's shelter", "back": "Disgrace (J. M. Coetzee)", "work": "Disgrace", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: opens with the protagonist visiting the prostitute Soraya; he believes he 'solved the problem of sex rather well'", "back": "Disgrace (J. M. Coetzee)", "work": "Disgrace", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist had written an opera called Byron in Italy before moving to his daughter's farm", "back": "Disgrace (J. M. Coetzee)", "work": "Disgrace", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a fictional Australian author who wrote The House on Eccles Street, a retelling of Ulysses from Molly Bloom's perspective", "back": "Elizabeth Costello (J. M. Coetzee)", "work": "Elizabeth Costello / The Lives of Animals", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this character delivers lectures on animal rights at Appleton College, based on lectures given at Princeton", "back": "Elizabeth Costello (J. M. Coetzee)", "work": "Elizabeth Costello / The Lives of Animals", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this character gives a speech on Kafka's 'A Report to an Academy' upon receiving the Stowe Award", "back": "Elizabeth Costello (J. M. Coetzee)", "work": "Elizabeth Costello / The Lives of Animals", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this character contrasts Rilke's 'The Panther' with Ted Hughes poems, arguing Hughes 'asks us to imagine our way into that way of moving'", "back": "Elizabeth Costello (J. M. Coetzee)", "work": "Elizabeth Costello / The Lives of Animals", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this character's lecture 'The Problem of Evil' attacks Paul West's The Very Rich Hours of Count von Stauffenberg", "back": "Elizabeth Costello (J. M. Coetzee)", "work": "Elizabeth Costello / The Lives of Animals", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this character sets up the amputee Paul Rayment on a blind date in another novel titled Slow Man", "back": "Elizabeth Costello (J. M. Coetzee)", "work": "Elizabeth Costello / The Lives of Animals", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the Magistrate clashes with Colonel Joll and the Third Bureau over torture in an unnamed frontier town", "back": "Waiting for the Barbarians (J. M. Coetzee)", "work": "Waiting for the Barbarians", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the title of this novel comes from a Constantine Cavafy poem", "back": "Waiting for the Barbarians (J. M. Coetzee)", "work": "Waiting for the Barbarians", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the Magistrate has a relationship with a girl blinded by the Third Bureau and is accused of treason for returning her to the barbarians", "back": "Waiting for the Barbarians (J. M. Coetzee)", "work": "Waiting for the Barbarians", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a character has a recurring dream of approaching a hooded girl building a snow castle", "back": "Waiting for the Barbarians (J. M. Coetzee)", "work": "Waiting for the Barbarians", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: adapted into an opera by Philip Glass", "back": "Waiting for the Barbarians (J. M. Coetzee)", "work": "Waiting for the Barbarians", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a cleft-lipped gardener carries his mother's ashes to Prince Albert in a wheelbarrow", "back": "Life and Times of Michael K (J. M. Coetzee)", "work": "Life and Times of Michael K", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist is registered as 'C.M.' in a camp, refuses to eat, and a doctor bonds with him before he escapes to Sea Point", "back": "Life and Times of Michael K (J. M. Coetzee)", "work": "Life and Times of Michael K", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel was inspired by Kleist's Michael Kohlhaas", "back": "Life and Times of Michael K (J. M. Coetzee)", "work": "Life and Times of Michael K", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Susan Barton is marooned with Cruso and his tongueless slave Friday in this retelling of Robinson Crusoe", "back": "Foe (J. M. Coetzee)", "work": "Foe", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's 'autrebiographical' trilogy (Boyhood, Youth, Summertime) fictionalizes his life including a thesis on Ford Madox Ford and working for IBM", "back": "J. M. Coetzee", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's first novel Dusklands features Eugene Dawn stabbing his son while working on 'The Vietnam Project'", "back": "J. M. Coetzee", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's second novel In the Heart of the Country follows sheep farmer's daughter Magda's revenge fantasies", "back": "J. M. Coetzee", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Diary of a Bad Year features essays interspersed with narrations by Senor C. and his secretary Anya", "back": "J. M. Coetzee", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: The Childhood of Jesus trilogy follows Simon raising David as refugees in Novilla; David clings to Don Quixote", "back": "J. M. Coetzee", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author wrote about Robert Walser's 'genius' and discussed the South African 'farm novel' / 'plaasroman' genre in White Writing", "back": "J. M. Coetzee", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's correspondence with Paul Auster was anthologized in Here and Now", "back": "J. M. Coetzee", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

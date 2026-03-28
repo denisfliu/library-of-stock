@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Lucas Cranach the Elder";
 let cards = [{"type": "basic", "indicator": "Artist", "front": "Artist: signed works with a winged snake/serpent carrying a ruby ring", "back": "Lucas Cranach the Elder", "work": "General / Biographical", "frequency": 10, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: after son Hans's death, changed signature emblem to a single crow's wing", "back": "Lucas Cranach the Elder", "work": "General / Biographical", "frequency": 10, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: court painter to Electors of Saxony; attached to Frederick the Wise's court from 1504", "back": "Lucas Cranach the Elder", "work": "General / Biographical", "frequency": 5, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: close friend who painted many portraits of Martin Luther in a floppy black hat", "back": "Lucas Cranach the Elder", "work": "Portraits of Martin Luther", "frequency": 12, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg/500px-Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg/500px-Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: shared printing presses with Martin Luther; made 22 woodcuts for Luther's German Bible", "back": "Lucas Cranach the Elder", "work": "Portraits of Martin Luther", "frequency": 3, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg/500px-Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Judith wears a large red hat with feathers and white gloves with gold rings", "back": "Judith with the Head of Holofernes (Lucas Cranach the Elder)", "work": "Judith with the Head of Holofernes", "frequency": 5, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: Judith in contemporary garb with a smug, sly smile", "back": "Judith with the Head of Holofernes (Lucas Cranach the Elder)", "work": "Judith with the Head of Holofernes", "frequency": 5, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: archers lie in bushes; deer chased across a river; winged snake emblem visible on a tree in the foreground", "back": "The Stag Hunt of Elector Frederick the Wise (Lucas Cranach the Elder)", "work": "The Stag Hunt of Elector Frederick the Wise", "frequency": 5, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/The_Stag_Hunt_of_Elector_Frederic_the_Wise_%281463-1525%29_of_Saxony_by_Lucas_Cranach_the_Elder_-_Statens_Museum_for_Kunst_-_DSC08159.JPG/500px-The_Stag_Hunt_of_Elector_Frederic_the_Wise_%281463-1525%29_of_Saxony_by_Lucas_Cranach_the_Elder_-_Statens_Museum_for_Kunst_-_DSC08159.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: set near Hartenfels Castle; a woman probably identified as Sibylle steadies a crossbow", "back": "The Stag Hunt of Elector Frederick the Wise (Lucas Cranach the Elder)", "work": "The Stag Hunt of Elector Frederick the Wise", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/The_Stag_Hunt_of_Elector_Frederic_the_Wise_%281463-1525%29_of_Saxony_by_Lucas_Cranach_the_Elder_-_Statens_Museum_for_Kunst_-_DSC08159.JPG/500px-The_Stag_Hunt_of_Elector_Frederic_the_Wise_%281463-1525%29_of_Saxony_by_Lucas_Cranach_the_Elder_-_Statens_Museum_for_Kunst_-_DSC08159.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Last Supper shows Jesus dining with Germans; artist inserted self-portrait as a waiter", "back": "Wittenberg Altarpiece (Lucas Cranach the Elder)", "work": "Wittenberg Altarpiece", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: bottom panel depicts the Crucifixion between a preacher and his audience", "back": "Wittenberg Altarpiece (Lucas Cranach the Elder)", "work": "Wittenberg Altarpiece", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: analyzed in Joseph Koerner's The Reformation of the Image", "back": "Wittenberg Altarpiece (Lucas Cranach the Elder)", "work": "Wittenberg Altarpiece", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: Mercury holds glass sphere; Paris wears red cape and armor", "back": "The Judgment of Paris (Lucas Cranach the Elder)", "work": "General / Biographical", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: Cupid holds a honeycomb while being attacked by bees, complaining to Venus", "back": "Venus and Cupid with Honeycomb (Lucas Cranach the Elder)", "work": "General / Biographical", "frequency": 4, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: woman in red dress whittles a stick while nude infants pass a ball through a hoop", "back": "Melancholia (Lucas Cranach the Elder)", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: carts carry old women to a central rectangular pool that rejuvenates them", "back": "The Fountain of Youth (Lucas Cranach the Elder)", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Law and Gospel woodcut made in consultation with Philip Melanchthon", "back": "Lucas Cranach the Elder", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: shares a feast day with Albrecht Durer on April 6 in Lutheran and Episcopal churches", "back": "Lucas Cranach the Elder", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Albrecht Altdorfer was a pupil of this German Renaissance painter", "back": "Lucas Cranach the Elder", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "image", "indicator": "Painting", "front": "", "back": "Portraits of Martin Luther (Lucas Cranach the Elder)", "work": "Portraits of Martin Luther", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg/500px-Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg/500px-Lucas_Cranach_d.%C3%84._-_Martin_Luther%2C_1528_%28Veste_Coburg%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Judith 'dressed to kill' wearing jeweled necklaces and ornate hats; part of 'Power of Women' motif that also includes Phyllis Riding Aristotle", "back": "Judith with the Head of Holofernes (Lucas Cranach the Elder)", "work": "Judith with the Head of Holofernes", "frequency": 3, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: turbulent landscape; Jesus in profile off to the right; focus on Mary looking up; soldier in pink full body armor; now in the Alte Pinakothek, Munich", "back": "Crucifixion (1503) (Lucas Cranach the Elder)", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: despite Lutheran allegiance, painted Cardinal Albert von Brandenburg as Saint Jerome, deriving composition from Durer's woodcut", "back": "Lucas Cranach the Elder", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Venus paintings feature jeweled chokers and large elaborate hats with pompoms; skinny nude Eves indistinguishable from Venuses", "back": "Lucas Cranach the Elder", "work": "General / Biographical", "frequency": 5, "tags": [], "images": []}, {"type": "image", "indicator": "Painting", "front": "", "back": "The Stag Hunt of Elector Frederick the Wise (Lucas Cranach the Elder)", "work": "The Stag Hunt of Elector Frederick the Wise", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/The_Stag_Hunt_of_Elector_Frederic_the_Wise_%281463-1525%29_of_Saxony_by_Lucas_Cranach_the_Elder_-_Statens_Museum_for_Kunst_-_DSC08159.JPG/500px-The_Stag_Hunt_of_Elector_Frederic_the_Wise_%281463-1525%29_of_Saxony_by_Lucas_Cranach_the_Elder_-_Statens_Museum_for_Kunst_-_DSC08159.JPG", "tags": [], "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Sylvia Plath";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: opens 'You do not do, you do not do / Any more, black shoe'; the father is 'a man in black with a Meinkampf look' and 'Not God but a swastika'", "back": "Daddy (Sylvia Plath)", "work": "Daddy", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker claims 'Every woman adores a Fascist' and 'I think I may be a bit of a Jew'; ends 'There's a stake in your fat black heart... You bastard, I'm through'", "back": "Daddy (Sylvia Plath)", "work": "Daddy", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'the snows of the Tyrol, the clear beer of Vienna are not very pure or true'; the speaker says 'I thought every German was you'", "back": "Daddy (Sylvia Plath)", "work": "Daddy", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the father's cleft chin is identified in a photograph at the blackboard; the speaker claims 'If I've killed one man, I've killed two'", "back": "Daddy (Sylvia Plath)", "work": "Daddy", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: declares 'Dying / Is an art, like everything else. I do it exceptionally well'; addresses 'Herr Doktor' and 'Herr Lucifer' with 'Beware, beware'", "back": "Lady Lazarus (Sylvia Plath)", "work": "Lady Lazarus", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker states 'I am your opus, I am your valuable' and 'there is a charge for the hearing of my heart'; says 'One year in every ten I manage it'", "back": "Lady Lazarus (Sylvia Plath)", "work": "Lady Lazarus", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens with 'Stasis in darkness'; the speaker is 'the arrow, the dew that flies suicidal' and flies 'Into the red / Eye, the cauldron of morning'", "back": "Ariel (Sylvia Plath)", "work": "Ariel (poem and collection)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'White Godiva, I unpeel- / Dead hands, dead stringencies'; 'the child's cry melts in the wall'", "back": "Ariel (Sylvia Plath)", "work": "Ariel (poem and collection)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens 'I shall never get you put together entirely'; the father is 'pithy and historical as the Roman Forum'", "back": "The Colossus (Sylvia Plath)", "work": "The Colossus", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker tells the addressee 'You defy questions; You defy godhood' and concludes 'this thick air is murderous. I would breathe water'", "back": "Full Fathom Five (Sylvia Plath)", "work": "The Colossus", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: inspired by a Giorgio de Chirico painting; ends 'no frown of mine will betray the company I keep'; asks mother about the titular figures", "back": "The Disquieting Muses (Sylvia Plath)", "work": "The Colossus", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist sees her life branching 'like a fig tree'; she becomes ill from crab meat at the Amazon hotel after meeting boss Jay Cee", "back": "The Bell Jar (Sylvia Plath)", "work": "The Bell Jar", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist tries to write a thesis on twin imagery in Finnegans Wake while sponsored by Philomena Guinea; masquerades as 'Elly Higginbottom'", "back": "The Bell Jar (Sylvia Plath)", "work": "The Bell Jar", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist receives electroconvulsive therapy; Dr. Nolan advises her to get a diaphragm; boyfriend Buddy Willard called a hypocrite after watching Mrs. Tomolillo give birth", "back": "The Bell Jar (Sylvia Plath)", "work": "The Bell Jar", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the title objects 'eat my oxygen' and open 'like the mouth of some great African cat'; written during recovery from an appendectomy", "back": "Tulips (Sylvia Plath)", "work": "Tulips", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens 'Love set you going like a fat gold watch'; the speaker rises 'cow-heavy and floral'; baby's 'clear vowels rise like balloons'", "back": "Morning Song (Sylvia Plath)", "work": "Morning Song", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens 'Perfection is terrible, it cannot have children'; a city is called a 'morgue between Paris and Rome' with phones 'Glittering and digesting Voicelessness'", "back": "The Munich Mannequins (Sylvia Plath)", "work": "The Munich Mannequins", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Heather Clark's Red Comet (2020) and Janet Malcolm's The Silent Woman discuss biographical disputes; Al Alvarez wrote The Savage God", "back": "Sylvia Plath", "work": "Other Works and General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Robin Morgan's poem 'Arraignment' blames this poet's death on her ex-husband, who had an affair with Assia Wevill", "back": "Sylvia Plath", "work": "Other Works and General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Little pilgrim, the Indian's axed your scalp'; about accidentally cutting a thumb instead of an onion", "back": "Cut (Sylvia Plath)", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: villanelle that repeats 'I think I made you up inside my head' and 'I fancied you'd return the way you said'", "back": "Mad Girl's Love Song (Sylvia Plath)", "work": "Other Works and General", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

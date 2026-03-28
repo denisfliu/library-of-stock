@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Max Ernst";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: an open gate and a knob are physically nailed to the frame", "back": "Two Children Are Threatened by a Nightingale (Max Ernst)", "work": "Two Children Are Threatened by a Nightingale (1924)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: a grisaille man balances on tiptoe on a roof while reaching for a red and blue knob", "back": "Two Children Are Threatened by a Nightingale (Max Ernst)", "work": "Two Children Are Threatened by a Nightingale (1924)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: a girl brandishes a knife at a bird; another girl has fainted on the grass", "back": "Two Children Are Threatened by a Nightingale (Max Ernst)", "work": "Two Children Are Threatened by a Nightingale (1924)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: inspired by a measles-induced childhood fever dream", "back": "Two Children Are Threatened by a Nightingale (Max Ernst)", "work": "Two Children Are Threatened by a Nightingale (1924)", "frequency": 4, "tags": []}, {"type": "image", "indicator": "Painting", "front": "", "back": "Two Children Are Threatened by a Nightingale (Max Ernst)", "work": "Two Children Are Threatened by a Nightingale (1924)", "frequency": 0, "tags": [], "images": [{"url": "", "side": "front"}]}, {"type": "basic", "indicator": "Painting", "front": "Painting: a headless female statue in a surgical glove gestures toward a dark grey boiler-shaped mechanical figure", "back": "The Elephant Celebes (Max Ernst)", "work": "The Elephant Celebes (1921)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: the central figure was inspired by a photo of a Sudanese corn bin; title comes from a German nursery rhyme", "back": "The Elephant Celebes (Max Ernst)", "work": "The Elephant Celebes (1921)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: a red, blue, and orange dragon celebrates; Ernst called it 'a clumsy oaf which destroys everything'; inspired by Franco's victory", "back": "The Fireside Angel (Max Ernst)", "work": "The Fireside Angel (1937)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: collage novels cut from Victorian pulp fiction; A Week of Kindness split into seven sections using Easter Island moai and lion heads", "back": "Max Ernst", "work": "Collage Novels (A Week of Kindness / Une Semaine de Bonté, La Femme 100 Têtes)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: La Femme 100 Têtes title is a double entendre for 'headless' or 'hundred-headed'; introduced alter ego Loplop", "back": "Max Ernst", "work": "Collage Novels (A Week of Kindness / Une Semaine de Bonté, La Femme 100 Têtes)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: invented frottage (rubbing pencil over rough surfaces) and grattage (scraping paint off canvas)", "back": "Max Ernst", "work": "General / Biographical", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: alter ego Loplop, 'Superior of the Birds'; possibly originated from his pet parrot dying the same day his sister was born", "back": "Max Ernst", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: escaped Nazi Germany with the help of Peggy Guggenheim, who became his third wife", "back": "Max Ernst", "work": "General / Biographical", "frequency": 3, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

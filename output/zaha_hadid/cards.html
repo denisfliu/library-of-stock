@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Zaha Hadid";
 let cards = [{"type": "basic", "indicator": "Architect", "front": "Architect: first woman to win the Pritzker Prize (2004); Iraqi-born British architect who died in 2016; known as the 'queen of the curve'", "back": "Zaha Hadid", "work": "General / Biographical", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: studied mathematics before studying architecture in London; studied under Rem Koolhaas and Elia Zenghelis at the Architectural Association", "back": "Zaha Hadid", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: firm partner Patrik Schumacher coined the term 'parametricism'; began as a painter — created The Peak Project depicting a Kowloon project", "back": "Zaha Hadid", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "image", "indicator": "Building", "front": "", "back": "Guangzhou Opera House (Zaha Hadid)", "work": "Guangzhou Opera House (2010)", "frequency": 9, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Guangzhou_Opera_House_-_53337501049.jpg/500px-Guangzhou_Opera_House_-_53337501049.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: opera house on the Pearl River in Guangzhou, China — design inspired by two rocks being smoothed/eroded by the river ('twin boulders'); mostly glass", "back": "Guangzhou Opera House (Zaha Hadid)", "work": "Guangzhou Opera House (2010)", "frequency": 9, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Guangzhou_Opera_House_-_53337501049.jpg/500px-Guangzhou_Opera_House_-_53337501049.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Guangzhou opera house uses reinforced gypsum; also called a 'double pebble' design", "back": "Guangzhou Opera House (Zaha Hadid)", "work": "Guangzhou Opera House (2010)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Guangzhou_Opera_House_-_53337501049.jpg/500px-Guangzhou_Opera_House_-_53337501049.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "London Aquatics Centre (Zaha Hadid)", "work": "London Aquatics Centre (2011)", "frequency": 8, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/2012_-_London_Aquatics_Centre%2C_Queen_Elizabeth_Olympic_Park%2C_London_%28_Ank_Kumar_%29_06.jpg/500px-2012_-_London_Aquatics_Centre%2C_Queen_Elizabeth_Olympic_Park%2C_London_%28_Ank_Kumar_%29_06.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: 2012 Summer Olympics facility — wave-shaped / undulating roof; concrete ceiling slopes toward the pool between two walls of windows", "back": "London Aquatics Centre (Zaha Hadid)", "work": "London Aquatics Centre (2011)", "frequency": 8, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/2012_-_London_Aquatics_Centre%2C_Queen_Elizabeth_Olympic_Park%2C_London_%28_Ank_Kumar_%29_06.jpg/500px-2012_-_London_Aquatics_Centre%2C_Queen_Elizabeth_Olympic_Park%2C_London_%28_Ank_Kumar_%29_06.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Olympic swimming venue whose spectator wings were added for the Games and later removed", "back": "London Aquatics Centre (Zaha Hadid)", "work": "London Aquatics Centre (2011)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/2012_-_London_Aquatics_Centre%2C_Queen_Elizabeth_Olympic_Park%2C_London_%28_Ank_Kumar_%29_06.jpg/500px-2012_-_London_Aquatics_Centre%2C_Queen_Elizabeth_Olympic_Park%2C_London_%28_Ank_Kumar_%29_06.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "MAXXI Museum, Rome (Zaha Hadid)", "work": "MAXXI Museum (Rome, 2010)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/MAXXI_Museum_interior_09.JPG/500px-MAXXI_Museum_interior_09.JPG", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: Italy's National Museum of 21st Century Arts in Rome — built on a former military barracks; features floating/weaving stairs, flowing concrete beams, and louvered skylights", "back": "MAXXI Museum, Rome (Zaha Hadid)", "work": "MAXXI Museum (Rome, 2010)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/MAXXI_Museum_interior_09.JPG/500px-MAXXI_Museum_interior_09.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Rome museum with a sharply angular concrete facade overhang inspired by Constructivist art; described as moving away from 'the museum as an object' toward 'a field of buildings'", "back": "MAXXI Museum, Rome (Zaha Hadid)", "work": "MAXXI Museum (Rome, 2010)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/MAXXI_Museum_interior_09.JPG/500px-MAXXI_Museum_interior_09.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: 2022 FIFA World Cup stadium in Qatar — design inspired by the curvy shape of a dhow fishing boat", "back": "Al-Janoub Stadium, Qatar (Zaha Hadid)", "work": "Al-Wakrah / Al-Janoub Stadium (2022 FIFA World Cup, Qatar)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: Qatar World Cup stadium — architect sued the New York Review of Books for defamation after being criticized for dismissing concerns over dying migrant construction workers", "back": "Al-Janoub Stadium, Qatar (Zaha Hadid)", "work": "Al-Wakrah / Al-Janoub Stadium (2022 FIFA World Cup, Qatar)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: won the commission for Japan's 2020 Olympic stadium; design scrapped — Arata Isozaki called it 'a turtle waiting for Japan to sink so that it can swim away'; critics compared it to a bicycle helmet", "back": "Tokyo Olympic Stadium, scrapped (Zaha Hadid)", "work": "Tokyo Olympic Stadium (scrapped, 2020)", "frequency": 3, "tags": []}, {"type": "image", "indicator": "Building", "front": "", "back": "Dongdaemun Design Plaza, Seoul (Zaha Hadid)", "work": "Dongdaemun Design Plaza (Seoul, 2014)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Dongdaemun_Design_Plaza_at_night%2C_Seoul%2C_Korea.jpg/500px-Dongdaemun_Design_Plaza_at_night%2C_Seoul%2C_Korea.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: cultural complex in Seoul — flat, fluid body with 45,000 uniquely curved gray panels; designed using the concept of a 'Metonymic Landscape'; partner Patrik Schumacher coined 'parametricism' partly to describe it", "back": "Dongdaemun Design Plaza, Seoul (Zaha Hadid)", "work": "Dongdaemun Design Plaza (Seoul, 2014)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Dongdaemun_Design_Plaza_at_night%2C_Seoul%2C_Korea.jpg/500px-Dongdaemun_Design_Plaza_at_night%2C_Seoul%2C_Korea.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: science museum in Wolfsburg, Germany — rests on huge concrete stilts, allowing visitors and vehicles to pass underneath", "back": "Phaeno Science Centre, Wolfsburg (Zaha Hadid)", "work": "Phaeno Science Centre (Wolfsburg, 2005)", "frequency": 3, "tags": []}, {"type": "image", "indicator": "Building", "front": "", "back": "Vitra Fire Station (Zaha Hadid)", "work": "Vitra Fire Station (1993)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/2025-04-02_GV_RegBas_Fuehrung_Vitra_038.jpg/500px-2025-04-02_GV_RegBas_Fuehrung_Vitra_038.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: her first constructed building — in-house fire station for the Vitra campus in Weil am Rhein, Germany, designed after a factory fire", "back": "Vitra Fire Station (Zaha Hadid)", "work": "Vitra Fire Station (1993)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/2025-04-02_GV_RegBas_Fuehrung_Vitra_038.jpg/500px-2025-04-02_GV_RegBas_Fuehrung_Vitra_038.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Heydar Aliyev Center, Baku (Zaha Hadid)", "work": "Heydar Aliyev Center (Baku, 2012)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Zaha_Hadid_in_Heydar_Aliyev_Cultural_center_in_Baku_nov_2013.jpg/500px-Zaha_Hadid_in_Heydar_Aliyev_Cultural_center_in_Baku_nov_2013.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: neo-futurist cultural center in Baku, Azerbaijan — named for the country's former president; featured on the 200 manat banknote", "back": "Heydar Aliyev Center, Baku (Zaha Hadid)", "work": "Heydar Aliyev Center (Baku, 2012)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Zaha_Hadid_in_Heydar_Aliyev_Cultural_center_in_Baku_nov_2013.jpg/500px-Zaha_Hadid_in_Heydar_Aliyev_Cultural_center_in_Baku_nov_2013.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Bergisel Ski Jump tower and Hungerburg Funicular stations in Innsbruck — funicular stations are glacier-inspired, serving Nordkette Mountain", "back": "Bergisel Ski Jump & Hungerburg Funicular, Innsbruck (Zaha Hadid)", "work": "Bergisel Ski Jump & Hungerburg Funicular (Innsbruck)", "frequency": 3, "tags": []}, {"type": "image", "indicator": "Building", "front": "", "back": "Daxing International Airport, Beijing (Zaha Hadid)", "work": "Daxing International Airport (Beijing, 2019)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Beijing_New_Airport.jpg/500px-Beijing_New_Airport.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: airport near Beijing nicknamed 'The Starfish'; claimed to be the world's largest airport at opening; completed posthumously by Zaha Hadid Architects", "back": "Daxing International Airport, Beijing (Zaha Hadid)", "work": "Daxing International Airport (Beijing, 2019)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Beijing_New_Airport.jpg/500px-Beijing_New_Airport.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: otherwise cube-shaped office tower in Dubai distinguished by a curving, amorphous opening passing through it; completed posthumously", "back": "Opus Office Tower, Dubai (Zaha Hadid)", "work": "Opus Office Tower (Dubai)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: CityLife redevelopment in Milan — Hadid designed 'The Curved One' alongside Libeskind's 'Twisted One' and Isozaki's 'Straight One'", "back": "CityLife Towers, Milan (Zaha Hadid)", "work": "CityLife Towers (Milan)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: Rosenthal Center / Contemporary Arts Center in Cincinnati — her first American building; the museum involved in the 1990 Robert Mapplethorpe obscenity trial moved here in 2003", "back": "Contemporary Arts Center, Cincinnati (Zaha Hadid)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: BMW Central Building in Leipzig — designed as the 'nerve center' of the factory complex, bringing blue-collar and white-collar employees together", "back": "BMW Central Building, Leipzig (Zaha Hadid)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: graduation project 'Malevich's Tektonik' — a Suprematist hotel on Hungerford Bridge; designed the first Serpentine Gallery annual summer pavilion (2000), initiating the yearly tradition", "back": "Zaha Hadid", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed Aqua Table — single piece of polyurethane with three wave-like 'undulations'; also designed 3D-printed shoes for Rem Koolhaas's company United Nude", "back": "Zaha Hadid", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Broad Art Museum at Michigan State University — exterior of perpendicular and parallel steel rods above sheets of glass", "back": "Zaha Hadid", "work": "Other Works", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

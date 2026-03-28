@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Derek Walcott";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: an Iliad-inspired epic poem in which the fishermen Achille and Hector fight over Helen on St. Lucia", "back": "Omeros (Derek Walcott)", "work": "Omeros", "frequency": 20, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the blind poet Seven Seas frequents Ma Kilman's No Pain Cafe in this epic poem", "back": "Omeros (Derek Walcott)", "work": "Omeros", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Major Plunkett tries to write a history of the island; his wife Maud dies", "back": "Omeros (Derek Walcott)", "work": "Omeros", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Ma Kilman heals Philoctete's wound in this epic poem", "back": "Omeros (Derek Walcott)", "work": "Omeros", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Achille paints 'In God we Troust' on his boat and sails to Africa", "back": "Omeros (Derek Walcott)", "work": "Omeros", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: uses a three-line form reminiscent of Dante's terza rima; has no single protagonist", "back": "Omeros (Derek Walcott)", "work": "Omeros", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: ends 'How can I face such slaughter and be cool? / How can I turn from Africa and live?'", "back": "A Far Cry from Africa (Derek Walcott)", "work": "A Far Cry from Africa", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: contains 'the gorilla wrestles with the superman'", "back": "A Far Cry from Africa (Derek Walcott)", "work": "A Far Cry from Africa", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: speaker is 'divided to the vein'; torn between 'this Africa and the English tongue I love'", "back": "A Far Cry from Africa (Derek Walcott)", "work": "A Far Cry from Africa", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: opens with 'a wind ruffling the tawny pelt' of Africa; references 'Kikuyu, quick as flies'", "back": "A Far Cry from Africa (Derek Walcott)", "work": "A Far Cry from Africa", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'brutish necessity wipes its hands upon the napkin of a dirty cause'", "back": "A Far Cry from Africa (Derek Walcott)", "work": "A Far Cry from Africa", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: ends 'The classics can console. But not enough.'", "back": "Sea Grapes (Derek Walcott)", "work": "Sea Grapes", "frequency": 14, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: describes 'the ancient war between obsession and responsibility'", "back": "Sea Grapes (Derek Walcott)", "work": "Sea Grapes", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'great hexameters come to the conclusions of exhausted surf'", "back": "Sea Grapes (Derek Walcott)", "work": "Sea Grapes", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: compares an adulterer/Odysseus hearing Nausicaa's name 'in every gull's outcry'; 'a sail which leans on light / tired of islands'", "back": "Sea Grapes (Derek Walcott)", "work": "Sea Grapes", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: charcoal-burner Makak (Felix Hobain) imprisoned by Corporal Lestrade with criminals Tigre and Souris", "back": "Dream on Monkey Mountain (Derek Walcott)", "work": "Dream on Monkey Mountain", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a white goddess urges Makak to return to Africa; he beheads the goddess before waking", "back": "Dream on Monkey Mountain (Derek Walcott)", "work": "Dream on Monkey Mountain", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Moustique is beaten to death by a mob for pretending to be a healer", "back": "Dream on Monkey Mountain (Derek Walcott)", "work": "Dream on Monkey Mountain", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Makak heals Josephus's snakebite by pressing a coal into his palm", "back": "Dream on Monkey Mountain (Derek Walcott)", "work": "Dream on Monkey Mountain", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Florence Nightingale, Al Jolson, and Horatio Nelson are sentenced to hang for being white", "back": "Dream on Monkey Mountain (Derek Walcott)", "work": "Dream on Monkey Mountain", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'disjecta membra' of the title structure; 'leprosy of empire'; 'smell of dead limes'", "back": "Ruins of a Great House (Derek Walcott)", "work": "Ruins of a Great House", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: references 'men like Hawkins, Walter Raleigh, Drake, ancestral murderers and poets'", "back": "Ruins of a Great House (Derek Walcott)", "work": "Ruins of a Great House", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Bolom (ghost of an aborted fetus) challenges three brothers to vex the Devil or be eaten; Ti-Jean wins by burning a plantation and castrating a goat", "back": "Ti-Jean and His Brothers (Derek Walcott)", "work": "Ti-Jean and His Brothers", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'you will love again the stranger who was your self'; 'greet yourself arriving at your own door'", "back": "Love After Love (Derek Walcott)", "work": "Other Poems", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this poem provided the title for Ngugi wa Thiong'o's Petals of Blood", "back": "The Swamp (Derek Walcott)", "work": "Other Poems", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Shabine declares 'I have Dutch, [a slur], and English in me, and either I'm nobody, or I'm a nation'", "back": "The Schooner Flight (Derek Walcott)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: includes this poet's own watercolors and a narrative about Camille Pissarro moving to Paris", "back": "Tiepolo's Hound (Derek Walcott)", "work": "Other Poems", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: had a famous feud with V.S. Naipaul; attacked his 'self-disfiguring sneers' in a review of The Enigma of Arrival", "back": "Derek Walcott", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: collaborated with Paul Simon on the widely-panned musical The Capeman", "back": "Derek Walcott", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: twin brother Roderick was also a playwright; co-founded the Trinidad Theatre Workshop", "back": "Derek Walcott", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Ruth Padel resigned as Oxford Professor of Poetry after leaking harassment charges against this poet", "back": "Derek Walcott", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

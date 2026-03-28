@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Leo Tolstoy";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: in this novel, the protagonist uses numerology to determine he is destined to kill an invading general he calls the Antichrist", "back": "War and Peace (Leo Tolstoy) — Pierre Bezukhov", "work": "War and Peace", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the epilogue of this novel argues against the Great Man theory of history, claiming 'the movement of the nations' is caused by collective activity", "back": "War and Peace (Leo Tolstoy)", "work": "War and Peace", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Isaiah Berlin's 'The Hedgehog and the Fox' argues this author failed to express 'one big thing' in his theory of history", "back": "Leo Tolstoy (War and Peace)", "work": "War and Peace", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: men leading dogs cry 'ulyulyu!' during a family's elaborate wolf-hunt in this novel", "back": "War and Peace (Leo Tolstoy)", "work": "War and Peace", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Dolokhov gambles away 40,000 rubles after proposing to Sonya in this novel", "back": "War and Peace (Leo Tolstoy)", "work": "War and Peace", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Pierre joins a Russian artillery crew to observe the Battle of Borodino, which this novel casts as a moral victory", "back": "War and Peace (Leo Tolstoy)", "work": "War and Peace", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Vronsky breaks his horse Frou-Frou's back during a steeplechase in this novel, revealing his affair", "back": "Anna Karenina (Leo Tolstoy)", "work": "Anna Karenina", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this character regains his faith after a lightning storm threatens his family and a peasant named Fyodor talks to him", "back": "Konstantin Levin — Anna Karenina (Leo Tolstoy)", "work": "Anna Karenina", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this character, an authorial stand-in, proposes marriage by writing first letters of words on a chalk table", "back": "Konstantin Levin — Anna Karenina (Leo Tolstoy)", "work": "Anna Karenina", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Anna's brother continually cheats on his wife Dolly and plays matchmaker for Levin and Kitty", "back": "Stiva Oblonsky — Anna Karenina (Leo Tolstoy)", "work": "Anna Karenina", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, a character attends a disappointing orchestral adaptation of King Lear, expressing the author's distaste for the play", "back": "Anna Karenina (Leo Tolstoy) — Levin", "work": "Anna Karenina", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the title character of this novella ponders the syllogism 'Caius is a man, men are mortal, therefore Caius is mortal'", "back": "The Death of Ivan Ilyich (Leo Tolstoy)", "work": "The Death of Ivan Ilyich", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novella opens with men playing bridge/cards at a funeral; one character (Schwartz) is keen to play cards", "back": "The Death of Ivan Ilyich (Leo Tolstoy)", "work": "The Death of Ivan Ilyich", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, Pahom is promised all the Bashkir land his spade can touch by sunset; he collapses and receives only six feet for his grave", "back": "\"How Much Land Does a Man Need?\" (Leo Tolstoy)", "work": "Short Stories", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, Pahom dreams of the chief transforming into a peasant, then the Devil, before dying the next day", "back": "\"How Much Land Does a Man Need?\" (Leo Tolstoy)", "work": "Short Stories", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a hermit cuts off his own finger to resist the seductive efforts of Makovkina, who joins a convent in response", "back": "\"Father Sergius\" (Leo Tolstoy)", "work": "Short Stories", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this title character is named for crockery he breaks as a child; dies clearing snow off a roof after his father prevents him from marrying cook Ustinya", "back": "\"Alyosha the Pot\" (Leo Tolstoy)", "work": "Short Stories", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, a man buys the Lives of the Saints with money earned making boots and refuses to reveal who dug an escape tunnel", "back": "\"God Sees the Truth, But Waits\" (Leo Tolstoy)", "work": "Short Stories", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Viktor Shklovsky praised this story told from an old horse's point of view as an example of 'defamiliarization' in 'Art as Device'", "back": "\"Strider\" / \"Kholstomer\" (Leo Tolstoy)", "work": "Short Stories", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, a man walks in circles, yells 'I'm coming!' and lies on his servant to save him from freezing in a snowstorm", "back": "\"Master and Man\" (Leo Tolstoy)", "work": "Short Stories", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a red thistle which lost its beauty when plucked is compared to a Muslim freedom fighter in this story", "back": "\"Hadji Murad\" (Leo Tolstoy)", "work": "Short Stories", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the insanely jealous Pozdnyshev kills his wife after her affair with violinist Troukhatchevsky, who hides under a piano", "back": "The Kreutzer Sonata (Leo Tolstoy)", "work": "The Kreutzer Sonata", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novella's appended epilogue advocates complete chastity despite the author having thirteen children", "back": "The Kreutzer Sonata (Leo Tolstoy)", "work": "The Kreutzer Sonata", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this treatise on Christian anarchism was banned in Russia and concludes that no Christian nation can go to war; its title quotes Luke 17:21", "back": "The Kingdom of God Is Within You (Leo Tolstoy)", "work": "The Kingdom of God Is Within You", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Gandhi named this book one of the three most important in his life and founded a farm named after its author in South Africa", "back": "The Kingdom of God Is Within You (Leo Tolstoy)", "work": "The Kingdom of God Is Within You", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this work uses the folktale of a man hanging on a branch over a well with a dragon to analyze four approaches to suffering", "back": "A Confession (Leo Tolstoy)", "work": "A Confession", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this aesthetic treatise attacks Wagner's Siegfried as 'counterfeit art' and praises Uncle Tom's Cabin and Millet's Man with the Hoe", "back": "What Is Art? (Leo Tolstoy)", "work": "What Is Art?", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Dmitri Nekhlyudov pursues the marriage of Katusha in this novel; its author was excommunicated for it and donated profits to the Doukhobors", "back": "Resurrection (Leo Tolstoy)", "work": "Other Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author was excommunicated from the Orthodox church by Konstantin Pobedonostsev", "back": "Leo Tolstoy", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author died of pneumonia at a train station", "back": "Leo Tolstoy", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Maxim Gorky compared God and this owner of the estate Yasnaya Polyana to 'two bears in one den'", "back": "Leo Tolstoy", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Gorky called this author's crisis at an inn the 'Arzamas horror'", "back": "Leo Tolstoy", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author is decried in the Russian Futurist manifesto 'A Slap in the Face of Public Taste'", "back": "Leo Tolstoy", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Marianne Moore's 'Poetry' quotes this author's diary expressing prejudice against 'business documents and school-books'", "back": "Leo Tolstoy", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author became enamored with Baha'i after watching Isabella Grinevskaya's play about the Bab", "back": "Leo Tolstoy", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Rilke and Lou Andreas-Salome visited this author, who spent the meetings berating their writing", "back": "Leo Tolstoy", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Saul Bellow caused a stir by asking 'who is the Tolstoy of the Zulus?'", "back": "Leo Tolstoy", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

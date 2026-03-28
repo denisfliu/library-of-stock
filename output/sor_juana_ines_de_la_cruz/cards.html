@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Sor Juana Ines de la Cruz";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: this long poem opens with a 'pyramidal, funereal, death-born shadow of earth' aimed at heaven", "back": "First Dream / Primero sueno (Sor Juana Ines de la Cruz)", "work": "First Dream (Primero sueno)", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this poem ends with 'the world illuminated, and I awake' as the golden sun dispenses colors to visible things", "back": "First Dream / Primero sueno (Sor Juana Ines de la Cruz)", "work": "First Dream (Primero sueno)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this poem, the soul is liberated from the body by Night and travels through levels of knowledge; the soul is 'roused by her own precipitous fall'", "back": "First Dream / Primero sueno (Sor Juana Ines de la Cruz)", "work": "First Dream (Primero sueno)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this letter contains the quip 'if Aristotle had cooked, he would have written much more'", "back": "Reply to Sister Filotea (Sor Juana Ines de la Cruz)", "work": "Reply to Sister Filotea", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this letter was written in response to the Bishop of Puebla (Manuel Fernandez de Santa Cruz), who used the pseudonym 'Filotea'", "back": "Reply to Sister Filotea (Sor Juana Ines de la Cruz)", "work": "Reply to Sister Filotea", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this letter describes 'secrets of nature' learned from cooking and defends 'feminine' activities as pathways to knowledge", "back": "Reply to Sister Filotea (Sor Juana Ines de la Cruz)", "work": "Reply to Sister Filotea", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this letter thanks learned forebears like Aspasia and St. Gertrude, and quotes St. Jerome's letter To Leta", "back": "Reply to Sister Filotea (Sor Juana Ines de la Cruz)", "work": "Reply to Sister Filotea", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Octavio Paz praised this author's 'double solitude' as a woman and an intellectual in discussing this letter", "back": "Reply to Sister Filotea (Sor Juana Ines de la Cruz)", "work": "Reply to Sister Filotea", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this satirical redondilla mocks men, asking 'Why be outraged at the guilt that is of your own doing?' and accusing them of misting a mirror then complaining it's not bright", "back": "\"You Foolish Men\" / \"Arraignment of the Men\" (Sor Juana Ines de la Cruz)", "work": "\"You Foolish Men\" / \"Arraignment of the Men\"", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this auto sacramental's loa, Religion spares two Aztecs named America and Occident; Zeal complains they exalt 'The God of Seeds'", "back": "Loa to Divine Narcissus / The Divine Narcissus (Sor Juana Ines de la Cruz)", "work": "Loa to Divine Narcissus / The Divine Narcissus", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this sonnet calls a portrait 'bright-colored deceit' and concludes ''Tis dead, 'tis dust, 'tis shadow, yea, 'tis nought'", "back": "\"To Her Portrait\" (Sor Juana Ines de la Cruz)", "work": "\"To Her Portrait\"", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this work describes this author's design for a triumphal arch and imagines Neptune as descending from Isis", "back": "Allegorical Neptune (Sor Juana Ines de la Cruz)", "work": "Other Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this now-lost treatise was about the 'snail'-like spiral of justly-tuned fifths, inspired by Pietro Cerone and Athanasius Kircher", "back": "Sor Juana Ines de la Cruz (lost music theory treatise)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author was known as the 'Tenth Muse' and 'American Phoenix'; child prodigy at the viceregal court of New Spain", "back": "Sor Juana Ines de la Cruz", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author was forced by Archbishop Aguiar y Seijas to sell her books and scientific instruments and cease writing", "back": "Sor Juana Ines de la Cruz", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author signed 'I, the worst of all women' in her own blood; a 1990 film about her is titled I, the Worst of All", "back": "Sor Juana Ines de la Cruz", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author refused to eat cheese as a child because she heard it made people stupid", "back": "Sor Juana Ines de la Cruz", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author wrote under the patronage of Tomas de la Cerda, the Viceroy of New Spain", "back": "Sor Juana Ines de la Cruz", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Jose Medina's The Epistemology of Resistance calls this author an 'epistemic hero' for creating 'epistemic friction'", "back": "Sor Juana Ines de la Cruz", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: a posthumous portrait of this author by Miguel Cabrera shows her wearing a large oval Annunciation badge and sitting before a library shelf", "back": "Sor Juana Ines de la Cruz", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

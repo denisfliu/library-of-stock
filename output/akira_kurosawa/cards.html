@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Akira Kurosawa";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: peasants hire seven warriors to defend their village from bandits; ends with a samurai saying 'The farmers have won, not us' after two samurai die to musket fire in the rain", "back": "Seven Samurai (Akira Kurosawa)", "work": "Seven Samurai (1954)", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: remade as The Magnificent Seven (1960, John Sturges, starring Yul Brynner) and also inspired A Fistful of Dollars", "back": "Seven Samurai (Akira Kurosawa)", "work": "Seven Samurai (1954)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: two bickering peasant framing characters were adapted by George Lucas as C-3PO and R2-D2; story elements about saving a princess also used in Star Wars", "back": "Hidden Fortress (Akira Kurosawa)", "work": "Hidden Fortress (1958)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: various characters give conflicting testimonies about a samurai's murder and his wife's rape; ends with a woodcutter taking in an abandoned baby", "back": "Rashomon (Akira Kurosawa)", "work": "Rashomon (1950)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: said to be the first film to aim the camera directly at the sun; Toshiro Mifune played the bandit Tajomaru; woodcutter played by Takashi Shimura", "back": "Rashomon (Akira Kurosawa)", "work": "Rashomon (1950)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: King Lear adaptation in which warlord Hidetora Ichimonji divides his kingdom among three sons; the blind peasant Tsurumaru is the only one to escape the carnage", "back": "Ran (Akira Kurosawa)", "work": "Ran (1985)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: ends with a blood-orange sky and a blind man (Tsurumaru) standing atop ruins; the court jester Kyoami appears; we never see a close-up of Lady Sue's face", "back": "Ran (Akira Kurosawa)", "work": "Ran (1985)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Toru Takemitsu's score includes 'Flute of Darkness' (shakuhachi over burning buildings) and 'Hell's Picture Scroll'", "back": "Ran (Akira Kurosawa)", "work": "Ran (1985)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: bureaucrat secretly diagnosed with stomach cancer (told it's a 'mild ulcer') devotes remaining months to building a playground in a slum; ends singing 'The Gondola Song' on a snowy swing set", "back": "Ikiru (Akira Kurosawa)", "work": "Ikiru (1952)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: protagonist's character arc inspired by Ivan Ilyich from Tolstoy's The Death of Ivan Ilyich", "back": "Ikiru (Akira Kurosawa)", "work": "Ikiru (1952)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: trademark horizontal wipe transitions link a series of bureaucrats who pass women between departments in a circular referral process", "back": "Ikiru (Akira Kurosawa)", "work": "Ikiru (1952)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: adapted from Ed McBain's King's Ransom; kidnappers accidentally abduct a shoe executive's chauffeur's son instead of the executive's own son; Toshiro Mifune plays executive Kingo Gondo", "back": "High and Low (Akira Kurosawa)", "work": "High and Low (1963)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the only color shot in an otherwise black-and-white climax is pink smoke above a skyline; a rigged briefcase is thrown from a bathroom window during a train sequence", "back": "High and Low (Akira Kurosawa)", "work": "High and Low (1963)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: final confrontation has the protagonist and villain separated by wire mesh and reflective glass — their faces superimpose each other when either speaks", "back": "High and Low (Akira Kurosawa)", "work": "High and Low (1963)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: a bodyguard pits two rival criminal families against each other; inspired by Dashiell Hammett's Red Harvest; Sergio Leone remade it without permission as A Fistful of Dollars", "back": "Yojimbo (Akira Kurosawa)", "work": "Yojimbo (1961)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: also remade without permission as Django (1966), starring Franco Nero as a former Union soldier who carries a coffin containing a machine gun", "back": "Yojimbo (Akira Kurosawa)", "work": "Yojimbo (1961)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Macbeth adaptation set in feudal Japan; Toshiro Mifune plays the Macbeth analogue; influenced George Lucas alongside Ran", "back": "Throne of Blood (Akira Kurosawa)", "work": "Throne of Blood (1957)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: first of Kurosawa's sixteen collaborations with Toshiro Mifune; an alcoholic doctor bonds with a yakuza gangster who has tuberculosis; Kurosawa used the score to evade censors", "back": "Drunken Angel (Akira Kurosawa)", "work": "Drunken Angel (1948)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Palme d'Or-winning film in which a thief saved from crucifixion impersonates the deceased warlord Shingen; funded with help from George Lucas", "back": "Kagemusha (Akira Kurosawa)", "work": "Kagemusha (1980)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: anthology with segments 'The Peach Orchard' and 'Crows'; in 'Crows,' an art student hears Chopin's Raindrop Prelude and enters Van Gogh's Wheatfield with Crows, meeting a Martin Scorsese-portrayed Van Gogh", "back": "Dreams (Akira Kurosawa)", "work": "Dreams (1990)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Kurosawa's only 70mm film; made for Soviet studio Mosfilm; features a shot of the moon and setting sun in opposite corners of the frame while the title hunter says the sun is the most important person", "back": "Dersu Uzala (Akira Kurosawa)", "work": "Dersu Uzala (1975)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: wrote the memoir Something Like an Autobiography; one chapter traces a bathtub sense-memory to the Dreams 'Crows' segment; another recounts a failed filming attempt at the summit of Mt. Fuji", "back": "Akira Kurosawa", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: one of the three great directors of Golden Age Japanese cinema, alongside Yasujiro Ozu and Kenji Mizoguchi", "back": "Akira Kurosawa", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: George Lucas described his approach to set design with the phrase 'immaculate reality' (rules established must be maintained); Lucas helped fund Kagemusha after Star Wars succeeded", "back": "Akira Kurosawa", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: trademark use of horizontal wipe transitions, also borrowed by George Lucas for Star Wars", "back": "Akira Kurosawa", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: was the first choice to direct the 1964 Tokyo Olympics documentary but was replaced by Kon Ichikawa after a dispute with producers", "back": "Akira Kurosawa", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

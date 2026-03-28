@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Jean Racine";
 let cards = [{"type": "basic", "indicator": "Play", "front": "Play: Theophile Gautier called its only 'tolerable' line 'the daughter of Minos and Pasiphae,' describing the title character; considered untranslatable", "back": "Phedre (Jean Racine)", "work": "Phedre", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: a chariot is attacked by a horned sea monster (half-bull, half-snake); Theramene describes the scene offstage as horses drag the victim to his death", "back": "Phedre (Jean Racine)", "work": "Phedre", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the nurse Oenone convinces the title character to declare her love for her stepson, then hatches a plot to accuse him of rape; Oenone later drowns herself", "back": "Phedre (Jean Racine)", "work": "Phedre", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: introduces the character Aricie as Hippolytus's love interest, a notable difference from its source, Euripides' Hippolytus", "back": "Phedre (Jean Racine)", "work": "Phedre", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Theseus invokes Neptune's curse against his own son Hippolytus", "back": "Phedre (Jean Racine)", "work": "Phedre", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Ted Hughes spent his last months translating this play's rhymed alexandrine verse", "back": "Phedre (Jean Racine)", "work": "Phedre", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Hermione asks Orestes to kill Pyrrhus, who loves the title character; after Pyrrhus dies, Hermione kills herself and Orestes goes insane", "back": "Andromaque (Jean Racine)", "work": "Andromaque", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Hermione tells Cleone she 'loved Pyrrhus too much not to hate him'", "back": "Andromaque (Jean Racine)", "work": "Andromaque", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the title role was written for actress Therese du Parc, the playwright's lover, whom he stole from Moliere's company", "back": "Andromaque (Jean Racine)", "work": "Andromaque", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: features nobly-born servants Cleone and Cephisa; the playwright returned to writing 'suivante' roles", "back": "Andromaque (Jean Racine)", "work": "Andromaque", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Voltaire called it 'the supreme achievement of the human mind'; the high priest Joad installs Joash as king after dethroning the title queen who worships Baal", "back": "Athalie (Jean Racine)", "work": "Athalie", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the title character describes her mother wearing makeup to 'repair the irreparable ravages of time'", "back": "Athalie (Jean Racine)", "work": "Athalie", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Nero poisons the title character at a feast and abducts his fiancee Junia, who becomes a Vestal Virgin; Narcisse is killed by a mob", "back": "Britannicus (Jean Racine)", "work": "Britannicus", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: this playwright's only comedy, adapted from Aristophanes' The Wasps; a judge rules against the dog Citron for eating a chicken but pardons it after pleas from its puppies", "back": "Les Plaideurs (Jean Racine)", "work": "Les Plaideurs (The Litigants)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: features the mad Judge Dandin and the porter Petit Jean; Leander and Isabelle trick Chicaneau into allowing their marriage", "back": "Les Plaideurs (Jean Racine)", "work": "Les Plaideurs (The Litigants)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: unconventional three-act form; the title character convinces King Ahasuerus to stop a plotted massacre of Jews; written for Madame de Maintenon's school", "back": "Esther (Jean Racine)", "work": "Other Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the Roman Emperor Titus is forced to renounce the Queen of Judaea because 'Rome took a hatred to the name of King'", "back": "Berenice (Jean Racine)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Roland Barthes' psychoanalysis-inflected study of this playwright was attacked by Raymond Picard in 'New Criticism or New Fraud?'; the controversy helped legitimize literary theory", "back": "Jean Racine", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Lucien Goldmann's The Hidden God compares the decline of this playwright's social class to how his characters reject the world they are compelled to live in", "back": "Jean Racine", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: in Proust's In Search of Lost Time, the narrator befriends Berma, an actress specializing in this playwright's plays; schoolgirls write letters from Sophocles to this playwright", "back": "Jean Racine", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: converted to Jansenism late in life and spent his final years writing the Spiritual Canticles", "back": "Jean Racine", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Alan Hollinghurst's best-known translations are of this playwright's plays; Cambridge Five spy John Cairncross also translated them for Penguin Classics", "back": "Jean Racine", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: known for small vocabulary and simple diction, depicting characters 'trapped' by passion; closely adhered to the dramatic unities", "back": "Jean Racine", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

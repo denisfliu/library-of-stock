@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Bruno Latour";
 let cards = [{"type": "basic", "indicator": "Concept", "front": "Concept: gives equal emphasis to human and nonhuman actors through the 'principle of generalized symmetry'; co-developed by Michel Callon, John Law, and a French sociologist of science", "back": "Actor-Network Theory (Bruno Latour)", "work": "Actor-Network Theory (ANT)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Graham Harman criticized this thinker's 'flat ontology' for not distinguishing between objects", "back": "Bruno Latour", "work": "Actor-Network Theory (ANT)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: argues the 'modern constitution' falsely separates nature and society; proposes a 'Parliament of Things' to study them together", "back": "We Have Never Been Modern (Bruno Latour)", "work": "We Have Never Been Modern", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: discussed acts of 'translation' between nature and culture and 'purification' between humans and non-humans as creating the Two Great Divides", "back": "Bruno Latour", "work": "We Have Never Been Modern", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: credited Thomas Hobbes and Robert Boyle with creating the modernist outlook that separates society and nature", "back": "Bruno Latour", "work": "We Have Never Been Modern", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: the process by which successful technology becomes invisible; coined by a French sociologist of science", "back": "Blackboxing (Bruno Latour)", "work": "Science in Action and Laboratory Life", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: first major fieldwork conducted with Steve Woolgar at the Salk Institute, observing the construction of scientific facts", "back": "Laboratory Life (Bruno Latour)", "work": "Science in Action and Laboratory Life", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: described the 'mobilization of the world' (making objects available for discourse) as the first of five loops allowing for circulation of reference", "back": "Bruno Latour", "work": "Science in Action and Laboratory Life", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: used a Janus diagram where the left face says 'When things are true they hold' and the right says 'When things hold they start becoming true'", "back": "Bruno Latour", "work": "Science in Action and Laboratory Life", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: argued the word 'social' has become loaded with assumptions and tried to return to its original meanings", "back": "Reassembling the Social (Bruno Latour)", "work": "Reassembling the Social and 'Why Has Critique Run out of Steam?'", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: argued in 'Why Has Critique Run out of Steam?' that social criticism has lost legitimacy and must return to the realist empiricism of William James", "back": "Bruno Latour", "work": "Reassembling the Social and 'Why Has Critique Run out of Steam?'", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: cited Donna Haraway's notion that the philosopher of science should 'protect and care' for matters of fact rather than debunk them", "back": "Bruno Latour", "work": "Reassembling the Social and 'Why Has Critique Run out of Steam?'", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: wrote Aramis, or the Love of Technology about a failed French rapid transit system with a novel 'non-material coupling system'", "back": "Bruno Latour", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: discussed the politics of Pasteur's spread of germ theory in Les Microbes", "back": "Bruno Latour", "work": "Science in Action and Laboratory Life", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

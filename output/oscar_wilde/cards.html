@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Oscar Wilde";
 let cards = [{"type": "basic", "indicator": "Play", "front": "Play: Lady Bracknell exclaims 'a handbag?!' when questioning her prospective son-in-law about his upbringing", "back": "The Importance of Being Earnest (Oscar Wilde)", "work": "The Importance of Being Earnest", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Jack proves he was abandoned as a baby at Victoria station and has the necessary name to marry Gwendolen Fairfax; Miss Prism swapped the baby", "back": "The Importance of Being Earnest (Oscar Wilde)", "work": "The Importance of Being Earnest", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the preface declares 'All art is quite useless' and compares dislike of Realism and Romanticism to 'different rages of Caliban'", "back": "The Picture of Dorian Gray (Oscar Wilde)", "work": "The Picture of Dorian Gray", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Basil Hallward paints a portrait that ages instead of the title character, who reads a 'yellow book' from Lord Henry Wotton", "back": "The Picture of Dorian Gray (Oscar Wilde)", "work": "The Picture of Dorian Gray", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Albert Lewin's film adaptation uses Technicolor only for Ivan Albright's grotesque painting of the title object", "back": "The Picture of Dorian Gray (Oscar Wilde)", "work": "The Picture of Dorian Gray", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Mrs. Erlynne claims she accidentally took the title object to create a distraction in Lord Darlington's rooms; Lord Darlington says 'we are all in the gutter, but some of us are looking at the stars'", "back": "Lady Windermere's Fan (Oscar Wilde)", "work": "Lady Windermere's Fan", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: a government minister who made his fortune from insider trading is blackmailed into supporting a fraudulent Argentine canal scheme", "back": "An Ideal Husband (Oscar Wilde)", "work": "An Ideal Husband", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: written in French for Sarah Bernhardt; Aubrey Beardsley illustrated the English version after liking a drawing of a woman kissing a severed head", "back": "Salome (Oscar Wilde)", "work": "Salome", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'the coward does it with a kiss / The brave man with a sword!' — declares 'each man kills the thing he loves'", "back": "\"The Ballad of Reading Gaol\" (Oscar Wilde)", "work": "\"The Ballad of Reading Gaol\" and Prison Writings", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: De Profundis was a prison letter to 'Bosie' asserting 'Christ's place indeed is with the poets'; adopted the pseudonym Sebastian Melmoth after release", "back": "Oscar Wilde", "work": "\"The Ballad of Reading Gaol\" and Prison Writings", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: tomb at Pere Lachaise designed by Jacob Epstein with a sphinxlike winged angel; glass barrier installed to prevent lipstick damage", "back": "Oscar Wilde", "work": "\"The Ballad of Reading Gaol\" and Prison Writings", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: a swallow planning to go to Egypt distributes a statue's jewels to the poor", "back": "\"The Happy Prince\" (Oscar Wilde)", "work": "Short Stories", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: an American family uses Pinkerton's Champion Stain Remover to remove ghostly blood stains", "back": "\"The Canterville Ghost\" (Oscar Wilde)", "work": "Short Stories", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: a man tries to kill his uncle with an exploding Liberty-figurine clock to fulfill a prophecy by the palm reader Septimus Podgers", "back": "\"Lord Arthur Savile's Crime\" (Oscar Wilde)", "work": "Short Stories", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: 'Life imitates art far more than Art imitates life' — Vivian argues in an essay while Cyril listens", "back": "\"The Decay of Lying\" (Oscar Wilde)", "work": "Essays and Criticism", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: became a US celebrity through an 1882 lecture tour so Americans could compare him to Reginald Bunthorne from Gilbert and Sullivan's Patience; photographed by Napoleon Sarony", "back": "Oscar Wilde", "work": "Essays and Criticism", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

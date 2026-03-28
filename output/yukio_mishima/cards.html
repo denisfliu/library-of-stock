@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Yukio Mishima";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: in this tetralogy, Honda recognizes successive reincarnations of Kiyoaki Matsugae by a distinctive pattern of three moles", "back": "The Sea of Fertility (Yukio Mishima)", "work": "The Sea of Fertility", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this tetralogy's first novel, Kiyoaki has an affair with Satoko Ayakura and two Siamese princes search for a lost emerald ring at the Peers School", "back": "Spring Snow / The Sea of Fertility (Yukio Mishima)", "work": "The Sea of Fertility", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in the third novel of this tetralogy, Honda visits Thailand and holds a pool party at his villa to check if Ying Chan has three moles", "back": "The Temple of Dawn / The Sea of Fertility (Yukio Mishima)", "work": "The Sea of Fertility", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this tetralogy ends at Gesshu Temple, where an abbess doesn't recall another character; Honda ponders 'perhaps there has been no I' in a garden with 'no memories, nothing'", "back": "The Sea of Fertility (Yukio Mishima)", "work": "The Sea of Fertility", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, Mizoguchi burns down the title structure (based on a real-life event); he calls the temple 'a symbol of the real world's evanescence'", "back": "The Temple of the Golden Pavilion (Yukio Mishima)", "work": "The Temple of the Golden Pavilion", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, the protagonist is struck by impotence after visions of a temple and remarks 'the first real problem I faced in my life was that of beauty'", "back": "The Temple of the Golden Pavilion (Yukio Mishima)", "work": "The Temple of the Golden Pavilion", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, Kashiwagi slaps his girlfriend after asking the protagonist Mizoguchi to steal irises and cattails for ikebana", "back": "The Temple of the Golden Pavilion (Yukio Mishima)", "work": "The Temple of the Golden Pavilion", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this semi-autobiographical 'I-novel,' Kochan explores his repressed homosexuality and has a sexual awakening while looking at Guido Reni's painting of Saint Sebastian", "back": "Confessions of a Mask (Yukio Mishima)", "work": "Confessions of a Mask", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, Kochan daydreams about cannibalizing a fellow student and pretends to be attracted to Sonoko", "back": "Confessions of a Mask (Yukio Mishima)", "work": "Confessions of a Mask", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, the narrator muses about excrement and the Earth when he sees a 'night-soil man' pass in the street", "back": "Confessions of a Mask (Yukio Mishima)", "work": "Confessions of a Mask", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, Noboru spies through a peephole on his mother Fusako having sex with the sailor Ryuji", "back": "The Sailor Who Fell from Grace with the Sea (Yukio Mishima)", "work": "The Sailor Who Fell from Grace with the Sea", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel ends with a gang of boys drugging a sailor's tea to dissect him", "back": "The Sailor Who Fell from Grace with the Sea (Yukio Mishima)", "work": "The Sailor Who Fell from Grace with the Sea", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this short story, Lieutenant Shinji and wife Reiko have sex under a scroll reading 'Sincerity' before killing themselves; thought to foreshadow its author's death", "back": "\"Patriotism\" (Yukio Mishima)", "work": "Patriotism", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's death poem reads 'falling is the essence of a flower' (in tanka form)", "back": "Yukio Mishima", "work": "Patriotism / Mishima Incident", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's kaishakunin (fellow Shield Society member) botched three attempts to behead him during his 1970 seppuku", "back": "Yukio Mishima", "work": "Patriotism / Mishima Incident", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this essay, words are compared to 'white ants' for their 'corrosive function'; the epilogue describes flying in an F-104 and comparing a cloud to an Ouroboros", "back": "Sun and Steel (Yukio Mishima)", "work": "Sun and Steel", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this Mishima novel, pearl diver Shinji falls in love with the wealthy Hatsue; two young men are tested on a shipping vessel", "back": "The Sound of Waves (Yukio Mishima)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this Mishima novel, Shunsuke crafts his protege/lover Yuichi into a weapon of revenge against women", "back": "Forbidden Colors (Yukio Mishima)", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Paul Schrader directed a biopic of this author subtitled 'A Life in Four Chapters,' culminating with 'Harmony of Pen and Sword'", "back": "Yukio Mishima", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Philip Glass's Third String Quartet is nicknamed for this author; its final chord is a pulsating E-flat major arpeggio in first inversion", "back": "Yukio Mishima", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author modeled for the erotic photography collection Ordeal by Roses (Punishment by Roses), posing as Saint Sebastian with arrows", "back": "Yukio Mishima", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Henry Miller wrote Reflections on the Death of this author, imagining meeting him in Devachan", "back": "Yukio Mishima", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: South Korean author Shin Kyung-sook plagiarized from this author's story 'Patriotism'", "back": "Yukio Mishima", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

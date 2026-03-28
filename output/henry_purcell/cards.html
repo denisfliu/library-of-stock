@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Henry Purcell";
 let cards = [{"type": "basic", "indicator": "Composer", "front": "Composer: student of John Blow; succeeded him as principal organist at Westminster Abbey; modeled the final chorus of Dido and Aeneas on Blow's Venus and Adonis", "back": "Henry Purcell", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: works catalogued by Z numbers compiled by musicologist Franklin Zimmerman; posthumous song collection called Orpheus Britannicus", "back": "Henry Purcell", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: incidental music for Aphra Behn's Abdelazer provided the rondeau theme Benjamin Britten used in The Young Person's Guide to the Orchestra", "back": "Henry Purcell", "work": "General / Biographical", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: wrote music for the funeral of Queen Mary II — a C minor March for four flatt (slide) trumpets, a Canzona, and a setting of 'Thou Knowest Lord'", "back": "Henry Purcell", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: birthday ode 'Come, Ye Sons of Art' (for Queen Mary II) features the countertenor duet 'Sound the Trumpet'; its opening sinfonia was recycled in The Indian Queen", "back": "Henry Purcell", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Ode to St. Cecilia ('Hail! Bright Cecilia') features the movement 'Wondrous Machine!' in praise of the organ", "back": "Henry Purcell", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: attributed as the author of the Irish march Lilliburlero", "back": "Henry Purcell", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: the dying queen sings 'Remember me, but ah! Forget my fate' over a chromatic descending ground bass (G to D); the lament is preceded by the recitative 'Thy hand, Belinda'", "back": "Dido's Lament ('When I am laid in earth') — Dido and Aeneas (Henry Purcell)", "work": "Dido and Aeneas – Dido's Lament ('When I am laid in earth')", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: the ground bass (chromatic descending fourth, G to D) has an unusual 5-bar repetition cycle instead of the more common 4", "back": "Dido's Lament — Dido and Aeneas (Henry Purcell)", "work": "Dido and Aeneas – Dido's Lament ('When I am laid in earth')", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: libretto by Nahum Tate; an evil sorceress tricks the Trojan hero into abandoning the Queen of Carthage; includes a chorus of witches and a chorus of sailors", "back": "Dido and Aeneas (Henry Purcell)", "work": "Dido and Aeneas", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: libretto by John Dryden; Arthur rescues the blind princess Emmeline from the Saxon King Oswald; 'Frost Scene' features Cupid singing 'What Power art thou' over a three-bar C minor ground bass", "back": "King Arthur (Henry Purcell)", "work": "King Arthur (semi-opera)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: adapted from A Midsummer Night's Dream; adds the Drunken Poet character; includes Juno singing 'Thrice Happy Lovers' and the Chinese Woman's aria 'Hark! Now the Echoing Air'", "back": "The Fairy-Queen (Henry Purcell)", "work": "The Fairy-Queen (semi-opera)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: countertenor song 'Music for a While' from incidental music for an Oedipus-based play; published posthumously in Orpheus Britannicus", "back": "Henry Purcell", "work": "Other Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: semi-opera Dioclesian is subtitled 'The Prophetess' and named for a Roman emperor; The Indian Queen was an unfinished dramatic opera set in Mexico", "back": "Henry Purcell", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "audio", "indicator": "high", "front": "Opening ground bass of Dido's Lament: chromatic descending fourth G to D", "back": "Dido and Aeneas – Dido's Lament ('When I am laid in earth') (Henry Purcell)", "work": "Dido and Aeneas – Dido's Lament ('When I am laid in earth')", "frequency": 0, "mp3": "audio/0.mp3", "abc": "X:1\nT:Dido's Lament - ground bass\n%%MIDI program 0\nM:3/2\nL:1/4\nK:C\n|G2 ^F2 F2|E2 _E2 D2|", "needs_review": true, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

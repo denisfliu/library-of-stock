@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Michelangelo Antonioni";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: ends with the protagonist (David Hemmings) joining mimes in an imaginary tennis match in the park where he earlier photographed a murder", "back": "Blow-Up (Michelangelo Antonioni)", "work": "Blow-Up (1966)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: a London fashion photographer realizes he has inadvertently photographed a murder after enlarging his park photos; based on Julio Cortazar's 'Las babas del diablo'", "back": "Blow-Up (Michelangelo Antonioni)", "work": "Blow-Up (1966)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Jeff Beck of The Yardbirds smashes his guitar at a concert; the protagonist grabs the guitar neck from the mob then discards it", "back": "Blow-Up (Michelangelo Antonioni)", "work": "Blow-Up (1966)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: two nude women (including 19-year-old Jane Birkin and Gillian Hills) wrestle on an overturned clothes rack then on a large purple sheet of paper", "back": "Blow-Up (Michelangelo Antonioni)", "work": "Blow-Up (1966)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: scored by Herbie Hancock — his first English-language film score; based on Julio Cortazar's story about a photographer named Roberto Michel", "back": "Blow-Up (Michelangelo Antonioni)", "work": "Blow-Up (1966)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the protagonist buys a large propeller for eight pounds from an antique shop with many statues, but later abandons it", "back": "Blow-Up (Michelangelo Antonioni)", "work": "Blow-Up (1966)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Anna disappears during a yacht trip to the Aeolian Islands; Claudia (Monica Vitti) and Sandro fall in love while searching for her, and the mystery is never resolved", "back": "L'Avventura (Michelangelo Antonioni)", "work": "L'Avventura (1960)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: ends with Claudia stroking Sandro's weeping head on a bench as Mount Etna looms in the background", "back": "L'Avventura (Michelangelo Antonioni)", "work": "L'Avventura (1960)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: booed at its 1960 Cannes premiere but won the Special Jury Prize 'for seeking to create a new film language'; placed 2nd in the 1962 Sight & Sound poll behind Citizen Kane", "back": "L'Avventura (Michelangelo Antonioni)", "work": "L'Avventura (1960)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Pauline Kael wrote about her year trying to 'persuade, goad, and even shame people into seeing' this film in her essay 'The Come-Dressed-As-the-Sick-Soul-of-Europe Parties'", "back": "L'Avventura (Michelangelo Antonioni)", "work": "L'Avventura (1960)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: follows the dissolving marriage of Giovanni and Lidia over one day; ends with Marcello Mastroianni trying to make love to Jeanne Moreau in a golf course bunker", "back": "La Notte (Michelangelo Antonioni)", "work": "La Notte (1961)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Manny Farber criticized this film as 'an example of the evils of continuity' in his essay 'White Elephant Art vs. Termite Art'", "back": "La Notte (Michelangelo Antonioni)", "work": "La Notte (1961)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: follows Vittoria, a translator, who begins an affair with Piero after meeting him at a stock exchange; ends with only shots of a streetlight where the couple agreed to meet", "back": "L'Eclisse (Michelangelo Antonioni)", "work": "L'Eclisse (1962)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Terence McNally called the ending 'the empty requiem for two dead souls' — it consists of shots of a streetlight where a man and woman agreed to meet", "back": "L'Eclisse (Michelangelo Antonioni)", "work": "L'Eclisse (1962)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: famous for a seven-minute tracking shot that begins in a hotel room, moves out the window through the bars, circles the plaza, and returns to find hitmen have killed reporter David Locke", "back": "The Passenger (Michelangelo Antonioni)", "work": "The Passenger (1975)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Antonioni's only American film, included in The Fifty Worst Films of All Time; ends with Daria imagining a modernist house exploding in the desert in slow motion", "back": "Zabriskie Point (Michelangelo Antonioni)", "work": "Zabriskie Point (1970)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Pink Floyd's 'Us and Them' was based on music the band created for this film's score", "back": "Zabriskie Point (Michelangelo Antonioni)", "work": "Zabriskie Point (1970)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: made the 'Trilogy of Alienation' — L'Avventura, La Notte, and L'Eclisse — all starring Monica Vitti; Seymour Chatman extends this to a tetralogy including Red Desert", "back": "Michelangelo Antonioni", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: died on the same day as Ingmar Bergman, sparking critical debate about their respective cinematic styles", "back": "Michelangelo Antonioni", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

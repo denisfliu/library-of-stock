@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Aida";
 let cards = [{"type": "basic", "indicator": "Opera", "front": "Opera: love triangle between an Ethiopian princess enslaved in Egypt, the Egyptian military commander Radames, and the Egyptian princess Amneris", "back": "Aida (Verdi)", "work": "Aida", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: premiere was delayed because scenery and costumes were trapped in Paris during the Siege of Paris", "back": "Aida (Verdi)", "work": "Aida", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Roberto Alagna walked off the La Scala stage after being booed; replaced mid-performance by Antonello Palombi in street clothes", "back": "Aida (Verdi)", "work": "Aida", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Leontyne Price became the first African American to sing a leading role at La Scala in this role (1960); her 1985 Met farewell was also in this role", "back": "Aida (Verdi)", "work": "Aida", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Angel Blue withdrew from a 2022 Verona Arena production to protest Anna Netrebko's use of blackface makeup for the title role", "back": "Aida (Verdi)", "work": "Aida", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Radames is entombed alive for treason; the title character chooses to die with him, singing the duet 'La fatal pietra'", "back": "Aida (Verdi)", "work": "Aida", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: title character's opening leitmotif is 'short A, A-sharp, B, C-sharp, B'", "back": "Aida (Verdi)", "work": "Aida", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: third act opens with first violins playing quiet staccato sixteenth-note Gs sweeping up and down through four octaves", "back": "Aida (Verdi)", "work": "Aida", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: chorus shouts 'Guerra, guerra, guerra!' in Act II", "back": "Aida (Verdi)", "work": "Aida", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Amneris sings 'L'aborrita rivale a me sfuggia' before the Judgement Scene where Radames refuses to speak in his defense", "back": "Aida (Verdi)", "work": "Aida", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Maria Callas interpolated a high E-flat at the end of Act II finale 'Gloria all'Egitto' during Mexico City performances", "back": "Aida (Verdi)", "work": "Aida", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: soprano aria in which Aida laments she will never see her Ethiopian homeland again; climaxes on sustained pianissimo high C, then falling sixteenth-note thirds into 'non ti vedrò, non ti vedrò mai più'", "back": "\"O patria mia\" from Aida (Verdi)", "work": "\"O patria mia\"", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: soprano aria in which Aida is torn between wishing her lover to triumph and loyalty to her father and Ethiopian homeland; ends with 'Numi, pietà'", "back": "\"Ritorna vincitor\" from Aida (Verdi)", "work": "\"Ritorna vincitor\"", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Act II Triumphal Scene features a solo trumpet melody beginning short E-flat, long A-flat, triplet B-flat, E-flat, B-flat", "back": "Grand March / Triumphal Scene (Act II) from Aida (Verdi)", "work": "Grand March / Triumphal Scene (Act II)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: during the Triumphal Scene, Amneris tricks the title character into admitting her love for Radames", "back": "Grand March / Triumphal Scene (Act II) from Aida (Verdi)", "work": "Grand March / Triumphal Scene (Act II)", "frequency": 1, "tags": []}, {"type": "audio", "indicator": "high", "front": "Solo trumpet fanfare melody opening the Triumphal March", "back": "Grand March / Triumphal Scene (Act II) (Aida)", "work": "Grand March / Triumphal Scene (Act II)", "frequency": 0, "mp3": "audio/0.mp3", "abc": "X:1\nT:Aida Triumphal March\n%%MIDI program 56\nM:4/4\nL:1/4\nK:C\n|_E/ _A3|(_B _e _B)_e||", "needs_review": true, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

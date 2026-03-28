@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Alfred Hitchcock";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: Marion Crane is repeatedly stabbed in the shower to a shrieking Bernard Herrmann score; a character then yells 'Mother! Oh God, Mother! Blood!'", "back": "Psycho (Alfred Hitchcock)", "work": "Psycho (1960)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Norman Bates tells a woman 'a boy's best friend is his mother' and 'we all go a little mad sometimes'; he stuffs birds and has a split personality triggered by sexual attraction", "back": "Psycho (Alfred Hitchcock)", "work": "Psycho (1960)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Slavoj Zizek's The Pervert's Guide to the Cinema maps the three floors of the antagonist's mansion onto superego, ego, and id", "back": "Psycho (Alfred Hitchcock)", "work": "Psycho (1960)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the acrophobic Scottie (Jimmy Stewart) follows a woman played by Kim Novak; she falls from a bell tower after seeing a nun", "back": "Vertigo (Alfred Hitchcock)", "work": "Vertigo (1958)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Chris Marker's Sans Soleil calls this the only film to depict 'impossible memory,' revisiting its San Francisco locations and recreating its POV driving shots", "back": "Vertigo (Alfred Hitchcock)", "work": "Vertigo (1958)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: first use of the dolly zoom technique, now nicknamed the 'Vertigo effect'", "back": "Vertigo (Alfred Hitchcock)", "work": "Vertigo (1958)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Laura Mulvey's 'Visual Pleasure and Narrative Cinema' analyzes the male hero's scopophilic eroticism in this film alongside Rear Window and Marnie", "back": "Vertigo (Alfred Hitchcock)", "work": "Vertigo (1958)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: climax has the protagonist use camera flashbulbs to temporarily blind the murderous antagonist Lars Thorwald", "back": "Rear Window (Alfred Hitchcock)", "work": "Rear Window (1954)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: famous crop duster scene near Bus Stop 41; described as 'the first Bond film'", "back": "North by Northwest (Alfred Hitchcock)", "work": "North by Northwest (1959)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: climactic scene has Cary Grant and Eva Marie Saint hanging from a ledge on the face of Mount Rushmore", "back": "North by Northwest (Alfred Hitchcock)", "work": "North by Northwest (1959)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the lead actress (Tippi Hedren) was badly bruised by real bird claw marks during filming of the climactic scene", "back": "The Birds (Alfred Hitchcock)", "work": "The Birds (1963)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: Francois Truffaut conducted an eight-day interview (with Helen Scott as interpreter) published in 1966, cementing his reputation as an auteur", "back": "Alfred Hitchcock", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: Laura Mulvey's 'Visual Pleasure and Narrative Cinema' focuses on him alongside Josef von Sternberg", "back": "Alfred Hitchcock", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: Eric Rohmer and Claude Chabrol wrote an extensive study positing his 'Catholic guilt transference'", "back": "Alfred Hitchcock", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: in the Truffaut interview, called drama 'life with the dull bits cut out' and explained the MacGuffin concept", "back": "Alfred Hitchcock", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: as a child was briefly locked up at a police station on his father's instruction; later said 'I'm not against the police; I'm just afraid of them'", "back": "Alfred Hitchcock", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: TV show Alfred Hitchcock Presents began each episode with him walking into the silhouette of his profile to 'Funeral March for a Marionette'", "back": "Alfred Hitchcock", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

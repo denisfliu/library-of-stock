@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Correggio";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: illusionistic ceiling fresco using di sotto in su", "back": "Assumption of the Virgin (Correggio)", "work": "Assumption of the Virgin (Parma Cathedral)", "frequency": 4, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg/500px-Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg/500px-Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: spiraling figures in swirling clouds disguise octagonal architecture in Parma Cathedral", "back": "Assumption of the Virgin (Correggio)", "work": "Assumption of the Virgin (Parma Cathedral)", "frequency": 4, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg/500px-Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg/500px-Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Assumption of the Virgin (Correggio)", "work": "Assumption of the Virgin (Parma Cathedral)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg/500px-Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg/500px-Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a stormy cloud with a faintly visible humanoid face embraces a nude woman from behind", "back": "Jupiter and Io (Correggio)", "work": "Loves of Jupiter series", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg/500px-Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg/500px-Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Jupiter and Io (Correggio)", "work": "Loves of Jupiter series", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg/500px-Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg/500px-Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: an eagle licks the arm of a youth while carrying him off; a dog and tall stump appear below", "back": "Abduction of Ganymede (Correggio)", "work": "Loves of Jupiter series", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg/500px-Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Artist: four-painting series commissioned by Federico II Gonzaga depicting stories from Ovid's Metamorphoses; given to Charles V", "back": "Loves of Jupiter series (Correggio)", "work": "Loves of Jupiter series", "frequency": 3, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg/500px-Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Artist: Louis d'Orleans attacked this painting with a knife and ordered the series cut up; Coypel saved the pieces", "back": "Leda and the Swan (Correggio, Loves of Jupiter series)", "work": "Loves of Jupiter series", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg/500px-Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: putti test arrows on a touchstone at the foot of a bed as a shower of gold falls; winged figure pulls a white cloth", "back": "Danae (Correggio)", "work": "Loves of Jupiter series", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg/500px-Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Artist: this painter's Jupiter and Io appears in Hogarth's Marriage A-la-Mode (The Toilette scene)", "back": "Correggio", "work": "Loves of Jupiter series", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg/500px-Antonio_Allegri%2C_called_Correggio_-_Jupiter_and_Io_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: four saints stand in seashells holding up the base of a di sotto in su dome fresco", "back": "Assumption of the Virgin (Correggio)", "work": "Assumption of the Virgin (Parma Cathedral)", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg/500px-Cathedral_%28Parma%29_-_Assumption_by_Correggio.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: painted a Noli me Tangere in which Christ is depicted with a gardening tool", "back": "Correggio", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: a satyr discovers Venus and Cupid asleep in a forest in this painter's work", "back": "Venus and Cupid with a Satyr (Correggio)", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: the central figure of this painter's dome fresco cannot be seen from the ground but is visible from the choir", "back": "Vision of St. John on Patmos (Correggio)", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: in Reynolds's portrait of David Garrick Between Tragedy and Comedy, a woman painted in this artist's style pulls Garrick toward comedy", "back": "Correggio", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

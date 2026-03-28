@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Arthur Rimbaud";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: a ship strikes against 'unbelievable Floridas' after its haulers are killed by 'gaudy redskins' who nail them to stakes", "back": "The Drunken Boat (Arthur Rimbaud)", "work": "The Drunken Boat", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the narrator ship yearns for 'Europe with its ancient parapets' and declares 'the Dawns are heartbreaking'", "back": "The Drunken Boat (Arthur Rimbaud)", "work": "The Drunken Boat", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the ship is described as 'lighter than a cork' and 'swollen with intoxicating torpor'", "back": "The Drunken Boat (Arthur Rimbaud)", "work": "The Drunken Boat", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the narrator has seen 'the low-hanging sun speckled with mystic horrors' and 'fish-traps where a whole Leviathan rots in the rushes'", "back": "The Drunken Boat (Arthur Rimbaud)", "work": "The Drunken Boat", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the narrator calls upon 'million golden birds, Life Force of the future' and sees 'singing phosphorous'", "back": "The Drunken Boat (Arthur Rimbaud)", "work": "The Drunken Boat", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: heavily inspired by Jules Verne's Twenty Thousand Leagues Under the Sea; sent to Paul Verlaine when the author was 16", "back": "The Drunken Boat (Arthur Rimbaud)", "work": "The Drunken Boat", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a 'cold puddle' where a 'squatting child' releases a boat 'fragile as a May butterfly'", "back": "The Drunken Boat (Arthur Rimbaud)", "work": "The Drunken Boat", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens 'Once, if I remember correctly, my life was a banquet where every heart revealed itself'", "back": "A Season in Hell (Arthur Rimbaud)", "work": "A Season in Hell", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: contains two 'Delirium' sections -- 'Foolish Virgin' (representing Verlaine) and 'Alchemy of the Word'", "back": "A Season in Hell (Arthur Rimbaud)", "work": "A Season in Hell", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: in 'Alchemy of the Word,' the speaker declares 'I invented the colour of vowels!' and lists 'Black A, white E, red I, blue O, green U'", "back": "A Season in Hell (Arthur Rimbaud)", "work": "A Season in Hell", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker placed 'Beauty on my knee' and found her 'bitter'", "back": "A Season in Hell (Arthur Rimbaud)", "work": "A Season in Hell", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the final 'Farewell' section declares 'One must be absolutely modern'; ends with 'This is the time of the Assassins'", "back": "A Season in Hell (Arthur Rimbaud)", "work": "A Season in Hell", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: contains the section 'Bad Blood'; the speaker calls himself 'a black' and recalls how his barbaric ancestors buttered their hair", "back": "A Season in Hell (Arthur Rimbaud)", "work": "A Season in Hell", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: assigns colors to the five vowels: 'A black, E white, I red, U green, O blue'", "back": "Vowels (Arthur Rimbaud)", "work": "Vowels", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: A is a 'black velvety jacket of brilliant flies which buzz around cruel smells'; O is the 'Omega, violet ray of [his] eyes'", "back": "Vowels (Arthur Rimbaud)", "work": "Vowels", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: O is a 'supreme Clarion full of strange piercing sounds' with 'silences crossed by Worlds and by Angels'", "back": "Vowels (Arthur Rimbaud)", "work": "Vowels", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: opens with 'After the Flood,' in which a hare 'said its prayers to the rainbow through the spider's web'; includes 'Being Beauteous'", "back": "Illuminations (Arthur Rimbaud)", "work": "Illuminations", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: John Ashbery translated this collection in 2011, claiming 'we are absolutely modern' because the author 'commanded us to be'", "back": "Illuminations (Arthur Rimbaud)", "work": "Illuminations", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: letters to Georges Izambard and Paul Demeny declaring 'I is another' and advocating a 'long, immense, and deliberate derangement of the senses'", "back": "Letters of the Seer (Arthur Rimbaud)", "work": "Letters of the Seer", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the author states 'the poet is truly the thief of fire' in these letters", "back": "Letters of the Seer (Arthur Rimbaud)", "work": "Letters of the Seer", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: an 'open-mouthed, bare-headed' soldier 'sleeping' in a 'green hole where a river sings' is revealed to have 'two red holes' in his side", "back": "The Sleeper in the Valley (Arthur Rimbaud)", "work": "Other Poems", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: gave up writing poetry at age 19-21 and became a gunrunner in Ethiopia and East Africa", "back": "Arthur Rimbaud", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Verlaine included him in the 1884 anthology Les Poetes maudits and depicted him as an evil angel in 'Crime of Love'", "back": "Arthur Rimbaud", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Henry Miller wrote a study of him titled The Time of the Assassins", "back": "Arthur Rimbaud", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Patti Smith described her 'unrequited love' for this poet in Just Kids", "back": "Arthur Rimbaud", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

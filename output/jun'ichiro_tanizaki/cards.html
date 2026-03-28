@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Jun'ichiro Tanizaki";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: the failing marriage of Kaname and Misako, who share a disdain for 'Osaka traits'", "back": "Some Prefer Nettles (Jun'ichiro Tanizaki)", "work": "Some Prefer Nettles (1929)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Kaname attends bunraku performances and realizes the Eternal Woman is embodied by the doll of Koharu in Love Suicides at Sonezaki", "back": "Some Prefer Nettles (Jun'ichiro Tanizaki)", "work": "Some Prefer Nettles (1929)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: O-Hisa's archaic teeth-blackening is found 'filthy and barbarous' by Misako in this novel", "back": "Some Prefer Nettles (Jun'ichiro Tanizaki)", "work": "Some Prefer Nettles (1929)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Kaname skims an unexpurgated Arabian Nights and sleeps with the half-Korean, half-Russian prostitute Louise", "back": "Some Prefer Nettles (Jun'ichiro Tanizaki)", "work": "Some Prefer Nettles (1929)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a proud Osaka family whose fortunes have declined; Taeko has a scandalous fling with the lower-class Itakura", "back": "The Makioka Sisters (Jun'ichiro Tanizaki)", "work": "The Makioka Sisters (1948)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Yukiko resists getting married; Sachiko disapproves of Taeko's affair", "back": "The Makioka Sisters (Jun'ichiro Tanizaki)", "work": "The Makioka Sisters (1948)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: The Maids retells this Tanizaki novel from the servants' point of view", "back": "The Makioka Sisters (Jun'ichiro Tanizaki)", "work": "The Makioka Sisters (1948)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Joji trains a 15-year-old waitress reminiscent of Mary Pickford to be Western, but she ends up dominating him", "back": "Naomi (Jun'ichiro Tanizaki)", "work": "Naomi (1924)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Joji idolizes Mary Pickford and his dance instructor Madam Shlemskaya in this novel", "back": "Naomi (Jun'ichiro Tanizaki)", "work": "Naomi (1924)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel consists of alternating diaries by a wife and her husband, who tries to spark an affair between her and their friend Kimura", "back": "The Key (Jun'ichiro Tanizaki)", "work": "The Key (1956)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this essay discusses the beauty of toilets as a place of 'spiritual repose' and contrasts light and dark in Japanese aesthetics", "back": "In Praise of Shadows (Jun'ichiro Tanizaki)", "work": "In Praise of Shadows (1933 essay)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: in this author's novella The Secret History of the Lord of Musashi, the protagonist places a servant in a hole to simulate decapitation and orders his wife to cut off the servant's nose", "back": "Jun'ichiro Tanizaki", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author wrote Quicksand about the love affair between Sonoko Kakiuchi and art student Mitsuko", "back": "Jun'ichiro Tanizaki", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's last published work, Diary of a Mad Old Man, follows Utsugi's attraction to his daughter-in-law Satsuko", "back": "Jun'ichiro Tanizaki", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: in this author's The Devils in Daylight, Sonomura cracks a code based on Poe's Gold-Bug and uses peepholes to observe a murder", "back": "Jun'ichiro Tanizaki", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Yasunari Kawabata";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: in this novel, the ballet aficionado Shimamura has an affair with the geisha Komako at a remote hot springs town", "back": "Snow Country (Yasunari Kawabata)", "work": "Snow Country", "frequency": 14, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel ends with the protagonist feeling the Milky Way flow inside him as a fire engulfs a silk warehouse", "back": "Snow Country (Yasunari Kawabata)", "work": "Snow Country", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel opens with the protagonist watching the girl Yoko's reflection in a train window as she cares for a man with tuberculosis", "back": "Snow Country (Yasunari Kawabata)", "work": "Snow Country", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, Kikuji has an affair with Mrs. Ota, who commits suicide; her daughter Fumiko smashes an ancient tea bowl stained with lipstick", "back": "Thousand Cranes (Yasunari Kawabata)", "work": "Thousand Cranes", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, the hairy birthmark of Chikako disgusts the protagonist, who recalls seeing a woman trim hair from her breast", "back": "Thousand Cranes (Yasunari Kawabata)", "work": "Thousand Cranes", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, a university student's infatuation with a drum-playing girl ends when he sees her bathing naked and realizes she is just an adolescent", "back": "\"The Dancing Girl of Izu\" (Yasunari Kawabata)", "work": "The Dancing Girl of Izu", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, the elderly businessman Shingo Ogata forgives his daughter-in-law Kikuko for aborting her pregnancy in protest of son Shuichi's affair", "back": "The Sound of the Mountain (Yasunari Kawabata)", "work": "The Sound of the Mountain", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, the writer Oki Toshio visits his ex-lover Otoko, now a painter in a lesbian relationship with protege Keiko, years after writing A Girl of Sixteen about their affair", "back": "Beauty and Sadness (Yasunari Kawabata)", "work": "Beauty and Sadness", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel chronicles a six-month-long Go match between old master Honinbo Shusai and younger Otake, based on the author's journalism", "back": "The Master of Go (Yasunari Kawabata)", "work": "The Master of Go", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novella, Old Eguchi visits an establishment where impotent old men sleep next to drugged young virgins", "back": "The House of the Sleeping Beauties (Yasunari Kawabata)", "work": "The House of the Sleeping Beauties", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, children play with colored lanterns and a boy's name is projected in green light on a girl's breast; a rare bell cricket is given by mistake", "back": "\"The Grasshopper and the Bell Cricket\" (Yasunari Kawabata)", "work": "Palm-of-the-Hand Stories", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this Japanese author's Nobel lecture 'Japan, the Beautiful, and Myself' declared 'suicide is not a form of enlightenment'", "back": "Yasunari Kawabata", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, the foundling Chieko discovers she has a twin sister Naeko; suitor Hideo confuses them", "back": "The Old Capital (Yasunari Kawabata)", "work": "The Old Capital", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this humorous palm-of-the-hand story, a peasant builds a lavish outhouse but dies of back pain on his rival's pay toilet", "back": "\"Lavatory Buddhahood\" (Yasunari Kawabata)", "work": "Palm-of-the-Hand Stories", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, a man infatuated with the roundness of a girl's shoulder takes her talking arm home with him", "back": "\"One Arm\" (Yasunari Kawabata)", "work": "One Arm", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

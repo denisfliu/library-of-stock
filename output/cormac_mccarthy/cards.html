@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Cormac McCarthy";
 let cards = [{"type": "basic", "indicator": "Novel", "front": "Novel: the Kid joins the Glanton Gang under Judge Holden, a giant 7-foot hairless polymath who claims 'Whatever in creation exists without my knowledge exists without my consent' and 'War is God'; dances naked with strippers after presumably murdering the Kid in an outhouse", "back": "Blood Meridian (Cormac McCarthy)", "work": "Blood Meridian", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the Kid is born in Tennessee during a meteor shower; first meets the Judge when the Judge crashes a religious revival accusing the preacher of bestiality; joins Captain White's filibustering militia before the Glanton Gang", "back": "Blood Meridian (Cormac McCarthy)", "work": "Blood Meridian", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: John Grady Cole runs away to Mexico from his dead grandfather's ranch with friend Rawlins; has affair with Alejandra, whose father betrays them to the authorities", "back": "All the Pretty Horses (Cormac McCarthy)", "work": "All the Pretty Horses", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: teenager Jimmy Blevins claims to be deaf in one ear after being struck by lightning; kills a man retrieving his Colt pistol and is eventually hanged", "back": "All the Pretty Horses (Cormac McCarthy)", "work": "All the Pretty Horses", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: protagonist stabs a cuchillero to death in a prison knife fight after discussing countries with Perez; cauterizes a gunshot wound with a heated pistol barrel", "back": "All the Pretty Horses (Cormac McCarthy)", "work": "All the Pretty Horses", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Anton Chigurh pursues Llewelyn Moss who found $2.4M in drug money near the Mexican border; Chigurh carries a captive bolt stunner, flips coins to decide victims' fates, kills Carla Jean", "back": "No Country for Old Men (Cormac McCarthy)", "work": "No Country for Old Men", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: title from Yeats's 'Sailing to Byzantium'; Coen brothers adapted it with Javier Bardem as Chigurh", "back": "No Country for Old Men (Cormac McCarthy)", "work": "No Country for Old Men", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: ends with Sheriff Bell's dream of his dead father carrying a moon-colored horn lit with fire", "back": "No Country for Old Men (Cormac McCarthy)", "work": "No Country for Old Men", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: unnamed father and son travel post-apocalyptic America; father tells son they are 'carrying the fire' and are 'good guys'; father has two bullets; ends with brook trout whose backs are 'maps of the world in its becoming'", "back": "The Road (Cormac McCarthy)", "work": "The Road", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: protagonists find human infants cooked on a spit; a wall of human heads; the mother earlier killed herself with a piece of obsidian", "back": "The Road (Cormac McCarthy)", "work": "The Road", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: won the Pulitzer Prize; inspired by McCarthy seeing 'fires on the hill' while visiting El Paso with his son", "back": "The Road (Cormac McCarthy)", "work": "The Road", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Cornelius Suttree abandons his luxurious life to live as a catfish-seller on a houseboat in Knoxville's McAnally Flats on the Tennessee River", "back": "Suttree (Cormac McCarthy)", "work": "Suttree", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Gene Harrogate ('the Moonlight Melonmounter') sent to a work camp for violating watermelons; befriends the title character", "back": "Suttree (Cormac McCarthy)", "work": "Suttree", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: serial killer 'much like yourself perhaps' named Lester Ballard lives in a cave in Tennessee keeping bodies of murdered women; his body is dissected by medical students at the end", "back": "Child of God (Cormac McCarthy)", "work": "Child of God", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: three unnamed characters burn a child in the same site where they hang a character known as the Tinker; sibling protagonists Culla and Rinthy", "back": "Outer Dark (Cormac McCarthy)", "work": "Outer Dark", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: 2022 companion novels about mathematical prodigies whose father worked on the atomic bomb; sister hallucinates the Thalidomide Kid; Stella Maris is a 'coda' to The Passenger", "back": "The Passenger / Stella Maris (Cormac McCarthy)", "work": "The Passenger / Stella Maris", "frequency": 3, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

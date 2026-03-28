@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Thomas Tallis";
 let cards = [{"type": "basic", "indicator": "Motet", "front": "Motet: 40-voice work scored for eight choirs of five voices each; text from the Book of Judith ending 'respice humilitatem nostram'", "back": "Spem in alium (Thomas Tallis)", "work": "Spem in alium", "frequency": 14, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: possibly written for Elizabeth I's 40th birthday; may have been commissioned to outdo Alessandro Striggio's Ecce beatam lucem", "back": "Spem in alium (Thomas Tallis)", "work": "Spem in alium", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: eight choirs arranged in a horseshoe around the audience; melodies pass between choirs before all forty voices unite", "back": "Spem in alium (Thomas Tallis)", "work": "Spem in alium", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: Janet Cardiff's contemporary installation plays the forty parts from separate speakers; featured permanently at the National Gallery of Canada", "back": "Spem in alium (Thomas Tallis)", "work": "Spem in alium", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Choral Work", "front": "Choral Work: 1910 work by Ralph Vaughan Williams for double string orchestra and string quartet, based on Tallis's Phrygian psalm tune; premiered at the Three Choirs Festival", "back": "Fantasia on a Theme by Thomas Tallis (Ralph Vaughan Williams)", "work": "Fantasia on a Theme by Thomas Tallis (Vaughan Williams)", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Choral Work", "front": "Choral Work: divides the string orchestra into three sections of differing size; opens with two orchestras playing pianissimo e molto sostenuto", "back": "Fantasia on a Theme by Thomas Tallis (Ralph Vaughan Williams)", "work": "Fantasia on a Theme by Thomas Tallis (Vaughan Williams)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Choral Work", "front": "Choral Work: Tallis's Phrygian setting of Psalm 2; the third of nine tunes written for Archbishop Matthew Parker's Psalter", "back": "\"Why Fum'th in Fight\" / Third Mode Melody (Thomas Tallis)", "work": "\"Why Fum'th in Fight\" / Third Mode Melody / Tallis Canon", "frequency": 9, "tags": []}, {"type": "basic", "indicator": "Choral Work", "front": "Choral Work: hymn tune 'Glory to thee, my God, this night' is taken from this Tallis work also in Archbishop Parker's Psalter", "back": "Tallis Canon (Thomas Tallis)", "work": "\"Why Fum'th in Fight\" / Third Mode Melody / Tallis Canon", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: two settings of Tenebrae lessons for Maundy Thursday; scored ATTBB; each verse begins with a Hebrew letter", "back": "Lamentations of Jeremiah (Thomas Tallis)", "work": "Lamentations of Jeremiah", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: Richard Terry argued in Downside Review that this work showed Tallis had lifelong allegiance to the Roman Catholic church", "back": "Lamentations of Jeremiah (Thomas Tallis)", "work": "Lamentations of Jeremiah", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: joint collection of 34 motets by Tallis and William Byrd, published 1575; dedicated to Elizabeth I; was a commercial failure", "back": "Cantiones Sacrae (Tallis and Byrd)", "work": "Cantiones Sacrae", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Elizabeth I granted this composer and his student William Byrd a joint 21-year monopoly on printing polyphonic music in 1575", "back": "Thomas Tallis", "work": "William Byrd relationship / Music Monopoly", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Byrd wrote the elegy 'Ye Sacred Muses' to commemorate this composer's death", "back": "Thomas Tallis", "work": "William Byrd relationship / Music Monopoly", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: a cappella ensemble named after this composer, founded by Peter Phillips; records on Gimell Records; helped repopularize early vocal music", "back": "Thomas Tallis", "work": "Tallis Scholars", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: early antiphon to the Virgin Mary in the Phrygian mode; motifs reused in a five-part mass of the same name", "back": "Salve intemerata (Thomas Tallis)", "work": "Salve intemerata", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: served the Chapel Royal through four Tudor monarchs, adapting religious style from Catholic polyphony to Protestant psalm tunes", "back": "Thomas Tallis", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: 'If ye love me' — four-part syllabic anthem setting a vernacular text from the Gospel of John", "back": "Thomas Tallis", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: O nata lux de lumine — notable for a cross relationship (false relation) in the final cadence, with the top voice singing F-sharp to G against a descending F–E-flat–D in the tenor", "back": "Thomas Tallis", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Short Service in the Dorian Mode — includes Magnificat and Nunc Dimittis sections", "back": "Thomas Tallis", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: Egerton and Gresham manuscripts are its principal sources; structure may have been inspired by the architecture of Nonsuch Palace", "back": "Spem in alium (Thomas Tallis)", "work": "Spem in alium", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: its length may reflect the gematria value of 'Judith' and the composer's surname, both equal to 69; Peter Gregson used multitracking to perform all 40 voices on a single cello", "back": "Spem in alium (Thomas Tallis)", "work": "Spem in alium", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: recorded by the Kronos Quartet for their album Black Angels", "back": "Spem in alium (Thomas Tallis)", "work": "Spem in alium", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Choral Work", "front": "Choral Work: premiered at the 1910 Three Choirs Festival held at Gloucester Cathedral", "back": "Fantasia on a Theme by Thomas Tallis (Ralph Vaughan Williams)", "work": "Fantasia on a Theme by Thomas Tallis (Vaughan Williams)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Christmas Mass 'Puer natus est nobis' — written for Mary I, possibly in preparation for the hoped birth of an heir", "back": "Thomas Tallis", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: also wrote a Miserere nostri", "back": "Thomas Tallis", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

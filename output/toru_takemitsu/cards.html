@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Toru Takemitsu";
 let cards = [{"type": "basic", "indicator": "Orchestral Work", "front": "Orchestral Work: Commissioned for the 125th anniversary of the New York Philharmonic; for biwa, shakuhachi, and orchestra", "back": "November Steps (Toru Takemitsu)", "work": "November Steps", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Orchestral Work", "front": "Orchestral Work: Takemitsu secluded himself with Debussy scores (Prelude to the Afternoon of a Faun and Jeux) at a mountain villa to write this work", "back": "November Steps (Toru Takemitsu)", "work": "November Steps", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Orchestral Work", "front": "Orchestral Work: Seiji Ozawa conducted the premiere of this Takemitsu work", "back": "November Steps (Toru Takemitsu)", "work": "November Steps", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Orchestral Work", "front": "Orchestral Work: Leonard Bernstein's suggestions after hearing Eclipse inspired Takemitsu to write this work", "back": "November Steps (Toru Takemitsu)", "work": "November Steps", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Orchestral Work", "front": "Orchestral Work: Originally titled 'Water Rings'; Jasper Johns advised Takemitsu to rename it to reflect its premiere month", "back": "November Steps (Toru Takemitsu)", "work": "November Steps", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Work for biwa and shakuhachi; long pauses during which poetry by Rabindranath Tagore is recited", "back": "Eclipse (Toru Takemitsu)", "work": "Eclipse", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Hearing this Takemitsu work led Leonard Bernstein to suggest writing November Steps", "back": "Eclipse (Toru Takemitsu)", "work": "Eclipse", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Takemitsu's last solo piano work; subtitled 'in memoriam Olivier Messiaen'", "back": "Rain Tree Sketch II (Toru Takemitsu)", "work": "Rain Tree Sketch II", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Uses an E-flat–E–A sea motive; dedicated to Messiaen", "back": "Rain Tree Sketch II (Toru Takemitsu)", "work": "Rain Tree Sketch II", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Its many silences exemplify the Japanese concept of ma (negative space); episodes marked 'Celestially light' bookend it", "back": "Rain Tree Sketch II (Toru Takemitsu)", "work": "Rain Tree Sketch II", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Greenpeace-commissioned piece inspired by Moby Dick; features an S-E-A musical cryptogram", "back": "Toward the Sea (Toru Takemitsu)", "work": "Toward the Sea", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Version for flute, harp, and string orchestra; sections each reference Moby Dick", "back": "Toward the Sea (Toru Takemitsu)", "work": "Toward the Sea", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film Score", "front": "Film Score: Music abruptly stops when a gunshot rings out during the attack on the third castle", "back": "Ran (film score) (Toru Takemitsu)", "work": "Ran (film score, 1985)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film Score", "front": "Film Score: Second Kurosawa collaboration (after Dodes'ka-den); includes the track 'Hell's Picture Scroll' in a battle scene", "back": "Ran (film score) (Toru Takemitsu)", "work": "Ran (film score, 1985)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film Score", "front": "Film Score (Ran): Includes 'Flute of Darkness' — a shakuhachi plays piercing high notes as buildings burn", "back": "Ran (film score) (Toru Takemitsu)", "work": "Ran (film score, 1985)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Aleatoric piece; five etudes represented in the score as circles; no traditional musical notation; influenced by John Cage", "back": "Corona (Toru Takemitsu)", "work": "Corona", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Orchestral Work", "front": "Orchestral Work: String orchestra piece praised by Stravinsky, who took Takemitsu out to lunch after hearing it", "back": "Requiem for Strings (Toru Takemitsu)", "work": "Requiem for Strings", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Orchestral Work", "front": "Orchestral Work: Heard on Stravinsky's 1958 tour through Tokyo; helped gain Takemitsu international recognition", "back": "Requiem for Strings (Toru Takemitsu)", "work": "Requiem for Strings", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Orchestral Work", "front": "Orchestral Work: Viola concerto; title taken from a poem by Makota Ooka", "back": "The String Around Autumn (Toru Takemitsu)", "work": "The String Around Autumn", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Subtitled 'Say sea, take me!'; references the influence of Debussy's La mer", "back": "Quotation of Dream (Toru Takemitsu)", "work": "Quotation of Dream", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Written after Takemitsu met choreographer Jiri Kylian and indigenous dancers in Australia's Northern Territory", "back": "Quotation of Dream (Toru Takemitsu)", "work": "Quotation of Dream", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film Score", "front": "Film Score (1962): Opens with atonal music over mist swirling around an empty suit of armor; climactic murder set to 'Dido's Lament'", "back": "Pale Flower (film score) (Toru Takemitsu)", "work": "Pale Flower (film score)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film Score", "front": "Film Score: String glissandi represent shifting sands", "back": "Woman in the Dunes (film score) (Toru Takemitsu)", "work": "Woman in the Dunes (film score)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film Score", "front": "Film Score (Harakiri): Climactic duel in rippling grass set to aggressive biwa strumming; Donald Richie noted composer repeatedly used a single chord fading into silence", "back": "Harakiri (film score) (Toru Takemitsu)", "work": "Harakiri (film score)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: For flute, viola, and harp; same trio instrumentation as Debussy's sonata for diverse instruments", "back": "And then I knew 'twas Wind (Toru Takemitsu)", "work": "And then I knew 'twas Wind", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: Homage to Messiaen's Quartet for the End of Time; written after Messiaen played an excerpt for Takemitsu at the piano", "back": "Quatrain II (Toru Takemitsu)", "work": "Quatrain II", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composition", "front": "Composition: 12 Songs for guitar includes a transcription of Summertime; Takemitsu also wrote Valeria and Folios for guitar", "back": "Guitar works (Toru Takemitsu)", "work": "Guitar Works / 12 Songs / Valeria / Folios / And then I knew 'twas Wind", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Largely self-taught modern Japanese composer; called Debussy his 'great mentor' and Messiaen his 'spiritual mentor'; studied under John Cage", "back": "Toru Takemitsu", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Incorporated traditional Japanese instruments biwa and shakuhachi into concert works including Eclipse and November Steps", "back": "Toru Takemitsu", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Collaborated frequently with Akira Kurosawa; composed scores for over 100 films, especially Japanese New Wave cinema", "back": "Toru Takemitsu", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Signature technique of careful use of silence in film scores", "back": "Toru Takemitsu", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Likened his music to 'the stillness of grass and flowers'", "back": "Toru Takemitsu", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Initially averse to Japanese musical tradition; embraced it after a commission for the Imperial Household's gagaku ensemble", "back": "Toru Takemitsu", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Wrote one novel, featuring a detective character", "back": "Toru Takemitsu", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: An annual composition award bears his name; Kaija Saariaho was the first woman to judge it (2015)", "back": "Toru Takemitsu", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Robert Schumann";
 let cards = [{"type": "basic", "indicator": "Composer", "front": "Composer: married Clara Wieck in 1840 (his 'Year of Song'); expressed himself through fictional alter egos Florestan (fiery) and Eusebius (lyrical); co-founded the Neue Zeitschrift für Musik", "back": "Robert Schumann", "work": "General / Biographical", "frequency": 15, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: championed Chopin with Eusebius exclaiming 'Hats off, gentlemen, a genius!' in a review of Chopin's variations on 'Là ci darem la mano'; published 'New Paths' endorsing the young Brahms in 1853", "back": "Robert Schumann", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: attempted suicide by jumping into the Rhine; died at the Endenich asylum (1856); his last piece, Ghost Variations, was based on a melody he thought was dictated by ghosts but was from his own D minor Violin Concerto", "back": "Robert Schumann", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Étude", "front": "Étude: set of 21 piano miniatures on an ASCH cryptogram; depicts commedia dell'arte characters alongside 'Chiarina' (Clara), 'Estrella,' Paganini, and Chopin; contains a never-to-be-played 'Sphinxes' section; ends with a 'March of the Davidsbündler'", "back": "Carnaval (Schumann)", "work": "Carnaval (Op. 9)", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Song Cycle", "front": "Song Cycle: 16 Heine songs; opens with 'Im wunderschönen Monat Mai' (ends on an unresolved dominant 7th); 'Ich grolle nicht' (C major chords); last song imagines casting a coffin into the sea", "back": "Dichterliebe (Schumann)", "work": "Dichterliebe (Op. 48)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Étude", "front": "Étude: 13 short piano pieces depicting a child's world; most famous movement is 'Träumerei' ('Dreaming')", "back": "Kinderszenen / Scenes from Childhood (Schumann)", "work": "Kinderszenen (Scenes from Childhood, Op. 15)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Étude", "front": "Étude: piano fantasy in C major; first movement has an 'Im Legenden-ton' middle section and ends with a coda quoting Beethoven's An die ferne Geliebte; originally titled 'Ruins'", "back": "Fantasie in C (Schumann)", "work": "Fantasie in C (Op. 17)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Concerto", "front": "Concerto: in A minor; premiered by Clara Wieck; begins with a tutti chord, three bars of solo piano, two more tutti chords, and a woodwind chorale from the oboe; main theme contains a cipher for 'Chiara'", "back": "Piano Concerto in A minor (Schumann)", "work": "Piano Concerto in A minor (Op. 54)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Concerto", "front": "Concerto: E-flat major chamber work; first movement opens with a minor-seventh leap (E-flat to D-flat); second movement is a funeral march; finale has a double fugue; influenced Brahms's Piano Quintet", "back": "Piano Quintet in E-flat major (Schumann)", "work": "Piano Quintet in E-flat major (Op. 44)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Symphony", "front": "Symphony: 'Rhenish' symphony in E-flat; five movements; inspired by Cologne Cathedral; fourth movement features the trombones' first entrance — a solemn chorale in E-flat minor", "back": "Symphony No. 3 (Schumann)", "work": "Symphony No. 3 in E-flat major (\"Rhenish\")", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Symphony", "front": "Symphony: C major symphony — the only homotonal 19th-century symphony (all movements in C); Mendelssohn conducted the premiere; second-movement scherzo unusually has two trios", "back": "Symphony No. 2 (Schumann)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: two different song cycles both titled Liederkreis — Op. 24 sets Heine, Op. 39 sets Eichendorff; both composed during Year of Song 1840", "back": "Robert Schumann", "work": "Other Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Toccata in C originally called 'Fantastic Study in Double Notes' — Schumann claimed it was 'the hardest piece ever written'", "back": "Robert Schumann", "work": "Other Works", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

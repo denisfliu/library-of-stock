@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Heinrich von Kleist";
 let cards = [{"type": "basic", "indicator": "Short Story", "front": "Short Story: the title pregnant noblewoman places a newspaper advertisement seeking the father of her unborn child; a Russian Count who had rescued her confesses", "back": "\"The Marquise of O\" (Heinrich von Kleist)", "work": "The Marquise of O", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the assault on the title character is represented only with a dash in the text; the Count had rescued her from soldiers but assaulted her after she fainted", "back": "\"The Marquise of O\" (Heinrich von Kleist)", "work": "The Marquise of O", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: in an incestuous reconciliation, the Commandant father \"hung over her as if she were his first love and held her mouth and kissed it\"", "back": "\"The Marquise of O\" (Heinrich von Kleist)", "work": "The Marquise of O", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the groom Leopardo the chasseur is put up to feigning responsibility; the Marquise says she was \"ready for some villain of a fellow... but not the devil\"", "back": "\"The Marquise of O\" (Heinrich von Kleist)", "work": "The Marquise of O", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Judge Adam tries to conceal his destruction of the title object; the secretary Licht uncovers his guilt; Ruprecht and Eve are initially implicated", "back": "The Broken Jug (Heinrich von Kleist)", "work": "The Broken Jug", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: a judge claims his wig was destroyed because his cat had kittens in it; Brigitte testifies the wig caught on a grapevine as the club-footed judge fled", "back": "The Broken Jug (Heinrich von Kleist)", "work": "The Broken Jug", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: inspired by a French copper engraving called La Cruche Cassee; Marthe gives a monologue about the jug's previous owners including a Spanish invader killed by Childerich", "back": "The Broken Jug (Heinrich von Kleist)", "work": "The Broken Jug", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: Josefa goes into labor during a Corpus Christi procession; her lover Jeronimo Rugera prepares to hang himself but is saved by the title event", "back": "\"The Earthquake in Chile\" (Heinrich von Kleist)", "work": "The Earthquake in Chile", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the child Philip is adopted after Don Fernando is killed by a religious mob; a priest compares the city to Sodom", "back": "\"The Earthquake in Chile\" (Heinrich von Kleist)", "work": "The Earthquake in Chile", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novella", "front": "Novella: the title horse-dealer leads a rebellion after Junker Wenzel von Tronka mistreats his horses; before being beheaded, he swallows a scroll predicting the fate of the Elector of Saxony", "back": "Michael Kohlhaas (Heinrich von Kleist)", "work": "Michael Kohlhaas", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novella", "front": "Novella: Coalhouse Walker in Doctorow's Ragtime is named in homage to its title character; also inspired Coetzee's The Life and Times of Michael K", "back": "Michael Kohlhaas (Heinrich von Kleist)", "work": "Michael Kohlhaas", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Essay", "front": "Essay: a dancer argues the title objects dance without gravity; a man tells a story about fencing with a bear owned by a Baltic noble family", "back": "\"On the Marionette Theatre\" (Heinrich von Kleist)", "work": "On the Marionette Theatre", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Essay", "front": "Essay: concludes that grace appears most in objects with no consciousness or infinite consciousness; we must \"eat of the fruit of the tree of knowledge again\"", "back": "\"On the Marionette Theatre\" (Heinrich von Kleist)", "work": "On the Marionette Theatre", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the title character sleepwalks, putting on a laurel wreath and receiving a glove from Princess Natalie; sentenced to death for disobeying orders at the Battle of Fehrbellin", "back": "Prince Friedrich of Homburg (Heinrich von Kleist)", "work": "Prince Friedrich of Homburg", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: in the most controversial scene, the title character sees his open grave and desperately begs for his life; this final play was not performed during its author's lifetime", "back": "Prince Friedrich of Homburg (Heinrich von Kleist)", "work": "Prince Friedrich of Homburg", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the title character gnaws on Achilles' corpse with her dogs and laments confusing \"Bisse\" (bites) with \"Kusse\" (kisses) before stabbing herself", "back": "Penthesilea (Heinrich von Kleist)", "work": "Penthesilea", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: four brothers go mad and intone the Gloria in Excelsis every midnight after attempting to ransack a cloister in Aachen", "back": "\"St. Cecilia, or the Power of Music\" (Heinrich von Kleist)", "work": "Other Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: a nobleman burns his castle after it is haunted by the ghost of a beggar woman whose death he caused", "back": "\"The Beggarwoman of Locarno\" (Heinrich von Kleist)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Playwright", "front": "Playwright: Kafka loved this author, saying reading him \"fills me as if I were an old pig's bladder\"; Max Brod compared Kafka to this author", "back": "Heinrich von Kleist", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Playwright", "front": "Playwright: Robert Walser wrote \"Kleist in Thun\" about this author; Susan Sontag called Walser the \"missing link\" between this author and Kafka", "back": "Heinrich von Kleist", "work": "General / Biographical", "frequency": 3, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

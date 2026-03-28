@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "John Keats";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: 'Beauty is truth, truth beauty' — addresses an 'Attic shape' called a 'foster-child of Silence and slow Time' and 'unravish'd bride of quietness'", "back": "\"Ode on a Grecian Urn\" (John Keats)", "work": "\"Ode on a Grecian Urn\"", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker desires to 'die upon the midnight with no pain'; asks 'Do I wake or sleep?' after declaring 'thou wast not born for death, immortal Bird!'", "back": "\"Ode to a Nightingale\" (John Keats)", "work": "\"Ode to a Nightingale\"", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Much have I travell'd in the realms of gold'; feels like 'stout Cortez' staring at the Pacific or 'some watcher of the skies'", "back": "\"On First Looking into Chapman's Homer\" (John Keats)", "work": "\"On First Looking into Chapman's Homer\"", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'O what can ail thee, knight-at-arms / Alone and palely loitering?' by a lake 'where the sedge has wither'd and no birds sing'", "back": "\"La Belle Dame Sans Merci\" (John Keats)", "work": "\"La Belle Dame Sans Merci\"", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Season of mists and mellow fruitfulness'; 'Where are the songs of spring? Ay, where are they?'; ends with swallows twittering", "back": "\"To Autumn\" (John Keats)", "work": "\"To Autumn\"", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: unfinished epic about the fall of the Titans; abandoned because of 'too many Miltonic inversions'", "back": "Hyperion (John Keats)", "work": "Hyperion and Endymion", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens 'A thing of beauty is a joy forever'; Hymn to Pan leads Wordsworth to call it 'a very pretty piece of paganism'", "back": "Endymion (John Keats)", "work": "Hyperion and Endymion", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: letters contain the concept of negative capability: 'being in uncertainties, Mysteries, doubts, without any irritable reaching after fact and reason'", "back": "John Keats", "work": "Letters and Negative Capability", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: letters describe life as a 'Mansion of Many Apartments' and the world as a 'vale of soul-making'", "back": "John Keats", "work": "Letters and Negative Capability", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: brothers discover Lorenzo's head in the title container; adapted from the Decameron", "back": "\"Isabella; or the Pot of Basil\" (John Keats)", "work": "Other Poems", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Madeline falls asleep to see her future husband; Porphyro lays out 'candied apple, quince and plum and gourd'; nurse Angela and the Beadsman die", "back": "\"The Eve of St. Agnes\" (John Keats)", "work": "\"The Eve of St. Agnes\"", "frequency": 4, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

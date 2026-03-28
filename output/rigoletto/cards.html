@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Rigoletto";
 let cards = [{"type": "basic", "indicator": "Opera", "front": "Opera: Rigoletto opens a sack expecting the Duke's body, but finds his dying daughter Gilda — he hears the Duke still alive in a distant reprise of 'La donna è mobile'", "back": "Rigoletto (Verdi)", "work": "Rigoletto", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: based on Victor Hugo's Le roi s'amuse; libretto by Francesco Piave; Hugo considered it plagiaristic", "back": "Rigoletto (Verdi)", "work": "Rigoletto", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: premiered at Teatro La Fenice in Venice in 1851", "back": "Rigoletto (Verdi)", "work": "Rigoletto", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Count Monterone curses the Duke and the title jester at the start; the jester's last words are 'La maledizione!' ('the curse!')", "back": "Rigoletto (Verdi)", "work": "Rigoletto", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Rigoletto is blindfolded by courtiers and made to hold a ladder while they kidnap his own daughter Gilda (believing they are abducting Countess Ceprano)", "back": "Rigoletto (Verdi)", "work": "Rigoletto", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: 'scene and storm trio' features an offstage male chorus humming wordlessly in chromatic parallel thirds to simulate wind; Julian Budden called it 'without antecedent'", "back": "Rigoletto (Verdi)", "work": "Rigoletto", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Franz Liszt included a concert paraphrase of its quartet in his piano arrangements", "back": "Rigoletto (Verdi)", "work": "Rigoletto", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: the Duke of Mantua declares women are 'flighty' (like a feather in the wind) in the Act III aria 'La donna è mobile'; Rigoletto discovers Gilda's death when he hears a distant reprise", "back": "Rigoletto (Verdi)", "work": "'La donna è mobile'", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: 'La donna è mobile' was in B major, 3/8 time; tenor Raffaele Mirate was forbidden from humming it before the premiere so it would not leak", "back": "Rigoletto (Verdi)", "work": "'La donna è mobile'", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Gilda sings 'Caro nome,' rhapsodizing about the (fake) name of her beloved — 'Gualtier Malde' — not knowing he is the Duke in disguise", "back": "Rigoletto (Verdi)", "work": "'Caro nome' (Gilda's aria)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: in the aria 'Pari siamo!,' Rigoletto compares his sharp tongue to Sparafucile's dagger: 'We are alike — my weapon is my tongue, his is his dagger'", "back": "Rigoletto (Verdi)", "work": "'Pari siamo!' (Rigoletto's aria)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Act III quartet 'Bella figlia dell'amore' — the Duke woos Maddalena with the same words he used on Gilda, while Gilda watches and Rigoletto vows revenge", "back": "Rigoletto (Verdi)", "work": "Quartet 'Bella figlia dell'amore'", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: 'Questa o quella' — the Duke's Act I aria proclaiming 'this woman or that woman' are all the same to him", "back": "Rigoletto (Verdi)", "work": "Other Arias and Numbers", "frequency": 4, "tags": []}, {"type": "audio", "indicator": "high", "front": "Opening six-note phrase of 'La donna è mobile': three emphatic D-sharps then descending", "back": "'La donna è mobile' (Rigoletto)", "work": "'La donna è mobile'", "frequency": 0, "mp3": "audio/0.mp3", "abc": "X:1\nT:La donna e mobile opening\n%%MIDI program 56\nM:3/8\nL:1/8\nK:C\n|^D ^D ^D| ^F/2E/ ^C/2^D/| ^D ^D ^D|", "needs_review": true, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

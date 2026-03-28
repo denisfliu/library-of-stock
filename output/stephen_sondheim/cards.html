@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Stephen Sondheim";
 let cards = [{"type": "basic", "indicator": "Musical", "front": "Musical: Stage adaptation of a Victorian penny-dreadful about the 'Demon Barber of Fleet Street'", "back": "Sweeney Todd (Stephen Sondheim)", "work": "Sweeney Todd (1979)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: 'A Little Priest' — Mrs. Lovett imagines whether priests or poets would taste better in her cannibalistic pies; 'Shepherd's pie peppered / With actual shepherd on top'", "back": "Sweeney Todd (Stephen Sondheim)", "work": "Sweeney Todd (1979)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Begins with an ominous organ solo cut off by the shrill sound of a whistle", "back": "Sweeney Todd (Stephen Sondheim)", "work": "Sweeney Todd (1979)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Features a Stravinsky-inspired 'madness motif' repeating the eighth-note pattern D, C, D, C, E-flat, C, F, C", "back": "Sweeney Todd (Stephen Sondheim)", "work": "Sweeney Todd (1979)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Anthony Hope sings 'I feel you, and one day, I'll steal you' to a character that Judge Turpin intends to marry", "back": "Johanna, from Sweeney Todd (Stephen Sondheim)", "work": "Sweeney Todd (1979)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Bobby celebrates his 35th birthday and sings 'Being Alive' ('Somebody, hold me too close / Somebody, hurt me too deep')", "back": "Company (Stephen Sondheim)", "work": "Company (1970)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Amy panics on the morning of her wedding, lambasting 'a prehistoric ritual where everybody promises fidelity forever' in rapid patter", "back": "Company (Stephen Sondheim)", "work": "Company (1970)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Features the Act II dance 'Tick-Tock' and the descending minor third 'A-flat, F' calling the protagonist's name", "back": "Company (Stephen Sondheim)", "work": "Company (1970)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Rhymed 'personable' with 'coercin' a bull' in a work staged by Marianne Elliott in a genderbent revival", "back": "Company (Stephen Sondheim)", "work": "Company (1970)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Song", "front": "Song: 'Isn't it rich? / Are we a pair? / Me here at last on the ground and you in midair' — sung by Desiree in a Bergman-inspired musical", "back": "\"Send in the Clowns\" from A Little Night Music (Stephen Sondheim)", "work": "A Little Night Music (1973)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: This student of Milton Babbitt included many pauses in a melody to fit Glynis Johns's voice", "back": "Stephen Sondheim (\"Send in the Clowns\" from A Little Night Music)", "work": "A Little Night Music (1973)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Ravel inspired the many 'Night Waltzes' in this work, orchestrated by Jonathan Tunick", "back": "A Little Night Music (Stephen Sondheim)", "work": "A Little Night Music (1973)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: About a French pointillist painter; songs include 'Finishing the Hat,' 'Color and Light,' and 'Move On'", "back": "Sunday in the Park with George (Stephen Sondheim)", "work": "Sunday in the Park with George (1984)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Opens with 'White. A blank page or canvas. The challenge: bring order to the whole.'", "back": "Sunday in the Park with George (Stephen Sondheim)", "work": "Sunday in the Park with George (1984)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Mandy Patinkin debuted the lead role; Bernadette Peters played Dot and Marie", "back": "Sunday in the Park with George (Stephen Sondheim)", "work": "Sunday in the Park with George (1984)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Mishmashes fairy tales like Jack and the Beanstalk and Little Red Riding Hood; songs include 'Agony,' 'It Takes Two,' and 'No One is Alone'", "back": "Into the Woods (Stephen Sondheim)", "work": "Into the Woods (1987)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: 1987 'Prologue' contains the triple homonym 'withers wither with her' and the rhyme 'ask it / basket'", "back": "Into the Woods (Stephen Sondheim)", "work": "Into the Woods (1987)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Uses reverse chronology to follow the disintegrating friendship of Mary Flynn, Charley Kringas, and Franklin Shepard; described as this composer's 'biggest flop'", "back": "Merrily We Roll Along (Stephen Sondheim)", "work": "Merrily We Roll Along (1981)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Jonathan Groff starred as Frank alongside Daniel Radcliffe and Lindsay Mendez in the 2023 revival of this Sondheim musical", "back": "Merrily We Roll Along (Stephen Sondheim)", "work": "Merrily We Roll Along (1981)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: About the 30th reunion of a vaudeville act; Sally Durant sings the torch song 'Losing My Mind' about Ben Stone", "back": "Follies (Stephen Sondheim)", "work": "Follies (1971)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Song", "front": "Song: 'been through Herbert and J. Edgar Hoover' — a singer recounts the ups and downs of show business in this three-word-titled song from Follies", "back": "\"I'm Still Here\" from Follies (Stephen Sondheim)", "work": "Follies (1971)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Wrote lyrics for West Side Story (with Leonard Bernstein); later scorned 'It's alarming how charming I feel' as 'purple prose'", "back": "Stephen Sondheim", "work": "West Side Story (1957)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: His first annotated lyrics anthology is titled Finishing the Hat", "back": "Stephen Sondheim", "work": "Finishing the Hat (book)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Protege of Oscar Hammerstein; student of Milton Babbitt", "back": "Stephen Sondheim", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Three artistic principles are 'Less is more,' 'Content dictates form,' and 'God is in the details,' all in service of 'CLARITY'", "back": "Stephen Sondheim", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Won an Oscar for composing Madonna's song 'Sooner or Later' from Dick Tracy", "back": "Stephen Sondheim", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Co-wrote the whodunit movie The Last of Sheila with Anthony Perkins", "back": "Stephen Sondheim", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Was working with David Ives on Here We Are (based on two Luis Bunuel films) at the time of his 2021 death", "back": "Stephen Sondheim", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Cameoed on a Zoom call with Benoit Blanc and Angela Lansbury in Glass Onion", "back": "Stephen Sondheim", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Quadruple rhyme 'he goes / she goes / egos / amigos' delighted Cole Porter", "back": "Stephen Sondheim", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Finale (2022) by D.T. Max includes 'late conversations' in which this composer calls Vertigo 'the most overrated movie ever'", "back": "Stephen Sondheim", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: John Mulaney parodied this composer in the Documentary Now! episode 'Co-Op,' spoofing D.A. Pennebaker's Original Cast Album", "back": "Stephen Sondheim", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

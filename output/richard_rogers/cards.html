@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Richard Rogers";
 let cards = [{"type": "image", "indicator": "Building", "front": "", "back": "Centre Pompidou (1977) (Richard Rogers)", "work": "Centre Pompidou (1977)", "frequency": 15, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/MG_3680-Richard-Rogers_ZipUpHouse.jpg/500px-MG_3680-Richard-Rogers_ZipUpHouse.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: exterior has color-coded pipes — blue for air/oxygen, green for water, yellow for electricity, red for elevators and escalators", "back": "Centre Pompidou (1977) (Richard Rogers)", "work": "Centre Pompidou (1977)", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/MG_3680-Richard-Rogers_ZipUpHouse.jpg/500px-MG_3680-Richard-Rogers_ZipUpHouse.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: design inspired by Archigram's 'Plug-In City' and Cedric Price's Fun Palace", "back": "Centre Pompidou (1977) (Richard Rogers)", "work": "Centre Pompidou (1977)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/MG_3680-Richard-Rogers_ZipUpHouse.jpg/500px-MG_3680-Richard-Rogers_ZipUpHouse.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: exterior escalator runs up the facade in a glass tube nicknamed 'the caterpillar'", "back": "Centre Pompidou (1977) (Richard Rogers)", "work": "Centre Pompidou (1977)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/MG_3680-Richard-Rogers_ZipUpHouse.jpg/500px-MG_3680-Richard-Rogers_ZipUpHouse.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Stravinsky Fountain outside features sculptures by Niki de Saint-Phalle and Jean Tinguely", "back": "Centre Pompidou (1977) (Richard Rogers)", "work": "Centre Pompidou (1977)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/MG_3680-Richard-Rogers_ZipUpHouse.jpg/500px-MG_3680-Richard-Rogers_ZipUpHouse.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: houses the Musée National d'Art Moderne, a public library, and the music research center IRCAM", "back": "Centre Pompidou (1977) (Richard Rogers)", "work": "Centre Pompidou (1977)", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/MG_3680-Richard-Rogers_ZipUpHouse.jpg/500px-MG_3680-Richard-Rogers_ZipUpHouse.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: uses 9-ton cast-steel 'gerberettes' to support long trusses", "back": "Centre Pompidou (1977) (Richard Rogers)", "work": "Centre Pompidou (1977)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/MG_3680-Richard-Rogers_ZipUpHouse.jpg/500px-MG_3680-Richard-Rogers_ZipUpHouse.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Gordon Matta-Clark's Conical Intersect critiqued the perceived gentrification caused by its construction", "back": "Centre Pompidou (1977) (Richard Rogers)", "work": "Centre Pompidou (1977)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/MG_3680-Richard-Rogers_ZipUpHouse.jpg/500px-MG_3680-Richard-Rogers_ZipUpHouse.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: called a 'Trojan Horse' in Sanford Kwinter's Requiem: For the City at the End of the Millennium", "back": "Centre Pompidou (1977) (Richard Rogers)", "work": "Centre Pompidou (1977)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/MG_3680-Richard-Rogers_ZipUpHouse.jpg/500px-MG_3680-Richard-Rogers_ZipUpHouse.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: London insurance market building nicknamed the 'Inside-Out Building,' with utilities placed on the exterior", "back": "Lloyd's Building (1986) (Richard Rogers)", "work": "Lloyd's Building (1986)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: contains the Lutine Bell in its underwriting room", "back": "Lloyd's Building (1986) (Richard Rogers)", "work": "Lloyd's Building (1986)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: described as the 'pop Gothic' version of Gothic architecture", "back": "Lloyd's Building (1986) (Richard Rogers)", "work": "Lloyd's Building (1986)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: sits across the street from Norman Foster's Willis Building in London", "back": "Lloyd's Building (1986) (Richard Rogers)", "work": "Lloyd's Building (1986)", "frequency": 1, "tags": []}, {"type": "image", "indicator": "Building", "front": "", "back": "Millennium Dome / O2 (1999) (Richard Rogers)", "work": "Millennium Dome / O2 (1999)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Greenwich_-_Royal_Observatory_-_View_North_towards_Millennium_Dome_2000_Richard_Rogers_II.jpg/500px-Greenwich_-_Royal_Observatory_-_View_North_towards_Millennium_Dome_2000_Richard_Rogers_II.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: white dome with twelve yellow support towers, each representing an hour on a clock face, symbolizing Greenwich Mean Time", "back": "Millennium Dome / O2 (1999) (Richard Rogers)", "work": "Millennium Dome / O2 (1999)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Greenwich_-_Royal_Observatory_-_View_North_towards_Millennium_Dome_2000_Richard_Rogers_II.jpg/500px-Greenwich_-_Royal_Observatory_-_View_North_towards_Millennium_Dome_2000_Richard_Rogers_II.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: met Norman Foster at Yale; together they co-founded the firm Team 4 with their future spouses Su Brumwell and Wendy Cheesman", "back": "Richard Rogers", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Team 4, co-founded with Norman Foster, designed the Reliance Controls factory", "back": "Richard Rogers", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: King Charles III compared his plans to rebuild Paternoster Square as worse than the Luftwaffe bombings", "back": "Richard Rogers", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed the Senedd (Welsh Parliament) in Wales", "back": "Richard Rogers", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed Terminal 4 of Barajas Airport in Madrid", "back": "Richard Rogers", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: part of the World Trade Center redevelopment team alongside Fumihiko Maki and Norman Foster, under master architect Daniel Libeskind", "back": "Richard Rogers", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

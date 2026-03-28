@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Jorn Utzon";
 let cards = [{"type": "image", "indicator": "Building", "front": "", "back": "Sydney Opera House (Jorn Utzon)", "work": "Sydney Opera House", "frequency": 15, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg/500px-Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: sits on Bennelong Point on Sydney Harbor; roof of fourteen interlocking sail-like white shells", "back": "Sydney Opera House (Jorn Utzon)", "work": "Sydney Opera House", "frequency": 15, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg/500px-Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: shells cast as sections of a sphere — 'spherical solution,' apocryphally inspired by peeling an orange; engineered by Ove Arup and Co.", "back": "Sydney Opera House (Jorn Utzon)", "work": "Sydney Opera House", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg/500px-Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: ran 1300% over budget; Utzon resigned in 1966 before completion; Peter Hall oversaw completion; architect was neither invited nor mentioned at the 1973 opening", "back": "Sydney Opera House (Jorn Utzon)", "work": "Sydney Opera House", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg/500px-Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: design famously pulled from a pile of rejected submissions by juror Eero Saarinen", "back": "Sydney Opera House (Jorn Utzon)", "work": "Sydney Opera House", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg/500px-Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: contains the Joan Sutherland Theater; outer shells covered in more than a million white tiles", "back": "Sydney Opera House (Jorn Utzon)", "work": "Sydney Opera House", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg/500px-Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Le Corbusier's tapestry 'The Dice Are Cast' was commissioned for it, scrapped by Peter Hall, but eventually acquired; one room was later renamed for the architect", "back": "Sydney Opera House (Jorn Utzon)", "work": "Sydney Opera House", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg/500px-Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: the Dennis Wolanski library and archives are located here; 100-meter-wide stairs designed to instill a feeling of 'otherworldliness'", "back": "Sydney Opera House (Jorn Utzon)", "work": "Sydney Opera House", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg/500px-Sydney_%28AU%29%2C_Opera_House_--_2019_--_3054.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: designed with son Jan; combines a flat-roofed mosque with a public square topped by an inclined roof rising toward the Persian Gulf; inspired by a visit to Isfahan", "back": "Kuwait National Assembly Building (Jorn Utzon)", "work": "Kuwait National Assembly Building", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: set on fire by retreating Iraqi troops during the Gulf War", "back": "Kuwait National Assembly Building (Jorn Utzon)", "work": "Kuwait National Assembly Building", "frequency": 2, "tags": []}, {"type": "image", "indicator": "Building", "front": "", "back": "Bagsvaerd Church (Jorn Utzon)", "work": "Bagsvaerd Church", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Bagsv%C3%A6rd_Kirke_2009.jpg/500px-Bagsv%C3%A6rd_Kirke_2009.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: all-white naturally lit interior; vaulted ceiling of reinforced concrete shells inspired by a Chinese pagoda roof or a line of clouds", "back": "Bagsvaerd Church (Jorn Utzon)", "work": "Bagsvaerd Church", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Bagsv%C3%A6rd_Kirke_2009.jpg/500px-Bagsv%C3%A6rd_Kirke_2009.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: cited by critic Kenneth Frampton to introduce the concept of 'Critical Regionalism'", "back": "Bagsvaerd Church (Jorn Utzon)", "work": "Bagsvaerd Church", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Bagsv%C3%A6rd_Kirke_2009.jpg/500px-Bagsv%C3%A6rd_Kirke_2009.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: Danish architect; won the Pritzker Prize in 2003", "back": "Jorn Utzon", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: 'additive architecture' — buildings as the sum of repeating constitutive elements, inspired by nature's growth principles including Chinese temple design", "back": "Jorn Utzon", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: L-shaped Kingo Houses — courtyard dwellings along cul-de-sacs in Denmark; inspired Bjarke Ingels's Mountain Dwellings; also designed his own house in Hellebaek", "back": "Jorn Utzon", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Svaneke Water Tower — spiral staircase ascends into a pyramid resting on three ferro-concrete legs; a planned stadium in Jeddah also exemplifies his additive architecture", "back": "Jorn Utzon", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

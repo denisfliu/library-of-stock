@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Dorothy Parker";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: opens 'Razors pain you; / Rivers are damp' and catalogs downsides of various suicide methods including 'Acids stain you,' 'Drugs cause cramp,' 'Gas smells awful'; concludes 'You might as well live'", "back": "Resume (Dorothy Parker)", "work": "Resume", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: entire text reads \"Men seldom make passes / At girls who wear glasses\"", "back": "News Item (Dorothy Parker)", "work": "News Item", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: protagonist Hazel Morse attempts suicide with twenty tablets of veronal but fails", "back": "Big Blonde (Dorothy Parker)", "work": "Big Blonde", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: wakes to share a drink with maid Nettie", "back": "Big Blonde (Dorothy Parker)", "work": "Big Blonde", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: protagonist toasts \"Here's mud in your eye\" and is called a \"good sport\" by men", "back": "Big Blonde (Dorothy Parker)", "work": "Big Blonde", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: her husband Herbie leaves for Detroit", "back": "Big Blonde (Dorothy Parker)", "work": "Big Blonde", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: protagonist's behavior at the theater is a \"standing joke\" because she cries at everything including \"tiny garments\" and \"love both unrequited and mutual\"", "back": "Big Blonde (Dorothy Parker)", "work": "Big Blonde", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens \"Woman wants monogamy; Man delights in novelty\" — asks \"What earthly good can come of it?\" after noting \"Count to ten, and man is bored\"", "back": "General Review of the Sex Situation (Dorothy Parker)", "work": "General Review of the Sex Situation", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: three stanzas extolling a lover's virtues, each ending with lines like \"I wish I'd never met him\" or \"I wish somebody'd shoot him\"", "back": "Love Song (Dorothy Parker)", "work": "Love Song", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: catalogs \"Love, curiosity, freckles, and doubt\" as \"four of the things I'd rather be without\" and lists \"envy, content, and sufficient champagne\" as unattainable", "back": "Inventory (Dorothy Parker)", "work": "Inventory", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: speaker asks \"Why is it no one ever sent me yet / One perfect limousine, do you suppose?\"", "back": "One Perfect Rose (Dorothy Parker)", "work": "One Perfect Rose", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: two stenographers Annabel and Midge play \"what-would-you-do-if-you-had-a-million-dollars\" and argue over silver-fox coats", "back": "The Standard of Living (Dorothy Parker)", "work": "The Standard of Living", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: consists entirely of a woman's thoughts as she waits for a man who called her \"darling\" twice to telephone", "back": "A Telephone Call (Dorothy Parker)", "work": "A Telephone Call", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote \"Constant Reader\" book reviews for The New Yorker", "back": "Dorothy Parker", "work": "General / Biographical", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: savaged A.A. Milne with the line \"Tonstant Weader Fwowed up\" over use of the word \"hummy\"", "back": "Dorothy Parker", "work": "General / Biographical", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: got her start replacing P.G. Wodehouse at Vanity Fair", "back": "Dorothy Parker", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: co-wrote the screenplay for A Star is Born with husband Alan Campbell", "back": "Dorothy Parker", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: parodied Housman, imagining \"how gay 'twould be / to hang me from a flowering tree\"", "back": "Dorothy Parker", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote a response to Marlowe's \"Passionate Shepherd\" with the line \"where a Freud in need is a Freud indeed / we'll always be Jung together\"", "back": "Dorothy Parker", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: short story \"Lolita\" about jealous mother Mrs. Ewing was published three weeks before Nabokov's novel of the same name", "back": "Dorothy Parker", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: fictionalized as Gora Dwight, \"disillusioned in regard to men,\" in Gertrude Atherton's novel Black Oxen", "back": "Dorothy Parker", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

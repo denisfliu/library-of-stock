@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Federico Fellini";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: iconic scene of journalist Marcello and actress Sylvia wading in the Trevi Fountain at dawn", "back": "La Dolce Vita (Federico Fellini)", "work": "La Dolce Vita (1960)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: opens with a helicopter carrying a Christ statue over Rome", "back": "La Dolce Vita (Federico Fellini)", "work": "La Dolce Vita (1960)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the word 'paparazzi' derives from the character Paparazzo in this film", "back": "La Dolce Vita (Federico Fellini)", "work": "La Dolce Vita (1960)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: a lead actress dances to 'Ready Teddy' at the 'Baths of Caracalla' nightclub; Nadia performs a striptease to 'Patricia'", "back": "La Dolce Vita (Federico Fellini)", "work": "La Dolce Vita (1960)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the director said it was inspired by the fashion for sack dresses because of what they could conceal", "back": "La Dolce Vita (Federico Fellini)", "work": "La Dolce Vita (1960)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: ends with a leviathan/sea monster washing ashore after a party attended by Marcello, Emma, and Steiner", "back": "La Dolce Vita (Federico Fellini)", "work": "La Dolce Vita (1960)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: about a director named Guido Anselmi struggling with creative block while trying to make a science-fiction film", "back": "8½ (Federico Fellini)", "work": "8½ (1963)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: opens with the protagonist suffocating in a car, then floating up through the roof in a dream sequence", "back": "8½ (Federico Fellini)", "work": "8½ (1963)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the clairvoyant Maya writes 'asa nisi masa' on a chalkboard, triggering the protagonist's childhood flashback", "back": "8½ (Federico Fellini)", "work": "8½ (1963)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: protagonist imagines crawling under a table and shooting himself at a press conference", "back": "8½ (Federico Fellini)", "work": "8½ (1963)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: final scene is a circus-like procession dancing on an incomplete spaceship film set", "back": "8½ (Federico Fellini)", "work": "8½ (1963)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: originally titled The Beautiful Confusion; title refers to the number of films the director had previously made", "back": "8½ (Federico Fellini)", "work": "8½ (1963)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the musical Nine (Maury Yeston) is based on this film", "back": "8½ (Federico Fellini)", "work": "8½ (1963)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: a man quotes the catechism to the protagonist in a spa steam room", "back": "8½ (Federico Fellini)", "work": "8½ (1963)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: while making it, the director stuck a note below the camera reading 'Remember, this is a comedy'", "back": "8½ (Federico Fellini)", "work": "8½ (1963)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: naive Gelsomina travels with brutish street performer Zampano (Anthony Quinn); their relationship breaks when Zampano kills clown Il Matto", "back": "La Strada (Federico Fellini)", "work": "La Strada (1954)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Zampano's character was influenced by the Maciste figure from Giovanni Pastrone's early Italian silent films", "back": "La Strada (Federico Fellini)", "work": "La Strada (1954)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: a man tells Gelsomina 'everything has a purpose, even this pebble'", "back": "La Strada (Federico Fellini)", "work": "La Strada (1954)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: semi-autobiographical account of Titta's coming-of-age under Fascism; title is a dialect word meaning 'I remember'", "back": "Amarcord (Federico Fellini)", "work": "Amarcord (1973)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: a peacock perches on a fountain and unfurls its tail during a snowfall", "back": "Amarcord (Federico Fellini)", "work": "Amarcord (1973)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: subway workers discover ancient frescoes that immediately fade and disintegrate upon exposure to fresh air", "back": "Roma (Federico Fellini)", "work": "Roma (1972)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: also contains an ecclesiastical fashion show; a semi-autobiographical journey to the title city", "back": "Roma (Federico Fellini)", "work": "Roma (1972)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: ends with crying Cabiria walking a road before young musicians surround her and make her smile", "back": "Nights of Cabiria (Federico Fellini)", "work": "Nights of Cabiria (1957)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: loosely adapted into the musical Sweet Charity by Cy Coleman, Neil Simon, and Dorothy Fields", "back": "Nights of Cabiria (Federico Fellini)", "work": "Nights of Cabiria (1957)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: stars Donald Sutherland as the title libertine; opens with a Venetian carnival; a prop of a giant sinking head of Venus was made for it", "back": "Casanova (Federico Fellini)", "work": "Casanova (1976)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: contains a scene where a pig stuffed with birds and sausages is cut open at a feast hosted by Trimalchio", "back": "Satyricon (Federico Fellini)", "work": "Satyricon / Fellini Satyricon (1969)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: camera moves through a beachside 'Miss Mermaid' pageant to introduce five unemployed young men", "back": "I Vitelloni (Federico Fellini)", "work": "I Vitelloni (1953)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: final interviews were compiled by Canadian filmmaker Damian Pettigrew into I'm a Born Liar", "back": "Federico Fellini", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: co-wrote the screenplay for Roberto Rossellini's Rome, Open City", "back": "Federico Fellini", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: circuses are a recurring motif across his career, appearing in La Strada, 8½, and The Clowns", "back": "Federico Fellini", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Rainer Werner Fassbinder";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: elderly cleaning woman Emmi marries Moroccan guest worker Ali; son kicks in TV (homage to Douglas Sirk's All That Heaven Allows); outdoor cafe scene with alienating staff; Fassbinder plays bitter son-in-law Eugen; final shot: Ali in hospital with stomach ulcer", "back": "Ali: Fear Eats the Soul (Rainer Werner Fassbinder, 1974)", "work": "Ali: Fear Eats the Soul (1974)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: bedroom dominated by reproduction of Poussin's Midas and Bacchus; Petra lures Karin as fashion model; silent assistant Marlene packs suitcase and leaves at the end; Marlene and Petra dance to 'Smoke Gets In Your Eyes'; inspired the Maloja Snake play in Assayas's Clouds of Sils Maria", "back": "The Bitter Tears of Petra von Kant (Rainer Werner Fassbinder, 1972)", "work": "The Bitter Tears of Petra von Kant (1972)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Maria kills African-American soldier Bill; husband Hermann takes the blame; Maria becomes mistress of industrialist Karl Oswald; ends with gas explosion; first of BRD Trilogy (also Lola and Veronika Voss); Lola adapts same source as The Blue Angel", "back": "The Marriage of Maria Braun (Rainer Werner Fassbinder, 1979)", "work": "The Marriage of Maria Braun (1979) and BRD Trilogy", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: 15-hour TV miniseries based on Alfred Doblin's novel; Franz Biberkopf released from Tegel prison in 1928 ('The Punishment Begins'); loses arm when Reinhold pushes him from getaway car; Barbara Sukowa plays murdered Mieze; epilogue: atom bomb + Glenn Miller's 'In the Mood' + Franz on crucifix", "back": "Berlin Alexanderplatz (Rainer Werner Fassbinder, 1980)", "work": "Berlin Alexanderplatz (1980)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: bisexual West German director; died at 37 having made 40+ films; signed Oberhausen Manifesto ('Papa's cinema is dead'); New German Cinema; heavily influenced by Douglas Sirk's melodramas; final film Querelle (Jean Genet); Tom Stoppard adapted Despair (Nabokov) for his first English film", "back": "Rainer Werner Fassbinder", "work": "Career, Style, and New German Cinema", "frequency": 4, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

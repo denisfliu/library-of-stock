@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Andrew Wyeth";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: paralyzed woman in pink dress crawling through grass toward a farmhouse in Cushing, Maine", "back": "Christina's World (Andrew Wyeth)", "work": "Christina's World (1948)", "frequency": 15, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: wife Betsy James (30 years younger) modeled the upper body for this painting of a woman with Charcot-Marie-Tooth disease", "back": "Christina's World (Andrew Wyeth)", "work": "Christina's World (1948)", "frequency": 5, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: the artist was buried at this painting's real-life setting; he met its subject while picking blueberries", "back": "Christina's World (Andrew Wyeth)", "work": "Christina's World (1948)", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: Wind from the Sea depicts fluttering curtains in this painting's subject's house, where the artist had his studio", "back": "Christina's World (Andrew Wyeth)", "work": "Christina's World (1948)", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: after its subject and her brother Alvaro died, the artist painted brown and blue doors representing them", "back": "Christina's World (Andrew Wyeth)", "work": "Christina's World (1948)", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: inspired Terence Malick's Days of Heaven", "back": "Christina's World (Andrew Wyeth)", "work": "Christina's World (1948)", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: reimagined by the collective Kennardphillipps for a 2015 Greenpeace oil spill campaign", "back": "Christina's World (Andrew Wyeth)", "work": "Christina's World (1948)", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: 247 secret portraits of a German neighbor with blonde braids, many nude; purchased by Leonard Andrews", "back": "Helga Pictures (Andrew Wyeth)", "work": "Helga Pictures (1971-1985)", "frequency": 13, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Leonard_E.B._Andrews_1986.jpg/500px-Leonard_E.B._Andrews_1986.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: nude blonde-braided woman on a stool by an open window, illuminated by beams of light", "back": "Lovers (Andrew Wyeth)", "work": "Helga Pictures (1971-1985)", "frequency": 5, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Leonard_E.B._Andrews_1986.jpg/500px-Leonard_E.B._Andrews_1986.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: primarily made in the loft of a millhouse; revealed on covers of both Time ('Stunning Secret') and Newsweek in 1987", "back": "Helga Pictures (Andrew Wyeth)", "work": "Helga Pictures (1971-1985)", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Leonard_E.B._Andrews_1986.jpg/500px-Leonard_E.B._Andrews_1986.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: the subject originally worked as a nurse for Karl Kuerner; Michael Palin was the first to interview her", "back": "Helga Pictures (Andrew Wyeth)", "work": "Helga Pictures (1971-1985)", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Leonard_E.B._Andrews_1986.jpg/500px-Leonard_E.B._Andrews_1986.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: best-selling catalog was the first art catalog selected by the Book-of-the-Month Club; VHS narrated by Charlton Heston", "back": "Helga Pictures (Andrew Wyeth)", "work": "Helga Pictures (1971-1985)", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Leonard_E.B._Andrews_1986.jpg/500px-Leonard_E.B._Andrews_1986.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: boy running down a hill; first painting after the artist's illustrator father was killed at the site", "back": "Winter 1946 (Andrew Wyeth)", "work": "Winter 1946", "frequency": 5, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Winter_Pearmain_on_tree%2C_National_Fruit_Collection_%28acc._1946-107%29.jpg/500px-Winter_Pearmain_on_tree%2C_National_Fruit_Collection_%28acc._1946-107%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: son of Treasure Island illustrator; father of painter who did Portrait of Pig and pumpkinhead self-portrait", "back": "Andrew Wyeth", "work": "General / Biographical", "frequency": 6, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: based in Chadds Ford, Pennsylvania; Brandywine Valley; used Kuerner Farm as frequent setting", "back": "Andrew Wyeth", "work": "General / Biographical", "frequency": 4, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: learned egg-tempera technique from brother-in-law Peter Hurd", "back": "Andrew Wyeth", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Trodden Weed depicts this artist wearing Howard Pyle's shoes after an operation", "back": "Andrew Wyeth", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "image", "indicator": "Painting", "front": "", "back": "Helga Pictures (1971-1985) (Andrew Wyeth)", "work": "Helga Pictures (1971-1985)", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Leonard_E.B._Andrews_1986.jpg/500px-Leonard_E.B._Andrews_1986.jpg", "tags": [], "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Winter 1946 (Andrew Wyeth)", "work": "Winter 1946", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Winter_Pearmain_on_tree%2C_National_Fruit_Collection_%28acc._1946-107%29.jpg/500px-Winter_Pearmain_on_tree%2C_National_Fruit_Collection_%28acc._1946-107%29.jpg", "tags": [], "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

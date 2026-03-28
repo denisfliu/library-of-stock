@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Dream of the Red Chamber";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: the protagonist of this novel is born with a piece of jade in his mouth", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Frame Story / The Stone", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the goddess Nuwa rejects a stone when repairing the sky, and it becomes the jade in the protagonist's mouth in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Frame Story / The Stone", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a priest and a monk carry the protagonist through the Land of Illusion to the fairy Disenchantment's palace in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Frame Story / The Stone", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel opens with the couplet 'Truth becomes fiction when the fiction's true; Real becomes not-real where the unreal's real'", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Frame Story / The Stone", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the Crimson Pearl Flower is reborn alongside the stone; her tears are shed 'during the whole of a mortal lifetime' in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Frame Story / The Stone", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist is tricked into marrying Xue Baochai while thinking he was marrying Lin Daiyu in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Jia Baoyu (Protagonist)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist has his first sexual experience ('the Art of Love') with the maid Aroma after an erotic dream in the World of Illusion in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Jia Baoyu (Protagonist)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: at age one, the protagonist chose women's cosmetics from an array of career-symbolizing objects in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Jia Baoyu (Protagonist)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist's father wants him to study Confucian classics but he reads erotica and Zhuangzi instead in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Jia Baoyu (Protagonist)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist becomes lethargic when a begonia tree blooms inauspiciously out of season in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Jia Baoyu (Protagonist)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: one sickly character buries flower petals and writes an elegiac poem asking 'who will bury me when dead I lie' in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Lin Daiyu and the Flower Burial", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist's true love Lin Daiyu dies of grief after learning he was tricked into marrying another in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Lin Daiyu and the Flower Burial", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the 12 Beauties of Jinling appear as allegorical poems in a dream in Chapter 5 of this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Poetry in the Novel", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a poetry contest leads friends to write twelve poems about chrysanthemums in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Poetry in the Novel", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a major debate in 'Redology' concerns whether the last 40 chapters of this novel are authentic or later additions to the first 80", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Editions, Translations, and Redology", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: David Hawkes translated this novel, giving characters Latinate names like Sapientia and Adamantina", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Editions, Translations, and Redology", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the Cheng-Gao editions added 40 chapters with dubious authorial provenance to this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Editions, Translations, and Redology", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: manuscripts of this novel contain commentary by Zhiyanzhai ('Inkstone Studio')", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Editions, Translations, and Redology", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: much of this novel takes place in the Grand View / Prospect Garden", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Grand View / Prospect Garden and Household", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the Rongguo and Ningguo branches of the family build adjacent compounds in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Grand View / Prospect Garden and Household", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Wang Xifeng, whose name means 'Splendid Phoenix,' manages the household in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Grand View / Prospect Garden and Household", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a purse with an indecent picture causes all maids to come under suspicion of illicit affairs in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Grand View / Prospect Garden and Household", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the family declines until the mansion is ransacked by imperial troops in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Grand View / Prospect Garden and Household", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: an inscription on a golden locket predestines the protagonist to marry his cousin Xue Baochai in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Jia Baoyu (Protagonist)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist's name is a pun on 'Fake Precious Jade' in this novel", "back": "Dream of the Red Chamber (Cao Xueqin)", "work": "Jia Baoyu (Protagonist)", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

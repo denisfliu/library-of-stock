@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Victor Hugo";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: Jean Valjean steals this clergyman's silverware, but this clergyman covers for him and gives him two candlesticks", "back": "Les Miserables (Victor Hugo) — Bishop Myriel", "work": "Les Miserables", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, a jilted factory worker is dismissed and forced to sell her hair and teeth to support her daughter", "back": "Les Miserables (Victor Hugo) — Fantine", "work": "Les Miserables", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, a street urchin shows two other urchins (secretly his brothers) where he lives inside the Elephant of the Bastille", "back": "Les Miserables (Victor Hugo) — Gavroche", "work": "Les Miserables", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a digression in this novel explains the Battle of Waterloo with a capital letter placed over the ground in a chapter titled 'A'", "back": "Les Miserables (Victor Hugo)", "work": "Les Miserables", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a digression in this novel concerns the Paris sewers, whose history is laid out in a section called 'The Intestine of the Leviathan'", "back": "Les Miserables (Victor Hugo)", "work": "Les Miserables", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, Enjolras leads the revolutionary group the Friends of the ABC", "back": "Les Miserables (Victor Hugo)", "work": "Les Miserables", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, a character becomes a factory owner under the false name Monsieur Madeleine", "back": "Les Miserables (Victor Hugo) — Jean Valjean", "work": "Les Miserables", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, the protagonist carries Marius through the sewers during a revolution", "back": "Les Miserables (Victor Hugo) — Jean Valjean", "work": "Les Miserables", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Inspector Javert is the son of a convict father and fortune teller mother and is self-conscious about being born in prison", "back": "Les Miserables (Victor Hugo)", "work": "Les Miserables", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, the Thenardiers stage a robbery at Gorbeau House with the Patron-Minette gang", "back": "Les Miserables (Victor Hugo)", "work": "Les Miserables", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel includes an interlude set in 1830 listing 'Algeria too harshly conquered' among political grievances", "back": "Les Miserables (Victor Hugo)", "work": "Les Miserables", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the gypsy Esmeralda owns a trained goat named Djali", "back": "The Hunchback of Notre Dame (Victor Hugo)", "work": "The Hunchback of Notre Dame", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, a character is hanged after being framed for the attempted murder of Captain Phoebus, who was actually stabbed by Frollo", "back": "The Hunchback of Notre Dame (Victor Hugo) — Esmeralda", "work": "The Hunchback of Notre Dame", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, a character is reunited with her hermitess mother through a red baby shoe", "back": "The Hunchback of Notre Dame (Victor Hugo) — Esmeralda", "work": "The Hunchback of Notre Dame", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, Frollo predicts that print will kill architecture", "back": "The Hunchback of Notre Dame (Victor Hugo)", "work": "The Hunchback of Notre Dame", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the speaker of this poem says 'the day for me will be as the night' and walks 'alone, unknown, my back curved, my hands crossed'", "back": "\"Tomorrow, at Dawn\" from Les Contemplations (Victor Hugo)", "work": "Les Contemplations / 'Tomorrow, at Dawn'", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the speaker of this poem resolves to place 'a bouquet of green holly and flowering heather' on a grave", "back": "\"Tomorrow, at Dawn\" from Les Contemplations (Victor Hugo)", "work": "Les Contemplations / 'Tomorrow, at Dawn'", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the fourth of six books in this poetry collection is titled Pauca Meae, from a phrase in Virgil's Eclogues; divided into 'Once' and 'Today'", "back": "Les Contemplations (Victor Hugo)", "work": "Les Contemplations / 'Tomorrow, at Dawn'", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the poem 'In Villequier' implores God to 'Let me cry!' and is named for the city where this poet's daughter drowned in the Seine", "back": "Les Contemplations (Victor Hugo)", "work": "Les Contemplations / 'Tomorrow, at Dawn'", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this author popularized the three-part alexandrine, or alexandrin ternaire", "back": "Victor Hugo (Les Contemplations)", "work": "Les Contemplations / 'Tomorrow, at Dawn'", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: riots between Romantics and Classicists at performances of this play are called the 'Battle of' its name", "back": "Hernani (Victor Hugo)", "work": "Hernani", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this play, Charles V (Don Carlos), Don Ruy Gomez, and John of Aragon (disguised as the title bandit) all love Dona Sol", "back": "Hernani (Victor Hugo)", "work": "Hernani", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: supporters dressed in outrageous costumes to foil censors at the premiere of this play", "back": "Hernani (Victor Hugo)", "work": "Hernani", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the preface to this play attacks the 'worm-eaten timber' of the classical unities and calls for drama allowing 'grotesque with the sublime'", "back": "Cromwell (Victor Hugo)", "work": "Preface to Cromwell", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the preface to this play calls the stage an 'optical point' where all humanity should be reflected by the 'wand of art'", "back": "Cromwell (Victor Hugo)", "work": "Preface to Cromwell", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this was Hugo's first play but was never staged, having over 400 pages in iambic pentameter spoken by 77 characters", "back": "Cromwell (Victor Hugo)", "work": "Preface to Cromwell", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, the fisherman Gilliatt fights an octopus underwater; the novel popularized the French word 'pieuvre'", "back": "The Toilers of the Sea (Victor Hugo)", "work": "The Toilers of the Sea", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel is dedicated to the island of Guernsey where it was written during Hugo's exile", "back": "The Toilers of the Sea (Victor Hugo)", "work": "The Toilers of the Sea", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, a merchant offers his daughter Deruchette's hand to anyone who can recover the steam engine of the Durande", "back": "The Toilers of the Sea (Victor Hugo)", "work": "The Toilers of the Sea", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel ends with the protagonist sitting in the Gild-Holm-'Ur seat watching the Cashmere sail away carrying Ebenezer Caudray and Deruchette", "back": "The Toilers of the Sea (Victor Hugo)", "work": "The Toilers of the Sea", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, Sieur Clubin tries to abscond with his employer's money and drowns when attacked by a large octopus", "back": "The Toilers of the Sea (Victor Hugo)", "work": "The Toilers of the Sea", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this author's last novel describes the fictional Marquis de Lantenac's revolt against the Republic during the Chouannerie", "back": "Ninety-Three (Victor Hugo)", "work": "Ninety-Three", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, Lantenac awards a sailor a medal for bravery then executes him without trial for the same act", "back": "Ninety-Three (Victor Hugo)", "work": "Ninety-Three", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this 1829 short novel is written from the perspective of a man about to be executed at the guillotine", "back": "The Last Day of a Condemned Man (Victor Hugo)", "work": "The Last Day of a Condemned Man", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the disfigured Gwynplaine travels with the carnival vendor Ursus and the wolf Homo in this novel", "back": "The Man Who Laughs (Victor Hugo)", "work": "The Man Who Laughs", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this author coined the term 'Comprachico' for a group that 'worked on man as the Chinese worked on trees'", "back": "Victor Hugo (The Man Who Laughs)", "work": "The Man Who Laughs", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this play, an indentured servant is disguised as a nobleman for a practical joke, becomes prime minister, and becomes the Queen's lover", "back": "Ruy Blas (Victor Hugo)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, the narrator is captured by maroon general Biassou during the Haitian Revolution but is saved by the title slave leader", "back": "Bug-Jargal (Victor Hugo)", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this unfinished religious epic details events from the fall of Satan to the storming of the Bastille, with sections on Nimrod and the death of Jesus Christ", "back": "The End of Satan (Victor Hugo)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author spent 15 years exiled on the island of Guernsey for criticisms of Napoleon III's government", "back": "Victor Hugo", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: critic Sainte-Beuve's early infatuation with this author morphed into an affair with his wife Adele Foucher", "back": "Victor Hugo", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Alan Spitzer placed this young author in the French Generation of 1820 alongside Lamartine and the Comte de Vigny", "back": "Victor Hugo", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's daughter Adele suffered from schizophrenia, obsessed over British officer Albert Pinson, and sometimes gives her name to Love Fever Syndrome", "back": "Victor Hugo", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author told abolitionist Victor Schoelcher 'God offers Africa to Europe. Take it.'", "back": "Victor Hugo", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author created over 4,000 drawings, some anticipating Surrealist automatic writing; one depicts an octopus spelling his initials", "back": "Victor Hugo", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author is worshipped by Cao Dai; an image in the Tay Ninh temple shows him signing a covenant with God alongside Sun Yat-sen", "back": "Victor Hugo", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: after publishing his first poems at age 22, this writer received a royal pension", "back": "Victor Hugo", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author was best known as a poet in France during his lifetime, but today is known for his novels", "back": "Victor Hugo", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

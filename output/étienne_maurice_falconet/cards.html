@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "\u00c9tienne Maurice Falconet";
 let cards = [{"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: equestrian bronze statue of Peter the Great, Falconet's best-known work, erected in Senate Square, St. Petersburg", "back": "The Bronze Horseman (1782) (Étienne Maurice Falconet)", "work": "The Bronze Horseman (1782)", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: its pedestal is the Thunder Stone, a 1,250-ton granite monolith — the largest single stone ever moved by humans", "back": "The Bronze Horseman (1782) (Étienne Maurice Falconet)", "work": "The Bronze Horseman (1782)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: commissioned by Catherine the Great as a monument to Peter the Great", "back": "The Bronze Horseman (1782) (Étienne Maurice Falconet)", "work": "The Bronze Horseman (1782)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: the head of Peter the Great in this work was sculpted by Falconet's student and daughter-in-law Marie-Anne Collot", "back": "The Bronze Horseman (1782) (Étienne Maurice Falconet)", "work": "The Bronze Horseman (1782)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: its Thunder Stone pedestal was transported using a bronze-sphere sled devised by Marinos Carburis", "back": "The Bronze Horseman (1782) (Étienne Maurice Falconet)", "work": "The Bronze Horseman (1782)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: gave its title to a famous Alexander Pushkin poem", "back": "The Bronze Horseman (1782) (Étienne Maurice Falconet)", "work": "The Bronze Horseman (1782)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: depicts Peter the Great trampling a snake beneath his horse's hooves", "back": "The Bronze Horseman (1782) (Étienne Maurice Falconet)", "work": "The Bronze Horseman (1782)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: Denis Diderot suggested Falconet be commissioned for this work", "back": "The Bronze Horseman (1782) (Étienne Maurice Falconet)", "work": "The Bronze Horseman (1782)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: a seated Cupid holding a finger to his lips; a stone copy appears on the left side of Fragonard's The Swing", "back": "Cupid Sculptures: Mischievous Cupid / Menacing Love (Étienne Maurice Falconet)", "work": "Cupid Sculptures: Mischievous Cupid / Menacing Love", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: Mischievous Cupid provided the model for watchful statues that appear in Fragonard's paintings of loving couples", "back": "Cupid Sculptures: Mischievous Cupid / Menacing Love (Étienne Maurice Falconet)", "work": "Cupid Sculptures: Mischievous Cupid / Menacing Love", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: discussed in Mary Sheriff's Moved by Love; shows a cupid kissing the hand of a woman on a pedestal as her creator kneels before her", "back": "Cupid Sculptures: Mischievous Cupid / Menacing Love (Étienne Maurice Falconet)", "work": "Cupid Sculptures: Mischievous Cupid / Menacing Love", "frequency": 1, "tags": []}, {"type": "image", "indicator": "Sculpture:", "front": "", "back": "Milo of Croton (Étienne Maurice Falconet)", "work": "Milo of Croton", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/%C3%89tienne_Maurice_Falconet-Milo_of_Croton-Hermitage.jpg/500px-%C3%89tienne_Maurice_Falconet-Milo_of_Croton-Hermitage.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Sculpture:", "front": "Sculpture: early work that won Falconet wide renown; Pierre Puget also sculpted this subject, showing him struggling against a lion clawing at his thigh", "back": "Milo of Croton (Étienne Maurice Falconet)", "work": "Milo of Croton", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/%C3%89tienne_Maurice_Falconet-Milo_of_Croton-Hermitage.jpg/500px-%C3%89tienne_Maurice_Falconet-Milo_of_Croton-Hermitage.jpg", "image_side": "back"}, {"type": "image", "indicator": "Sculpture:", "front": "", "back": "Pygmalion and Galatea (Étienne Maurice Falconet)", "work": "Pygmalion and Galatea", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/Etienne-Maurice_Falconet_-_Pygmalion_and_Galatea_-_Walters_27387_-_View_A.jpg/500px-Etienne-Maurice_Falconet_-_Pygmalion_and_Galatea_-_Walters_27387_-_View_A.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Artist:", "front": "Artist: preeminent French Rococo sculptor of the 18th century, best known for an equestrian statue of Peter the Great", "back": "Étienne Maurice Falconet", "work": "General / Biographical", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Artist:", "front": "Artist: contributed 'Reflections on Sculpture' to Diderot's Encyclopédie; close friend of Denis Diderot", "back": "Étienne Maurice Falconet", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Artist:", "front": "Artist: worked at the Sèvres Manufactory, where he created his Bather and small figurines of children based on François Boucher paintings", "back": "Étienne Maurice Falconet", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist:", "front": "Artist: student of Jean-Baptiste Lemoyne", "back": "Étienne Maurice Falconet", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist:", "front": "Artist: patronized by Madame de Pompadour during his early Paris career", "back": "Étienne Maurice Falconet", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

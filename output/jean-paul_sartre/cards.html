@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Jean-Paul Sartre";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: a cafe waiter whose movements are 'a little too precise, a little too rapid' illustrates this book's concept of bad faith (mauvaise foi)", "back": "Being and Nothingness (Sartre)", "work": "Being and Nothingness", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: its section 'The Look' analyzes the objectifying phenomenon of being gazed at by others; it uses the example of seeing a mannequin", "back": "Being and Nothingness (Sartre)", "work": "Being and Nothingness", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a man walks into a cafe looking for his friend Pierre to illustrate the 'origin of negation' and nothingness", "back": "Being and Nothingness (Sartre)", "work": "Being and Nothingness", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: a late passage of Being and Nothingness calls this substance the 'revenge of the in-itself,' transcending all distinctions between psychic and physical", "back": "Slime / le visqueux (Sartre)", "work": "Being and Nothingness", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Antoine Roquentin is overwhelmed by a chestnut tree and concludes he and his surroundings are 'superfluous' while trying to write a biography of the Marquis de Rollebon", "back": "Nausea (Sartre)", "work": "Nausea", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a pedophilic 'Self-Taught Man' named Ogier P reads library books in alphabetical order in the town of Bouville", "back": "Nausea (Sartre)", "work": "Nausea", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Garcin, Inez (a lesbian postal clerk), and Estelle are trapped in a room with Second Empire furnishings; ends with 'hell is other people'", "back": "No Exit (Sartre)", "work": "No Exit", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a woman stabs another with a paper-knife to show it has no effect; the room has a bronze ornament and a valet with no eyelids", "back": "No Exit (Sartre)", "work": "No Exit", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: political prisoner Pablo Ibbieta gives what he thinks is false information about Ramon Gris hiding in a cemetery, but it turns out to be true", "back": "\"The Wall\" (Sartre)", "work": "\"The Wall\" and Short Stories", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Paul Hilbert, inspired by Herostratus's burning of the Temple of Artemis, plans to kill five people and commit suicide with his sixth bullet", "back": "\"Erostratus\" (Sartre)", "work": "\"The Wall\" and Short Stories", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Eve refuses to send her insane husband Pierre to a clinic and vows to shoot him when he descends into total dementia", "back": "\"The Room\" (Sartre)", "work": "\"The Wall\" and Short Stories", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: wrote the preface to Frantz Fanon's The Wretched of the Earth, stating 'the status of native is a nervous condition'", "back": "Jean-Paul Sartre", "work": "Colonialism, Negritude, and Frantz Fanon", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: described the Negritude movement as 'anti-racist racism' in the essay 'Black Orpheus,' which opens Senghor's poetry anthology", "back": "Jean-Paul Sartre", "work": "Colonialism, Negritude, and Frantz Fanon", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: divides Jews into 'authentic' and 'inauthentic' forms; examines antisemitism through the lens of bad faith and denial of responsibility", "back": "Anti-Semite and Jew (Sartre)", "work": "Anti-Semite and Jew", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Hugo Barine takes the code-name Raskolnikov and murders the Illyrian socialist Hoederer for kissing his wife", "back": "Dirty Hands (Sartre)", "work": "Dirty Hands", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Senator Clarke convinces the sex worker Lizzie MacKay to falsely accuse a black man of assault; she receives a hundred-dollar bill instead of thanks", "back": "The Respectful Prostitute (Sartre)", "work": "The Respectful Prostitute", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a retelling of the Oresteia in which Orestes refuses to feel guilt for killing Clytemnestra; the ruler of Argos removes a boulder to let ghosts roam free", "back": "The Flies (Sartre)", "work": "The Flies", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: wrote The Family Idiot, a 2,800-page psychoanalytic study of Flaubert, and analyzed him via a 'regressive-progressive method' in Search for a Method", "back": "Jean-Paul Sartre", "work": "General / Biographical and Other Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: wrote Saint Genet (subtitled 'Actor and Martyr'), a study of Jean Genet deemed 'grotesquely verbose' by Susan Sontag", "back": "Jean-Paul Sartre", "work": "General / Biographical and Other Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: coined the term 'anti-novel' in his preface to Nathalie Sarraute's Portrait of a Man Unknown", "back": "Jean-Paul Sartre", "work": "General / Biographical and Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Merleau-Ponty quit this thinker's journal Les Temps Modernes after the Korean War and criticized his 'Ultrabolshevism' in Adventures of the Dialectic", "back": "Jean-Paul Sartre", "work": "General / Biographical and Other Works", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

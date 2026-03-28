@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "John Milton";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: Satan declares 'Better to reign in Hell than serve in Heav'n' to Beelzebub", "back": "Paradise Lost (John Milton)", "work": "Paradise Lost", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Hell's flames give off 'no light but rather darkness visible'", "back": "Paradise Lost (John Milton)", "work": "Paradise Lost", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Book III opens praising 'holy light, offspring of Heav'n first-born' and describes the author's own blindness", "back": "Paradise Lost (John Milton)", "work": "Paradise Lost", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Satan 'felt how awful goodness is' after Zephon does not recognize him", "back": "Paradise Lost (John Milton)", "work": "Paradise Lost", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Eve 'formed for softness and sweet attractive grace' follows the advice of a serpent 'with burnished neck of verdant gold'", "back": "Paradise Lost (John Milton)", "work": "Paradise Lost", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Stanley Fish's Surprised by Sin argues this poet's magnum opus provokes 'fallen responses'; C.S. Lewis wrote a book-length preface to the same work", "back": "John Milton", "work": "Paradise Lost", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: William Blake claimed this poet was 'of the Devil's party without knowing it'", "back": "John Milton", "work": "Paradise Lost", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: T.S. Eliot complained this poet wrote English 'like a dead language'; Ezra Pound said this poet was 'chock a block with Latin'", "back": "John Milton", "work": "Paradise Lost", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Sandra Gilbert and Susan Gubar wrote that 'all women writers have been to some extent' this poet's 'daughters' in The Madwoman in the Attic", "back": "John Milton", "work": "Paradise Lost", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the speaker laments 'that one Talent which is death to hide' and asks 'Doth God exact day-labour, light denied?'", "back": "\"When I Consider How My Light Is Spent\" (John Milton)", "work": "Sonnets (including 'When I Consider How My Light Is Spent')", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: two sonnets addressed to Cyriack Skinner; one describes 'liberty's defense' as 'my noble task, of which all Europe talks'", "back": "Milton's Sonnets (John Milton)", "work": "Sonnets (including 'When I Consider How My Light Is Spent')", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a sonnet (likely about Katherine Woodcock) ends 'I wak'd, she fled, and day brought back my night'", "back": "\"Methought I Saw My Late Espoused Saint\" (John Milton)", "work": "Sonnets (including 'When I Consider How My Light Is Spent')", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Avenge, O Lord, thy slaughtered saints, whose bones / Lie scattered on the Alpine mountains cold'", "back": "\"On the Late Massacre in Piedmont\" (John Milton)", "work": "Sonnets (including 'When I Consider How My Light Is Spent')", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ends 'Tomorrow to fresh woods, and pastures new'; inspired Thomas Wolfe's Look Homeward, Angel title; mourns drowning of Edward King", "back": "\"Lycidas\" (John Milton)", "work": "Lycidas", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes 'scrannel pipes of wretched straw'; a 'two-handed engine' will 'smite once, and smite no more'", "back": "\"Lycidas\" (John Milton)", "work": "Lycidas", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the giant Harapha challenges the blind, chained title character; Manoa tries to negotiate ransom", "back": "Samson Agonistes (John Milton)", "work": "Samson Agonistes", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the title character pulls down a temple of Dagon; the chorus departs with 'calm of mind all passion spent'", "back": "Samson Agonistes (John Milton)", "work": "Samson Agonistes", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the title character laments 'My self, my Sepulcher, a moving Grave' and his 'race of glory run, and race of shame'", "back": "Samson Agonistes (John Milton)", "work": "Samson Agonistes", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the water nymph Sabrina frees a Lady trapped in a chair at Ludlow Castle", "back": "Comus (John Milton)", "work": "Comus (A Masque Presented at Ludlow Castle)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: two brothers receive the magical plant haemony from a spirit disguised as the shepherd Thyrsis", "back": "Comus (John Milton)", "work": "Comus (A Masque Presented at Ludlow Castle)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the title character, son of Bacchus and Circe, possesses a liquor that turns humans' heads into beasts", "back": "Comus (John Milton)", "work": "Comus (A Masque Presented at Ludlow Castle)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: declares 'he who destroys a good book, kills reason itself' in a tract against pre-publication censorship", "back": "Areopagitica (John Milton)", "work": "Areopagitica", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: title comes from an Isocrates oration named for a hill in Athens (the Areopagus)", "back": "Areopagitica (John Milton)", "work": "Areopagitica", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: imagines the 'sad friends' of 'the virgin Truth' seeking the 'thousand pieces' of her body like Isis gathering the limbs of Osiris", "back": "Areopagitica (John Milton)", "work": "Areopagitica", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: William Blake wrote a two-book epic titled for this poet in which his spirit enters Blake's body through his foot; it opens 'And did those feet in ancient time'", "back": "John Milton", "work": "Other Works and General", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: defended regicide in Eikonoklastes (response to Eikon Basilike) and The Tenure of Kings and Magistrates", "back": "John Milton", "work": "Other Works and General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote Divorce Tracts (Tetrachordon, Doctrine and Discipline of Divorce) after wife Mary Powell left him", "back": "John Milton", "work": "Other Works and General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Tony Harrison's 'On Not Being' this poet analogizes speaking with 'glottals' and 'Ludding morphemes' to smashing looms", "back": "John Milton", "work": "Other Works and General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: calls Shakespeare a 'son of Memory, great heir of fame' under a 'star-ypointing pyramid'", "back": "\"On Shakespeare. 1630\" (John Milton)", "work": "Other Works and General", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote a Greek verse calling William Marshall's portrait 'the wretched picture of a wretched artist'; Marshall unknowingly engraved the insult", "back": "John Milton", "work": "Other Works and General", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

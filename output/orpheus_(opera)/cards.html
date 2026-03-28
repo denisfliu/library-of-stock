@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Orpheus (opera)";
 let cards = [{"type": "basic", "indicator": "Opera", "front": "Opera: the oldest opera still regularly performed, whose trumpet toccata opens it and whose protagonist sings 'Rosa del ciel' at his wedding", "back": "L'Orfeo (Monteverdi)", "work": "L'Orfeo", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Alessandro Striggio wrote its libretto; the original ending had the protagonist chased by the Maenads", "back": "L'Orfeo (Monteverdi)", "work": "L'Orfeo", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Cardinal Mazarin commissioned it; its epilogue compares the protagonist's fate to France and compares him to the Fleur-de-lis; one of only two operas by Luigi Rossi", "back": "Orfeo (Luigi Rossi)", "work": "L'Orfeo", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: the first of its composer's 'reform operas,' featuring the 'Dance of the Blessed Spirits'", "back": "Orfeo ed Euridice (Gluck)", "work": "Orfeo ed Euridice", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: its composer published a manifesto decrying da capo arias and secco recitatives", "back": "Orfeo ed Euridice (Gluck)", "work": "Orfeo ed Euridice", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Amore sets conditions for the protagonist's return in 'Si les doux accords,' then prevents his suicide in 'Tendre amour'", "back": "Orfeo ed Euridice (Gluck)", "work": "Orfeo ed Euridice", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: its lead male role was sung by a castrato in Vienna but not in the reworked French premiere", "back": "Orfeo ed Euridice (Gluck)", "work": "Orfeo ed Euridice", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: features the aria 'Che faro senza Euridice,' sung after the protagonist loses his wife a second time", "back": "Orfeo ed Euridice (Gluck)", "work": "Orfeo ed Euridice", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: the Infernal Galop from its second act became synonymous with the can-can at the Folies-Bergère", "back": "Orpheus in the Underworld (Offenbach)", "work": "Orpheus in the Underworld", "frequency": 9, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: the allegorical figure Public Opinion pressures the violin-teacher protagonist to rescue his wife, whom he openly detests", "back": "Orpheus in the Underworld (Offenbach)", "work": "Orpheus in the Underworld", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: the protagonist tells his wife he detests her because she invented hexameter", "back": "Orpheus in the Underworld (Offenbach)", "work": "Orpheus in the Underworld", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: a jailer sings of his nostalgia for his time as the King of Boeotia", "back": "Orpheus in the Underworld (Offenbach)", "work": "Orpheus in the Underworld", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: in its 'Fly Duet,' a character transformed into a fly can only buzz rather than sing during a love duet", "back": "Orpheus in the Underworld (Offenbach)", "work": "Orpheus in the Underworld", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: ends when a Jupiter lightning bolt startles the protagonist into looking back at his wife", "back": "Orpheus in the Underworld (Offenbach)", "work": "Orpheus in the Underworld", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: parodied the Infernal Galop from Offenbach's Orpheus in the Underworld at a painstakingly slow string tempo to depict tortoises in Carnival of the Animals", "back": "Camille Saint-Saëns", "work": "Orpheus in the Underworld", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: its second act sends the protagonist through seventeen arches from Countryside to Fear; three 'Passing Clouds' narrate the myths of Dionysus, Lycurgus, and Pentheus", "back": "The Mask of Orpheus (Birtwistle)", "work": "The Mask of Orpheus", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Birtwistle opera with multiple 'hysterical' arias and IRCAM-composed music by Barry Anderson, centered on the protagonist's 'mask'", "back": "The Mask of Orpheus (Birtwistle)", "work": "The Mask of Orpheus", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: 1959 Marcel Camus film set during Rio's Carnaval in which the protagonist is a Black trolley conductor said to make the sun rise", "back": "Black Orpheus (Orfeu Negro)", "work": "Black Orpheus (Orfeu Negro)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Luiz Bonfa's score helped popularize bossa nova internationally; 'Manhã de Carnaval' is known in the US as 'Black Orpheus'", "back": "Black Orpheus (Orfeu Negro)", "work": "Black Orpheus (Orfeu Negro)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Vince Guaraldi's Jazz Impressions of this film included his breakthrough hit 'Cast Your Fate to the Wind'", "back": "Black Orpheus (Orfeu Negro)", "work": "Black Orpheus (Orfeu Negro)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: adapts Vinicius de Moraes's play Orpheus of the Conception, for which de Moraes and Tom Jobim wrote 'Lamento no Morro'", "back": "Black Orpheus (Orfeu Negro)", "work": "Black Orpheus (Orfeu Negro)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Orpheus sings 'Possente spirto' to the ferryman Charon to lull him to sleep", "back": "L'Orfeo (Monteverdi)", "work": "General / The Myth", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Musical", "front": "Musical: Anaïs Mitchell folk musical with five named characters (Hermes, Persephone, Hades, Orpheus, Eurydice); Hermes opens with 'Road to Hell'", "back": "Hadestown", "work": "General / The Myth", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Naguib Mahfouz";
 let cards = [{"type": "tossup", "indicator": "Author", "front": "Author: Amina disobeys her husband, leaves the house, is hit by a car, and fractures her collarbone", "back": "Naguib Mahfouz (Cairo Trilogy / Palace Walk)", "work": "Cairo Trilogy", "frequency": 12, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: trilogy named Palace Walk, Palace of Desire, and Sugar Street about the al-Jawad family in Cairo", "back": "Naguib Mahfouz (Cairo Trilogy)", "work": "Cairo Trilogy", "frequency": 8, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: characters representing Moses, Jesus, Muhammad, and modern science live in an alley near their father's mansion", "back": "Naguib Mahfouz (Children of Gebelawi)", "work": "Children of Gebelawi", "frequency": 8, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: al-Sayyid Ahmad is a philandering patriarch who cheats on his conservative wife Amina", "back": "Naguib Mahfouz (Cairo Trilogy)", "work": "Cairo Trilogy", "frequency": 8, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: stabbed in the neck at age 82 in 1994 for writing a controversial allegorical novel and supporting Salman Rushdie", "back": "Naguib Mahfouz", "work": "Children of Gebelawi", "frequency": 6, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: son Fahmy is a law student and activist shot dead by British soldiers at a protest", "back": "Naguib Mahfouz (Cairo Trilogy / Palace Walk)", "work": "Cairo Trilogy", "frequency": 5, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: title character seeks revenge after prison, mistakenly kills a doorman and lodger, then is killed by police in a cemetery", "back": "Naguib Mahfouz (The Thief and the Dogs)", "work": "The Thief and the Dogs", "frequency": 4, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: Hamida takes the nickname Titi to please English punters and refuses to marry the barber Abbas", "back": "Naguib Mahfouz (Midaq Alley)", "work": "Midaq Alley", "frequency": 4, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: Kamal is a possibly autobiographical character who pines after Aida, studies philosophy, and becomes a teacher", "back": "Naguib Mahfouz (Cairo Trilogy)", "work": "Cairo Trilogy", "frequency": 4, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: Adham is exiled for trying to see his father Gebelawi's forbidden book; Idris tempts him", "back": "Naguib Mahfouz (Children of Gebelawi)", "work": "Children of Gebelawi", "frequency": 3, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: Arafa the magician represents modern science and causes the death of the title patriarch", "back": "Naguib Mahfouz (Children of Gebelawi)", "work": "Children of Gebelawi", "frequency": 3, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: set at the title boarding house in Alexandria; multiple narrators entranced with the servant girl Zohra", "back": "Naguib Mahfouz (Miramar)", "work": "Miramar", "frequency": 3, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: Abbas throws a beer glass at Hamida's face after discovering her with British soldiers; he is beaten to death", "back": "Naguib Mahfouz (Midaq Alley)", "work": "Midaq Alley", "frequency": 3, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: drug addict Anis Zani and friends live on a houseboat on the title river", "back": "Naguib Mahfouz (Adrift on the Nile)", "work": "Adrift on the Nile", "frequency": 3, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: draws on Sadat's assassination; Randa's engagement to Elwan; 'abyss of the infitah'", "back": "Naguib Mahfouz (The Day the Leader Was Killed)", "work": "The Day the Leader Was Killed", "frequency": 3, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: Jackie Kennedy Onassis oversaw the English translation of his trilogy at Doubleday", "back": "Naguib Mahfouz (Cairo Trilogy)", "work": "Cairo Trilogy", "frequency": 2, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: spice seller's conjoined twin sons named 'My Fate' and 'My Destiny'", "back": "Naguib Mahfouz", "work": "Short Stories", "frequency": 2, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: 1979 sequel to 1001 Nights in which Scheherazade distrusts King Shahryar after being spared", "back": "Naguib Mahfouz (Arabian Nights and Days)", "work": "Arabian Nights and Days", "frequency": 2, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: only Egyptian and only Arabic-language Nobel Prize in Literature winner", "back": "Naguib Mahfouz", "work": "General", "frequency": 3, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

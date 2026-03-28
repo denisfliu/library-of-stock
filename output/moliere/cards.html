@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Moliere";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: Orgon hides under a table while the title character seduces his wife", "back": "Tartuffe (Moliere)", "work": "Tartuffe", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this play ends with a deus ex machina in which the king's officer arrests the title scheming religious hypocrite", "back": "Tartuffe (Moliere)", "work": "Tartuffe", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Richard Wilbur translated this play into English, preserving the rhyming couplets", "back": "Tartuffe (Moliere)", "work": "Tartuffe", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Valere tries to win the heart of Mariane, daughter of Orgon, while the title character tries to stop him", "back": "Tartuffe (Moliere)", "work": "Tartuffe", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the maid Dorine voices her opinion of a forced marriage but stops talking every time her master is about to slap her", "back": "Tartuffe (Moliere)", "work": "Tartuffe", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: its premiere at the multi-day festival Pleasures of the Enchanted Island was scandalous", "back": "Tartuffe (Moliere)", "work": "Tartuffe", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Colley Cibber adapted this play as The Non-Juror", "back": "Tartuffe (Moliere)", "work": "Tartuffe", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this playwright died hours after performing as the hypochondriac Argan in this play", "back": "The Imaginary Invalid (Moliere)", "work": "The Imaginary Invalid", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the maid Toinette has the protagonist play dead, revealing that his wife Beline does not truly love him", "back": "The Imaginary Invalid (Moliere)", "work": "The Imaginary Invalid", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Toinette disguises herself as a doctor to fool the supposedly sickly protagonist, repeating 'ignoramus!' as her master lists foods", "back": "The Imaginary Invalid (Moliere)", "work": "The Imaginary Invalid", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Angelique marries Cleante (disguised as a music master) despite being promised to a doctor by her hypochondriac father", "back": "The Imaginary Invalid (Moliere)", "work": "The Imaginary Invalid", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the 'dormitive principle' logical fallacy was coined referencing a scene where characters try to explain how opium works", "back": "The Imaginary Invalid (Moliere)", "work": "The Imaginary Invalid", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the final scene is a mock-Latin ballet ceremony ending with 'Vivat, vivat, vivat, vivat'", "back": "The Imaginary Invalid (Moliere)", "work": "The Imaginary Invalid", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the quack doctor Thomas Diafoirus is in love with Angelique, the daughter of the title character", "back": "The Imaginary Invalid (Moliere)", "work": "The Imaginary Invalid", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Alceste insults Oronte's sonnet, leading to a lawsuit", "back": "The Misanthrope (Moliere)", "work": "The Misanthrope", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Alceste attempts to woo Celimene despite being the titular character who hates most people", "back": "The Misanthrope (Moliere)", "work": "The Misanthrope", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Arsinoe is told her criticisms of Celimene may be because she is simply too old", "back": "The Misanthrope (Moliere)", "work": "The Misanthrope", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Alceste goes into self-imposed exile after losing a lawsuit against Oronte", "back": "The Misanthrope (Moliere)", "work": "The Misanthrope", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Arnolphe tries to raise his ward Agnes in ignorance to make her his ideal wife", "back": "The School for Wives (Moliere)", "work": "The School for Wives", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in response to criticism of this play, the author wrote another play in which the critics themselves watch that play", "back": "The School for Wives (Moliere)", "work": "The School for Wives", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Arnolphe assumes the name 'Monsieur de la Souche' and gives his ward Agnes eleven maxims of marriage", "back": "The School for Wives (Moliere)", "work": "The School for Wives", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Monsieur Jourdain, son of a cloth merchant, aspires to join the aristocracy", "back": "The Bourgeois Gentleman (Moliere)", "work": "The Bourgeois Gentleman", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Cleonte disguises himself as a Turkish prince (speaking Sabir) to marry Jourdain's daughter Lucille", "back": "The Bourgeois Gentleman (Moliere)", "work": "The Bourgeois Gentleman", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist is surprised to learn he has been speaking prose his entire life in a famous exchange with his philosophy master", "back": "The Bourgeois Gentleman (Moliere)", "work": "The Bourgeois Gentleman", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the Music Master and Dancing Master stage ballet scenes for their social-climbing student", "back": "The Bourgeois Gentleman (Moliere)", "work": "The Bourgeois Gentleman", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Sganarelle is a woodcutter beaten and forced into becoming a doctor by his wife Martine's revenge", "back": "The Doctor in Spite of Himself (Moliere)", "work": "The Doctor in Spite of Himself", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a character sardonically observes that craftsmen pay for material they destroy, but doctors can butcher whomever they want", "back": "The Doctor in Spite of Himself (Moliere)", "work": "The Doctor in Spite of Himself", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Cathos and Magdelon put on airs of sophistication for their debut in Paris in this satire of the precieuses movement", "back": "The Affected Young Ladies (Moliere)", "work": "The Affected Young Ladies", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Mascarille recites a 'funny poem' with the punchline 'Stop thief! Stop thief!'", "back": "The Affected Young Ladies (Moliere)", "work": "The Affected Young Ladies", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Gorgibus curses 'novels, verses, songs, and sonnets' and vows to marry off his daughter and niece or send them to a nunnery", "back": "The Affected Young Ladies (Moliere)", "work": "The Affected Young Ladies", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this play is an adaptation of Plautus's Aulularia; a valet negotiates an unfair loan secretly from his master's father", "back": "The Miser (Moliere)", "work": "The Miser", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: co-founded the Illustrious Theater Company; his troupe created the genre of the comedie-ballet", "back": "Moliere", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Sganarelle is a recurring character in this playwright's works, often played by the author himself", "back": "Moliere", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this playwright's death possibly originated the theatrical superstition against wearing green onstage", "back": "Moliere", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: his troupe made a permanent home in the Hotel du Petit-Bourbon after performing Corneille's Nicomede before Louis XIV", "back": "Moliere", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: collaborated with Corneille and Philippe Quinault on the comedy Psyche", "back": "Moliere", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: his acting company eventually evolved into the Comedie-Francaise", "back": "Moliere", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Ariane Mnouchkine made a biopic of this playwright", "back": "Moliere", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: French theatre awards named for this playwright have been won by Yasmina Reza", "back": "Moliere", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: drew on Plautus in a play titled for this character, later adapted by Dryden and Kleist; the French word for 'look-alike' comes from the servant Sosie", "back": "Amphitryon (Moliere)", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: in this play, Sganarelle is falsely convinced his wife is unfaithful and advises the audience to 'never believe anything'", "back": "The Imaginary Cuckold (Moliere)", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: inspired by Terence's Adelphoe, Ariste gives his prospective wife more freedom than Sganarelle in this play", "back": "The School for Husbands (Moliere)", "work": "The School for Husbands", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

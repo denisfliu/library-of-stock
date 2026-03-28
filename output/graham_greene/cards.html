@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Graham Greene";
 let cards = [{"type": "basic", "indicator": "Novel", "front": "Novel: unnamed 'whiskey priest' hunted by an anti-clerical lieutenant in Tabasco, Mexico", "back": "The Power and the Glory (Graham Greene)", "work": "The Power and the Glory", "frequency": 15, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: betrayed by a yellow-toothed mestizo", "back": "The Power and the Glory (Graham Greene)", "work": "The Power and the Glory", "frequency": 15, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Coral Fellows teaches the priest Morse code", "back": "The Power and the Glory (Graham Greene)", "work": "The Power and the Glory", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the Lehrs shelter him before he is betrayed", "back": "The Power and the Glory (Graham Greene)", "work": "The Power and the Glory", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: teenage gang leader Pinkie Brown investigated by Ida Arnold after the murder of Fred Hale", "back": "Brighton Rock (Graham Greene)", "work": "Brighton Rock", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: title refers to a type of candy", "back": "Brighton Rock (Graham Greene)", "work": "Brighton Rock", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Maurice Bendrix's affair with Sarah Miles during the Blitz", "back": "The End of the Affair (Graham Greene)", "work": "The End of the Affair", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Sarah makes a promise to God after a bombing nearly kills him", "back": "The End of the Affair (Graham Greene)", "work": "The End of the Affair", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: CIA agent Alden Pyle vs. journalist Thomas Fowler in Vietnam", "back": "The Quiet American (Graham Greene)", "work": "The Quiet American", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Pyle inspired by York Harding's 'Third Force' theory", "back": "The Quiet American (Graham Greene)", "work": "The Quiet American", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Major Scobie commits suicide in Sierra Leone", "back": "The Heart of the Matter (Graham Greene)", "work": "The Heart of the Matter", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: affair with shipwreck survivor Helen Rolt", "back": "The Heart of the Matter (Graham Greene)", "work": "The Heart of the Matter", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: blackmailed by Yusef", "back": "The Heart of the Matter (Graham Greene)", "work": "The Heart of the Matter", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: vacuum cleaner salesman James Wormold recruited as spy in Cuba", "back": "Our Man in Havana (Graham Greene)", "work": "Our Man in Havana", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: plays chess with Captain Segura using whiskey bottles", "back": "Our Man in Havana (Graham Greene)", "work": "Our Man in Havana", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: Wormsley Common Gang destroys Old Misery's house (which survived the Blitz)", "back": "\"The Destructors\" (Graham Greene)", "work": "Short Stories", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: led by T.", "back": "\"The Destructors\" (Graham Greene)", "work": "Short Stories", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: mattress of money burned", "back": "\"The Destructors\" (Graham Greene)", "work": "Short Stories", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: Francis Morton dies of fright when his twin touches his face during hide-and-seek in the dark", "back": "\"The End of the Party\" (Graham Greene)", "work": "Short Stories", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: opens with English dentist Mr. Tench walking to a wharf", "back": "The Power and the Glory (Graham Greene)", "work": "The Power and the Glory", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: stories of boy martyr Juan interspersed throughout", "back": "The Power and the Glory (Graham Greene)", "work": "The Power and the Glory", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: steals bone from crippled dog and sugar cube from child's grave", "back": "The Power and the Glory (Graham Greene)", "work": "The Power and the Glory", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: boy Luis spits on gun at end", "back": "The Power and the Glory (Graham Greene)", "work": "The Power and the Glory", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

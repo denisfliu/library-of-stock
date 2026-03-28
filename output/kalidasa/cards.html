@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Kalidasa";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: a signet ring found in the belly of a fish breaks a curse, allowing King Dushyanta to remember his wife", "back": "The Recognition of Shakuntala (Kalidasa)", "work": "The Recognition of Shakuntala", "frequency": 15, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the sage Durvasa curses a king to forget his wife until he sees a signet ring", "back": "The Recognition of Shakuntala (Kalidasa)", "work": "The Recognition of Shakuntala", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a king meets the title character at a hermitage after nearly killing a deer", "back": "The Recognition of Shakuntala (Kalidasa)", "work": "The Recognition of Shakuntala", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the prologue features a Stage Director instructing an actress and a 'Benediction Upon the Audience'", "back": "The Recognition of Shakuntala (Kalidasa)", "work": "The Recognition of Shakuntala", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Goethe based the 'Prelude' of Faust on the prologue of this play", "back": "The Recognition of Shakuntala (Kalidasa)", "work": "The Recognition of Shakuntala", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a seven-act play in Sanskrit based on a story from the Mahabharata", "back": "The Recognition of Shakuntala (Kalidasa)", "work": "The Recognition of Shakuntala", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the play ends with the title character's son found playing with lion cubs", "back": "The Recognition of Shakuntala (Kalidasa)", "work": "The Recognition of Shakuntala", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Dushyanta recalls telling a woman to 'Count every day one letter of my name' after giving her a ring", "back": "The Recognition of Shakuntala (Kalidasa)", "work": "The Recognition of Shakuntala", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: an ascetic prophesies that a king will father a universal emperor after sparing a black hermitage antelope", "back": "The Recognition of Shakuntala (Kalidasa)", "work": "The Recognition of Shakuntala", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a fisherman tells policemen including Suchaka and Januka about finding a ring in a carp", "back": "The Recognition of Shakuntala (Kalidasa)", "work": "The Recognition of Shakuntala", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the title nymph is turned into a vine after entering a forbidden forest", "back": "Urvashi Won by Valour (Kalidasa)", "work": "Urvashi Won by Valour (Vikramorvasiyam)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the title character writes of her love on a birch leaf, which is seen by her lover's wife", "back": "Urvashi Won by Valour (Kalidasa)", "work": "Urvashi Won by Valour (Vikramorvasiyam)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the title character is banished from heaven when she accidentally says her real lover's name during a play-within-a-play", "back": "Urvashi Won by Valour (Kalidasa)", "work": "Urvashi Won by Valour (Vikramorvasiyam)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a king has a 'mad scene' talking to a peacock, elephant, and river while searching for his lover", "back": "Urvashi Won by Valour (Kalidasa)", "work": "Urvashi Won by Valour (Vikramorvasiyam)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist is rescued from the demon Keshin by her lover", "back": "Urvashi Won by Valour (Kalidasa)", "work": "Urvashi Won by Valour (Vikramorvasiyam)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: King Agnimitra falls in love with a dancing servant who turns out to be a princess", "back": "Malavika and Agnimitra (Kalidasa)", "work": "Malavika and Agnimitra (Malavikagnimitram)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a jester tricks the queen into giving up her ring to free an imprisoned dancer, using a faked snake bite", "back": "Malavika and Agnimitra (Kalidasa)", "work": "Malavika and Agnimitra (Malavikagnimitram)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in the prologue, a stage assistant expresses surprise at performing a new author's work instead of older playwrights", "back": "Malavika and Agnimitra (Kalidasa)", "work": "Malavika and Agnimitra (Malavikagnimitram)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: an exiled yaksha sends a cloud to carry a message to his wife in the city of Alaka", "back": "The Cloud Messenger (Kalidasa)", "work": "The Cloud Messenger (Meghaduta)", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a 111-stanza poem written in the seventeen-syllable Mandakranta ('slow-stepper') meter", "back": "The Cloud Messenger (Kalidasa)", "work": "The Cloud Messenger (Meghaduta)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the exiled speaker grows too thin for his bracelets during a year-long exile", "back": "The Cloud Messenger (Kalidasa)", "work": "The Cloud Messenger (Meghaduta)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the title figure passes the 'dread shrine' of Shiva in Ujjain on its way to Alaka", "back": "The Cloud Messenger (Kalidasa)", "work": "The Cloud Messenger (Meghaduta)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: an epic poem that begins with a description of the Himalayas as a 'measuring-rod' of the world", "back": "The Birth of Kumara (Kalidasa)", "work": "The Birth of Kumara (Kumarasambhava)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in the fourth canto, the widow of a character burned to death mistakes his outline in the ashes for him still alive", "back": "The Birth of Kumara (Kalidasa)", "work": "The Birth of Kumara (Kumarasambhava)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this author's earliest work, divided into six cantos about different seasons, focused on erotic love", "back": "Ritusamhara (Kalidasa)", "work": "Ritusamhara (The Garland of Seasons)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: legendarily took up writing after a princess rejected him for being an unintelligent shepherd", "back": "Kalidasa", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Mohan Rakesh's 1958 play One Day in the Season of Rain depicts a love triangle involving this Sanskrit author", "back": "Kalidasa", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Goethe wrote an epigraph about this author: 'Wouldst thou the earth and heaven itself in one sole name combine?'", "back": "Kalidasa", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

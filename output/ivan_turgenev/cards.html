@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Ivan Turgenev";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: in this novel, Arkady Kirsanov brings his nihilist friend home to his father's estate Marino", "back": "Fathers and Sons (Ivan Turgenev)", "work": "Fathers and Sons", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Bazarov duels with the foppish Pavel (shooting him in the leg) after kissing the servant Fenichka", "back": "Fathers and Sons (Ivan Turgenev)", "work": "Fathers and Sons", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a young doctor dies after cutting himself on his own scalpel while treating a typhus patient and failing to cauterize the wound", "back": "Fathers and Sons (Ivan Turgenev)", "work": "Fathers and Sons", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the servant Fenichka bears a child for her master Nikolai", "back": "Fathers and Sons (Ivan Turgenev)", "work": "Fathers and Sons", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a father trains his kilt-wearing son based on Rousseau's physical theories and Voltaire's mental indoctrination, after failing to receive an inheritance from his rich aunt", "back": "Fathers and Sons (Ivan Turgenev)", "work": "Fathers and Sons", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a son dismantles a romantic rival's arguments praising British manufacturing, French art, and German philosophy while trashing his home country", "back": "Fathers and Sons (Ivan Turgenev)", "work": "Fathers and Sons", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this short story collection about the lives of serfs contributed to the abolition of serfdom and got its author arrested", "back": "A Sportsman's Sketches (Ivan Turgenev)", "work": "A Sportsman's Sketches", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'Hamlet of the Shchigrovsky District' — a man at a party tells the narrator to call him Hamlet; Vasily Vasilyevich sticks his tongue out at his reflection", "back": "A Sportsman's Sketches (Ivan Turgenev)", "work": "A Sportsman's Sketches", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'Singers' — the Gabbler and Blinkard become emotional as the Turk wins a singing contest; narrator later hears a boy calling for 'Antropka'", "back": "A Sportsman's Sketches (Ivan Turgenev)", "work": "A Sportsman's Sketches", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'Khor and Kalinych' — the first story in the collection; the landowner Polutikin controls two contrasting peasants", "back": "A Sportsman's Sketches (Ivan Turgenev)", "work": "A Sportsman's Sketches", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'Bezhin Lea' — Pavlusha drives away wolves but later dies falling off a horse", "back": "A Sportsman's Sketches (Ivan Turgenev)", "work": "A Sportsman's Sketches", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a man named Radilov only began to weep for his wife's death when he saw a fly land on her eye", "back": "A Sportsman's Sketches (Ivan Turgenev)", "work": "A Sportsman's Sketches", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'Kasyan from the Beautiful Lands' — a dwarf who spends his days catching nightingales", "back": "A Sportsman's Sketches (Ivan Turgenev)", "work": "A Sportsman's Sketches", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'A Living Relic' — a beautiful serf named Lukerya is immobilized by disease but enjoys nature and teaches an orphan girl to sing", "back": "A Sportsman's Sketches (Ivan Turgenev)", "work": "A Sportsman's Sketches", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Nekrasov published this collection in The Contemporary, aiding the abolition of serfdom", "back": "A Sportsman's Sketches (Ivan Turgenev)", "work": "A Sportsman's Sketches", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the teenager Vladimir falls for Princess Zinaida, then discovers his own father is her secret lover", "back": "First Love (Ivan Turgenev)", "work": "First Love", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: autobiographical novella fictionalizing Princess Catherine Shakhovskoy as Zinaida", "back": "First Love (Ivan Turgenev)", "work": "First Love", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist is shocked to find his father striking Zinaida with a riding crop", "back": "First Love (Ivan Turgenev)", "work": "First Love", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: framed by Vladimir Petrovich and two other gentlemen recounting their earliest romantic memories", "back": "First Love (Ivan Turgenev)", "work": "First Love", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: popularized the term 'superfluous man' through the diary of the dying aristocrat Tchulkaturin", "back": "Diary of a Superfluous Man (Ivan Turgenev)", "work": "Diary of a Superfluous Man", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the protagonist confronts a Prince during a dancing game of La Confidente, leading to a duel", "back": "Diary of a Superfluous Man (Ivan Turgenev)", "work": "Diary of a Superfluous Man", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: essay contrasts Hamlet's egocentrism with Don Quixote's self-sacrifice, calling them 'poles of the human axis'", "back": "Hamlet and Don Quixote (Ivan Turgenev)", "work": "Hamlet and Don Quixote (essay/speech)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the confectioner's daughter Gemma Roselli enthralls the Russian Sanin in Frankfurt", "back": "Spring Torrents (Ivan Turgenev)", "work": "Spring Torrents", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Hemingway's novel mocking Sherwood Anderson takes its title from this Turgenev novella", "back": "Spring Torrents (Ivan Turgenev)", "work": "Spring Torrents", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a play about the handsome tutor Aleksei Belyaev and the unhappily married Natalya Petrovna", "back": "A Month in the Country (Ivan Turgenev)", "work": "A Month in the Country (play)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Stanislavski first deployed his acting system for a revival of this play, starring Olga Knipper", "back": "A Month in the Country (Ivan Turgenev)", "work": "A Month in the Country (play)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: set in Baden-Baden; Grigory Litvinov finds heliotropes on his windowsill", "back": "Smoke (Ivan Turgenev)", "work": "Smoke", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: satirizes Alexander Herzen via the liberal character Gubaryov among intellectuals at Baden-Baden", "back": "Smoke (Ivan Turgenev)", "work": "Smoke", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: focused on Lavretsky; the unfaithful urban wife Varvara is contrasted with the title provincial group", "back": "Home of the Gentry / A Nest of Gentlefolk (Ivan Turgenev)", "work": "Home of the Gentry / A Nest of Gentlefolk", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Goncharov accused Turgenev of plagiarizing The Precipice for this novel", "back": "Home of the Gentry / A Nest of Gentlefolk (Ivan Turgenev)", "work": "Home of the Gentry / A Nest of Gentlefolk", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the widow Marya tries to impress the poet Panshin with her daughter Liza's piano playing; Liza sometimes titles translations", "back": "Home of the Gentry / A Nest of Gentlefolk (Ivan Turgenev)", "work": "Home of the Gentry / A Nest of Gentlefolk", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'Mumu' — a deaf-mute porter drowns his dog in the same river where he rescued her", "back": "Ivan Turgenev", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'The Dog' — a ghostly apparition inspires the narrator to buy 'Little Tresor,' who saves him from a rabid animal", "back": "Ivan Turgenev", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: 'A King Lear of the Steppes' — the muscular Harlov is mistreated by his daughters, in a story inspired by Shakespeare", "back": "Ivan Turgenev", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: lived in Paris with the mezzo-soprano Pauline Viardot; wrote three libretti for her; menage a trois", "back": "Ivan Turgenev", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: caricatured by Dostoevsky as the out-of-touch liberal poet Semyon Karmazinov in Demons; longstanding feud", "back": "Ivan Turgenev", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Isaiah Berlin wrote about this author's 'complacent ambivalence' in the essay 'Turgenev and the Liberal Predicament'", "back": "Ivan Turgenev", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Dostoevsky mocked this author as needing a telescope to see Russia because he lived in Paris", "back": "Ivan Turgenev", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: jailed for writing an obituary of Gogol", "back": "Ivan Turgenev", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

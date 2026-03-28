@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Natsume Soseki";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: the narrator of this novel uses the pretentious pronoun 'wagahai' and belongs to the teacher Mr. Sneaze", "back": "I Am a Cat (Natsume Soseki)", "work": "I Am a Cat (1905-1906)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Avalon Coldmoon obsessively grinds glass balls to simulate light passing through a frog's eye in this novel", "back": "I Am a Cat (Natsume Soseki)", "work": "I Am a Cat (1905-1906)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the pretentious artist Waverhouse, the student Avalon Coldmoon, and Opula Goldfield appear in this novel", "back": "I Am a Cat (Natsume Soseki)", "work": "I Am a Cat (1905-1906)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Singleman Kidd encourages calmness as children keep intruding to retrieve baseballs in this novel", "back": "I Am a Cat (Natsume Soseki)", "work": "I Am a Cat (1905-1906)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: K commits suicide leaving a note asking 'Why did I wait so long to die?' and Sensei later does the same after Emperor Meiji's death", "back": "Kokoro (Natsume Soseki)", "work": "Kokoro (1914)", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Sensei stole his landlady's daughter Ojosan from his friend K in this novel", "back": "Kokoro (Natsume Soseki)", "work": "Kokoro (1914)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the second half of this novel is an autobiographical letter/testament from Sensei to the unnamed narrator", "back": "Kokoro (Natsume Soseki)", "work": "Kokoro (1914)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Sensei says 'loneliness is the price we have to pay for being born in this modern age' and advises the narrator on his father's kidney disease", "back": "Kokoro (Natsume Soseki)", "work": "Kokoro (1914)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Sensei insists 'there is guilt in love' and asks the narrator to consider what it means 'to be tied down by long black hair'", "back": "Kokoro (Natsume Soseki)", "work": "Kokoro (1914)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: K is a priest's son obsessed with 'the concentration of the mind' in this novel", "back": "Kokoro (Natsume Soseki)", "work": "Kokoro (1914)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the narrator plays chess with his ill father atop a foot warmer in this novel", "back": "Kokoro (Natsume Soseki)", "work": "Kokoro (1914)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: colleagues have derisive nicknames: Red Shirt, Porcupine, the Clown, Hanger-on, and Squash", "back": "Botchan (Natsume Soseki)", "work": "Botchan (1906)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the title math teacher and Porcupine beat up Red Shirt and the Clown for visiting a brothel", "back": "Botchan (Natsume Soseki)", "work": "Botchan (1906)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: children fill the protagonist's bed with grasshoppers, leaving his face swollen by mosquito bites", "back": "Botchan (Natsume Soseki)", "work": "Botchan (1906)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the obsequious servant Kiyo gives the title character his nickname in this novel", "back": "Botchan (Natsume Soseki)", "work": "Botchan (1906)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Red Shirt schemes to tarnish the reputation of a colleague nicknamed for resembling a squash, to steal an attractive middle school teacher", "back": "Botchan (Natsume Soseki)", "work": "Botchan (1906)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: an artist retreats to the mountains and meets the mysterious O-Nami, who reminds him of Millais's Ophelia", "back": "Kusamakura / The Three-Cornered World (Natsume Soseki)", "work": "Kusamakura / The Three-Cornered World / Grass Pillow (1906)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the opening sentence of this novel praises the turbidity of one's life; described as its author's most lyrical novel", "back": "Kusamakura / The Three-Cornered World (Natsume Soseki)", "work": "Kusamakura / The Three-Cornered World / Grass Pillow (1906)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the twelfth chapter examines Misao Fujimura's suicide at Kegon Falls and his death poem", "back": "Kusamakura / The Three-Cornered World (Natsume Soseki)", "work": "Kusamakura / The Three-Cornered World / Grass Pillow (1906)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a character considers the vanity of an artist delaying suicide by a week to finish a painting", "back": "Kusamakura / The Three-Cornered World (Natsume Soseki)", "work": "Kusamakura / The Three-Cornered World / Grass Pillow (1906)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the title student is fascinated by Thomas Browne's Hydriotaphia, Urn Burial", "back": "Sanshiro (Natsume Soseki)", "work": "Sanshiro (1908)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this novel fictionalized Lafcadio Hearn's departure from the University of Tokyo", "back": "Sanshiro (Natsume Soseki)", "work": "Sanshiro (1908)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this Japanese author succeeded Lafcadio Hearn as professor of English literature at the University of Tokyo", "back": "Natsume Soseki", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's reminiscences on an unpleasant stay in the U.K. are quoted in Donald Keene's 'The Japanese Idea of Beauty'", "back": "Natsume Soseki", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author is thematically paired with Machado de Assis in Edwin Frank's Stranger Than Fiction", "back": "Natsume Soseki", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: in Murakami's Kafka on the Shore, Kafka reads The Miner by this author", "back": "Natsume Soseki", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in one story from this collection, a man waits a century by a grave and sees a white lily blossom", "back": "Ten Nights of Dreams (Natsume Soseki)", "work": "Ten Nights of Dreams (1908)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: a businessman ostracized for his love marriage fails to understand a koan about his face before birth in this author's novel The Gate", "back": "Natsume Soseki", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

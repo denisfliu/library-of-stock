@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Christopher Wren";
 let cards = [{"type": "basic", "indicator": "Building", "front": "Building: rebuilt after the Great Fire of 1666, this London cathedral on Ludgate Hill contains a Whispering Gallery below its dome.", "back": "St. Paul's Cathedral (Christopher Wren)", "frequency": 5, "tags": [], "work": "St. Paul's Cathedral"}, {"type": "basic", "indicator": "Building", "front": "Building: Wren's tomb inside this cathedral reads 'Reader, if you seek his monument, look around you.'", "back": "St. Paul's Cathedral (Christopher Wren)", "frequency": 3, "tags": [], "work": "St. Paul's Cathedral"}, {"type": "basic", "indicator": "Building", "front": "Building: this cathedral's dome was inspired by Mansart's Val-de-Grace and the Romanesque lantern at Ely, where the architect's uncle was bishop.", "back": "St. Paul's Cathedral (Christopher Wren)", "frequency": 3, "tags": [], "work": "St. Paul's Cathedral"}, {"type": "basic", "indicator": "Building", "front": "Building: this Wren cathedral features woodwork by Grinling Gibbons and ironwork by Jean Tijou.", "back": "St. Paul's Cathedral (Christopher Wren)", "frequency": 3, "tags": [], "work": "St. Paul's Cathedral"}, {"type": "basic", "indicator": "Building", "front": "Building: Herbert Mason's 1940 photograph of this cathedral — dome and two spires visible above Blitz smoke — became an iconic image of wartime resilience.", "back": "St. Paul's Cathedral (Christopher Wren)", "frequency": 3, "tags": [], "work": "St. Paul's Cathedral"}, {"type": "basic", "indicator": "Building", "front": "Building: Bill Viola's Martyrs was commissioned for this cathedral, which also houses William Holman Hunt's The Light of the World.", "back": "St. Paul's Cathedral (Christopher Wren)", "frequency": 3, "tags": [], "work": "St. Paul's Cathedral"}, {"type": "basic", "indicator": "Building", "front": "Building: this cathedral has a three-shelled double dome with a Stone Gallery and Golden Gallery, flanked by two spires, with a facade of paired Corinthian columns.", "back": "St. Paul's Cathedral (Christopher Wren)", "frequency": 3, "tags": [], "work": "St. Paul's Cathedral"}, {"type": "basic", "indicator": "Building", "front": "Building: the eastern limewood paneling of this Wren cathedral lists the names of 28,000 American soldiers who died in Britain during WWII.", "back": "St. Paul's Cathedral (Christopher Wren)", "frequency": 1, "tags": [], "work": "St. Paul's Cathedral"}, {"type": "basic", "indicator": "Building", "front": "Building: the tomb of John Donne is inside this London cathedral, alongside that of its architect.", "back": "St. Paul's Cathedral (Christopher Wren)", "frequency": 1, "tags": [], "work": "St. Paul's Cathedral"}, {"type": "basic", "indicator": "Building", "front": "Building: this Wren-designed 202-foot fluted Doric column has an interior staircase leading to a golden urn of fire at its top.", "back": "The Monument to the Great Fire of London (Christopher Wren)", "frequency": 3, "tags": [], "work": "The Monument to the Great Fire of London"}, {"type": "basic", "indicator": "Building", "front": "Building: this Wren-designed London column was bombed by Martial Bourdin in what was described as the first international terrorist attack.", "back": "The Monument to the Great Fire of London (Christopher Wren)", "frequency": 3, "tags": [], "work": "The Monument to the Great Fire of London"}, {"type": "basic", "indicator": "Building", "front": "Building: John Flamsteed was the first resident of this Wren-designed Greenwich building, built to house his astronomical work.", "back": "Royal Observatory, Greenwich (Christopher Wren)", "frequency": 3, "tags": [], "work": "Royal Observatory, Greenwich"}, {"type": "basic", "indicator": "Building", "front": "Building: tall windows were installed in the Octagon Room of this Wren-designed Greenwich observatory for astronomical observation.", "back": "Royal Observatory, Greenwich (Christopher Wren)", "frequency": 3, "tags": [], "work": "Royal Observatory, Greenwich"}, {"type": "basic", "indicator": "Building", "front": "Building: this Wren-designed observatory in Greenwich marks the prime meridian.", "back": "Royal Observatory, Greenwich (Christopher Wren)", "frequency": 3, "tags": [], "work": "Royal Observatory, Greenwich"}, {"type": "basic", "indicator": "Building", "front": "Building: Wren designed the library of this Cambridge college.", "back": "Trinity College Library (Christopher Wren)", "frequency": 3, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Building", "front": "Building: William and Mary tasked Wren to remodel this palace to rival Versailles, but the project was abandoned in 1694, leaving a mix of Baroque and Tudor architecture.", "back": "Hampton Court Palace (Christopher Wren)", "frequency": 3, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Building", "front": "Building: Wren designed this Greenwich building that now serves as a naval college.", "back": "Old Royal Naval College (Christopher Wren)", "frequency": 3, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Building", "front": "Building: Wren designed the oldest collegiate building in the United States, located at the College of William and Mary.", "back": "Wren Building, College of William and Mary (Christopher Wren)", "frequency": 3, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Building", "front": "Building: a false ceiling in this cathedral conceals beams Wren installed to support its tower.", "back": "Salisbury Cathedral (Christopher Wren)", "frequency": 3, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Building", "front": "Building: Wren designed this Oxford theatre, though credit for some of his works is now given to his office, including Nicholas Hawksmoor.", "back": "Sheldonian Theatre (Christopher Wren)", "frequency": 1, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: before turning to architecture, this man created illustrations for Thomas Willis's Cerebri Anatome — the book that introduced the word 'neurology.'", "back": "Christopher Wren", "frequency": 3, "tags": [], "work": "Polymath and Other Contributions"}, {"type": "basic", "indicator": "Architect", "front": "Architect: this English Baroque architect took Nicholas Hawksmoor as an apprentice.", "back": "Christopher Wren", "frequency": 3, "tags": [], "work": "Polymath and Other Contributions"}, {"type": "basic", "indicator": "Architect", "front": "Architect: this architect worked with Robert Hooke to rebuild London after the Great Fire of 1666.", "back": "Christopher Wren", "frequency": 3, "tags": [], "work": "Polymath and Other Contributions"}, {"type": "basic", "indicator": "Architect", "front": "Architect: as MP for Weymouth, this architect controlled nearby Portland stone quarries he used for St. Paul's Cathedral.", "back": "Christopher Wren", "frequency": 3, "tags": [], "work": "Polymath and Other Contributions"}, {"type": "basic", "indicator": "Architect", "front": "Architect: John Dryden's poem Annus Mirabilis commemorates this architect's works rebuilding London after the Great Fire.", "back": "Christopher Wren", "frequency": 3, "tags": [], "work": "Polymath and Other Contributions"}, {"type": "basic", "indicator": "Architect", "front": "Architect: Charles Demuth's watercolor After Sir Christopher Wren depicts the Provincetown Heritage Museum, whose design was inspired by this architect.", "back": "Christopher Wren", "frequency": 3, "tags": [], "work": "Polymath and Other Contributions"}, {"type": "basic", "indicator": "Architect", "front": "Architect: Peter Ackroyd's novel Hawksmoor follows a detective solving murders at churches designed by a Satanist who worked alongside this English Baroque architect.", "back": "Christopher Wren", "frequency": 1, "tags": [], "work": "Polymath and Other Contributions"}, {"type": "basic", "indicator": "Architect", "front": "Architect: this architect lamented 'ladies think nothing well without an edging.'", "back": "Christopher Wren", "frequency": 1, "tags": [], "work": "Polymath and Other Contributions"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

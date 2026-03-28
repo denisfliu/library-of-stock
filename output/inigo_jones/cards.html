@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Inigo Jones";
 let cards = [{"type": "image", "indicator": "Building", "front": "", "back": "Banqueting House at Whitehall (Inigo Jones)", "work": "Banqueting House at Whitehall", "frequency": 8, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Inigo_Jones%2C_1573-1652_RMG_L2151-003.tiff/lossy-page1-500px-Inigo_Jones%2C_1573-1652_RMG_L2151-003.tiff.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: double-cube interior; Rubens painted the ceiling with the Apotheosis of James I", "back": "Banqueting House at Whitehall (Inigo Jones)", "work": "Banqueting House at Whitehall", "frequency": 8, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Inigo_Jones%2C_1573-1652_RMG_L2151-003.tiff/lossy-page1-500px-Inigo_Jones%2C_1573-1652_RMG_L2151-003.tiff.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: only surviving part of the Palace of Whitehall, which mostly burned down in 1689; the Palace began existence as York Place", "back": "Banqueting House at Whitehall (Inigo Jones)", "work": "Banqueting House at Whitehall", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Inigo_Jones%2C_1573-1652_RMG_L2151-003.tiff/lossy-page1-500px-Inigo_Jones%2C_1573-1652_RMG_L2151-003.tiff.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: James I wanted it to be part of 'the biggest palace in Christendom'; facade has Ionic and Composite pilasters with alternating segmental and triangular pediments", "back": "Banqueting House at Whitehall (Inigo Jones)", "work": "Banqueting House at Whitehall", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Inigo_Jones%2C_1573-1652_RMG_L2151-003.tiff/lossy-page1-500px-Inigo_Jones%2C_1573-1652_RMG_L2151-003.tiff.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Rubens's ceiling series includes The Union of the Crowns and ovals of virtues triumphing over vices; may have been inspired by Paolo Veronese's Triumph of Venice at the Doge's Palace", "back": "Banqueting House at Whitehall (Inigo Jones)", "work": "Banqueting House at Whitehall", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Inigo_Jones%2C_1573-1652_RMG_L2151-003.tiff/lossy-page1-500px-Inigo_Jones%2C_1573-1652_RMG_L2151-003.tiff.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Queen's House, Greenwich (Inigo Jones)", "work": "Queen's House, Greenwich", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Greenwich_-_ICE_Fisheye_View_on_Queen%27s_House_1617_by_Inigo_Jones_%26_National_Maritime_Museum.jpg/500px-Greenwich_-_ICE_Fisheye_View_on_Queen%27s_House_1617_by_Inigo_Jones_%26_National_Maritime_Museum.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: first consciously classical building in Britain; originally designed for Anne of Denmark, then completed for Henrietta Maria", "back": "Queen's House, Greenwich (Inigo Jones)", "work": "Queen's House, Greenwich", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Greenwich_-_ICE_Fisheye_View_on_Queen%27s_House_1617_by_Inigo_Jones_%26_National_Maritime_Museum.jpg/500px-Greenwich_-_ICE_Fisheye_View_on_Queen%27s_House_1617_by_Inigo_Jones_%26_National_Maritime_Museum.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: contains the Tulip Staircase — England's first self-supporting spiral staircase", "back": "Queen's House, Greenwich (Inigo Jones)", "work": "Queen's House, Greenwich", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Greenwich_-_ICE_Fisheye_View_on_Queen%27s_House_1617_by_Inigo_Jones_%26_National_Maritime_Museum.jpg/500px-Greenwich_-_ICE_Fisheye_View_on_Queen%27s_House_1617_by_Inigo_Jones_%26_National_Maritime_Museum.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: the two-part design of Greenwich Hospital was split to preserve an unimpeded view from this building", "back": "Queen's House, Greenwich (Inigo Jones)", "work": "Queen's House, Greenwich", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Greenwich_-_ICE_Fisheye_View_on_Queen%27s_House_1617_by_Inigo_Jones_%26_National_Maritime_Museum.jpg/500px-Greenwich_-_ICE_Fisheye_View_on_Queen%27s_House_1617_by_Inigo_Jones_%26_National_Maritime_Museum.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Covent Garden (Inigo Jones)", "work": "Covent Garden", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/The_Inigo_Jones_church%2C_Covent_Garden%2C_the_eaves_-_geograph.org.uk_-_2210635.jpg/500px-The_Inigo_Jones_church%2C_Covent_Garden%2C_the_eaves_-_geograph.org.uk_-_2210635.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: piazza-style development; London's first modern public square; rectangular design inspired by the Place Royale in Paris", "back": "Covent Garden (Inigo Jones)", "work": "Covent Garden", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/The_Inigo_Jones_church%2C_Covent_Garden%2C_the_eaves_-_geograph.org.uk_-_2210635.jpg/500px-The_Inigo_Jones_church%2C_Covent_Garden%2C_the_eaves_-_geograph.org.uk_-_2210635.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: St. Paul's Church here has four Tuscan columns supporting a portico facing onto the piazza and market", "back": "Covent Garden (Inigo Jones)", "work": "Covent Garden", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/The_Inigo_Jones_church%2C_Covent_Garden%2C_the_eaves_-_geograph.org.uk_-_2210635.jpg/500px-The_Inigo_Jones_church%2C_Covent_Garden%2C_the_eaves_-_geograph.org.uk_-_2210635.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: credited with introducing Palladian ideals to British architecture", "back": "Inigo Jones", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: before turning to architecture, designed sets and costumes for Ben Jonson's court masques including The Masque of Blackness and The Hue and Cry After Cupid", "back": "Inigo Jones", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: pioneered use of Vitruvius's system of proportions; praised in Colen Campbell's Vitruvius Britannicus", "back": "Inigo Jones", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: published a reconstruction of Stonehenge claiming it was a Roman site with a hexagonal structure at its center", "back": "Inigo Jones", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: co-designed a garden for Frederick V of Bohemia with Salomon de Caus, described as 'the eighth wonder of the world'", "back": "Inigo Jones", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: in 1610s London, tried to import a theorbo (tall re-entrant bass lute with 14 courses and 2 pegboxes) but customs confiscated it", "back": "Inigo Jones", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

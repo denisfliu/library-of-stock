@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Louis Kahn";
 let cards = [{"type": "image", "indicator": "Building", "front": "", "back": "Salk Institute for Biological Studies (Louis Kahn)", "frequency": 5, "tags": [], "work": "Salk Institute for Biological Studies", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Salk_Institute_for_Biological_Studies_and_a_seagull_dllu.jpg/500px-Salk_Institute_for_Biological_Studies_and_a_seagull_dllu.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: two streams of water separate three rows of buildings made of teak and concrete, framing a view of the Pacific Ocean", "back": "Salk Institute for Biological Studies (Louis Kahn)", "frequency": 5, "tags": [], "work": "Salk Institute for Biological Studies", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Salk_Institute_for_Biological_Studies_and_a_seagull_dllu.jpg/500px-Salk_Institute_for_Biological_Studies_and_a_seagull_dllu.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: located in La Jolla, California; each office space has a view of the Pacific Ocean", "back": "Salk Institute for Biological Studies (Louis Kahn)", "frequency": 3, "tags": [], "work": "Salk Institute for Biological Studies", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Salk_Institute_for_Biological_Studies_and_a_seagull_dllu.jpg/500px-Salk_Institute_for_Biological_Studies_and_a_seagull_dllu.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: designed in collaboration with engineer August E. Komendant", "back": "Salk Institute for Biological Studies (Louis Kahn)", "frequency": 3, "tags": [], "work": "Salk Institute for Biological Studies", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Salk_Institute_for_Biological_Studies_and_a_seagull_dllu.jpg/500px-Salk_Institute_for_Biological_Studies_and_a_seagull_dllu.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: includes a citrus grove courtyard, often the site of car commercials", "back": "Salk Institute for Biological Studies (Louis Kahn)", "frequency": 3, "tags": [], "work": "Salk Institute for Biological Studies", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Salk_Institute_for_Biological_Studies_and_a_seagull_dllu.jpg/500px-Salk_Institute_for_Biological_Studies_and_a_seagull_dllu.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Kimbell Art Museum (Louis Kahn)", "frequency": 5, "tags": [], "work": "Kimbell Art Museum", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Kimbell_Art_Museum%2C_Louis_Kahn%2C_1972%2C_Fort_Worth_Texas_%2814921534889%29.jpg/500px-Kimbell_Art_Museum%2C_Louis_Kahn%2C_1972%2C_Fort_Worth_Texas_%2814921534889%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: sixteen parallel cycloid vaults with skylights at the apex of each vault", "back": "Kimbell Art Museum (Louis Kahn)", "frequency": 5, "tags": [], "work": "Kimbell Art Museum", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Kimbell_Art_Museum%2C_Louis_Kahn%2C_1972%2C_Fort_Worth_Texas_%2814921534889%29.jpg/500px-Kimbell_Art_Museum%2C_Louis_Kahn%2C_1972%2C_Fort_Worth_Texas_%2814921534889%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: located in Fort Worth, Texas; houses Michelangelo's first painting, The Torment of Saint Anthony", "back": "Kimbell Art Museum (Louis Kahn)", "frequency": 3, "tags": [], "work": "Kimbell Art Museum", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Kimbell_Art_Museum%2C_Louis_Kahn%2C_1972%2C_Fort_Worth_Texas_%2814921534889%29.jpg/500px-Kimbell_Art_Museum%2C_Louis_Kahn%2C_1972%2C_Fort_Worth_Texas_%2814921534889%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Renzo Piano designed a later expansion of this Louis Kahn museum in Fort Worth", "back": "Kimbell Art Museum (Louis Kahn)", "frequency": 3, "tags": [], "work": "Kimbell Art Museum", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Kimbell_Art_Museum%2C_Louis_Kahn%2C_1972%2C_Fort_Worth_Texas_%2814921534889%29.jpg/500px-Kimbell_Art_Museum%2C_Louis_Kahn%2C_1972%2C_Fort_Worth_Texas_%2814921534889%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "National Parliament House, Bangladesh (Louis Kahn)", "frequency": 5, "tags": [], "work": "National Parliament House, Bangladesh", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/National_Parliament_House%2CDhaka%2CBangladesh._Designed_by_architect_Louis_Kahn%2C.jpg/500px-National_Parliament_House%2CDhaka%2CBangladesh._Designed_by_architect_Louis_Kahn%2C.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: eight peripheral blocks surrounding a central octagonal block in Dhaka, Bangladesh", "back": "National Parliament House, Bangladesh (Louis Kahn)", "frequency": 5, "tags": [], "work": "National Parliament House, Bangladesh", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/National_Parliament_House%2CDhaka%2CBangladesh._Designed_by_architect_Louis_Kahn%2C.jpg/500px-National_Parliament_House%2CDhaka%2CBangladesh._Designed_by_architect_Louis_Kahn%2C.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: outer walls feature a repeated cutout pattern of triangle on top of square next to circle", "back": "National Parliament House, Bangladesh (Louis Kahn)", "frequency": 3, "tags": [], "work": "National Parliament House, Bangladesh", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/National_Parliament_House%2CDhaka%2CBangladesh._Designed_by_architect_Louis_Kahn%2C.jpg/500px-National_Parliament_House%2CDhaka%2CBangladesh._Designed_by_architect_Louis_Kahn%2C.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: surrounded by a symbolic artificial lake; assembly chamber lit by large semicircular windows", "back": "National Parliament House, Bangladesh (Louis Kahn)", "frequency": 3, "tags": [], "work": "National Parliament House, Bangladesh", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/National_Parliament_House%2CDhaka%2CBangladesh._Designed_by_architect_Louis_Kahn%2C.jpg/500px-National_Parliament_House%2CDhaka%2CBangladesh._Designed_by_architect_Louis_Kahn%2C.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Louis Kahn's last project", "back": "National Parliament House, Bangladesh (Louis Kahn)", "frequency": 3, "tags": [], "work": "National Parliament House, Bangladesh", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/National_Parliament_House%2CDhaka%2CBangladesh._Designed_by_architect_Louis_Kahn%2C.jpg/500px-National_Parliament_House%2CDhaka%2CBangladesh._Designed_by_architect_Louis_Kahn%2C.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Phillips Exeter Academy Library (Louis Kahn)", "frequency": 3, "tags": [], "work": "Phillips Exeter Academy Library", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Phillips-Exeter-Academy-Library-Interior-Exeter-New-Hampshire-Apr-2014-a.jpg/500px-Phillips-Exeter-Academy-Library-Interior-Exeter-New-Hampshire-Apr-2014-a.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: three concentric square rings — outer is load-bearing red brick, innermost is a concrete atrium with four large circular holes revealing different floors of the middle ring", "back": "Phillips Exeter Academy Library (Louis Kahn)", "frequency": 3, "tags": [], "work": "Phillips Exeter Academy Library", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Phillips-Exeter-Academy-Library-Interior-Exeter-New-Hampshire-Apr-2014-a.jpg/500px-Phillips-Exeter-Academy-Library-Interior-Exeter-New-Hampshire-Apr-2014-a.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: a large X-shaped beam of concrete spreads light through its central atrium", "back": "Phillips Exeter Academy Library (Louis Kahn)", "frequency": 3, "tags": [], "work": "Phillips Exeter Academy Library", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Phillips-Exeter-Academy-Library-Interior-Exeter-New-Hampshire-Apr-2014-a.jpg/500px-Phillips-Exeter-Academy-Library-Interior-Exeter-New-Hampshire-Apr-2014-a.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Richards Medical Research Laboratories (Louis Kahn)", "frequency": 5, "tags": [], "work": "Richards Medical Research Laboratories", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Richards_and_Goddard_research_labs_outline_U_Penn.jpg/500px-Richards_and_Goddard_research_labs_outline_U_Penn.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: exemplifies the 'served' and 'servant' spaces theory at the University of Pennsylvania", "back": "Richards Medical Research Laboratories (Louis Kahn)", "frequency": 5, "tags": [], "work": "Richards Medical Research Laboratories", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Richards_and_Goddard_research_labs_outline_U_Penn.jpg/500px-Richards_and_Goddard_research_labs_outline_U_Penn.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: stairwells and elevators grouped in large brick-clad shafts separate from the lab spaces", "back": "Richards Medical Research Laboratories (Louis Kahn)", "frequency": 3, "tags": [], "work": "Richards Medical Research Laboratories", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Richards_and_Goddard_research_labs_outline_U_Penn.jpg/500px-Richards_and_Goddard_research_labs_outline_U_Penn.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Kahn's Trenton Bath House was an earlier application of the same design theory as this Penn laboratory building", "back": "Richards Medical Research Laboratories (Louis Kahn)", "frequency": 3, "tags": [], "work": "Richards Medical Research Laboratories", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Richards_and_Goddard_research_labs_outline_U_Penn.jpg/500px-Richards_and_Goddard_research_labs_outline_U_Penn.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Yale University Art Gallery (Louis Kahn)", "frequency": 3, "tags": [], "work": "Yale University Art Gallery", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Yale_University_Art_Gallery_-_Louis_Kahn_%2854106261603%29.jpg/500px-Yale_University_Art_Gallery_-_Louis_Kahn_%2854106261603%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: features a triangular coffered concrete ceiling; one of Louis Kahn's earliest major commissions", "back": "Yale University Art Gallery (Louis Kahn)", "frequency": 3, "tags": [], "work": "Yale University Art Gallery", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Yale_University_Art_Gallery_-_Louis_Kahn_%2854106261603%29.jpg/500px-Yale_University_Art_Gallery_-_Louis_Kahn_%2854106261603%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Kahn also designed this Yale museum's neighbor, the Yale Center for British Art, using an innovative mix of concrete and light-colored wood", "back": "Yale University Art Gallery (Louis Kahn)", "frequency": 3, "tags": [], "work": "Yale University Art Gallery", "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Yale_University_Art_Gallery_-_Louis_Kahn_%2854106261603%29.jpg/500px-Yale_University_Art_Gallery_-_Louis_Kahn_%2854106261603%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: died alone in a men's room at Penn Station in 1974; body was not identified for two days", "back": "Louis Kahn", "frequency": 5, "tags": [], "work": "Biographical and Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: his son Nathaniel directed the documentary My Architect about his life", "back": "Louis Kahn", "frequency": 5, "tags": [], "work": "Biographical and Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: famously told students to 'talk to brick,' envisioning the material as saying 'I like an arch'", "back": "Louis Kahn", "frequency": 3, "tags": [], "work": "Biographical and Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: Wendy Lesser's biography of him is titled You Say to Brick", "back": "Louis Kahn", "frequency": 3, "tags": [], "work": "Biographical and Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: used red brick for the Indian Institute of Management in Ahmedabad", "back": "Louis Kahn", "frequency": 3, "tags": [], "work": "Biographical and Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed the First Unitarian Church in Rochester, NY, organized around the shape of a question mark", "back": "Louis Kahn", "frequency": 3, "tags": [], "work": "Biographical and Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: taught Robert Venturi; Philadelphia-based Estonian-American", "back": "Louis Kahn", "frequency": 3, "tags": [], "work": "Biographical and Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: his long-uncredited collaborator was Anne Tyng", "back": "Louis Kahn", "frequency": 3, "tags": [], "work": "Biographical and Other Works"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

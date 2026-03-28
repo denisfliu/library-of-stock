@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Santiago Calatrava";
 let cards = [{"type": "image", "indicator": "Building", "front": "", "back": "Turning Torso (Santiago Calatrava)", "work": "Turning Torso (Malmo, Sweden)", "frequency": 6, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Turning_Torso_2.jpg/500px-Turning_Torso_2.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: skyscraper in Malmo, Sweden — nine twisted pentagonal segments with the top floor rotated 90 degrees from the base", "back": "Turning Torso (Santiago Calatrava)", "work": "Turning Torso (Malmo, Sweden)", "frequency": 7, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Turning_Torso_2.jpg/500px-Turning_Torso_2.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Swedish skyscraper based on the architect's own marble sculpture of a twisting human form; developer Johnny Örbäck commissioned it after seeing that sculpture", "back": "Turning Torso (Santiago Calatrava)", "work": "Turning Torso (Malmo, Sweden)", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Turning_Torso_2.jpg/500px-Turning_Torso_2.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Quadracci Pavilion, Milwaukee Art Museum (Santiago Calatrava)", "work": "Quadracci Pavilion, Milwaukee Art Museum", "frequency": 6, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Calatrava_-_Milwaukee_Art_Museum_-_Quadracci_Pavilion_%28A%29.jpg/500px-Calatrava_-_Milwaukee_Art_Museum_-_Quadracci_Pavilion_%28A%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: Milwaukee Art Museum pavilion — Burke Brise Soleil of 72 movable white steel fin-like wings that open and close like a bird", "back": "Quadracci Pavilion, Milwaukee Art Museum (Santiago Calatrava)", "work": "Quadracci Pavilion, Milwaukee Art Museum", "frequency": 6, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Calatrava_-_Milwaukee_Art_Museum_-_Quadracci_Pavilion_%28A%29.jpg/500px-Calatrava_-_Milwaukee_Art_Museum_-_Quadracci_Pavilion_%28A%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: ship-like museum addition; Windhover Hall whose chancel is shaped like the prow of a ship; sits alongside Eero Saarinen's War Memorial Center", "back": "Quadracci Pavilion, Milwaukee Art Museum (Santiago Calatrava)", "work": "Quadracci Pavilion, Milwaukee Art Museum", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Calatrava_-_Milwaukee_Art_Museum_-_Quadracci_Pavilion_%28A%29.jpg/500px-Calatrava_-_Milwaukee_Art_Museum_-_Quadracci_Pavilion_%28A%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "World Trade Center Transportation Hub / Oculus (Santiago Calatrava)", "work": "World Trade Center Transportation Hub (Oculus), New York City", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Calatrava_-_New_York%2C_NY_-_World_Trade_Center_PATH_Station_%28A%29.jpg/500px-Calatrava_-_New_York%2C_NY_-_World_Trade_Center_PATH_Station_%28A%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: NYC transportation hub whose white steel ribs form wings meant to evoke a bird released from a child's hands; criticized for poor functionality", "back": "World Trade Center Transportation Hub / Oculus (Santiago Calatrava)", "work": "World Trade Center Transportation Hub (Oculus), New York City", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Calatrava_-_New_York%2C_NY_-_World_Trade_Center_PATH_Station_%28A%29.jpg/500px-Calatrava_-_New_York%2C_NY_-_World_Trade_Center_PATH_Station_%28A%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "City of Arts and Sciences, Valencia (Santiago Calatrava)", "work": "City of Arts and Sciences (Valencia)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/The_City_of_Arts_and_Sciences_complex_by_Santiago_Calatrava_and_F%C3%A9lix_Candela._Valencia%2C_Spain%2C_Southwestern_Europe._September_28%2C_2014-4.jpg/500px-The_City_of_Arts_and_Sciences_complex_by_Santiago_Calatrava_and_F%C3%A9lix_Candela._Valencia%2C_Spain%2C_Southwestern_Europe._September_28%2C_2014-4.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: cultural complex in Valencia co-designed with Felix Candela; built in the former bed of the Turia River; IMAX theater with concrete 'eyelid' that opens to reveal a pool", "back": "City of Arts and Sciences, Valencia (Santiago Calatrava)", "work": "City of Arts and Sciences (Valencia)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/The_City_of_Arts_and_Sciences_complex_by_Santiago_Calatrava_and_F%C3%A9lix_Candela._Valencia%2C_Spain%2C_Southwestern_Europe._September_28%2C_2014-4.jpg/500px-The_City_of_Arts_and_Sciences_complex_by_Santiago_Calatrava_and_F%C3%A9lix_Candela._Valencia%2C_Spain%2C_Southwestern_Europe._September_28%2C_2014-4.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Valencia opera house named for Queen Sofia; architect was sued after tile mosaics were blown off; nicknamed 'the white elephant'", "back": "City of Arts and Sciences, Valencia (Santiago Calatrava)", "work": "City of Arts and Sciences (Valencia)", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/The_City_of_Arts_and_Sciences_complex_by_Santiago_Calatrava_and_F%C3%A9lix_Candela._Valencia%2C_Spain%2C_Southwestern_Europe._September_28%2C_2014-4.jpg/500px-The_City_of_Arts_and_Sciences_complex_by_Santiago_Calatrava_and_F%C3%A9lix_Candela._Valencia%2C_Spain%2C_Southwestern_Europe._September_28%2C_2014-4.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Bridges (Santiago Calatrava)", "work": "Bridges", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg/500px-Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: Puente del Alamillo (Seville) — harp-like, asymmetric cantilever-spar cable-stayed bridge built for the 1992 World's Fair on Isla de la Cartuja", "back": "Puente del Alamillo (Santiago Calatrava)", "work": "Bridges", "frequency": 6, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg/500px-Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Zubizuri in Bilbao — white tied-arch footbridge; Chords Bridge / Bridge of Strings in Jerusalem; Sundial Bridge at Turtle Bay, Redding, California", "back": "Bridges (Santiago Calatrava)", "work": "Bridges", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg/500px-Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Samuel Beckett Bridge (Dublin) — resembles a harp laid on its side; 31 cables representing the strings; rotates 90 degrees to allow boats through the Liffey", "back": "Samuel Beckett Bridge (Santiago Calatrava)", "work": "Bridges", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg/500px-Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Dublin bridge formerly called the Macken Street Bridge; lies two miles downstream from the James Joyce Bridge; Tom Lane recorded cable sounds with contact microphones for a 2014 'river cantata'", "back": "Samuel Beckett Bridge (Santiago Calatrava)", "work": "Bridges", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg/500px-Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Constitution Bridge crossing Venice's Grand Canal — criticized as out of place; retrofitted spherical wheelchair lift overheated and was scrapped", "back": "Constitution Bridge, Venice (Santiago Calatrava)", "work": "Bridges", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg/500px-Margaret_Hunt_Hill_Bridge_designed_by_Santiago_Calatrava_03.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: Spanish architect and structural engineer born 1951 in Valencia; known for curvilinear organic structures and cantilever-spar cable-stayed bridges", "back": "Santiago Calatrava", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Gare de Lyon Saint-Exupery (Lyon) in form of a bird in flight; Gare do Oriente (Lisbon) has a 'forest' of steel trees above; Stadelhofen Station (Zurich) has underground arcade", "back": "Santiago Calatrava", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: communications tower on Montjuic for the 1992 Barcelona Olympics doubles as a sundial; designed the Athens 2004 Olympic Velodrome and a stadium with a retractable glass roof", "back": "Santiago Calatrava", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed Bilbao Airport's main terminal; proposed (unrealized) redesigns for Genoa's Morandi Bridge after its partial collapse", "back": "Santiago Calatrava", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

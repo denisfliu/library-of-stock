@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Sir Walter Scott";
 let cards = [{"type": "basic", "indicator": "Novel", "front": "Novel: protagonist disguises as Desdichado ('the Disinherited Knight,' the Spanish word on his shield); defeats Templar Brian de Bois-Guilbert at tournament; defends the Jewish Rebecca from being burned as a witch; marries Rowena", "back": "Ivanhoe (Sir Walter Scott)", "work": "Ivanhoe", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Ulrica burns Torquilstone Castle, killing Reginald Front-de-Boeuf; Athelstane apparently rises from the grave; Bois-Guilbert dies of 'contending passions' in trial by combat", "back": "Ivanhoe (Sir Walter Scott)", "work": "Ivanhoe", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Rebecca heals the protagonist using a mysterious balsam taught by the sage Miriam; many Victorian readers wished she had married the protagonist instead of the Christian Rowena", "back": "Ivanhoe (Sir Walter Scott)", "work": "Ivanhoe", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the swineherd Gurth wears a brass collar with a Saxon inscription; Thomas Carlyle praises it in Past and Present", "back": "Ivanhoe (Sir Walter Scott)", "work": "Ivanhoe", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Mark Twain blamed this novelist for the Civil War in Life on the Mississippi, saying he was 'in great measure responsible for the war' and created a 'Walter Scott disease' of sham chivalry in the South", "back": "Sir Walter Scott", "work": "General / Biographical", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Rena Walden's name in Chesnutt's The House Behind the Cedars is derived from this novel's Lady Rowena; a cross-burning scene in Thomas Dixon's The Clansman was also inspired by this novel", "back": "Ivanhoe (Sir Walter Scott)", "work": "Ivanhoe", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: often regarded as the first historical novel; protagonist joins the Jacobite Rising of 1745 after visiting Donald Bean Lean and chieftain Fergus Mac-Ivor, falling for Flora", "back": "Waverley (Sir Walter Scott)", "work": "Waverley", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: chieftain Fergus Mac-Ivor sings 'Lillibullero'; Edward sprains his ankle during a stag hunt after Flora plays a war ballad on the harp", "back": "Waverley (Sir Walter Scott)", "work": "Waverley", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Frank Osbaldistone travels to Scotland to track down Rashleigh; the title outlaw disguises himself as cattle dealer Campbell; Frank marries cousin Diana Vernon", "back": "Rob Roy (Sir Walter Scott)", "work": "Rob Roy", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: comic relief from magistrate Baillie Nicol Jarvie and superstitious gardener Andrew Fairservice; set during the Jacobite Uprising of 1715", "back": "Rob Roy (Sir Walter Scott)", "work": "Rob Roy", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Jeanie Deans walks barefoot to London to seek a pardon for her sister Effie from Queen Caroline; opens with the Porteous Riots", "back": "The Heart of Midlothian (Sir Walter Scott)", "work": "The Heart of Midlothian", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Effie's illegitimate son 'the Whistler' later murders her husband", "back": "The Heart of Midlothian (Sir Walter Scott)", "work": "The Heart of Midlothian", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Roderick Dhu lights a burning cross, inspiring the KKK's practice; Ellen Douglas sings an Ave Maria; sparked the 19th-century Highland Revival", "back": "The Lady of the Lake (Sir Walter Scott)", "work": "The Lady of the Lake", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Ellen Douglas's third song in a cycle based on this poem became known as the Schubert Ave Maria ('Ellens dritter Gesang')", "back": "The Lady of the Lake (Sir Walter Scott)", "work": "The Lady of the Lake", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Rossini's opera La donna del lago is based on this; King James V disguises himself as 'Uberto' to seduce Elena (Douglas's daughter)", "back": "The Lady of the Lake (Sir Walter Scott)", "work": "The Lady of the Lake", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: title character stabs her husband Arturo on their wedding night and goes insane; Edgar of Ravenswood walks into quicksand in despair; inspired Donizetti's opera Lucia di Lammermoor", "back": "The Bride of Lammermoor (Sir Walter Scott)", "work": "The Bride of Lammermoor", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: contains 'What a tangled web we weave, when first we practice to deceive!'; published with copious antiquarian notes; ends with Ralph De Wilton marrying Clara de Clare", "back": "Marmion (Sir Walter Scott)", "work": "Marmion", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: organized George IV's 1822 tartan-heavy visit to Scotland, the first royal visit since Charles II; helped establish modern Scottish national identity", "back": "Sir Walter Scott", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: cited fictional antiquarian 'Reverend Jonas Dryasdust' for historical background in novels; Carlyle also invoked Dryasdust", "back": "Sir Walter Scott", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Gyorgy Lukacs's Marxist reading praised this author's use of mediocre heroes as creating a new type of fiction used by Balzac and Tolstoy", "back": "Sir Walter Scott", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: ruined when publisher Ballantyne & Co. collapsed; recounts this in a posthumously published journal", "back": "Sir Walter Scott", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: published novels anonymously because fame as a poet was eclipsed by Byron; John Gibson Lockhart was this author's son-in-law", "back": "Sir Walter Scott", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Frederick Douglass took his surname from a character in one of this author's poems", "back": "Sir Walter Scott", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Amy Robsart is tricked into falling to her death by Richard Varney; Anthony Foster dies in a gold room at Cumnor Place", "back": "Kenilworth (Sir Walter Scott)", "work": "Kenilworth", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

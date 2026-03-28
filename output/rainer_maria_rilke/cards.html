@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Rainer Maria Rilke";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: the fifth elegy addresses Picasso's Family of Saltimbanques, asking 'But who are they, tell me, these Travellers?'", "back": "Duino Elegies (Rainer Maria Rilke)", "work": "Duino Elegies", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the tenth elegy describes Lament leading a boy to the 'Mountains of Primal Grief' through a 'City of Grief' with constellations like 'the Burning Book'", "back": "Duino Elegies (Rainer Maria Rilke)", "work": "Duino Elegies", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: in the fourth elegy, the speaker gazes at a puppet stage and declares 'finally, a real play!' when an angel brings puppets to life; draws on Kleist's 'On the Marionette Theatre'", "back": "Duino Elegies (Rainer Maria Rilke)", "work": "Duino Elegies", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: references an urn inscribed 'Subrisio Saltat' and invokes the 'days of Tobias'", "back": "Duino Elegies (Rainer Maria Rilke)", "work": "Duino Elegies", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the torso 'glistens like a wild beast's fur' and is 'suffused with brilliance inside'; has a 'dark center where procreation flared'", "back": "\"Archaic Torso of Apollo\" (Rainer Maria Rilke)", "work": "\"Archaic Torso of Apollo\"", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Ocean Vuong responded with 'Torso of Air' ('Suppose you do change your life'); Mary Oliver's 'The Swan' was also inspired by the closing line", "back": "\"Archaic Torso of Apollo\" (Rainer Maria Rilke)", "work": "\"Archaic Torso of Apollo\"", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens 'There rose a Tree. O pure transcendence!'; instructs the reader to 'erect no gravestone' for the title figure", "back": "Sonnets to Orpheus (Rainer Maria Rilke)", "work": "Sonnets to Orpheus", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Spring has come again. The earth is like a child that knows poems by heart'", "back": "Sonnets to Orpheus (Rainer Maria Rilke)", "work": "Sonnets to Orpheus", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a caged creature paces 'in cramped circles' in a 'ritual dance around a center / in which a mighty will stands paralyzed'", "back": "\"The Panther\" (Rainer Maria Rilke)", "work": "\"The Panther\"", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'the curtain of the pupil soundlessly parts' and 'an image enters in' before it 'plunges into the heart and is gone'", "back": "\"The Panther\" (Rainer Maria Rilke)", "work": "\"The Panther\"", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: advises a military cadet 'ask yourself in the most silent hour of your night: must I write?'; praises J.P. Jacobsen and the Bible as the two 'indispensable' books", "back": "Letters to a Young Poet (Rainer Maria Rilke)", "work": "Letters to a Young Poet", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: compares appreciating loneliness to puberty; states 'What we need, after all, is only: solitude'", "back": "Letters to a Young Poet (Rainer Maria Rilke)", "work": "Letters to a Young Poet", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the narrator recounts how an iron amulet became embedded in the rotting chest of the mad king Charles VI", "back": "The Notebooks of Malte Laurids Brigge (Rainer Maria Rilke)", "work": "The Notebooks of Malte Laurids Brigge", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: tells the story of the False Dmitri, happy as an impostor until believed to be real; ends with a prodigal son interpretation", "back": "The Notebooks of Malte Laurids Brigge (Rainer Maria Rilke)", "work": "The Notebooks of Malte Laurids Brigge", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the title character watches doctors pierce his father's heart per a provision in the will; recalls his uncle dying of dropsy carried by servants", "back": "The Notebooks of Malte Laurids Brigge (Rainer Maria Rilke)", "work": "The Notebooks of Malte Laurids Brigge", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a woman 'fans her dress into passionate flames'; 'naked arms' like 'rattlesnakes'; likened to a 'sulphur match'", "back": "\"The Spanish Dancer\" (Rainer Maria Rilke)", "work": "Other Poems", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Lord it is time. Great was the summer feast'; 'He who has not built his house, will not start now'", "back": "\"Autumn Day\" (Rainer Maria Rilke)", "work": "Other Poems", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Eurydice is 'already loosened like long hair' and 'already root,' does not recognize her lover", "back": "\"Orpheus. Eurydice. Hermes\" (Rainer Maria Rilke)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: includes The Book of Monastic Life and The Book of Poverty and Death; dedicated to Lou Andreas-Salome; drawn from Orthodox Christianity in Russia", "back": "Book of Hours (Rainer Maria Rilke)", "work": "Other Poems", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'And now and then there's a white elephant' among animals in a 'blind and breathless game'", "back": "\"The Carousel\" (Rainer Maria Rilke)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: dedicated to Paula Modersohn-Becker; 'practice on this: letting each other go. For holding on comes easily'", "back": "\"Requiem for a Friend\" (Rainer Maria Rilke)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: W.H. Auden called this author the 'Santa Claus of loneliness' in response to his 'thing-poems'", "back": "Rainer Maria Rilke", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: John Berryman flatly asserted this author 'was a jerk' in his Dream Songs", "back": "Rainer Maria Rilke", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: Ludwig Wittgenstein gave this author 20,000 crowns via magazine editor Ludwig von Ficker", "back": "Rainer Maria Rilke", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poet", "front": "Poet: traded letters with Marina Tsvetaeva and Boris Pasternak in the summer of 1926", "back": "Rainer Maria Rilke", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "John Dryden";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: opens 'All human things are subject to decay'", "back": "Mac Flecknoe (John Dryden)", "work": "Mac Flecknoe", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: satirizes Thomas Shadwell who 'never deviates into sense'", "back": "Mac Flecknoe (John Dryden)", "work": "Mac Flecknoe", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Duke of Monmouth and Earl of Shaftesbury satirized as biblical figures rebelling against David", "back": "Absalom and Achitophel (John Dryden)", "work": "Absalom and Achitophel", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: allegorical — Hind = Catholic Church, Panther = Anglican", "back": "The Hind and the Panther (John Dryden)", "work": "The Hind and the Panther", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: milk-white creature 'immortal and unchang'd'", "back": "The Hind and the Panther (John Dryden)", "work": "The Hind and the Panther", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: adaptation of Antony and Cleopatra set entirely in Alexandria", "back": "All for Love (John Dryden)", "work": "Plays", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: 'men are but children of a larger growth'", "back": "All for Love (John Dryden)", "work": "Plays", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: first Poet Laureate under Charles II", "back": "John Dryden", "work": "General", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: received 'butt of Canary wine'", "back": "John Dryden", "work": "General", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote Annus Mirabilis about the Great Fire of London", "back": "John Dryden", "work": "General", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Shadwell advised to retire to \"some peaceful province in acrostic land\"", "back": "Mac Flecknoe (John Dryden)", "work": "Mac Flecknoe", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Pope's Dunciad inspired by this mock-epic", "back": "Mac Flecknoe (John Dryden)", "work": "Mac Flecknoe", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: opens \"In pious times, ere priestcraft did begin\"", "back": "Absalom and Achitophel (John Dryden)", "work": "Absalom and Achitophel", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Buckingham depicted as servant Zimri; Nahum Tate co-wrote Part 2", "back": "Absalom and Achitophel (John Dryden)", "work": "Absalom and Achitophel", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: fable of Swallows convinced not to migrate — they all die in cold", "back": "The Hind and the Panther (John Dryden)", "work": "The Hind and the Panther", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Dolabella muses \"men are but children of a larger growth\"; eunuch Alexas delivers ruby bracelet", "back": "All for Love (John Dryden)", "work": "Plays", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Cleopatra kills herself with dagger not snake — departing from Shakespeare", "back": "All for Love (John Dryden)", "work": "Plays", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Alexander's Feast — \"None but the brave deserve the fair\"; set to music by Handel", "back": "John Dryden", "work": "General", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Astraea Redux — praised Charles II as \"happy prince\" after Restoration", "back": "John Dryden", "work": "General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote libretto for Purcell's King Arthur semi-opera with \"Frost Scene\"", "back": "John Dryden", "work": "General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: collaborated with Davenant on The Enchanted Island (adaptation of The Tempest)", "back": "John Dryden", "work": "General", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

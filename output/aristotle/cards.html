@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Aristotle";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: concerns 'being qua being'; Book Twelve posits a 'thought thinking about thinking' as the unmoved mover", "back": "Metaphysics (Aristotle)", "work": "Metaphysics and 'Being qua Being'", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Avicenna read this thinker's Metaphysics 40 times but only understood it after reading al-Farabi's commentary on its 'Purposes'", "back": "Aristotle", "work": "Metaphysics and 'Being qua Being'", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Averroes's Long Commentary on this thinker's Metaphysics introduced the 'unity of the intellect' or 'monopsychicism'", "back": "Aristotle", "work": "Metaphysics and 'Being qua Being'", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the 'function argument' considers life (shared with plants) and perception (shared with animals) before identifying the 'rational principle' as uniquely human", "back": "Nicomachean Ethics (Aristotle)", "work": "Nicomachean Ethics and Virtue Ethics", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: phronesis (practical wisdom) helps cultivate hexis (dispositions) that lie at a 'mean' between excess and deficiency", "back": "Nicomachean Ethics (Aristotle)", "work": "Nicomachean Ethics and Virtue Ethics", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: describes a slow gait and deep voice as attributes of megalopsuchia, or 'great-souledness,' which W.D. Ross translated as the 'proud man'", "back": "Nicomachean Ethics (Aristotle)", "work": "Nicomachean Ethics and Virtue Ethics", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: adds 'in a full life' because 'one swallow does not make a summer' to its central definition of eudaimonia", "back": "Nicomachean Ethics (Aristotle)", "work": "Nicomachean Ethics and Virtue Ethics", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: used the example of 'Tomorrow there will be a sea battle' to argue that future contingents are neither true nor false", "back": "Aristotle", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: the Theology attributed to this thinker is actually an Arabic paraphrase of Plotinus's Enneads", "back": "Aristotle", "work": "Pseudo-Aristotelian Works and Islamic Reception", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: the Secretum Secretorum, framed as a letter from the 'First Teacher' to Alexander the Great, greatly influenced Roger Bacon", "back": "Aristotle (pseudo-Aristotelian)", "work": "Pseudo-Aristotelian Works and Islamic Reception", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Aquinas showed that the Book of Causes attributed to this thinker actually derives from Proclus's Elements of Theology", "back": "Aristotle", "work": "Pseudo-Aristotelian Works and Islamic Reception", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: argues that 'man is by nature a political animal' and uses the analogy of a hand detached from its body", "back": "Politics (Aristotle)", "work": "Politics", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: argues that poetry originated from mimesis ('imitation') and introduced the concept of catharsis ('purification')", "back": "Poetics (Aristotle)", "work": "Poetics and De Anima", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: divides mental capacities into nutritive, sensitive, and rational souls; introduces active vs. passive intellect (nous poietikos vs. nous pathetikos)", "back": "De Anima (Aristotle)", "work": "Poetics and De Anima", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Porphyry's Isagoge is an introduction to this thinker's Categories; Boethius translated it, contributing to a medieval rediscovery", "back": "Aristotle", "work": "Pseudo-Aristotelian Works and Islamic Reception", "frequency": 5, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

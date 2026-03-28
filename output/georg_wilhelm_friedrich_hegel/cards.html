@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Georg Wilhelm Friedrich Hegel";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: the master-slave dialectic describes two self-conscious beings recognizing each other through a 'struggle to the death'; the bondsman rediscovers himself through labor", "back": "Phenomenology of Spirit (Hegel)", "work": "The Phenomenology of Spirit and the Dialectic", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Susan Buck-Morss argues the master-slave dialectic was influenced by accounts of the Haitian Revolution in journals like Minerva", "back": "G.W.F. Hegel", "work": "The Phenomenology of Spirit and the Dialectic", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Aufhebung (sublation) resolves contradictions of Being and Nothing into Becoming in the dialectical process", "back": "G.W.F. Hegel", "work": "The Phenomenology of Spirit and the Dialectic", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Alexandre Kojeve's influential reading of this thinker shaped Fukuyama's End of History; argued USA and USSR represented two interpretations", "back": "G.W.F. Hegel", "work": "The Phenomenology of Spirit and the Dialectic", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: develops Sittlichkeit (ethical life) through three spheres: abstract right, morality, and ethical life (family, civil society, state)", "back": "Elements of the Philosophy of Right (Hegel)", "work": "Elements of the Philosophy of Right and Ethical Life", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: philosophy arrives too late to make a difference, like 'the owl of Minerva [that] spreads its wings only with the falling of the dusk'", "back": "G.W.F. Hegel", "work": "Elements of the Philosophy of Right and Ethical Life", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: described history as spirit discovering freedom through 'world-historical figures' like Napoleon; coined the 'cunning of reason'", "back": "G.W.F. Hegel", "work": "Geist (Spirit) and History", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Lectures on the Philosophy of History infamously claim Africa 'has no history' and divide history into original, reflective, and philosophical approaches", "back": "G.W.F. Hegel", "work": "Geist (Spirit) and History", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: freedom progresses from Orientals (one free), to Greeks (some free), to modern men (all free)", "back": "G.W.F. Hegel", "work": "Geist (Spirit) and History", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: sections on Being, Essence, and Concept; calls logic a 'realm of shadows'; rejects the law of non-contradiction", "back": "Science of Logic (Hegel)", "work": "Science of Logic", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: aesthetics distinguish classical, romantic, and symbolic art; argue art 'in its highest vocation remains for us a thing of the past'", "back": "G.W.F. Hegel", "work": "Aesthetics", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Arthur Danto modernized this thinker's 'end of art' thesis via Andy Warhol's Brillo Boxes", "back": "G.W.F. Hegel", "work": "Aesthetics", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: after death in 1831, followers split into Right/Old Hegelians (Lutheran church) and Left/Young Hegelians (Feuerbach, Marx, Stirner)", "back": "G.W.F. Hegel", "work": "Young Hegelians and Legacy", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: David Friedrich Strauss coined the terms 'Left Hegelian' and 'Right Hegelian' while defending The Life of Jesus", "back": "G.W.F. Hegel", "work": "Young Hegelians and Legacy", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Kierkegaard attacked 'the system,' replacing 'the truth is the whole' with truth as subjectivity in Concluding Unscientific Postscript", "back": "G.W.F. Hegel", "work": "Young Hegelians and Legacy", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: the Pittsburgh school (McDowell's Mind and World, Brandom's Making It Explicit) revives this thinker's ideas", "back": "G.W.F. Hegel", "work": "Young Hegelians and Legacy", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

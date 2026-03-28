@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Fernando Pessoa";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: a fragmentary 'factless autobiography' credited to the bookkeeper Bernardo Soares, compiled from 500+ sheets found in a trunk", "back": "The Book of Disquiet (Fernando Pessoa)", "work": "The Book of Disquiet", "frequency": 9, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: translated by Richard Zenith and Margaret Jull Costa, who struggled to order its fragments", "back": "The Book of Disquiet (Fernando Pessoa)", "work": "The Book of Disquiet", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the narrator's boss is named Vasques; he lives in a fourth-floor apartment and writes during rainy days", "back": "The Book of Disquiet (Fernando Pessoa)", "work": "The Book of Disquiet", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: opens with 'My soul is a hidden orchestra' in the chronological edition", "back": "The Book of Disquiet (Fernando Pessoa)", "work": "The Book of Disquiet", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: contains the observation that having read The Pickwick Papers is one of life's great tragedies, because one can't read it first again", "back": "The Book of Disquiet (Fernando Pessoa)", "work": "The Book of Disquiet", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this author asserted 'to have touched the feet of Christ is no excuse for mistakes in punctuation' in this work", "back": "The Book of Disquiet (Fernando Pessoa)", "work": "The Book of Disquiet", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Alberto Caeiro, the 'Master' heteronym, wrote The Keeper of Sheep on a 'triumphant day' and published a neopaganism program", "back": "Fernando Pessoa", "work": "Heteronyms (General)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Alvaro de Campos, a Glasgow-educated naval engineer heteronym and Walt Whitman devotee, wrote 'The Tobacco Shop' and 'Opiario'", "back": "Fernando Pessoa", "work": "Heteronyms (General)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Ricardo Reis, an Epicurean doctor heteronym, wrote odes to Lydia and was exiled to Brazil after a failed 1919 rebellion", "back": "Fernando Pessoa", "work": "Heteronyms (General)", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Jose Saramago wrote The Year of the Death of Ricardo Reis, in which that heteronym converses with this author's ghost in Lisbon", "back": "Fernando Pessoa", "work": "Heteronyms (General)", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: lesser-known heteronyms include the Baron of Tieve (suicided from pure reason), astrologer Raphael Baldaya, and Englishman Alexander Search (died at twenty)", "back": "Fernando Pessoa", "work": "Heteronyms (General)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a 44-poem collection structured around Portugal's coat of arms, containing the poem 'Ulysses' ('Myth is the nothing that is everything')", "back": "Mensagem (Fernando Pessoa)", "work": "Mensagem (Message)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: contains O Mostrengo, about the spirit Adamastor who tells the protagonist 'my cape will be implacably hostile'", "back": "Mensagem (Fernando Pessoa)", "work": "Mensagem (Message)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: best-known member of the Orpheu modernist movement; wrote for the magazine Orpheus", "back": "Fernando Pessoa", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: as a teenager in Durban, South Africa, this author designed elaborate fake English-language newspapers", "back": "Fernando Pessoa", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Antonio Tabucchi wrote Requiem: A Hallucination featuring this author's spirit as 'the Guest'", "back": "Fernando Pessoa", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author prophesied his posthumous legacy in the poem 'If I Die Young': 'roots may be hidden in the ground / But their flowers flower in the open air'", "back": "Fernando Pessoa", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote the poem 'Antinous' about 'the cold in Hadrian's soul'", "back": "Fernando Pessoa", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Margaret Atwood";
 let cards = [{"type": "basic", "indicator": "Novel", "front": "Novel: Offred is forced to bear children for the Commander; his wife, former televangelist Serena Joy, arranges for Offred to sleep with the chauffeur Nick", "back": "The Handmaid's Tale (Margaret Atwood)", "work": "The Handmaid's Tale", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the Commander plays forbidden Scrabble with the protagonist; she visits Moira at Jezebel's, a nightclub for businessmen", "back": "The Handmaid's Tale (Margaret Atwood)", "work": "The Handmaid's Tale", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: women sorted into Econowives, Marthas, and Aunts; Unwomen exiled to the Colonies to clean toxic waste", "back": "The Handmaid's Tale (Margaret Atwood)", "work": "The Handmaid's Tale", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: narrated by Agnes, Nicole, and Aunt Lydia, who orchestrates the Mayday resistance to smuggle information out of Gilead", "back": "The Testaments (Margaret Atwood)", "work": "The Testaments", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Grace Marks convicted of murdering Thomas Kinnear and Nancy Montgomery; Dr. Simon Jordan interviews her; she claims possession by Mary Whitney", "back": "Alias Grace (Margaret Atwood)", "work": "Alias Grace", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Marian MacAlpin stops eating after her fiance Peter recounts a rabbit hunt; she bakes a woman-shaped cake that Peter rejects but Duncan accepts", "back": "The Edible Woman (Margaret Atwood)", "work": "The Edible Woman", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Jimmy/Snowman is the last human after Crake's deliberate pandemic; both title characters named from the online game Extinctathon; features hybrid animals called rakunks", "back": "Oryx and Crake (Margaret Atwood)", "work": "Oryx and Crake / MaddAddam Trilogy", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Iris and Laura Chase in Port Ticonderoga; nested science fiction about blind assassins from the Ygnirod class who weave carpets in Sakiel-Norn", "back": "The Blind Assassin (Margaret Atwood)", "work": "The Blind Assassin", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: painter Elaine Risley reflects on her childhood friendship with the bully Cordelia and treasures a cat's-eye marble", "back": "Cat's Eye (Margaret Atwood)", "work": "Cat's Eye", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: twelve hanged maids interrupt Penelope's narrative using forms like a court trial and a jump rope rhyme; launched the Canongate Myth Series", "back": "The Penelopiad (Margaret Atwood)", "work": "The Penelopiad", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'children on the lawn / joined hand to hand / go round and round' ending with 'I want the circle / broken'", "back": "\"The Circle Game\" (Margaret Atwood)", "work": "Poetry", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'You fit into me / like a hook into an eye / a fish hook / an open eye'", "back": "\"[you fit into me]\" (Margaret Atwood)", "work": "Poetry", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Tony, Roz, and Charis meet at the Toxique restaurant and see the supposedly dead Zenia; one character works on a 'History of Inept Military Couture'", "back": "The Robber Bride (Margaret Atwood)", "work": "The Robber Bride", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: passages A through F each demonstrate different versions of what happens after 'John and Mary meet'; the only authentic ending is 'John and Mary die'", "back": "\"Happy Endings\" (Margaret Atwood)", "work": "Poetry", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

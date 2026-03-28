@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Norman Foster";
 let cards = [{"type": "basic", "indicator": "Building", "front": "Building: ovoid skyscraper at 30 St Mary Axe in London nicknamed 'the Gherkin'; Swiss Re is the primary occupant; features a diagrid structural facade", "back": "30 St Mary Axe / The Gherkin (Norman Foster)", "work": "30 St Mary Axe ('The Gherkin'), London", "frequency": 10, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/30_St_Mary_Axe%2C_%27Gherkin%27.JPG/500px-30_St_Mary_Axe%2C_%27Gherkin%27.JPG", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "30 St Mary Axe / The Gherkin (Norman Foster)", "work": "30 St Mary Axe ('The Gherkin'), London", "frequency": 10, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/30_St_Mary_Axe%2C_%27Gherkin%27.JPG/500px-30_St_Mary_Axe%2C_%27Gherkin%27.JPG", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: built on the ruins of the Baltic Exchange in London", "back": "30 St Mary Axe / The Gherkin (Norman Foster)", "work": "30 St Mary Axe ('The Gherkin'), London", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/30_St_Mary_Axe%2C_%27Gherkin%27.JPG/500px-30_St_Mary_Axe%2C_%27Gherkin%27.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: added a glass dome to this parliament building after German reunification; inside, a mirror-paneled cone surrounded by two helical ramps automatically adjusts to control sunlight", "back": "Reichstag Reconstruction (Norman Foster)", "work": "Reichstag Reconstruction (Berlin)", "frequency": 7, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Berlin_-_Reichstag_%281%29.jpg/500px-Berlin_-_Reichstag_%281%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Reichstag Reconstruction (Norman Foster)", "work": "Reichstag Reconstruction (Berlin)", "frequency": 7, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Berlin_-_Reichstag_%281%29.jpg/500px-Berlin_-_Reichstag_%281%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: Christo and Jean-Claude wrapped this building before its 1990s reconstruction", "back": "Reichstag Reconstruction (Norman Foster)", "work": "Reichstag Reconstruction (Berlin)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Berlin_-_Reichstag_%281%29.jpg/500px-Berlin_-_Reichstag_%281%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Hong Kong bank headquarters — exterior supported by eight steel masts that free up the floor space; two cannon-shaped maintenance cranes on the roof aimed at the bad feng shui from I.M. Pei's nearby Bank of China Tower", "back": "HSBC Main Building (Norman Foster)", "work": "HSBC Main Building (Hong Kong)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/HSBC_Building_%28Hong_Kong%29_20170808.jpg/500px-HSBC_Building_%28Hong_Kong%29_20170808.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "HSBC Main Building (Norman Foster)", "work": "HSBC Main Building (Hong Kong)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/HSBC_Building_%28Hong_Kong%29_20170808.jpg/500px-HSBC_Building_%28Hong_Kong%29_20170808.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: 'coathanger' trusses suspend groups of floors called 'social villages'; computer-controlled 'sun scoops' reflect sunlight into the atrium", "back": "HSBC Main Building (Norman Foster)", "work": "HSBC Main Building (Hong Kong)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/HSBC_Building_%28Hong_Kong%29_20170808.jpg/500px-HSBC_Building_%28Hong_Kong%29_20170808.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: a pair of bronze lions at the main entry — replicas of those outside HSBC Shanghai — are touched by visitors for good luck", "back": "HSBC Main Building (Norman Foster)", "work": "HSBC Main Building (Hong Kong)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/HSBC_Building_%28Hong_Kong%29_20170808.jpg/500px-HSBC_Building_%28Hong_Kong%29_20170808.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Manhattan tower built atop a 1928 cast-stone base by Joseph Urban; 'diagrid' facade with concave corner windows known as 'bird's mouths'", "back": "Hearst Tower (Norman Foster)", "work": "Hearst Tower (Manhattan)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Hearstowernyc.JPG/500px-Hearstowernyc.JPG", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Hearst Tower (Norman Foster)", "work": "Hearst Tower (Manhattan)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b1/Hearstowernyc.JPG/500px-Hearstowernyc.JPG", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: world's tallest bridge; spans the Tarn River gorge in France; designed with engineer Michel Virlogeux", "back": "Millau Viaduct (Norman Foster)", "work": "Millau Viaduct (France)", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/The_Millau_Viaduct_%282714080736%29.jpg/500px-The_Millau_Viaduct_%282714080736%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Millau Viaduct (Norman Foster)", "work": "Millau Viaduct (France)", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/The_Millau_Viaduct_%282714080736%29.jpg/500px-The_Millau_Viaduct_%282714080736%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: circular office campus in Cupertino nicknamed 'the Spaceship'; co-designed with Apple's Jony Ive; modeled on the quad at Stanford", "back": "Apple Park (Norman Foster)", "work": "Apple Park ('The Spaceship'), Cupertino", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Apple_Park_-_Visitor_Center_-_Side_view_-_November_2017.jpg/500px-Apple_Park_-_Visitor_Center_-_Side_view_-_November_2017.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Apple Park (Norman Foster)", "work": "Apple Park ('The Spaceship'), Cupertino", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Apple_Park_-_Visitor_Center_-_Side_view_-_November_2017.jpg/500px-Apple_Park_-_Visitor_Center_-_Side_view_-_November_2017.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Architect", "front": "Architect: British pioneer of high-tech architecture; met Richard Rogers at Yale; together with their future spouses, formed Team 4 (designed the Reliance Controls factory)", "back": "Norman Foster", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: later founded Foster + Partners, Britain's largest architectural firm", "back": "Norman Foster", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Astana, Kazakhstan — Palace of Peace and Reconciliation (pyramid with 62x62m base, stained-glass apex, four 'hands of peace,' inspired by a congress of world religions)", "back": "Norman Foster", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Astana, Kazakhstan — Khan Shatyr Entertainment Center (tent-shaped, inspired by yurts, home to the world's largest marquee)", "back": "Norman Foster", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: London City Hall — bulbous shape nicknamed 'The Glass Gonad' designed to minimize the area exposed to direct sunlight", "back": "Norman Foster", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Masdar City, Abu Dhabi — planned zero-carbon, zero-waste arcological city", "back": "Norman Foster", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Torre de Collserola (Barcelona) — guy-wire-supported tower with a hollow concrete shaft of 4.5m diameter supporting a ten-story pod", "back": "Norman Foster", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: his Willis Building in London sits across the street from Richard Rogers' Lloyd's Building", "back": "Norman Foster", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: won the Pritzker Prize in 1999; designed the new Wembley Stadium", "back": "Norman Foster", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

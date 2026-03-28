@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Utagawa Hiroshige";
 let cards = [{"type": "basic", "indicator": "Print", "front": "Print: woodblock series depicting stations along the Tokaido road from Edo to Kyoto, beginning at Nihonbashi Bridge", "back": "The Fifty-Three Stations of the Tokaido (Utagawa Hiroshige)", "work": "The Fifty-Three Stations of the Tokaido (1833–1834)", "frequency": 8, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/%E6%9D%B1%E6%B5%B7%E9%81%93%E4%BA%94%E5%8D%81%E4%B8%89%E6%AC%A1_%E4%B8%89%E5%B3%B6-Mishima%2C_from_the_series_Fifty-three_Stations_of_the_T%C5%8Dkaid%C5%8D_Road_%28T%C5%8Dkaid%C5%8D_goj%C5%ABsan_tsugi%2C_Mishima%29%2C_also_known_as_the_Ky%C5%8Dka_%28Witty_Verse%29_T%C5%8Dkaid%C5%8D_MET_DP122835.jpg/500px-thumbnail.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/%E6%9D%B1%E6%B5%B7%E9%81%93%E4%BA%94%E5%8D%81%E4%B8%89%E6%AC%A1_%E4%B8%89%E5%B3%B6-Mishima%2C_from_the_series_Fifty-three_Stations_of_the_T%C5%8Dkaid%C5%8D_Road_%28T%C5%8Dkaid%C5%8D_goj%C5%ABsan_tsugi%2C_Mishima%29%2C_also_known_as_the_Ky%C5%8Dka_%28Witty_Verse%29_T%C5%8Dkaid%C5%8D_MET_DP122835.jpg/500px-thumbnail.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Print", "front": "Print: thin diagonal black lines represent driving rain over a bridge as figures cower under umbrellas", "back": "Sudden Shower over Shin-Ohashi Bridge (Utagawa Hiroshige)", "work": "One Hundred Famous Views of Edo (1856–1858)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg/500px-One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg/500px-One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Print", "front": "Print: Van Gogh copied it as Bridge in the Rain and added faux calligraphy around the border", "back": "Sudden Shower over Shin-Ohashi Bridge (Utagawa Hiroshige)", "work": "One Hundred Famous Views of Edo (1856–1858)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg/500px-One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg/500px-One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg", "image_side": "back"}, {"type": "image", "indicator": "Print", "front": "", "back": "Sudden Shower over Shin-Ohashi Bridge (Utagawa Hiroshige)", "work": "One Hundred Famous Views of Edo (1856–1858)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg/500px-One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg/500px-One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Print", "front": "Print: portrait-oriented woodblock showing abstracted 'Sleeping Dragon' plum tree branches against a deep red sky at Kameido", "back": "Plum Park in Kameido (Utagawa Hiroshige)", "work": "One Hundred Famous Views of Edo (1856–1858)", "frequency": 4, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg/500px-One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Print", "front": "Print: its red hue and prominent horizontal branch inspired Gauguin's Vision After the Sermon", "back": "Plum Park in Kameido (Utagawa Hiroshige)", "work": "One Hundred Famous Views of Edo (1856–1858)", "frequency": 4, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg/500px-One_hundred_famous_places_of_Edo%2C_Yastumi_bridge.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: last great ukiyo-e master of the Utagawa school", "back": "Utagawa Hiroshige", "work": "General / Biographical", "frequency": 5, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: also created a 69-station woodblock print series depicting the Kiso Kaido road", "back": "Utagawa Hiroshige", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Szymborska's poetry collection The People on the Bridge was inspired by one of his woodblock prints", "back": "Utagawa Hiroshige", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "image", "indicator": "Print", "front": "", "back": "The Fifty-Three Stations of the Tokaido (1833–1834) (Utagawa Hiroshige)", "work": "The Fifty-Three Stations of the Tokaido (1833–1834)", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/%E6%9D%B1%E6%B5%B7%E9%81%93%E4%BA%94%E5%8D%81%E4%B8%89%E6%AC%A1_%E4%B8%89%E5%B3%B6-Mishima%2C_from_the_series_Fifty-three_Stations_of_the_T%C5%8Dkaid%C5%8D_Road_%28T%C5%8Dkaid%C5%8D_goj%C5%ABsan_tsugi%2C_Mishima%29%2C_also_known_as_the_Ky%C5%8Dka_%28Witty_Verse%29_T%C5%8Dkaid%C5%8D_MET_DP122835.jpg/500px-thumbnail.jpg", "tags": [], "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

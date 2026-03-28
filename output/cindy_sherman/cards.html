@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Cindy Sherman";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: 69 black-and-white self-portraits posing as unnamed women in stereotypical roles evocative of 1950s–60s B-movies, including 'The Hitchhiker' and 'City Girl'", "back": "Untitled Film Stills (Cindy Sherman)", "work": "Untitled Film Stills", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Pictures Generation photographer who uses herself as the model in all her photographs; Chuck Close called her 'perhaps the most important artist of the 1980s'", "back": "Cindy Sherman", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Photograph", "front": "Photograph: Untitled #96 shows this artist lying on a kitchen floor in orange, clutching a crumpled newspaper ad; was briefly the second most expensive photograph ever sold", "back": "Cindy Sherman (Untitled Film Stills / Centerfolds)", "work": "Untitled Film Stills", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: uses medical dolls, prosthetic limbs, and mannequin parts in sexually explicit arrangements to critique pornography; created during the debates over NEA funding of Mapplethorpe and Serrano", "back": "Sex Pictures (Cindy Sherman)", "work": "Sex Pictures", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: self-portraits imitating Old Master paintings; includes reworkings of Raphael's Fornarina and Caravaggio's Young Sick Bacchus (with fake grapes)", "back": "History Portraits (Cindy Sherman)", "work": "History Portraits", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: color photographs subverting the magazine centerfold format — showing women in distressed or pensive (rather than seductive) poses; commissioned by Artforum", "back": "Centerfolds (Cindy Sherman)", "work": "Centerfolds series", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Laura Mulvey's 1991 essay 'A Phantasmagoria of the Female Body' analyzed this photographer's work on stereotypical female imagery", "back": "Cindy Sherman", "work": "Untitled Film Stills", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: had a brief relationship with Robert Longo, who included her in his Men in the Cities series", "back": "Cindy Sherman", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: self-portraits wearing clown outfits in front of digitally manipulated backgrounds; multiple clown figures superimposed on each other", "back": "Clowns series (Cindy Sherman)", "work": "Clowns series", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

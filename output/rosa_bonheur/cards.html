@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Rosa Bonheur";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: horses sold along a tree-lined boulevard near the Hotel de la Salpetriere", "back": "The Horse Fair (Rosa Bonheur)", "work": "The Horse Fair (1853)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: the artist dressed as a man to sketch at the market", "back": "The Horse Fair (Rosa Bonheur)", "work": "The Horse Fair (1853)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: compared to the Parthenon frieze", "back": "The Horse Fair (Rosa Bonheur)", "work": "The Horse Fair (1853)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: assisted by Nathalie Micas", "back": "The Horse Fair (Rosa Bonheur)", "work": "The Horse Fair (1853)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: fame spread by Ernest Gambart's engravings", "back": "The Horse Fair (Rosa Bonheur)", "work": "The Horse Fair (1853)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: donated to the Met by Cornelius Vanderbilt", "back": "The Horse Fair (Rosa Bonheur)", "work": "The Horse Fair (1853)", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: twelve Charolais oxen in groups of six in a diagonal composition; at the Musee d'Orsay", "back": "Ploughing in the Nivernais (Rosa Bonheur)", "work": "Ploughing in the Nivernais (1849)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg/500px-Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg/500px-Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: inspired by the opening of George Sand's La Mare au Diable", "back": "Ploughing in the Nivernais (Rosa Bonheur)", "work": "Ploughing in the Nivernais (1849)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg/500px-Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg/500px-Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Cezanne complained it 'was horribly like the real thing'", "back": "Ploughing in the Nivernais (Rosa Bonheur)", "work": "Ploughing in the Nivernais (1849)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg/500px-Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg/500px-Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: extensively discussed in Linda Nochlin's 'Why Have There Been No Great Women Artists?' to show institutional support is necessary", "back": "Rosa Bonheur", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: father Raymond was a utopian socialist", "back": "Rosa Bonheur", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: purchased the Chateau de By near Fontainebleau", "back": "Rosa Bonheur", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Anna Klumpke painted her portrait at age 76", "back": "Rosa Bonheur", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: dolls depicting this artist were widely sold in the US", "back": "Rosa Bonheur", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: exotic pets included lions Nero and Fatma", "back": "Rosa Bonheur", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: painted a portrait of Buffalo Bill", "back": "Rosa Bonheur", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: received a special police dispensation to wear trousers in public for sketching", "back": "Rosa Bonheur", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "image", "indicator": "Painting", "front": "", "back": "The Horse Fair (Rosa Bonheur)", "work": "The Horse Fair (1853)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg/500px-Rosa_Bonheur%2C_The_Horse_Fair%2C_1852%E2%80%9355.jpg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Ploughing in the Nivernais (Rosa Bonheur)", "work": "Ploughing in the Nivernais (1849)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg/500px-Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg/500px-Rosa_Bonheur_-_Ploughing_in_Nevers_-_Google_Art_Project.jpg", "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Edgar Allan Poe";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: narrator asks 'Is there balm in Gilead?' to a creature perched 'upon a bust of Pallas' that repeats 'Nevermore'", "back": "The Raven (Edgar Allan Poe)", "work": "Poetry (The Raven, Annabel Lee, To Helen, etc.)", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: speaker compares beauty to 'Nicean barks of yore' bringing him 'To the glory that was Greece / And the grandeur that was Rome'", "back": "To Helen (Edgar Allan Poe)", "work": "Poetry (The Raven, Annabel Lee, To Helen, etc.)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Death has reared himself a throne / In a strange city lying alone'; contains a 'wilderness of glass'", "back": "The City in the Sea (Edgar Allan Poe)", "work": "Poetry (The Raven, Annabel Lee, To Helen, etc.)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'vast formless things' with 'Condor wings' attack a stage; 'the play is the tragedy, Man'", "back": "The Conqueror Worm (Edgar Allan Poe)", "work": "Poetry (The Raven, Annabel Lee, To Helen, etc.)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: narrator reads The Mad Trist aloud to a man increasingly disturbed by sounds; twin sister Madeline appears in doorway; house slides into a tarn", "back": "The Fall of the House of Usher (Edgar Allan Poe)", "work": "Short Stories", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: narrator obsesses over old man's pale blue 'vulture eye'; hides body under floorboards; asks 'why will you say I am mad?'", "back": "The Tell-Tale Heart (Edgar Allan Poe)", "work": "Short Stories", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: William Legrand finds a scarabaeus with a death's-head; 'Bishop's Hostel' decoded as Bessop's Castle; popularized cryptography", "back": "The Gold-Bug (Edgar Allan Poe)", "work": "Short Stories", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: essay declares 'the death of a beautiful woman is unquestionably the most poetical topic in the world' while explaining the composition of 'The Raven'", "back": "Edgar Allan Poe", "work": "Critical Essays and Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Baudelaire spent decades translating this writer into French; Mallarme wrote a poem about this author's 'Tomb'", "back": "Edgar Allan Poe", "work": "Critical Essays and Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: cat Pluto's image appears on a wall with a hangman's noose; narrator murders wife with an axe while trying to kill the second title animal", "back": "The Black Cat (Edgar Allan Poe)", "work": "Short Stories", "frequency": 4, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

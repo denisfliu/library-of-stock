@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Richard Serra";
 let cards = [{"type": "basic", "indicator": "Sculpture", "front": "Sculpture: COR-TEN steel arc removed from Federal Plaza in New York in 1989 after being declared rusted and disruptive", "back": "Tilted Arc (Richard Serra)", "work": "Tilted Arc (1981, removed 1989)", "frequency": 7, "tags": [], "images": [{"url": "", "side": "back"}]}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: its creator argued 'to remove the work is to destroy it'", "back": "Tilted Arc (Richard Serra)", "work": "Tilted Arc (1981, removed 1989)", "frequency": 7, "tags": [], "images": [{"url": "", "side": "back"}]}, {"type": "image", "indicator": "Sculpture", "front": "", "back": "Tilted Arc (Richard Serra)", "work": "Tilted Arc (1981, removed 1989)", "frequency": 0, "tags": [], "images": [{"url": "", "side": "front"}]}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: permanent installation at Guggenheim Bilbao of curved rust-brown steel walls forming ellipses, spirals, and other shapes that visitors walk through", "back": "The Matter of Time (Richard Serra)", "work": "The Matter of Time (1994–2005) / Snake (1997)", "frequency": 3, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/%22Untitled%22_%28It%27s_Just_a_Matter_of_Time%29%2C_Felix_Gonzalez-Torres%2C_MACBA.png/500px-%22Untitled%22_%28It%27s_Just_a_Matter_of_Time%29%2C_Felix_Gonzalez-Torres%2C_MACBA.png", "image_side": "back"}, {"type": "image", "indicator": "Sculpture", "front": "", "back": "The Matter of Time (Richard Serra)", "work": "The Matter of Time (1994–2005) / Snake (1997)", "frequency": 0, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/%22Untitled%22_%28It%27s_Just_a_Matter_of_Time%29%2C_Felix_Gonzalez-Torres%2C_MACBA.png/500px-%22Untitled%22_%28It%27s_Just_a_Matter_of_Time%29%2C_Felix_Gonzalez-Torres%2C_MACBA.png", "image_side": "front"}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: shaped like two inverted C's, dedicated to this sculptor's wife", "back": "Clara, Clara (Richard Serra)", "work": "Torqued Ellipses / Clara, Clara", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: the public habitually places footprints on it", "back": "Clara, Clara (Richard Serra)", "work": "Torqued Ellipses / Clara, Clara", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: created an 80-foot-tall heptagonal sculpture called '7' in Qatar for the Museum of Islamic Art", "back": "Richard Serra", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: created a parody of Goya's Saturn Devouring His Son with George W. Bush's head, used in a pleasevote.com ad", "back": "Richard Serra", "work": "General / Biographical", "frequency": 2, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: William Gaddis satirized this sculptor as Mr. Szyrk, whose sculpture trapped a dog, in A Frolic of His Own", "back": "Richard Serra", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: portrayed Hiram Abiff in the third film of Matthew Barney's Cremaster Cycle", "back": "Richard Serra", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: video work Hand Catching Lead shows this artist's hand repeatedly trying to grab at falling lead", "back": "Richard Serra", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: collaborated with Nancy Holt on Boomerang (1974), videotaping Holt listening to herself with a one-second delay", "back": "Richard Serra", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: early-career work consisting of four lead antimony plates arranged into a cube", "back": "One Ton Prop (Richard Serra)", "work": "General / Biographical", "frequency": 1, "tags": [], "images": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

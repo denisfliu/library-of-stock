@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Jean Nouvel";
 let cards = [{"type": "basic", "indicator": "Building", "front": "Building: bullet-shaped Barcelona skyscraper originally built for a water company, designed to evoke an erupting geyser or waterspout", "back": "Torre Agbar (Torre Glòries), Barcelona (Jean Nouvel)", "work": "Torre Agbar (Torre Glòries), Barcelona", "frequency": "common", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: Barcelona tower inspired by the nearby Montserrat mountain, with 4,400–4,500 pixelated square LED-covered windows", "back": "Torre Agbar (Torre Glòries), Barcelona (Jean Nouvel)", "work": "Torre Agbar (Torre Glòries), Barcelona", "frequency": "common", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: Nouvel described this Barcelona tower's shape as phallic; its floors take an oval/elliptical plan", "back": "Torre Agbar (Torre Glòries), Barcelona (Jean Nouvel)", "work": "Torre Agbar (Torre Glòries), Barcelona", "frequency": "common", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: Barcelona skyscraper whose temperature sensors regulate motorized external blinds", "back": "Torre Agbar (Torre Glòries), Barcelona (Jean Nouvel)", "work": "Torre Agbar (Torre Glòries), Barcelona", "frequency": "rare", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: Paris institute whose south facade has 240 motor-controlled 'iris' apertures inspired by Islamic mashrabiya screens", "back": "Arab World Institute (Institut du Monde Arabe), Paris (Jean Nouvel)", "work": "Arab World Institute (Institut du Monde Arabe), Paris", "frequency": "common", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: Paris building with a high-tech metallic brise soleil whose motorized irises open and close like camera shutters to regulate light", "back": "Arab World Institute (Institut du Monde Arabe), Paris (Jean Nouvel)", "work": "Arab World Institute (Institut du Monde Arabe), Paris", "frequency": "uncommon", "tags": []}, {"type": "image", "indicator": "Building", "front": "", "back": "Louvre Abu Dhabi (Jean Nouvel)", "work": "Louvre Abu Dhabi", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Jean_nouvel%2C_modellino_del_louvre_abu_dhabi.jpg/500px-Jean_nouvel%2C_modellino_del_louvre_abu_dhabi.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: museum on Saadiyat Island, UAE, with an eight-layered floating dome whose web-like pattern creates a 'rain of light' effect as if filtered through date palm fronds", "back": "Louvre Abu Dhabi (Jean Nouvel)", "work": "Louvre Abu Dhabi", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Jean_nouvel%2C_modellino_del_louvre_abu_dhabi.jpg/500px-Jean_nouvel%2C_modellino_del_louvre_abu_dhabi.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: UAE museum described as the first universal art museum to open in the 21st century, whose dome has 8,000 medallions", "back": "Louvre Abu Dhabi (Jean Nouvel)", "work": "Louvre Abu Dhabi", "frequency": "uncommon", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Jean_nouvel%2C_modellino_del_louvre_abu_dhabi.jpg/500px-Jean_nouvel%2C_modellino_del_louvre_abu_dhabi.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Abu Dhabi museum where Leonardo's Salvator Mundi was briefly slated for display", "back": "Louvre Abu Dhabi (Jean Nouvel)", "work": "Louvre Abu Dhabi", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Jean_nouvel%2C_modellino_del_louvre_abu_dhabi.jpg/500px-Jean_nouvel%2C_modellino_del_louvre_abu_dhabi.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Minneapolis theater featuring a cantilevered lobby called the 'Endless Bridge' jutting toward the Mississippi River", "back": "Guthrie Theater, Minneapolis (Jean Nouvel)", "work": "Guthrie Theater, Minneapolis", "frequency": "common", "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: Paris museum designed with Patrick Blanc's exterior 'green wall' of living plants, built without barriers so visitors could move freely between world art exhibits", "back": "Musée du quai Branly, Paris (Jean Nouvel)", "work": "Musée du quai Branly, Paris", "frequency": "common", "tags": []}, {"type": "image", "indicator": "Building", "front": "", "back": "DR Koncerthuset (Copenhagen Concert Hall) (Jean Nouvel)", "work": "DR Koncerthuset (Copenhagen Concert Hall)", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/110915_Jean_Nouvel_DR_Concert_Hall_04_%287000188570%29.jpg/500px-110915_Jean_Nouvel_DR_Concert_Hall_04_%287000188570%29.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: illuminated blue cube concert hall for the Danish Broadcasting Corporation, described as the most expensive concert hall ever built", "back": "DR Koncerthuset (Copenhagen Concert Hall) (Jean Nouvel)", "work": "DR Koncerthuset (Copenhagen Concert Hall)", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/110915_Jean_Nouvel_DR_Concert_Hall_04_%287000188570%29.jpg/500px-110915_Jean_Nouvel_DR_Concert_Hall_04_%287000188570%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Copenhagen concert hall whose interior drew inspiration from Hans Scharoun's 'vineyard' design for Berlin's Philharmonie", "back": "DR Koncerthuset (Copenhagen Concert Hall) (Jean Nouvel)", "work": "DR Koncerthuset (Copenhagen Concert Hall)", "frequency": "uncommon", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/110915_Jean_Nouvel_DR_Concert_Hall_04_%287000188570%29.jpg/500px-110915_Jean_Nouvel_DR_Concert_Hall_04_%287000188570%29.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Opéra de Lyon (Jean Nouvel)", "work": "Opéra de Lyon", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Jean_nouvel_-_opera-lyon.jpg/500px-Jean_nouvel_-_opera-lyon.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: historic French opera house Nouvel redesigned by adding a semi-cylindrical glass and steel double vault; the building is named after him", "back": "Opéra de Lyon (Jean Nouvel)", "work": "Opéra de Lyon", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Jean_nouvel_-_opera-lyon.jpg/500px-Jean_nouvel_-_opera-lyon.jpg", "image_side": "back"}, {"type": "image", "indicator": "Architect", "front": "", "back": "Jean Nouvel", "work": "Jean Nouvel — Architect", "frequency": "common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jean_Nouvel_2009_Vienna.jpg/500px-Jean_Nouvel_2009_Vienna.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Architect", "front": "Architect: French architect who won the 2008 Pritzker Prize", "back": "Jean Nouvel", "work": "Jean Nouvel — Architect", "frequency": "very common", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jean_Nouvel_2009_Vienna.jpg/500px-Jean_Nouvel_2009_Vienna.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: described his design method as finding 'singularities' in objects, a concept developed in a book co-written with a philosopher", "back": "Jean Nouvel", "work": "Jean Nouvel — Architect", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jean_Nouvel_2009_Vienna.jpg/500px-Jean_Nouvel_2009_Vienna.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: placed a massive rusty cube called 'Monolith' on a Swiss lake for the 2002 Swiss Expo", "back": "Jean Nouvel", "work": "Jean Nouvel — Architect", "frequency": "uncommon", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jean_Nouvel_2009_Vienna.jpg/500px-Jean_Nouvel_2009_Vienna.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed the National Museum of Qatar in Doha, with interlocking discs inspired by the desert rose crystal", "back": "Jean Nouvel", "work": "Jean Nouvel — Architect", "frequency": "uncommon", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jean_Nouvel_2009_Vienna.jpg/500px-Jean_Nouvel_2009_Vienna.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed part of the Leeum Samsung Museum of Art in Seoul alongside Mario Botta and Rem Koolhaas", "back": "Jean Nouvel", "work": "Jean Nouvel — Architect", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jean_Nouvel_2009_Vienna.jpg/500px-Jean_Nouvel_2009_Vienna.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: turned down the Dancing House in Prague, which was subsequently designed by Frank Gehry and Vlado Milunic", "back": "Jean Nouvel", "work": "Jean Nouvel — Architect", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jean_Nouvel_2009_Vienna.jpg/500px-Jean_Nouvel_2009_Vienna.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: advocated for traditional hand tools in the reconstruction of Notre-Dame de Paris", "back": "Jean Nouvel", "work": "Jean Nouvel — Architect", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jean_Nouvel_2009_Vienna.jpg/500px-Jean_Nouvel_2009_Vienna.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: designed a building in Nicosia with balconies of various heights suggesting the structure is 'breathing'", "back": "Jean Nouvel", "work": "Jean Nouvel — Architect", "frequency": "rare", "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Jean_Nouvel_2009_Vienna.jpg/500px-Jean_Nouvel_2009_Vienna.jpg", "image_side": "back"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

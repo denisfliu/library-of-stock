@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Charles Perrault";
 let cards = [{"type": "basic", "indicator": "Author", "front": "Author: collection Tales from Past Times, translated as Mother Goose Tales", "back": "Charles Perrault", "work": "Tales of Mother Goose / Tales from Past Times", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: adopted the persona of Mother Goose", "back": "Charles Perrault", "work": "Tales of Mother Goose / Tales from Past Times", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Angela Carter was commissioned to translate this author's fairy tales into English in the 1970s", "back": "Charles Perrault", "work": "Tales of Mother Goose / Tales from Past Times", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: the name 'Prince Charming' was inspired by a passage from this author's version of Sleeping Beauty", "back": "Charles Perrault", "work": "Tales of Mother Goose / Tales from Past Times", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: outraged the Academie Francaise by mocking the shield of Achilles passage, sparking the Quarrel of the Ancients and Moderns", "back": "Charles Perrault", "work": "Other Tales and Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this fairy tale, the title cat helps a miller's son as the Marquis of Carabas; tricks an ogre into becoming a mouse", "back": "Puss in Boots (Charles Perrault)", "work": "Puss in Boots", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Perrault version ends abruptly with the wolf eating the girl — no huntsman rescue (that's from the Grimms)", "back": "Little Red Riding Hood (Charles Perrault)", "work": "Little Red Riding Hood", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: newly married wife opens forbidden room containing dead wives; key stained with blood; Aarne-Thompson type 312", "back": "Bluebeard (Charles Perrault)", "work": "Bluebeard", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: fairy tale featuring glass slipper, fairy godmother, six mice transformed into dapple gray horses", "back": "Cinderella (Charles Perrault)", "work": "Cinderella", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: tiny character steals seven-league boots from a sleeping ogre; tricks ogre into killing his daughters by swapping crowns with nightcaps", "back": "Hop-o'-My-Thumb (Charles Perrault)", "work": "Other Tales and Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Carlo Collodi translated this author's fairy tales into Italian in 1875", "back": "Charles Perrault", "work": "Tales of Mother Goose / Tales from Past Times", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Ravel's Mother Goose suite (Ma mere l'oye) is based on this author's fairy tales", "back": "Charles Perrault", "work": "Tales of Mother Goose / Tales from Past Times", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Ludwig Tieck wrote a metatheatrical play about a fictional audience reacting to this fairy tale's performance", "back": "Puss in Boots (Charles Perrault)", "work": "Puss in Boots", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

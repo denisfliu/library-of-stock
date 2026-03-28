@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Anicius Manlius Severinus Boethius";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: Lady Philosophy wears a garment with pi at the bottom and theta at the top, connected by a staircase, in this work written in prison", "back": "The Consolation of Philosophy (Boethius)", "work": "The Consolation of Philosophy", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Book V argues that the distinction between divine intellect and human reason allows divine prescience to coexist with free will", "back": "The Consolation of Philosophy (Boethius)", "work": "The Consolation of Philosophy", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: compares God's timeless perspective to a point at the center of a circle, equidistant from its entire circumference", "back": "The Consolation of Philosophy (Boethius)", "work": "The Consolation of Philosophy", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: compares God to a ship's 'rudder and helm' and echoes the Gorgias in claiming that evildoers punish themselves by no longer truly existing as humans", "back": "The Consolation of Philosophy (Boethius)", "work": "The Consolation of Philosophy", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Joel Relihan argued this work is structured as a Menippean satire to advocate the necessity of prayer and faith", "back": "The Consolation of Philosophy (Boethius)", "work": "The Consolation of Philosophy", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a poem in this work addressed to the 'lord and path and goal' is traditionally interpreted as a summary of the Timaeus", "back": "The Consolation of Philosophy (Boethius)", "work": "The Consolation of Philosophy", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: his translations of Aristotle were virtually the only Aristotelian works available to medieval Europeans until the 12th century", "back": "Boethius", "work": "Translations of Aristotle and Porphyry", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: his translation of Porphyry's Isagoge became the standard medieval logic textbook and codified the 'problem of universals'", "back": "Boethius", "work": "Translations of Aristotle and Porphyry", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: argued that written words signify spoken words, which signify thoughts, which denote things, a theory he termed the 'order of speaking'", "back": "Boethius", "work": "Translations of Aristotle and Porphyry", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: his De institutione musica divided music into musica mundana (celestial harmony), musica humana (bodily harmony), and instrumental music, the most influential medieval source for Greek musical thought", "back": "Boethius", "work": "De Musica and Music Theory", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: his De Topicis Differentiis defines topics as 'parts of an argument that give confidence' and juxtaposes treatments by Cicero and Themistius", "back": "Boethius", "work": "De Topicis Differentiis and Logic", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

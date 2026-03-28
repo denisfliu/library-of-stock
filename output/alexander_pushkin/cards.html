@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Alexander Pushkin";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: Tatyana writes a love letter to the title character, who gives her a condescending 'sermon' saying marriage would bore him; she later rejects him at a ball, married to General Gremin", "back": "Eugene Onegin (Alexander Pushkin)", "work": "Eugene Onegin", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: uses a distinctive 14-line stanza of iambic tetrameter with alternating masculine and feminine rhymes ('Onegin stanza'); Charles Johnston's translation inspired Vikram Seth's The Golden Gate", "back": "Eugene Onegin (Alexander Pushkin)", "work": "Eugene Onegin", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Vladimir Nabokov produced a controversial literal translation leading to a falling-out with Edmund Wilson; included Notes on Prosody", "back": "Eugene Onegin (Alexander Pushkin)", "work": "Eugene Onegin", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Tatyana reads her fortune in hot wax and dreams of dining with monsters after a bear chases her through snow", "back": "Eugene Onegin (Alexander Pushkin)", "work": "Eugene Onegin", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the protagonist survives a flood by sitting atop a marble lion; his beloved Parasha's house is destroyed; the statue of Peter the Great chases him through St. Petersburg", "back": "The Bronze Horseman (Alexander Pushkin)", "work": "The Bronze Horseman", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the German engineer Hermann goes insane repeating 'three, seven, ace' after losing his fortune when the title card appears", "back": "The Queen of Spades (Alexander Pushkin)", "work": "The Queen of Spades", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the soldier Tomski tells of his grandmother, the 'Muscovy Venus,' who won a million francs on advice of Count St. Germain; Hermann writes fake love letters to Lizaveta Ivanovna", "back": "The Queen of Spades (Alexander Pushkin)", "work": "The Queen of Spades", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the expert marksman Silvio finishes a years-long deferred duel by shooting a Swiss landscape painting instead of the Count; two bullet holes visible", "back": "The Shot (Alexander Pushkin)", "work": "The Belkin Tales", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: Burmin falls to his knees before Maria after realizing she is the woman he jokingly married years prior during the title weather event", "back": "The Blizzard (Alexander Pushkin)", "work": "The Belkin Tales", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the most famous Russian lyric opens 'I loved you; and perhaps I love you still'; the speaker hopes God helps the addressee find another 'who will love you as tenderly'", "back": "I Loved You (Alexander Pushkin)", "work": "Other Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a love poem written for Anna Kern; the speaker says 'I remember a wonderful moment' and 'you appeared before me like a spirit of the purest beauty'", "back": "I Remember a Wonderful Moment (Alexander Pushkin)", "work": "Other Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: prologue describes a 'learned cat' bound by a 'golden chain' to a 'green oak'; a hill turns out to be the massive head of the wizard Chernomor's brother", "back": "Ruslan and Lyudmila (Alexander Pushkin)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: died in a duel with Georges-Charles d'Anthes, precipitated by anonymous letters naming him 'Deputy Grand Master of the Order of Cuckolds' after d'Anthes flirted with his wife Natalia", "back": "Alexander Pushkin", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: branded himself 'The African' due to his great-grandfather, the Black nobleman Abram Gannibal", "back": "Alexander Pushkin", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

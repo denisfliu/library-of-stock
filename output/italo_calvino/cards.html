@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Italo Calvino";
 let cards = [{"type": "basic", "indicator": "Short Story", "front": "Short Story: people climb ladders to collect milk from the moon; the narrator's Deaf cousin is best at it; Mrs. Vhd Vhd gets trapped on the moon and stays for love of the Deaf One", "back": "\"The Distance of the Moon\" (Italo Calvino, from Cosmicomics)", "work": "Cosmicomics / t zero", "frequency": 16, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the world gains color for the first time; Qfwfq's love interest Ayl retreats into the earth", "back": "\"Without Colors\" (Italo Calvino, from Cosmicomics)", "work": "Cosmicomics / t zero", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: life was \"packed like sardines\" in a singularity; the Big Bang happens when Mrs. Ph(i)Nk0 offers to make noodles for everyone", "back": "\"All at One Point\" (Italo Calvino, from Cosmicomics)", "work": "Cosmicomics / t zero", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: a hunter frozen in the moment his arrow flies toward a pouncing lion contemplates possible pasts and futures", "back": "\"t zero\" (Italo Calvino)", "work": "Cosmicomics / t zero", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the narrator responds \"WHAT OF IT?\" to a sign saying \"I SAW YOU\" and creates signs for good and bad actions", "back": "\"The Light-Years\" (Italo Calvino, from Cosmicomics)", "work": "Cosmicomics / t zero", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the narrator and Lieutenant Fenimore both love Ursula as they travel on parallel paths through space that cannot cross", "back": "\"The Form of Space\" (Italo Calvino, from Cosmicomics)", "work": "Cosmicomics / t zero", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: opens \"You are about to begin reading...\"; you, the Reader, encounter Ludmilla at a bookstore; odd-numbered chapters in second person", "back": "If on a winter's night a traveler (Italo Calvino)", "work": "If on a winter's night a traveler", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the writer Silas Flannery is translated by the chaos-inducing Ermes Marana; features the Organization of Apocryphal Power", "back": "If on a winter's night a traveler (Italo Calvino)", "work": "If on a winter's night a traveler", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: features the fictional countries Cimmeria (near Gulf of Bothnia) and the Cimbrian People's Republic; Professor Uzzi-Tuzii teaches Cimmerian literature", "back": "If on a winter's night a traveler (Italo Calvino)", "work": "If on a winter's night a traveler", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: framed as conversations between Marco Polo and Kublai Khan; Polo describes 55 cities named after women, including Isidora, Diomira, and Ersilia", "back": "Invisible Cities (Italo Calvino)", "work": "Invisible Cities", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: cities are \"like dreams, made of desires and fears\"; Khan wonders if his empire is \"nothing but a zodiac of the mind's phantasm\" while playing chess", "back": "Invisible Cities (Italo Calvino)", "work": "Invisible Cities", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Cosimo refuses to eat snails prepared by his sister Battista and flees to live in the trees; hunts with dachshund Ottimo Massimo", "back": "The Baron in the Trees (Italo Calvino)", "work": "Our Ancestors Trilogy", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Medardo of Terralba is split into good and evil halves by a cannonball; the first of the Our Ancestors trilogy", "back": "The Cloven Viscount (Italo Calvino)", "work": "Our Ancestors Trilogy", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the crusader Agilulf is only a set of floating armor serving as Charlemagne's paladin alongside Rambaldo", "back": "The Nonexistent Knight (Italo Calvino)", "work": "Our Ancestors Trilogy", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Essay", "front": "Essay: Harvard lectures on lightness, quickness, exactitude, visibility, and multiplicity; \"Lightness\" tells of Cavalcanti leaping over his foes", "back": "Six Memos for the Next Millennium (Italo Calvino)", "work": "Six Memos for the Next Millennium / Why Read the Classics?", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the title character tries to \"see\" a wave from a beach; divided into 3x3x3 chapters; realizes his front lawn is infinite", "back": "Mr. Palomar (Italo Calvino)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: characters who cannot speak communicate using tarot cards; includes characters like Roland and the Alchemist", "back": "The Castle of Crossed Destinies (Italo Calvino)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: Olivia obsesses over Aztec human sacrifice; represents the sense of taste in an unfinished five-senses collection", "back": "\"Under the Jaguar Sun\" (Italo Calvino)", "work": "Other Works", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

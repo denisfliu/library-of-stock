@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Jacques Rivette";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: two women repeatedly enter a mysterious haunted house in Paris, emerging each time with a hard candy in their mouths and no memory; they suck on the candies to remember", "back": "Celine and Julie Go Boating (Jacques Rivette)", "work": "Celine and Julie Go Boating (Céline et Julie vont en bateau, 1974)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: opens with Julie dropping her scarf like the White Rabbit from Alice in Wonderland; Celine chases her (including onto a tram) for 15 minutes", "back": "Celine and Julie Go Boating (Jacques Rivette)", "work": "Celine and Julie Go Boating (Céline et Julie vont en bateau, 1974)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: stars Juliet Berto (Celine) and Dominique Labourier (Julie), who moved in together during production and recalled their dreams to get into character", "back": "Celine and Julie Go Boating (Jacques Rivette)", "work": "Celine and Julie Go Boating (Céline et Julie vont en bateau, 1974)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: 13-hour epic inspired by Balzac's Human Comedy; first episode titled 'From Lili to Thomas'; used 16mm for TV crew footage and 35mm for the crew themselves; first publicly shown in the U.S. in 2006, 35 years after its premiere", "back": "Out 1 (Jacques Rivette)", "work": "Out 1 (1971)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: depicts the breakdown of the relationship between Sébastien (directing Racine's Andromaque) and his wife Claire (playing Hermione), who can't stand the TV crew filming rehearsals", "back": "L'amour fou (Jacques Rivette)", "work": "L'amour fou (1969)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: four-hour film based on Balzac's 'The Unknown Masterpiece' — about painter Frenhofer who destroys his unfinished masterpiece", "back": "La Belle Noiseuse (Jacques Rivette)", "work": "La Belle Noiseuse (1991)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: famous essay condemned Gillo Pontecorvo's Kapo for 'tilting the camera up' to Emmanuelle Riva's dying hand — called it deserving 'nothing but contempt'", "back": "Jacques Rivette", "work": "General / Biographical / Critical Work", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: led a putsch against Eric Rohmer to become head editor of Cahiers du Cinéma, taking it in a Marxist direction; also wrote 'The Genius of Howard Hawks'", "back": "Jacques Rivette", "work": "General / Biographical / Critical Work", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: called Showgirls 'one of the great American films of the last few years'", "back": "Jacques Rivette", "work": "General / Biographical / Critical Work", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

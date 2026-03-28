@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Clarice Lispector";
 let cards = [{"type": "tossup", "indicator": "Author", "front": "Author: title character enters her former maid's room, kills a cockroach, and puts its entrails in her mouth", "back": "Clarice Lispector (The Passion According to G.H.)", "work": "The Passion According to G.H.", "frequency": 10, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: poor typist Macabea is hit by a yellow Mercedes after visiting fortune teller Madame Carlota", "back": "Clarice Lispector (The Hour of the Star)", "work": "The Hour of the Star", "frequency": 7, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: 'The Smallest Woman in the World' — explorer Marcel Pretre discovers a 45-cm-tall pregnant Likouala woman", "back": "Clarice Lispector (Family Ties)", "work": "Family Ties", "frequency": 5, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: former maid Janair drew charcoal drawings of a man, woman, and dog on her wall", "back": "Clarice Lispector (The Passion According to G.H.)", "work": "The Passion According to G.H.", "frequency": 4, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: debut novel published at age 23 about Joana and her adulterous husband Otavio", "back": "Clarice Lispector (Near to the Wild Heart)", "work": "Near to the Wild Heart", "frequency": 3, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: Macabea lives on hot dogs and Coca-Cola and learns facts from a Clock Radio", "back": "Clarice Lispector (The Hour of the Star)", "work": "The Hour of the Star", "frequency": 3, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: Ukrainian-born Brazilian Jewish woman compared to Virginia Woolf for stream of consciousness", "back": "Clarice Lispector", "work": "General", "frequency": 3, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: 'Love' — Ana breaks eggs on a tram when she sees a blind man chewing gum", "back": "Clarice Lispector (Family Ties)", "work": "Family Ties", "frequency": 2, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: G.H. is a wealthy sculptor who compares her past abortion to squashing a cockroach", "back": "Clarice Lispector (The Passion According to G.H.)", "work": "The Passion According to G.H.", "frequency": 2, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: 'The Fifth Story' presents five increasingly bizarre accounts of cockroach killings", "back": "Clarice Lispector", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: Catherine says goodbye to mother Severina, who obsesses over her suitcases, in the title story of Family Ties", "back": "Clarice Lispector (Family Ties)", "work": "Family Ties", "frequency": 2, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: Madame Carlota predicts Macabea will marry a wealthy foreigner named Hans", "back": "Clarice Lispector (The Hour of the Star)", "work": "The Hour of the Star", "frequency": 2, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: maid's room described as 'a violation of my quotation marks' making G.H. 'a citation of herself'", "back": "Clarice Lispector (The Passion According to G.H.)", "work": "The Passion According to G.H.", "frequency": 2, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: title of Near to the Wild Heart suggested from Joyce's Portrait of the Artist, which she had not read", "back": "Clarice Lispector", "work": "Near to the Wild Heart", "frequency": 1, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: a dead dog found on a street corner is buried and then unburied by a mathematics professor", "back": "Clarice Lispector", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "tossup", "indicator": "Author", "front": "Author: narrated by Rodrigo, who chronicles the life and death of Macabea", "back": "Clarice Lispector (The Hour of the Star)", "work": "The Hour of the Star", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

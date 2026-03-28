@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Moshe Safdie";
 let cards = [{"type": "basic", "indicator": "Building", "front": "Building: 354 prefabricated 90-ton concrete boxes stacked into 158 apartments near the St. Lawrence River, built for Montreal's Expo 67", "back": "Habitat 67 (Moshe Safdie)", "frequency": 5, "tags": [], "work": "Habitat 67"}, {"type": "basic", "indicator": "Building", "front": "Building: this Montreal housing complex grew from its architect's master's thesis 'A Case for City Living' and was guided by the motto 'For Everyone a Garden,' with each roof serving as another unit's garden", "back": "Habitat 67 (Moshe Safdie)", "frequency": 3, "tags": [], "work": "Habitat 67"}, {"type": "basic", "indicator": "Building", "front": "Building: professor Sandy Van Ginkel convinced its architect to submit his master's thesis to a design contest; the resulting project was reduced from a planned 1,000 units", "back": "Habitat 67 (Moshe Safdie)", "frequency": 1, "tags": [], "work": "Habitat 67"}, {"type": "basic", "indicator": "Building", "front": "Building: August Komendant supervised the structural engineering of this Montreal residential complex of stacked concrete boxes", "back": "Habitat 67 (Moshe Safdie)", "frequency": 3, "tags": [], "work": "Habitat 67"}, {"type": "basic", "indicator": "Building", "front": "Building: this Montreal housing complex resembles Ricardo Bofill's Kafka Castle and inspired the Nakagin Capsule Tower", "back": "Habitat 67 (Moshe Safdie)", "frequency": 3, "tags": [], "work": "Habitat 67"}, {"type": "basic", "indicator": "Building", "front": "Building: Jerry Adamson designed special rotary-moulded polyethylene armchairs specifically for this stacked-concrete-box housing complex", "back": "Habitat 67 (Moshe Safdie)", "frequency": 1, "tags": [], "work": "Habitat 67"}, {"type": "basic", "indicator": "Building", "front": "Building: a planned extension of this housing complex to the Virgin Islands was designed to 'root like a cactus to a rocky peninsula'; the book For Everyone a Garden documents its extension to Israel", "back": "Habitat 67 (Moshe Safdie)", "frequency": 1, "tags": [], "work": "Habitat 67"}, {"type": "basic", "indicator": "Building", "front": "Building: this Singapore resort's three towers — shaped like a deck of cards — are connected at their tops by a 340-meter SkyPark containing the world's largest infinity pool", "back": "Marina Bay Sands (Moshe Safdie)", "frequency": 5, "tags": [], "work": "Marina Bay Sands"}, {"type": "basic", "indicator": "Building", "front": "Building: this Singapore resort designed by Moshe Safdie appears prominently in the 2018 film Crazy Rich Asians", "back": "Marina Bay Sands (Moshe Safdie)", "frequency": 3, "tags": [], "work": "Marina Bay Sands"}, {"type": "basic", "indicator": "Building", "front": "Building: the coffee table book Reaching for the Sky documents the construction of the world's largest infinity pool in this Singapore resort", "back": "Marina Bay Sands (Moshe Safdie)", "frequency": 1, "tags": [], "work": "Marina Bay Sands"}, {"type": "basic", "indicator": "Building", "front": "Building: commissioned by Walmart heiress Alice Walton; Safdie dammed a river to create two pools dividing eight shell-like pavilions, with two buildings acting as bridges over the pond", "back": "Crystal Bridges Museum of American Art (Moshe Safdie)", "frequency": 3, "tags": [], "work": "Crystal Bridges Museum of American Art"}, {"type": "basic", "indicator": "Building", "front": "Building: this Bentonville, Arkansas museum with arched copper roofs owns Asher Durand's landscape painting Kindred Spirits", "back": "Crystal Bridges Museum of American Art (Moshe Safdie)", "frequency": 3, "tags": [], "work": "Crystal Bridges Museum of American Art"}, {"type": "basic", "indicator": "Building", "front": "Building: this Kansas City performing arts center features symmetrical half-shells of concentric vertical arches and resembles a pair of connected sliced-up onions from the back", "back": "Kauffmann Center for the Performing Arts (Moshe Safdie)", "frequency": 3, "tags": [], "work": "Kauffmann Center for the Performing Arts"}, {"type": "basic", "indicator": "Architect", "front": "Architect: this Israeli-Canadian architect apprenticed with Louis Kahn", "back": "Moshe Safdie", "frequency": 3, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: this architect designed the Yad Vashem Holocaust memorial museum in Jerusalem, opened in 2005", "back": "Moshe Safdie", "frequency": 3, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: this architect designed the Yitzhak Rabin Center in Tel Aviv", "back": "Moshe Safdie", "frequency": 3, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: this architect designed the Jewel Changi airport terminal in Singapore — a five-story indoor garden of tropical trees and shrubs", "back": "Moshe Safdie", "frequency": 3, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: this architect designed the National Gallery of Canada", "back": "Moshe Safdie", "frequency": 3, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: this architect designed the United States Institute of Peace, whose white roof resembles a dove's wing", "back": "Moshe Safdie", "frequency": 1, "tags": [], "work": "Other Works"}, {"type": "basic", "indicator": "Architect", "front": "Architect: this architect designed the headquarters of the Bureau of Alcohol, Tobacco, Firearms, and Explosives", "back": "Moshe Safdie", "frequency": 1, "tags": [], "work": "Other Works"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

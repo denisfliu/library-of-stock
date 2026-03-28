@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Battleship Potemkin";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: a baby carriage rolls down the Odessa Steps as Cossack soldiers massacre civilians; a nurse with pince-nez glasses is shot and bleeds from her eye", "back": "Battleship Potemkin (Sergei Eisenstein)", "work": "Odessa Steps Sequence (Act IV)", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: three separate shots of stone lion statues are edited together to give the illusion that the lions rise up in response to the massacre; a legless man crawls alongside the retreating crowd", "back": "Battleship Potemkin (Sergei Eisenstein)", "work": "Odessa Steps Sequence (Act IV)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the Odessa Steps sequence was parodied in Terry Gilliam's Brazil (baby carriage replaced by a vacuum cleaner) and directly homaged in De Palma's The Untouchables (Chicago Union Station)", "back": "Battleship Potemkin (Sergei Eisenstein)", "work": "Odessa Steps Sequence (Act IV)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the sequence begins after 'suddenly...' interrupts a shot of the waving crowd; a woman carries her trampled son back toward the soldiers", "back": "Battleship Potemkin (Sergei Eisenstein)", "work": "Odessa Steps Sequence (Act IV)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: first act 'Men and Maggots' — a mutiny triggered by maggot-infested borscht; a plate reading 'Give us this day our daily bread' is smashed; sailor leader Vakulinchuk dies and is laid in a tent on the pier", "back": "Battleship Potemkin (Sergei Eisenstein)", "work": "Mutiny / 'Men and Maggots' (Acts I–III)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: a wild-haired priest bounces his cross into his palm while doctor Smirnov is killed; soldiers covering sailors under a tarpaulin are convinced not to shoot; the only color in the silent film is on a red flag", "back": "Battleship Potemkin (Sergei Eisenstein)", "work": "Mutiny / 'Men and Maggots' (Acts I–III)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: directed by Sergei Eisenstein with cinematography by Eduard Tisse; commissioned after the success of his earlier film Strike (1924); the Berlin cut introduced Edmund Meisel's score", "back": "Battleship Potemkin (Sergei Eisenstein)", "work": "Director / Production / Legacy", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the screaming nurse image directly inspired Francis Bacon's 'Study for the Nurse in the Battleship Potemkin, 1957' and his broader screaming popes series", "back": "Battleship Potemkin (Sergei Eisenstein)", "work": "Director / Production / Legacy", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the final shot shows the battleship charging at the viewer appearing to split the screen; Chris Marker's A Grin Without a Cat opens with footage from this film", "back": "Battleship Potemkin (Sergei Eisenstein)", "work": "Director / Production / Legacy", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Radu Jude made a short (The Potemkinists) about a sculptor making an inoffensive canal-side monument to the film's protagonists, and another 2022 film freeze-framing the final scene of men waving their hats", "back": "Battleship Potemkin (Sergei Eisenstein)", "work": "Director / Production / Legacy", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

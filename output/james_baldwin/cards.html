@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "James Baldwin";
 let cards = [{"type": "basic", "indicator": "Novel", "front": "Novel: set on the fourteenth birthday of John Grimes, a preacher's son who has a spiritual rebirth at the Temple of the Fire Baptized", "back": "Go Tell It on the Mountain (James Baldwin)", "work": "Go Tell It on the Mountain", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: 'The Threshing-Floor' is the third section depicting the protagonist's religious awakening; Gabriel is revealed not to be his true father", "back": "Go Tell It on the Mountain (James Baldwin)", "work": "Go Tell It on the Mountain", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the narrator David recounts his affair with an Italian bartender in Paris who is guillotined for murdering the bar owner Guillaume", "back": "Giovanni's Room (James Baldwin)", "work": "Giovanni's Room", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: a heroin-addicted jazz musician is taken in by his math-teacher brother; ends with a glass of Scotch and milk shaking like 'the very cup of trembling'", "back": "Sonny's Blues (James Baldwin)", "work": "\"Sonny's Blues\"", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: the title character suggests 'maybe it was good to smell your own stink' while slowly crushing an empty beer can", "back": "Sonny's Blues (James Baldwin)", "work": "\"Sonny's Blues\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Short Story", "front": "Short Story: one character is convinced to live at Isabel's house after learning she owns a piano; he plays with Creole's band at a Greenwich Village club", "back": "Sonny's Blues (James Baldwin)", "work": "\"Sonny's Blues\"", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: essay 'Everybody's Protest Novel' attacks Uncle Tom's Cabin and argues that Bigger Thomas 'accepted a theology that denies him life'", "back": "James Baldwin", "work": "Notes of a Native Son", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: title essay of a collection describes his father's death coinciding with the Detroit race riots; he throws a water jug at a waitress who refused to serve him", "back": "James Baldwin", "work": "Notes of a Native Son", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: 'Down at the Cross' describes dinner with Elijah Muhammad; calls finding religion a 'gimmick' to escape racism", "back": "James Baldwin", "work": "The Fire Next Time", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: collection containing 'My Dungeon Shook,' a letter to his nephew contending 'the country is celebrating one hundred years of freedom one hundred years too soon'", "back": "The Fire Next Time (James Baldwin)", "work": "The Fire Next Time", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the sculptor Fonny is falsely accused of rape, separating him from his pregnant fiancee Tish; adapted into a 2019 Barry Jenkins film", "back": "If Beale Street Could Talk (James Baldwin)", "work": "If Beale Street Could Talk", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: unfinished manuscript Remember This House, about Malcolm X, MLK, and Medgar Evers, became the documentary I Am Not Your Negro by Raoul Peck", "back": "James Baldwin", "work": "I Am Not Your Negro / Remember This House", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: debated William F. Buckley at Cambridge in 1965 on 'Is the American Dream at the Expense of the American Negro?'; won by consensus", "back": "James Baldwin", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: book-length film criticism analyzing the racial subtext of The Exorcist and the loyal maid archetype from Birth of a Nation to Guess Who's Coming to Dinner", "back": "The Devil Finds Work (James Baldwin)", "work": "The Devil Finds Work", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: criticized the all-Black Carmen Jones for its 'sterile and distressing eroticism' and for being 'at pains to desexualize Harry Belafonte'", "back": "James Baldwin", "work": "Notes of a Native Son", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the jazz musician Rufus Scott jumps off the George Washington Bridge", "back": "Another Country (James Baldwin)", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

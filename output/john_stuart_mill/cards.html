@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "John Stuart Mill";
 let cards = [{"type": "basic", "indicator": "Philosopher", "front": "Philosopher: introduced the example of a mob riled up against a corn dealer to frame free speech in terms of the harm principle", "back": "John Stuart Mill", "work": "On Liberty & the Harm Principle", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: uses Marcus Aurelius as an example of a well-intentioned persecutor to illustrate the danger of suppressing discussion under the 'assumption of infallibility'", "back": "On Liberty (John Stuart Mill)", "work": "On Liberty & the Harm Principle", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: uses the example of a Muslim country banning pork to show how morals can influence decisions without encroaching on opinions", "back": "On Liberty (John Stuart Mill)", "work": "On Liberty & the Harm Principle", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: contains a notorious 'proof' comparing visibility to desirability, which G.E. Moore cited as a case of the naturalistic fallacy", "back": "Utilitarianism (John Stuart Mill)", "work": "Utilitarianism (the essay)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: distinguished between higher and lower pleasures, claiming 'better to be Socrates dissatisfied than a fool satisfied'", "back": "John Stuart Mill", "work": "Utilitarianism (the essay)", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: credited the first use of the term 'utilitarian' to John Galt's novel Annals of the Parish", "back": "John Stuart Mill", "work": "Utilitarianism (the essay)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: presents five methods of induction (agreement, difference, concomitant variations, residues, joint method) and a direct reference theory of names", "back": "A System of Logic (John Stuart Mill)", "work": "A System of Logic & Theory of Names", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: the view that the semantic contribution of a name is only its referent; illustrated by the Dartmouth example (name persists even when descriptive connection is severed)", "back": "Millianism / Mill's theory of names", "work": "A System of Logic & Theory of Names", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: advocates worker cooperatives as the 'nearest approach to social justice' in a chapter titled 'On the Probable Futurity of the Working Classes'", "back": "Principles of Political Economy (John Stuart Mill)", "work": "Principles of Political Economy", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: argued 'there remain no legal slaves, save the mistress of every house' while attacking marriage laws in a work co-written with Harriet Taylor", "back": "John Stuart Mill", "work": "The Subjection of Women & Feminism", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: debated Thomas Carlyle over slavery after Carlyle published 'Occasional Discourse on the Negro Question'; led opposing committees over Governor Eyre during the Morant Bay Rebellion", "back": "John Stuart Mill", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: raised in near-total isolation from other children and taught Greek from age three by a father who wrote Elements of Political Economy; suffered a mental breakdown at age twenty", "back": "John Stuart Mill", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: paired a fellow utilitarian with Coleridge as the 'seminal minds' of their age", "back": "John Stuart Mill (referring to Bentham and Coleridge)", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: described emergent phenomena as 'heteropathic effects' in A System of Logic, one of the first discussions of emergence", "back": "John Stuart Mill", "work": "A System of Logic & Theory of Names", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

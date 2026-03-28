@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Andrei Tarkovsky";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: psychologist Kris Kelvin travels to a space station orbiting the ocean planet Solaris and is visited by apparitions of his dead wife Hari; adapted from Stanislaw Lem's novel", "back": "Solaris (Andrei Tarkovsky)", "work": "Solaris (1972)", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: a committee examines a man who claims to have seen the gigantic face of a child in the ocean; ends with the reveal that Kris Kelvin is on an island in the planet; features close-ups of Brueghel's Hunters in the Snow", "back": "Solaris (Andrei Tarkovsky)", "work": "Solaris (1972)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: a Stalker guides a Writer and a Professor through the Zone (entering via 'the meat grinder' tunnel) to a wish-granting Room; adapted from the Strugatsky brothers' Roadside Picnic", "back": "Stalker (Andrei Tarkovsky)", "work": "Stalker (1979)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Porcupine committed suicide after wishing for wealth instead of resurrecting his dead brother; a character puts a crown of thorns on his head upon reaching the Room", "back": "Stalker (Andrei Tarkovsky)", "work": "Stalker (1979)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: score features a theme for flute and tar evoking 'space frozen in dynamic equilibrium'; transitions from sepia to color when men arrive at a field of abandoned military equipment", "back": "Stalker (Andrei Tarkovsky)", "work": "Stalker (1979)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: historical epic about 15th-century icon painter Andrei Rublev; divided into eight parts; shot in black-and-white but ends with a color shot of horses grazing; Rublev is inspired to resume painting after watching a bell cast and rung; horse falls down stairs and is impaled on a spear", "back": "Andrei Rublev (Andrei Tarkovsky)", "work": "Andrei Rublev (1966)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: autobiographical film; Arseny Tarkovsky narrates his own poetry in voiceover; levitation scene; close-ups of Brueghel's Hunters in the Snow with Bach; newsreel from Spanish Civil War interspersed with Ignat reading a letter", "back": "Mirror (Andrei Tarkovsky)", "work": "Mirror (1975)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: nine-minute-long take of a man trying to cross a dry swimming pool without extinguishing a candle; ends with a man and dog lying in a ruined cathedral; made after the director moved to Italy", "back": "Nostalghia (Andrei Tarkovsky)", "work": "Nostalghia (1983)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: final film; ends with 'In the beginning was the Word' spoken by the silent 'Little Man'; opens with Alexander planting a tree with his son in a nine-and-a-half minute tracking shot; cinematography by Sven Nykvist", "back": "The Sacrifice (Andrei Tarkovsky)", "work": "The Sacrifice (1986)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: debut feature about a child Red Army scout; ends with the reveal that Ivan was captured and hanged by the Nazis; influenced Parajanov to abandon social realism", "back": "Ivan's Childhood (Andrei Tarkovsky)", "work": "Ivan's Childhood (1962)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: his father Arseny was a poet whose verse appears in voiceover in Mirror and Stalker; Arseny had a romance with Marina Tsvetaeva", "back": "Andrei Tarkovsky", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: wrote Sculpting in Time, theorizing the 'time pressure' of long takes in opposition to Soviet montage theory; sided with André Bazin against montage", "back": "Andrei Tarkovsky", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

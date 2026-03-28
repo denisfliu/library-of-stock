@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Giovanni Pierluigi da Palestrina";
 let cards = [{"type": "basic", "indicator": "Mass", "front": "Mass: Apocryphally convinced the Council of Trent not to ban polyphony from worship", "back": "Pope Marcellus Mass (Palestrina)", "work": "Pope Marcellus Mass (Missa Papae Marcelli)", "frequency": 20, "tags": []}, {"type": "basic", "indicator": "Mass", "front": "Mass: All movements except the Agnus Dei are scored for six voices; second Agnus Dei adds a seventh voice with an ascending fourth head-motif", "back": "Pope Marcellus Mass (Palestrina)", "work": "Pope Marcellus Mass (Missa Papae Marcelli)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Mass", "front": "Mass: A missa sine nomine (mass without a name); a version was arranged for orchestra by J. S. Bach", "back": "Pope Marcellus Mass (Palestrina)", "work": "Pope Marcellus Mass (Missa Papae Marcelli)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: In this 1917 work, the title character initially refuses a commission from Cardinal Borromeo, who then imprisons him", "back": "Palestrina (Hans Pfitzner)", "work": "Pope Marcellus Mass (Missa Papae Marcelli)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: His style was codified as the model for Renaissance counterpoint in Johann Joseph Fux's Gradus ad Parnassum", "back": "Giovanni Pierluigi da Palestrina", "work": "Gradus ad Parnassum / Counterpoint Style", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: In Fux's Gradus ad Parnassum, the character Aloysius represents this composer; the student Josephus represents Fux", "back": "Giovanni Pierluigi da Palestrina", "work": "Gradus ad Parnassum / Counterpoint Style", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Key style principle — leaps are countered by stepwise movement in the opposite direction; dissonances fall on weak beats only", "back": "Giovanni Pierluigi da Palestrina", "work": "Gradus ad Parnassum / Counterpoint Style", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: The term 'species counterpoint' was introduced in reference to attempts to imitate this composer's style", "back": "Giovanni Pierluigi da Palestrina", "work": "Gradus ad Parnassum / Counterpoint Style", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: A cycle of 29 motets setting texts from the Song of Solomon (Canticum canticorum)", "back": "Canticum canticorum (Palestrina)", "work": "Song of Solomon Motets (Canticum Canticorum)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Composed over 250 motets and 140 madrigals; said he 'blushed and grieved' over his secular madrigals", "back": "Giovanni Pierluigi da Palestrina", "work": "Song of Solomon Motets (Canticum Canticorum)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: Six-part motet featuring unisons, word painting, and a strong plagal cadence; the first polyphonic setting of this text", "back": "O Magnum Mysterium (Palestrina)", "work": "O Magnum Mysterium (motet)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: Emphasizes the word 'dominum' through homorhythmic repetition before a triple-time Alleluja section", "back": "O Magnum Mysterium (Palestrina)", "work": "O Magnum Mysterium (motet)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Mass", "front": "Mass: Palestrina wrote two of these — one for five voices and one for four voices — based on the secular cantus firmus melody", "back": "L'homme arme Masses (Palestrina)", "work": "L'homme arme Masses", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: An eight-part setting for unaccompanied double chorus; possibly written for Pope Gregory XIV", "back": "Stabat Mater (Palestrina)", "work": "Stabat Mater", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Motet", "front": "Motet: Based on Psalm 42; compares the soul to a deer thirsting for water; features long melismas on the word 'desiderat'", "back": "Sicut Cervus (Palestrina)", "work": "Sicut Cervus (motet)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Appointed by Pope Julius III to direct the Cappella Giulia; later dismissed from the papal choir for being married", "back": "Giovanni Pierluigi da Palestrina", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Resigned from St. John Lateran — for which he had written Lamentations — after a dispute over feeding his choirboys", "back": "Giovanni Pierluigi da Palestrina", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Credited with producing the new 'gradual' promoted by the Cecilian Movement; the Sanctus of Anton Bruckner's Mass in E Minor quotes a theme by this composer", "back": "Giovanni Pierluigi da Palestrina", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: First publication modeled on that of Cristobal de Morales; joined with Annibale Zoilo in a failed attempt to restore the plainsong", "back": "Giovanni Pierluigi da Palestrina", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Mass", "front": "Mass: The Kyrie introduces the recurring motif D–D, D–G–F–E–D", "back": "Pope Marcellus Mass (Palestrina)", "work": "Pope Marcellus Mass (Missa Papae Marcelli)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Mass", "front": "Mass: Named for a pope (Marcellus II) who reigned for only three weeks", "back": "Pope Marcellus Mass (Palestrina)", "work": "Pope Marcellus Mass (Missa Papae Marcelli)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Mass", "front": "Mass: The Tallis Scholars paired this Palestrina work with Allegri's Miserere in their debut recording", "back": "Pope Marcellus Mass (Palestrina)", "work": "Pope Marcellus Mass (Missa Papae Marcelli)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Mass", "front": "Mass: This missa sine nomine may have influenced Bach's Mass in B Minor", "back": "Pope Marcellus Mass (Palestrina)", "work": "Pope Marcellus Mass (Missa Papae Marcelli)", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

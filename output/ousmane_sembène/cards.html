@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Ousmane Semb\u00e8ne";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: El Hadji is cursed with impotence (xala) on his third wedding night; he believes it's a curse for cheating a beggar; ends with beggars spitting on the naked El Hadji", "back": "Xala (Ousmane Sembène)", "work": "Xala (novel and film, 1973/1975)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: El Hadji flaunts his wealth by having his Mercedes washed with imported mineral water; a rival sports a cowboy hat", "back": "Xala (Ousmane Sembène)", "work": "Xala (novel and film, 1973/1975)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Ibrahim Bakayoko leads a strike of workers on the Dakar-Niger Railway; colonial authorities turn off public water fountains; women march from Thiès to Dakar at the climax", "back": "God's Bits of Wood / Les Bouts de bois de Dieu (Ousmane Sembène)", "work": "God's Bits of Wood (Les Bouts de bois de Dieu, 1960)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Diouana, a young Senegalese maid, is exploited by a French couple and kills herself; in the final scene, a boy returns the traditional mask she had given them", "back": "Black Girl / La Noire de... (Ousmane Sembène)", "work": "Black Girl (La Noire de..., 1966)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Sembène's final film; Colle uses moolaade (a protective magic spell) to help women avoid female genital mutilation", "back": "Moolaade (Ousmane Sembène)", "work": "Moolaade (2004)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: a laborer is put on trial for murder after Ginette publishes his award-winning novel about the slave ship Sirius under her own name", "back": "The Black Docker (Ousmane Sembène)", "work": "The Black Docker (novel)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: Senegalese; called the 'father of African cinema'; frequently adapted his own novels to film; trained at Gorky Film Studios under mentor Mark Donskoy", "back": "Ousmane Sembène", "work": "General / Biographical", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: proclaimed 'Why be a sunflower and turn toward the sun? I myself am the sun' when asked if his films were understood in Europe", "back": "Ousmane Sembène", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Director", "front": "Director: several works restored by Martin Scorsese's World Cinema Project; won the Prix Jean Vigo for Black Girl", "back": "Ousmane Sembène", "work": "General / Biographical", "frequency": 3, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

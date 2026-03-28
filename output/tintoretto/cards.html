@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Tintoretto";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: famous diagonal table composition at San Giorgio Maggiore", "back": "The Last Supper (Tintoretto)", "work": "The Last Supper (1592-94)", "frequency": 12, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg/500px-Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg/500px-Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: lit by Christ's halo and a hanging oil lamp surrounded by ghostly translucent angels", "back": "The Last Supper (Tintoretto)", "work": "The Last Supper (1592-94)", "frequency": 12, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg/500px-Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg/500px-Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a cat sniffs inside a basket in the foreground", "back": "The Last Supper (Tintoretto)", "work": "The Last Supper (1592-94)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg/500px-Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg/500px-Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a woman reaches into a basket rather than the meal", "back": "The Last Supper (Tintoretto)", "work": "The Last Supper (1592-94)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg/500px-Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg/500px-Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Saint Mark swoops down from the sky (upside-down) to save a nude man from execution", "back": "The Miracle of the Slave (Tintoretto)", "work": "The Miracle of the Slave / Miracle of St. Mark (1548)", "frequency": 8, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: broken tools (hammer, axe) on the ground", "back": "The Miracle of the Slave (Tintoretto)", "work": "The Miracle of the Slave / Miracle of St. Mark (1548)", "frequency": 8, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: painted for the Scuola Grande di San Marco", "back": "The Miracle of the Slave (Tintoretto)", "work": "The Miracle of the Slave / Miracle of St. Mark (1548)", "frequency": 4, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a man in white turban above broken tools", "back": "The Miracle of the Slave (Tintoretto)", "work": "The Miracle of the Slave / Miracle of St. Mark (1548)", "frequency": 4, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: muscular red-clad figure like Michelangelo's ignudi", "back": "The Miracle of the Slave (Tintoretto)", "work": "The Miracle of the Slave / Miracle of St. Mark (1548)", "frequency": 4, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: often said to be the largest painting on canvas ever", "back": "Il Paradiso (Tintoretto)", "work": "Il Paradiso / Paradise (c. 1588-92)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: over 500 figures in the Doge's Palace (Sala del Maggior Consiglio)", "back": "Il Paradiso (Tintoretto)", "work": "Il Paradiso / Paradise (c. 1588-92)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: won the commission after Veronese couldn't complete it", "back": "Il Paradiso (Tintoretto)", "work": "Il Paradiso / Paradise (c. 1588-92)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: son Domenico helped", "back": "Il Paradiso (Tintoretto)", "work": "Il Paradiso / Paradise (c. 1588-92)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Mary intercedes before Christ", "back": "Il Paradiso (Tintoretto)", "work": "Il Paradiso / Paradise (c. 1588-92)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Michael and Gabriel flank Christ", "back": "Il Paradiso (Tintoretto)", "work": "Il Paradiso / Paradise (c. 1588-92)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: stars shoot from Hera's breast as infant Hercules is pulled away from nursing", "back": "The Origin of the Milky Way (Tintoretto)", "work": "The Origin of the Milky Way (c. 1575)", "frequency": 6, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: eagle carries a crab", "back": "The Origin of the Milky Way (Tintoretto)", "work": "The Origin of the Milky Way (c. 1575)", "frequency": 6, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: two peacocks at lower right", "back": "The Origin of the Milky Way (Tintoretto)", "work": "The Origin of the Milky Way (c. 1575)", "frequency": 6, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a saint stands above his own pale corpse, imploring looters to leave a crypt in Alexandria", "back": "Finding the Body of St. Mark (Tintoretto)", "work": "St. Mark Cycle (Finding/Stealing the Body of St. Mark)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Jacopo_Tintoretto_-_Finding_of_the_body_of_St_Mark.jpg/500px-Jacopo_Tintoretto_-_Finding_of_the_body_of_St_Mark.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Jacopo_Tintoretto_-_Finding_of_the_body_of_St_Mark.jpg/500px-Jacopo_Tintoretto_-_Finding_of_the_body_of_St_Mark.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: cherub with bow; cherub holds chain supporting Hera's arm; net-wielding cherub pursues eagle with thunderbolts", "back": "The Origin of the Milky Way (Tintoretto)", "work": "The Origin of the Milky Way (c. 1575)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Zeus levitates horizontally and holds out the baby; ten gold stars shoot from Hera's breast", "back": "The Origin of the Milky Way (Tintoretto)", "work": "The Origin of the Milky Way (c. 1575)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: originally intended as ceiling painting with cut corners making it octagonal; first mature masterpiece of Tintoretto", "back": "The Miracle of the Slave (Tintoretto)", "work": "The Miracle of the Slave / Miracle of St. Mark (1548)", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: knight of Provence on throne; man was to be blinded for traveling to Alexandria to venerate a saint", "back": "The Miracle of the Slave (Tintoretto)", "work": "The Miracle of the Slave / Miracle of St. Mark (1548)", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: replaced Guariento's Coronation of the Virgin fresco destroyed in the 1577 fire", "back": "Il Paradiso (Tintoretto)", "work": "Il Paradiso / Paradise (c. 1588-92)", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: placed the inscription 'Michelangelo's design and Titian's color' in his studio", "back": "Tintoretto", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: beat out Veronese to decorate the Sala dell'Albergo with St. Roch in Glory", "back": "Tintoretto", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: Mars hides under a table as Vulcan inspects Venus for signs of an affair", "back": "Vulcan Surprises Venus and Mars (Tintoretto)", "work": "Other Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: angel casts light on center while figures are attacked by snakes", "back": "Miracle of the Bronze Serpent (Tintoretto)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: ceiling painting for the Scuola di San Rocco", "back": "Miracle of the Bronze Serpent (Tintoretto)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: two nude women in a gondola, one kissing a knight", "back": "The Deliverance of Arsinoe (Tintoretto)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: women fleeing from Julius Caesar", "back": "The Deliverance of Arsinoe (Tintoretto)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: nicknamed 'Il Furioso'", "back": "Tintoretto", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: 'little dyer' because father was a silk dyer", "back": "Tintoretto", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: briefly studied with Titian but thrown out after three days", "back": "Tintoretto", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Sartre called this painter 'the first film director'", "back": "Tintoretto", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Mariette joked about 'three pencils' (gold, silver, iron)", "back": "Tintoretto", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: daughter Marietta (Tintoretta) produced work indistinguishable from his", "back": "Tintoretto", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: 19th-century painters depicted him painting his dead daughter", "back": "Tintoretto", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "image", "indicator": "Painting", "front": "", "back": "The Last Supper (Tintoretto)", "work": "The Last Supper (1592-94)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg/500px-Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg/500px-Jacopo_Tintoretto_-_The_Last_Supper_-_WGA22649.jpg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "The Miracle of the Slave / Miracle of St. Mark (Tintoretto)", "work": "The Miracle of the Slave / Miracle of St. Mark (1548)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg/500px-Accademia_-_Miracle_of_the_Slave_by_Tintoretto.jpg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "The Origin of the Milky Way (Tintoretto)", "work": "The Origin of the Milky Way (c. 1575)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg/500px-Jacopo_Tintoretto_-_The_Origin_of_the_Milky_Way_-_Google_Art_Project.jpg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "St. Mark Cycle (Tintoretto)", "work": "St. Mark Cycle (Finding/Stealing the Body of St. Mark)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Jacopo_Tintoretto_-_Finding_of_the_body_of_St_Mark.jpg/500px-Jacopo_Tintoretto_-_Finding_of_the_body_of_St_Mark.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Jacopo_Tintoretto_-_Finding_of_the_body_of_St_Mark.jpg/500px-Jacopo_Tintoretto_-_Finding_of_the_body_of_St_Mark.jpg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Il Paradiso / Paradise (Tintoretto)", "work": "Il Paradiso / Paradise (c. 1588-92)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg/500px-%28Venice%29_Jacopo_Tintoretto_-_Gloria_del_Paradiso_-_Sala_del_Maggior_Consiglio.jpg", "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

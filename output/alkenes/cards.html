@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Alkenes";
 let cards = [{"type": "basic", "indicator": "Reaction", "front": "Reaction: McMurry reaction: titanium(III) chloride reductively couples carbonyls to form alkenes (variant of pinacol coupling)", "back": "Named Reactions Forming Alkenes (Alkenes)", "work": "Named Reactions Forming Alkenes", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Wittig reaction: phosphonium ylides react with ketones/aldehydes; favors Z-stereoisomer", "back": "Named Reactions Forming Alkenes (Alkenes)", "work": "Named Reactions Forming Alkenes", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Peterson olefination: alpha-silyl carbanion added to carbonyl, followed by elimination", "back": "Named Reactions Forming Alkenes (Alkenes)", "work": "Named Reactions Forming Alkenes", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Julia reaction: phenyl sulfones react with carbonyl compounds, reduced with sodium amalgam", "back": "Named Reactions Forming Alkenes (Alkenes)", "work": "Named Reactions Forming Alkenes", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Horner-Wadsworth-Emmons (HWE) and Still-Gennari modification: stabilized phosphonate anion + carbonyl; Still-Gennari favors Z-alkenes using KHMDS and 18-crown-6", "back": "Named Reactions Forming Alkenes (Alkenes)", "work": "Named Reactions Forming Alkenes", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Zaitsev's rule: elimination reactions favor the more-substituted alkene (opposite of Hofmann's rule)", "back": "Named Reactions Forming Alkenes (Alkenes)", "work": "Named Reactions Forming Alkenes", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Shapiro, Bamford-Stevens, and Chugaev/Grieco eliminations also produce alkenes", "back": "Named Reactions Forming Alkenes (Alkenes)", "work": "Named Reactions Forming Alkenes", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Grubbs catalyst (ruthenium-based): preferred for metathesis due to air/water stability; second generation contains NHC ligand", "back": "Olefin Metathesis (Alkenes)", "work": "Olefin Metathesis", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Schrock catalyst (molybdenum-based): more active than Grubbs but less stable", "back": "Olefin Metathesis (Alkenes)", "work": "Olefin Metathesis", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Metathesis involves formation of a metallacyclobutane intermediate", "back": "Olefin Metathesis (Alkenes)", "work": "Olefin Metathesis", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Carbenes (neutral carbon with 6 valence electrons) coordinated to Ru in Grubbs catalyst", "back": "Olefin Metathesis (Alkenes)", "work": "Olefin Metathesis", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Markovnikov's rule: addition of HX/water gives the more-substituted product", "back": "Addition Reactions to Alkenes (Alkenes)", "work": "Addition Reactions to Alkenes", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Anti-Markovnikov: hydroboration-oxidation (BH3 in THF) gives anti-Markovnikov alcohol", "back": "Addition Reactions to Alkenes (Alkenes)", "work": "Addition Reactions to Alkenes", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Oxymercuration-demercuration: mercury acetate + water, then NaBH4; Markovnikov alcohol without rearrangements", "back": "Addition Reactions to Alkenes (Alkenes)", "work": "Addition Reactions to Alkenes", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Bromine test: alkenes decolorize a solution of liquid bromine (canonical test for unsaturation)", "back": "Addition Reactions to Alkenes (Alkenes)", "work": "Addition Reactions to Alkenes", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Epoxidation: peroxyacids convert alkenes to epoxides; Shi epoxidation uses ketone catalyst + Oxone", "back": "Addition Reactions to Alkenes (Alkenes)", "work": "Addition Reactions to Alkenes", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Sharpless asymmetric dihydroxylation: OsO4 + chiral quinine ligand → diols", "back": "Addition Reactions to Alkenes (Alkenes)", "work": "Addition Reactions to Alkenes", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Prevost and Woodward reactions: iodine + silver benzoate/acetate for diols", "back": "Addition Reactions to Alkenes (Alkenes)", "work": "Addition Reactions to Alkenes", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Carbenes add to alkenes to make cyclopropanes", "back": "Addition Reactions to Alkenes (Alkenes)", "work": "Addition Reactions to Alkenes", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Radical initiators (peroxides) reverse regioselectivity: anti-Markovnikov HBr addition", "back": "Addition Reactions to Alkenes (Alkenes)", "work": "Addition Reactions to Alkenes", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Alkene acts as the dienophile reacting with a conjugated diene to form cyclohexene", "back": "Diels-Alder Reaction (Alkenes)", "work": "Diels-Alder Reaction", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Woodward-Hoffmann rules explain stereochemistry of pericyclic reactions including Diels-Alder", "back": "Diels-Alder Reaction (Alkenes)", "work": "Diels-Alder Reaction", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Reaction", "front": "Reaction: Bredt's rule: double bond cannot be placed at the bridgehead of bridged rings (angle/ring strain)", "back": "Diels-Alder Reaction (Alkenes)", "work": "Diels-Alder Reaction", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Dewar-Chatt-Duncanson model: describes how alkenes donate sigma electrons to metals and accept pi electrons (backbonding)", "back": "Transition Metal Complexes with Alkenes (Alkenes)", "work": "Transition Metal Complexes with Alkenes", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Zeise's salt: platinum bonded to three chlorines + one ethylene; first organometallic compound", "back": "Transition Metal Complexes with Alkenes (Alkenes)", "work": "Transition Metal Complexes with Alkenes", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Pi backbonding increases bond length of coordinated alkenes compared to free alkenes", "back": "Transition Metal Complexes with Alkenes (Alkenes)", "work": "Transition Metal Complexes with Alkenes", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Alkene-metal complexes resemble cyclopropane rings", "back": "Transition Metal Complexes with Alkenes (Alkenes)", "work": "Transition Metal Complexes with Alkenes", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Ziegler-Natta catalysts polymerize alkenes", "back": "Transition Metal Complexes with Alkenes (Alkenes)", "work": "Transition Metal Complexes with Alkenes", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Can't rotate → configurational isomerism denoted E-Z or cis-trans", "back": "Cis-Trans / E-Z Isomerism (Alkenes)", "work": "Cis-Trans / E-Z Isomerism", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Unsaturated fatty acids have bent shape ('unsaturated')", "back": "Cis-Trans / E-Z Isomerism (Alkenes)", "work": "Cis-Trans / E-Z Isomerism", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Cis-trans isomerization breaks stiff pi bond, allowing 180° rotation", "back": "Cis-Trans / E-Z Isomerism (Alkenes)", "work": "Cis-Trans / E-Z Isomerism", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Retinal cis-trans isomerization triggers opsin in the retina (vision)", "back": "Cis-Trans / E-Z Isomerism (Alkenes)", "work": "Cis-Trans / E-Z Isomerism", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Ethylene: simplest alkene (C2H4); plant hormone that stimulates flower development and fruit ripening", "back": "Industrial / Biological Applications (Alkenes)", "work": "Industrial / Biological Applications", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Hydroformylation: aldehydes synthesized industrially by carbonylating alkenes (cobalt + 4 CO ligands)", "back": "Industrial / Biological Applications (Alkenes)", "work": "Industrial / Biological Applications", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Wacker process: ethylene oxidized to acetaldehyde using PdCl2 catalyst, regenerated with CuCl2", "back": "Industrial / Biological Applications (Alkenes)", "work": "Industrial / Biological Applications", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: HFC refrigerants with alkene structures have reduced global warming potential", "back": "Industrial / Biological Applications (Alkenes)", "work": "Industrial / Biological Applications", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Conjugated polyenes serve as chromophores; absorbance modeled as particle in a box", "back": "Industrial / Biological Applications (Alkenes)", "work": "Industrial / Biological Applications", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: 2000 Nobel (Heeger, MacDiarmid, Shirakawa): conductive polymer containing alkenes (polyacetylene)", "back": "Industrial / Biological Applications (Alkenes)", "work": "Industrial / Biological Applications", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Also known as olefins", "back": "Alkenes", "work": "General / Giveaway Identifiers", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Contain sp2-hybridized carbon atoms", "back": "Alkenes", "work": "General / Giveaway Identifiers", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: General formula CnH2n", "back": "Alkenes", "work": "General / Giveaway Identifiers", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Compounds with 1,5-pattern of two alkenes undergo [3,3]-sigmatropic rearrangement (Cope)", "back": "Alkenes", "work": "General / Giveaway Identifiers", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

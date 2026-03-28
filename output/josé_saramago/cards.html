@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Jos\u00e9 Saramago";
 let cards = [{"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the doctor's wife is the only person immune to an epidemic of 'white sickness' that blinds an entire city", "back": "Blindness (Saramago)", "work": "Blindness", "frequency": 15, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: characters in this novel include 'the girl with the dark glasses,' 'the old man with the black eye patch,' and 'the boy with the squint'", "back": "Blindness (Saramago)", "work": "Blindness", "frequency": 8, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, a car thief develops a leg infection after being kicked with a stiletto heel by the girl with dark glasses", "back": "Blindness (Saramago)", "work": "Blindness", "frequency": 6, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the doctor's wife stabs the 'King of Ward Three' in the neck with a pair of scissors after he demands women sleep with his ward's men for food", "back": "Blindness (Saramago)", "work": "Blindness", "frequency": 6, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, a 'dog of tears' comforts the protagonist by licking her face in the rain and joins her group; the dog later kills and eats an old woman's hen", "back": "Blindness (Saramago)", "work": "Blindness", "frequency": 6, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: this novel opens with a man who fails to drive at a green stoplight — the first victim of the title condition", "back": "Blindness (Saramago)", "work": "Blindness", "frequency": 2, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, blood mixes with milk after soldiers shoot internees escaping from a mental hospital", "back": "Blindness (Saramago)", "work": "Blindness", "frequency": 1, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the protagonist discovers that statues of saints in a church have had their eyes covered with paint or cloth", "back": "Blindness (Saramago)", "work": "Blindness", "frequency": 2, "tags": []}, {"type": "clue", "indicator": "Author", "front": "Author: this author used his dog Camões as inspiration for the 'dog of tears' character in his most famous novel", "back": "José Saramago", "work": "Blindness", "frequency": 1, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this sequel to Blindness, 83% of voters turn in blank ballots; the government brands them as terrorists", "back": "Seeing (Saramago)", "work": "Seeing", "frequency": 4, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, death is personified as a woman with a lowercase-'d' name who sends violet-colored letters one week before people die, then falls in love with a cellist who keeps returning her letters", "back": "Death with Interruptions (Saramago)", "work": "Death with Interruptions", "frequency": 5, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, a non-Italian 'maphia' (spelled with 'ph') smuggles people across a country's borders so they can die, and offers funeral directors protection from 'eternal life activists'", "back": "Death with Interruptions (Saramago)", "work": "Death with Interruptions", "frequency": 4, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, a character nicknamed 'fifty-eight seconds' is so named for his love of Chopin's Butterfly étude", "back": "Death with Interruptions (Saramago)", "work": "Death with Interruptions", "frequency": 1, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, Jesus is apprenticed to a shepherd who is the Devil in disguise and is forced to sacrifice his favorite sheep", "back": "The Gospel According to Jesus Christ (Saramago)", "work": "The Gospel According to Jesus Christ", "frequency": 5, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, Jesus meets an old man and a shepherd — who turn out to be God and Satan — in the middle of a lake", "back": "The Gospel According to Jesus Christ (Saramago)", "work": "The Gospel According to Jesus Christ", "frequency": 2, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, Jesus's father is executed after trying to help Ananias, and the protagonist claims his father's sandals", "back": "The Gospel According to Jesus Christ (Saramago)", "work": "The Gospel According to Jesus Christ", "frequency": 3, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, a Pessoa heteronym returns to Lisbon from Brazil and frequently converses with Pessoa's ghost", "back": "The Year of the Death of Ricardo Reis (Saramago)", "work": "The Year of the Death of Ricardo Reis", "frequency": 8, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the protagonist has affairs with the chambermaid Lydia and the socialite Marcenda, whose paralyzed arm is treated by her father to cover visits to his mistress", "back": "The Year of the Death of Ricardo Reis (Saramago)", "work": "The Year of the Death of Ricardo Reis", "frequency": 4, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: this novel ends with the protagonist putting on his jacket and walking to a cemetery to follow Pessoa's ghost", "back": "The Year of the Death of Ricardo Reis (Saramago)", "work": "The Year of the Death of Ricardo Reis", "frequency": 2, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the Iberian Peninsula breaks off from Europe and floats across the Atlantic after Joana Carda's actions", "back": "The Stone Raft (Saramago)", "work": "The Stone Raft", "frequency": 5, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: this author's final novel reimagines the Biblical title character as a time traveler who becomes Lilith's lover and stops Abraham from sacrificing Isaac", "back": "Cain (Saramago)", "work": "Cain", "frequency": 2, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the time-traveling protagonist witnesses God's cruelty, including the destruction of Sodom and Gomorrah, and is ultimately doomed to live alone after killing everyone on Noah's Ark", "back": "Cain (Saramago)", "work": "Cain", "frequency": 2, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the bureaucrat Senhor José works at the 'Central Registry of Births, Marriages, and Deaths' and becomes obsessed with an unknown woman after accidentally grabbing her index card", "back": "All the Names (Saramago)", "work": "All the Names", "frequency": 3, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, a Mesopotamia-obsessed history teacher named Tertuliano discovers his doppelgänger while watching a film", "back": "The Double (Saramago)", "work": "The Double", "frequency": 3, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, the proofreader Raimundo Silva inserts the word 'not' into a medieval history manuscript and falls in love with his supervisor Dr. Maria Sara", "back": "The History of the Siege of Lisbon (Saramago)", "work": "The History of the Siege of Lisbon", "frequency": 2, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, Bartholomew Lorenzo invents the Passarola, a flying machine used by the title lovers to escape the Inquisition", "back": "Baltasar and Blimunda (Saramago)", "work": "Baltasar and Blimunda", "frequency": 1, "tags": []}, {"type": "clue", "indicator": "Novel", "front": "Novel: in this novel, King João III sends an elephant named Solomon to Archduke Maximilian; Solomon's keeper Subhro has his name changed to Fritz in Austria", "back": "The Elephant's Journey (Saramago)", "work": "The Elephant's Journey", "frequency": 2, "tags": []}, {"type": "clue", "indicator": "Author", "front": "Author: this author's first novel, about a widow who has an affair with her brother-in-law, was retitled Land of Sin", "back": "José Saramago", "work": "Other Works and General", "frequency": 1, "tags": []}, {"type": "clue", "indicator": "Author", "front": "Author: Margaret Jull Costa is the principal English translator of this Portuguese author, winning awards for translations of All the Names and The Elephant's Journey", "back": "José Saramago", "work": "Other Works and General", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

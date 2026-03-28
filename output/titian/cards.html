@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Titian";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: reclining nude on a bed; a maid rummages through a chest behind a sleeping dog", "back": "Venus of Urbino (Titian)", "work": "Venus of Urbino (1538)", "frequency": 8, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg/500px-Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg/500px-Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Venus of Urbino (Titian)", "work": "Venus of Urbino (1538)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg/500px-Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg/500px-Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Manet's Olympia (modeled by Victorine Meurent) adopted the pose of this painting", "back": "Venus of Urbino (Titian)", "work": "Venus of Urbino (1538)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg/500px-Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a potted myrtle plant sits above a woman in white searching through a chest in the background", "back": "Venus of Urbino (Titian)", "work": "Venus of Urbino (1538)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg/500px-Titian_-_Venus_with_a_Mirror_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: commissioned for Niccolò Aurelio's wedding to Laura Bagarotto; a clothed and a nude woman flank a sarcophagus with Cupid dipping his hand in it", "back": "Sacred and Profane Love (Titian)", "work": "Sacred and Profane Love", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: men hunt a hare in the background; Friedlaender suggested it may have been inspired by Hypnerotomachia Poliphili", "back": "Sacred and Profane Love (Titian)", "work": "Sacred and Profane Love", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: Bacchus leaps from a chariot drawn by two cheetahs to encounter a woman on Naxos; Corona Borealis in the ultramarine sky", "back": "Bacchus and Ariadne (Titian)", "work": "Bacchus and Ariadne (1520–23)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Titian_Bacchus_and_Ariadne.jpg/500px-Titian_Bacchus_and_Ariadne.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Titian_Bacchus_and_Ariadne.jpg/500px-Titian_Bacchus_and_Ariadne.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: sources are Ovid and Catullus; a man wrapped with a snake and a woman clashing cymbals march behind the title god", "back": "Bacchus and Ariadne (Titian)", "work": "Bacchus and Ariadne (1520–23)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Titian_Bacchus_and_Ariadne.jpg/500px-Titian_Bacchus_and_Ariadne.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Bacchus and Ariadne (Titian)", "work": "Bacchus and Ariadne (1520–23)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Titian_Bacchus_and_Ariadne.jpg/500px-Titian_Bacchus_and_Ariadne.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Titian_Bacchus_and_Ariadne.jpg/500px-Titian_Bacchus_and_Ariadne.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: in the Frari Basilica; St. Peter's keys rest on marble steps next to a turbaned prisoner of war; two offset columns with Cupids frolicking on top", "back": "Pesaro Madonna (Titian)", "work": "Pesaro Madonna", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: the Virgin ascends in a twisted spiral pose on clouds; a man in red with his back turned reaches upward; apostles modeled on poor fishermen", "back": "Assumption of the Virgin (Titian)", "work": "Assumption of the Virgin", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: a cherub rides a fish as the title woman waves a pink cloth and grabs the horn of a white bull", "back": "Rape of Europa (Titian)", "work": "Poesie Paintings for Philip II (Rape of Europa, Danaë, Diana and Actaeon, etc.)", "frequency": 6, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Tizian_085.jpg/500px-Tizian_085.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg/500px-Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Rape of Europa (Titian)", "work": "Poesie Paintings for Philip II (Rape of Europa, Danaë, Diana and Actaeon, etc.)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Tizian_085.jpg/500px-Tizian_085.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg/500px-Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: the original is in the Isabella Stewart Gardner Museum; Rubens made a copy with gloomier colors on a trip to Spain", "back": "Rape of Europa (Titian)", "work": "Poesie Paintings for Philip II (Rape of Europa, Danaë, Diana and Actaeon, etc.)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg/500px-Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Velázquez's Las Hilanderas contains a tapestry copy of it in the background", "back": "Rape of Europa (Titian)", "work": "Poesie Paintings for Philip II (Rape of Europa, Danaë, Diana and Actaeon, etc.)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg/500px-Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a maid watches a gold cloud approach a reclining nude; first version painted for the Farnese family", "back": "Danaë (Titian)", "work": "Poesie Paintings for Philip II (Rape of Europa, Danaë, Diana and Actaeon, etc.)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg/500px-Titian_-_Perseus_and_Andromeda_-_WGA22891.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: depicts a gouty emperor in full armor on horseback at the Battle of Mühlberg", "back": "Equestrian Portrait of Charles V (Titian)", "work": "Equestrian Portrait of Charles V (1548)", "frequency": 4, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Carlos_V_en_M%C3%BChlberg%2C_by_Titian%2C_from_Prado_in_Google_Earth.jpg/500px-Carlos_V_en_M%C3%BChlberg%2C_by_Titian%2C_from_Prado_in_Google_Earth.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Carlos_V_en_M%C3%BChlberg%2C_by_Titian%2C_from_Prado_in_Google_Earth.jpg/500px-Carlos_V_en_M%C3%BChlberg%2C_by_Titian%2C_from_Prado_in_Google_Earth.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Equestrian Portrait of Charles V (Titian)", "work": "Equestrian Portrait of Charles V (1548)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Carlos_V_en_M%C3%BChlberg%2C_by_Titian%2C_from_Prado_in_Google_Earth.jpg/500px-Carlos_V_en_M%C3%BChlberg%2C_by_Titian%2C_from_Prado_in_Google_Earth.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Carlos_V_en_M%C3%BChlberg%2C_by_Titian%2C_from_Prado_in_Google_Earth.jpg/500px-Carlos_V_en_M%C3%BChlberg%2C_by_Titian%2C_from_Prado_in_Google_Earth.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a dog laps blood from a pail beneath the upside-down title figure tied to a tree; Titian's self-portrait as Midas watches Apollo draw blood", "back": "The Flaying of Marsyas (Titian)", "work": "The Flaying of Marsyas", "frequency": 4, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Titian_-_The_Flaying_of_Marsyas.jpg/500px-Titian_-_The_Flaying_of_Marsyas.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Titian_-_The_Flaying_of_Marsyas.jpg/500px-Titian_-_The_Flaying_of_Marsyas.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Iris Murdoch's favorite painting; found in the Kromeriz National Museum; a woman plays violin sadly on the left", "back": "The Flaying of Marsyas (Titian)", "work": "The Flaying of Marsyas", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Titian_-_The_Flaying_of_Marsyas.jpg/500px-Titian_-_The_Flaying_of_Marsyas.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "The Flaying of Marsyas (Titian)", "work": "The Flaying of Marsyas", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Titian_-_The_Flaying_of_Marsyas.jpg/500px-Titian_-_The_Flaying_of_Marsyas.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Titian_-_The_Flaying_of_Marsyas.jpg/500px-Titian_-_The_Flaying_of_Marsyas.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: subject leans a blue quilted sleeve over a parapet; Vasari incorrectly claimed it depicted Ariosto", "back": "Man with a Quilted Sleeve (Titian)", "work": "Portrait of a Man with a Blue Sleeve / Man with a Quilted Sleeve", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg/500px-Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg/500px-Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: quoted by Rembrandt's Self-portrait at the Age of 40", "back": "Man with a Quilted Sleeve (Titian)", "work": "Portrait of a Man with a Blue Sleeve / Man with a Quilted Sleeve", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg/500px-Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Portrait of a Man with a Blue Sleeve / Man with a Quilted Sleeve (Titian)", "work": "Portrait of a Man with a Blue Sleeve / Man with a Quilted Sleeve", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg/500px-Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg/500px-Titian_-_Portrait_of_a_man_with_a_quilted_sleeve.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: heads of a dog, lion, and wolf under heads of a youth, mature man, and old man; represents a cardinal virtue", "back": "Allegory of Prudence (Titian)", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: parodied the Laocoon group by replacing its figures with apes in a print", "back": "Titian", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Van Dyck collected 19 of this artist's works and hung them in a 'Cabinet de Titien' in his studio", "back": "Titian", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: artists from this person's studio created over 250 woodcuts illustrating Vesalius's De Humani Corporis Fabrica", "back": "Titian", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: depicted Isabella d'Este at age 62 as a baby-faced, curly-haired young woman; she wore a balzo headdress and ermine zibellino", "back": "Titian", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: late work depicts a man in red brandishing a knife at the nude title figure", "back": "Tarquin and Lucretia (Titian)", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: briefly taught Tintoretto, who was expelled from the studio after three days", "back": "Titian", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

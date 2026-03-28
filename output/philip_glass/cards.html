@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Philip Glass";
 let cards = [{"type": "basic", "indicator": "Composer", "front": "Composer: American minimalist, most-performed living American composer; leads the Philip Glass Ensemble; studied with Nadia Boulanger and Vincent Persichetti", "back": "Philip Glass", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: composed Music in Twelve Parts for his ensemble — the title refers to 12 musical lines, not movements, after a friend's misunderstanding", "back": "Philip Glass", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: the David Ives play Philip Glass Buys a Loaf of Bread (in All in the Timing) parodies his minimalist style with lines like 'Go! Go! Go! Time! Time! Time!'", "back": "Philip Glass", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: nominated for an Academy Award for The Hours; also scored Kundun (Scorsese) and collaborated with Errol Morris on A Brief History of Time and The Thin Blue Line", "back": "Philip Glass", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: five-hour work with no plot; audience may come and go freely; created with Robert Wilson; first in the Portrait Trilogy", "back": "Einstein on the Beach (Philip Glass)", "work": "Einstein on the Beach", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: divided into acts 'Train,' 'Trial,' and 'Field/Spaceship' separated by five 'Knee Plays' in which chorus members count numbers and chant solfege syllables", "back": "Einstein on the Beach (Philip Glass)", "work": "Einstein on the Beach", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: a solo violinist is dressed as Einstein throughout; section 'Prematurely Air-Conditioned Supermarket' uses text by Lucinda Childs read from a bed", "back": "Einstein on the Beach (Philip Glass)", "work": "Einstein on the Beach", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: about Gandhi; sung entirely in Sanskrit; third act contains the 'Newcastle March'; second in the Portrait Trilogy", "back": "Satyagraha (Philip Glass)", "work": "Satyagraha", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: about the pharaoh Akhenaten; title role is a countertenor (sings higher than his contralto wife Nefertiti); offstage chorus sings Psalm 104; lacks violins; third in the Portrait Trilogy", "back": "Akhnaten (Philip Glass)", "work": "Akhnaten", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Act II 'Hymn to the Sun' ('Thou dost appear beautiful') is always performed in the audience's native language; libretto uses Hebrew, Akkadian, and ancient Egyptian", "back": "Akhnaten (Philip Glass)", "work": "Akhnaten", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Phelim McDermott's staging uses juggling background performers; Act III features a tour guide declaring 'there is nothing left' of the title figure's temples", "back": "Akhnaten (Philip Glass)", "work": "Akhnaten", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Tone Poem", "front": "Film score: Godfrey Reggio film; title means 'life out of balance' in Hopi; bass vocalists chant the five-syllable title over an ominous descending organ ostinato; 'Pruit Igoe' track plays during the demolition of the Pruitt–Igoe housing complex", "back": "Koyaanisqatsi (Philip Glass)", "work": "Koyaanisqatsi (Film Score)", "frequency": 9, "tags": []}, {"type": "basic", "indicator": "Symphony", "front": "Symphonies: Low Symphony and Heroes Symphony are based on David Bowie's Berlin Trilogy albums; Symphony No. 12 (based on Lodger) premiered in 2019", "back": "Philip Glass", "work": "Low Symphony and Heroes Symphony", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "String Quartet", "front": "String Quartet: No. 2 ('Company') based on Beckett's novella Company; No. 3 ('Mishima') extracted from Mishima film score; nine total; Kronos Quartet recorded them", "back": "Philip Glass", "work": "String Quartets", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Suite", "front": "Album: six-movement chamber work including 'Floe,' 'Island,' 'Rubric,' and 'Facades'; Glass created a special 'Sony Walkman mix' for it", "back": "Glassworks (Philip Glass)", "work": "Glassworks", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: one-person work about a man named 'M' who claims to have met aliens; set on a holographic stage; created with David Henry Hwang", "back": "1000 Airplanes on the Roof (Philip Glass)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Pearl Jam typically opens concerts with his piano piece 'Metamorphosis Two'; Mad Rush was inspired by the Dalai Lama's visit to New York", "back": "Philip Glass", "work": "Other Works", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

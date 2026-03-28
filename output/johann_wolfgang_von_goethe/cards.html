@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Johann Wolfgang von Goethe";
 let cards = [{"type": "basic", "indicator": "Play", "front": "Play: the protagonist bets he will not tell the passing moment 'tarry awhile, thou art so fair'", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the female lead sings 'My peace is gone, my heart is sore' at her spinning wheel, inspiring Schubert's 'Gretchen am Spinnrade'", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: ends by invoking the 'eternal feminine' that 'draws us on high'", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the title scholar dances with witches on Walpurgis Night and encounters a homunculus", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: in Part II, the title character has a child with Helen of Troy", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the female lead sings 'The King in Thule,' in which a golden goblet is tossed into the tide at a king's death", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: includes a prologue in the theater and a prologue in Heaven", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Simon Magus appears on paper money in Part II", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Delacroix published lithographs illustrating it in 1828; Harry Clarke made Art Nouveau illustrations in 1925", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Hugo Wolf wrote 51 art songs based on the author's texts, opening with three settings of 'The Harp Player'", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Mahler's Symphony of a Thousand uses texts from Part II for the holy anchorites sung by chorus", "back": "Faust (Johann Wolfgang von Goethe)", "work": "Faust", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist cries when the woman he loves says the name 'Klopstock'", "back": "The Sorrows of Young Werther (Johann Wolfgang von Goethe)", "work": "The Sorrows of Young Werther", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist bonds with the woman he loves over their mutual appreciation of Goldsmith and Klopstock", "back": "The Sorrows of Young Werther (Johann Wolfgang von Goethe)", "work": "The Sorrows of Young Werther", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Friedrich Nicolai parodied this work by adding chicken's blood to the suicide scene", "back": "The Sorrows of Young Werther (Johann Wolfgang von Goethe)", "work": "The Sorrows of Young Werther", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist receives a pink ribbon in the mail", "back": "The Sorrows of Young Werther (Johann Wolfgang von Goethe)", "work": "The Sorrows of Young Werther", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the title figure promises 'my daughters shall tend thee with sisterly care' to a boy riding on horseback with his father", "back": "Der Erlkonig (Johann Wolfgang von Goethe)", "work": "Der Erlkonig", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the father dismisses his son's fears by saying ''tis the aged grey willows deceiving thy sight' and 'it's a streak of fog'", "back": "Der Erlkonig (Johann Wolfgang von Goethe)", "work": "Der Erlkonig", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Schubert's setting opens with G octaves in the piano's right hand", "back": "Der Erlkonig (Johann Wolfgang von Goethe)", "work": "Der Erlkonig", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the first poem commands 'Tell me you stones, O speak, you towering palaces!' in a cycle of 24 sensual poems originally titled Erotica", "back": "Roman Elegies (Johann Wolfgang von Goethe)", "work": "Italian Journey / Roman Elegies / Venetian Epigrams", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Tischbein painted the author reclining on a rock slab 'in the Roman Campagna' next to a relief of Iphigenia's sacrifice", "back": "Italian Journey (Johann Wolfgang von Goethe)", "work": "Italian Journey / Roman Elegies / Venetian Epigrams", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: a travelogue with the epigraph 'I, too in Arcadia,' recounting a 1786-88 journey", "back": "Italian Journey (Johann Wolfgang von Goethe)", "work": "Italian Journey / Roman Elegies / Venetian Epigrams", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the fourth poem imagines people questioning the author about a suicidal character from another novel", "back": "Roman Elegies (Johann Wolfgang von Goethe)", "work": "Italian Journey / Roman Elegies / Venetian Epigrams", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: dedicated to Christiane Vulpius; Angelica Kauffman painted a portrait of the author in Rome during this period", "back": "Roman Elegies (Johann Wolfgang von Goethe)", "work": "Italian Journey / Roman Elegies / Venetian Epigrams", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: inspired by Joseph Hammer-Purgstall's translation of Hafez and an affair with Marianne von Willemer; uses ghazals", "back": "West-Eastern Divan (Johann Wolfgang von Goethe)", "work": "West-Eastern Divan", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: features conversations between the lovers Hatem and Suleika; each of its twelve books has a Persian and German title", "back": "West-Eastern Divan (Johann Wolfgang von Goethe)", "work": "West-Eastern Divan", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the romantic attractions between two couples are explained through chemical double-displacement reactions; Captain Otto and Ottilie are invited to a Weimar home", "back": "Elective Affinities (Johann Wolfgang von Goethe)", "work": "Elective Affinities", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: a woman drops her baby cousin while pushing a rowboat into a lake, causing the baby to drown", "back": "Elective Affinities (Johann Wolfgang von Goethe)", "work": "Elective Affinities", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: inspired by an aphorism about people who 'mix like water and wine' or 'separate like water and oil'; Walter Benjamin wrote an essay on it", "back": "Elective Affinities (Johann Wolfgang von Goethe)", "work": "Elective Affinities", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the protagonist plays Hamlet in an acting troupe after being rejected by Mariane, and eventually joins the Tower Society", "back": "Wilhelm Meister's Apprenticeship (Johann Wolfgang von Goethe)", "work": "Wilhelm Meister novels", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the character Mignon sings 'Do you know the land where the lemon trees bloom?'", "back": "Wilhelm Meister's Apprenticeship (Johann Wolfgang von Goethe)", "work": "Wilhelm Meister novels", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Mignon also sings 'None but the Lonely Heart' ('Nur wer die Sehnsucht kennt')", "back": "Wilhelm Meister's Apprenticeship (Johann Wolfgang von Goethe)", "work": "Wilhelm Meister novels", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Mignon is first introduced as a child purchased from a theatre troupe; she later performs an egg dance", "back": "Wilhelm Meister's Apprenticeship (Johann Wolfgang von Goethe)", "work": "Wilhelm Meister novels", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: 'Over all hilltops is peace... in all the treetops / hearest thou / hardly a breath'; ends with 'soon thou too shalt rest'", "back": "Wanderer's Nightsong (Johann Wolfgang von Goethe)", "work": "Wanderer's Nightsong", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the author inscribed the lines of the second poem on the walls of a cabin", "back": "Wanderer's Nightsong (Johann Wolfgang von Goethe)", "work": "Wanderer's Nightsong", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: written after a 73-year-old author proposed to 17-year-old Ulrike von Levetzow and was rejected; forms the second part of a 'Trilogy of Passion'", "back": "Marienbad Elegy (Johann Wolfgang von Goethe)", "work": "Marienbad Elegy", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: contains the lines 'They urged me to those lips, with rapture crowned / Deserted me, and hurled me to the ground'", "back": "Marienbad Elegy (Johann Wolfgang von Goethe)", "work": "Marienbad Elegy", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a magic broom is instructed to fetch pails of water and floods a workshop; the apprentice futilely cuts the broom in half", "back": "The Sorcerer's Apprentice (Johann Wolfgang von Goethe)", "work": "The Sorcerer's Apprentice", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: source of the idiom 'the spirits that I called'; set to music by Paul Dukas", "back": "The Sorcerer's Apprentice (Johann Wolfgang von Goethe)", "work": "The Sorcerer's Apprentice", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: an anti-Newtonian treatise; associated with a triangle of nine segments using labels like 'unnecessary'", "back": "Theory of Colors (Johann Wolfgang von Goethe)", "work": "Theory of Colors / Scientific Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Wittgenstein's Remarks on Colour expands on ideas from this treatise; Turner referenced it in a painting about the morning after the flood", "back": "Theory of Colors (Johann Wolfgang von Goethe)", "work": "Theory of Colors / Scientific Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: posits a primordial 'Urpflanze' from which all plant life developed", "back": "The Metamorphosis of Plants (Johann Wolfgang von Goethe)", "work": "Theory of Colors / Scientific Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a moth consumed by a flame; speaker writes 'You remain no longer caught / In the penumbral gloom'", "back": "Blessed Longing (Johann Wolfgang von Goethe)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a temple prostitute is deified for committing sati after discovering an avatar of Shiva in her bed", "back": "The God and the Bayadere (Johann Wolfgang von Goethe)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: ends with 'yet, to be loved, what happiness! / What happiness, ye gods, to love!' after describing a horseback ride to a nighttime tryst", "back": "Welcome and Farewell (Johann Wolfgang von Goethe)", "work": "Other Poems", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a boy picks a rosebud despite its promise to prick him", "back": "Heidenroslein (Johann Wolfgang von Goethe)", "work": "Other Poems", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: ends with Freedom visiting Klarchen's lover in jail; Beethoven composed the overture", "back": "Egmont (Johann Wolfgang von Goethe)", "work": "Egmont / Gotz von Berlichingen", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: called out 'more light! more light!' on his deathbed", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: secretary Eckermann recorded nine years of his table talk; he quipped 'architecture is frozen music' and advanced a notion of the 'Daemonic'", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: declared 'the classical I call healthy, and the romantic sickly'", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: coined the phrase 'the epoch of world literature is at hand' while comparing a Chinese novel to one of his own works", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: defined a novella as telling of a 'single remarkable event'", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: during an interview with Napoleon, Pierre Daru mentioned his translation of Voltaire's Mahomet, and Napoleon responded 'That is an awful play'", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: first published Diderot's Rameau's Nephew in a German translation", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: a pioneer of the Innerlichkeit style; worked for the Duke of Saxe-Weimar, who ennobled him", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote the story 'The Green Snake and the Beautiful Lily,' informed by an interest in alchemy", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: a section of Nabokov's 'Pale Fire' quotes him after the line 'And now what shall I do? My knight is pinned'", "back": "Johann Wolfgang von Goethe", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

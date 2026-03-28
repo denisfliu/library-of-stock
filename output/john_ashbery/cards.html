@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "John Ashbery";
 let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: ekphrastic meditation on a Parmigianino painting", "back": "Self-Portrait in a Convex Mirror (John Ashbery)", "work": "Self-Portrait in a Convex Mirror", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes \"the right hand / Bigger than the head, thrust at the viewer\"", "back": "Self-Portrait in a Convex Mirror (John Ashbery)", "work": "Self-Portrait in a Convex Mirror", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: notes \"the glass chose to reflect only what he saw\" and ends \"in cold pockets of remembrance, whispers out of time\"", "back": "Self-Portrait in a Convex Mirror (John Ashbery)", "work": "Self-Portrait in a Convex Mirror", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: inspired a Pulitzer-winning piece for string orchestra by Roger Reynolds titled Whispers Out of Time", "back": "Self-Portrait in a Convex Mirror (John Ashbery)", "work": "Self-Portrait in a Convex Mirror", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: first collection that won the Yale Younger Poets Prize (1956)", "back": "Some Trees (John Ashbery)", "work": "Some Trees", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: W.H. Auden admitted to not understanding a word of it", "back": "Some Trees (John Ashbery)", "work": "Some Trees", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: title poem says \"you and I / Are suddenly what the trees try / To tell us we are: / That their merely being there / Means something\"", "back": "Some Trees (John Ashbery)", "work": "Some Trees", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: contains long poem \"Europe\" divided into 111 numbered sections", "back": "The Tennis Court Oath (John Ashbery)", "work": "The Tennis Court Oath", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: known for extreme experimentalism", "back": "The Tennis Court Oath (John Ashbery)", "work": "The Tennis Court Oath", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: book-length ekphrasis inspired by outsider artist Henry Darger; features the Vivians", "back": "Girls on the Run (John Ashbery)", "work": "Girls on the Run", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: titled for a dictum from Horace's Ars Poetica", "back": "And Ut Pictura Poesis Is Her Name (John Ashbery)", "work": "And Ut Pictura Poesis Is Her Name", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes poetry as \"the extreme austerity of an almost empty mind / Colliding with the lush, Rousseau-like foliage of its desire to communicate\"", "back": "And Ut Pictura Poesis Is Her Name (John Ashbery)", "work": "And Ut Pictura Poesis Is Her Name", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: co-edited Roussel-inspired literary journal Locus Solus with Kenneth Koch and James Schuyler", "back": "John Ashbery", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: translated Rimbaud's Illuminations", "back": "John Ashbery", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: drew from death of younger brother Richard in \"The History of My Life\" — \"Once upon a time there were two brothers / Then there was only one: myself\"", "back": "John Ashbery", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Ben Lerner's Leaving the Atocha Station titled for one of his poems", "back": "John Ashbery", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: its protagonist carries his Collected Poems", "back": "John Ashbery", "work": "General / Biographical", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

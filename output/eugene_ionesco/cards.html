@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Eugene Ionesco";
 let cards = [{"type": "basic", "indicator": "Play", "front": "Play: Jean's skin turns green as he transforms; the typist Daisy leaves the protagonist; a logician proves a dog is a cat using a syllogism", "back": "Rhinoceros (Eugene Ionesco)", "work": "Rhinoceros", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: satirizes French behavior under German occupation; the green skin of the title creatures represents Iron Guard and Orpo uniforms", "back": "Rhinoceros (Eugene Ionesco)", "work": "Rhinoceros", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: an 'anti-play' in which everything in the opening is described as 'English' seventeen times; the Fire Chief settles the 'doorbell debate'", "back": "The Bald Soprano (Eugene Ionesco)", "work": "The Bald Soprano", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the maid Mary claims her real name is Sherlock Holmes and recites a poem about objects catching fire; Bobby Watson's entire family shares his name", "back": "The Bald Soprano (Eugene Ionesco)", "work": "The Bald Soprano", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: inspired by the playwright's experience reading an English language primer by Assimil; originally directed by Nicholas Bataille; permanently staged at Theatre de la Huchette", "back": "The Bald Soprano (Eugene Ionesco)", "work": "The Bald Soprano", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the deaf-mute Orator writes 'ANGELFOOD' on a chalkboard; an invisible Emperor arrives; the Old Man and Old Woman throw themselves out of a window", "back": "The Chairs (Eugene Ionesco)", "work": "The Chairs", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: the Old Man introduces his wife as Semiramis and addresses 'all that is left from humanity' as 'leftovers' that 'can make a very good soup'", "back": "The Chairs (Eugene Ionesco)", "work": "The Chairs", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: a one-act in which the Pupil names all four seasons and can multiply but not subtract; the Professor stabs her, restarting the cycle; the maid warns 'Philology leads to calamity!'", "back": "The Lesson (Eugene Ionesco)", "work": "The Lesson", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: a 400-year-old king confronting death; his wife tells him 'You're going to die at the end of the show'; credited with inventing the tractor and writing all of Shakespeare's plays", "back": "Exit the King (Eugene Ionesco)", "work": "Exit the King", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: a murderer in the 'radiant city' lures victims with a 'picture of a colonel'; the killer does nothing but chuckle and shrug", "back": "The Killer (Eugene Ionesco)", "work": "Other Works", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: an ever-growing corpse in a living room; based on the short story 'Oriflamme'; the corpse's feet burst through a door", "back": "Amedee (Eugene Ionesco)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Kenneth Tynan's 1958 negative review of this playwright's works sparked the 'London Controversy'", "back": "Eugene Ionesco", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

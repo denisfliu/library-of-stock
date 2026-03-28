@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Casablanca";
 let cards = [{"type": "basic", "indicator": "Film", "front": "Film: American bar owner Rick Blaine helps ex-lover Ilsa Lund and her husband Victor Laszlo (Czech Resistance leader) escape Vichy-occupied Morocco using letters of transit", "back": "Casablanca (Michael Curtiz)", "work": "Characters and Plot", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Captain Renault (Claude Rains) tells his men to 'round up the usual suspects' after Major Strasser is killed", "back": "Casablanca (Michael Curtiz)", "work": "Characters and Plot", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: at the climax, Rick tells Ilsa their problems 'don't amount to a hill of beans' before convincing her to board the plane with Victor Laszlo", "back": "Casablanca (Michael Curtiz)", "work": "Characters and Plot", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Rick directs a Bulgarian couple to try roulette number 22, earning the remark 'boss, you've done a beautiful thing'", "back": "Casablanca (Michael Curtiz)", "work": "Characters and Plot", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Major Strasser played by Conrad Veidt (also Cesare in The Cabinet of Dr. Caligari); reply to 'You despise me?' is 'If I gave you any thought, I probably would'", "back": "Casablanca (Michael Curtiz)", "work": "Characters and Plot", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: closes with the line 'Louis, I think this is the beginning of a beautiful friendship'", "back": "Casablanca (Michael Curtiz)", "work": "Characters and Plot", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the imaginary letters of transit — documents needed by Ilsa and Victor Laszlo to flee German-controlled Africa to Lisbon", "back": "Casablanca (Michael Curtiz)", "work": "Characters and Plot", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: a chorus of 'Die Wacht am Rhein' is countered by the band playing 'La Marseillaise'", "back": "Casablanca (Michael Curtiz)", "work": "Rick's Café Américain", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Captain Renault is shocked to find gambling at the café before being handed his winnings", "back": "Casablanca (Michael Curtiz)", "work": "Rick's Café Américain", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: based on the play 'Everybody Comes to Rick's' by schoolteacher Murray Burnett and Joan Alison (called 'sophisticated hokum')", "back": "Casablanca (Michael Curtiz)", "work": "Rick's Café Américain", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Umberto Eco essay argues the film became a cult classic through 'intertextual archetypes' — an 'orgy of sacrificial archetypes' enabled by casting Conrad Veidt and Peter Lorre", "back": "Casablanca (Michael Curtiz)", "work": "Rick's Café Américain", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: dwarf extras were used with fog to hide a cardboard model of the plane on the runway", "back": "Casablanca (Michael Curtiz)", "work": "Rick's Café Américain", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: Sam (Dooley Wilson) is the Black pianist who is never actually told 'play it again'; Sam's piano playing was dubbed by Jean Plummer", "back": "Casablanca (Michael Curtiz)", "work": "Sam and 'As Time Goes By'", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: 'As Time Goes By' lyrics — 'You must remember this, a kiss is still a kiss, a sigh is just a sigh'; Ilsa asks Sam to play it; Sam pretends not to remember the melody", "back": "Casablanca (Michael Curtiz)", "work": "Sam and 'As Time Goes By'", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: producer Hal B. Wallis considered changing Sam's sex to cast Hazel Scott or Lena Horne; Epstein twins and Irene Diamond intervened", "back": "Casablanca (Michael Curtiz)", "work": "Sam and 'As Time Goes By'", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: scored by Max Steiner (Austrian 'father of film music'), who disliked 'As Time Goes By' but was required to use it; Steiner also scored King Kong and Gone with the Wind", "back": "Casablanca (Michael Curtiz)", "work": "Production and Context", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Film", "front": "Film: the 'round up the usual suspects' line gave its title to the 1995 film The Usual Suspects", "back": "Casablanca (Michael Curtiz)", "work": "Production and Context", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

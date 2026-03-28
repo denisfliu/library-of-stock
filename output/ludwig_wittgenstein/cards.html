@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Ludwig Wittgenstein";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: consists of seven numbered propositions, beginning with 'The world is everything that is the case' and ending with 'Whereof one cannot speak, thereof one must be silent'", "back": "Tractatus Logico-Philosophicus (Ludwig Wittgenstein)", "work": "Tractatus Logico-Philosophicus", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: introduces the picture theory of meaning and compares itself to a ladder that must be discarded after climbing", "back": "Tractatus Logico-Philosophicus (Ludwig Wittgenstein)", "work": "Tractatus Logico-Philosophicus", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: opens by criticizing a passage from Augustine's Confessions about naming objects, using a shopkeeper and a slip reading 'five red apples'", "back": "Philosophical Investigations (Ludwig Wittgenstein)", "work": "Philosophical Investigations & Language Games", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: illustrative examples of words in action — a builder shouts 'block,' 'slab,' 'pillar,' 'beam' to an assistant; linked by 'family resemblances'", "back": "Language Games (Wittgenstein, Philosophical Investigations)", "work": "Philosophical Investigations & Language Games", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: people each have a box containing something called a 'beetle,' but no one can look in another's box — argues that private experiences cannot be the meaning of words", "back": "Beetle-in-a-Box / Private Language Argument (Wittgenstein)", "work": "Private Language Argument & Beetle in a Box", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: an addition-like function that returns 5 whenever either summand exceeds 57, introduced by Saul Kripke to illustrate a paradox about following rules", "back": "Quus Function (Kripke on Wittgenstein)", "work": "Rule-Following Paradox & Kripke's Interpretation", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: responds to G.E. Moore's 'here is one hand' argument by questioning what it truly means to 'know' something", "back": "On Certainty (Ludwig Wittgenstein)", "work": "On Certainty & Other Late Works", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Alan Turing argued 'the real harm will not come unless there is an application, in which a bridge may fall down' in response to this philosopher's acceptance of mathematical contradictions", "back": "Ludwig Wittgenstein", "work": "On Certainty & Other Late Works", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: the semantic relationship in which entities defined by a term share overlapping traits but no necessary or sufficient trait obtains in all of them — used to describe 'games'", "back": "Family Resemblances (Wittgenstein)", "work": "Philosophical Investigations & Language Games", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: designed a house in Vienna with Paul Engelmann influenced by Adolf Loos, insisting on raising the ceiling 30 millimeters and spending a year on door handles", "back": "Ludwig Wittgenstein (Haus Wittgenstein)", "work": "General / Biographical & Cultural Presence", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Thomas Bernhard's novel Correction follows a character who builds his sister a house called 'the Cone,' paralleling this philosopher's life", "back": "Ludwig Wittgenstein", "work": "General / Biographical & Cultural Presence", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Frank Ramsey translated this thinker's first book into English with C.K. Ogden and convinced him to return to Cambridge", "back": "Ludwig Wittgenstein", "work": "Tractatus Logico-Philosophicus", "frequency": 2, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

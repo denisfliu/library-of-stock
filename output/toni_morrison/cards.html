@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Toni Morrison";
 let cards = [{"type": "basic", "indicator": "Novel", "front": "Novel: set at 124 Bluestone Road; an escaped slave is haunted by the ghost of the daughter she killed to prevent her return to slavery; dedicated to 'Sixty Million and more'", "back": "Beloved (Toni Morrison)", "work": "Beloved", "frequency": 14, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: protagonist's back scars are described as a 'chokecherry tree'; she tells a man that 'thin love is no love at all'", "back": "Beloved (Toni Morrison)", "work": "Beloved", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Sixo is burned alive; the protagonist attacks Mr. Bodwin with an ice pick, mistaking him for the plantation owner Schoolteacher", "back": "Beloved (Toni Morrison)", "work": "Beloved", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: opens with Robert Smith jumping from the roof of Mercy Hospital; the 'O Sugarman' song recurs; the protagonist discovers his ancestor could fly", "back": "Song of Solomon (Toni Morrison)", "work": "Song of Solomon", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the vengeful Seven Days society; the protagonist's friend Guitar Bains is a member; ends with the protagonist leaping at Guitar in Shalimar", "back": "Song of Solomon (Toni Morrison)", "work": "Song of Solomon", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: protagonist's sisters named First Corinthians and Magdalene Called Lena by randomly putting a pin in the Bible; aunt Pilate has no navel", "back": "Song of Solomon (Toni Morrison)", "work": "Song of Solomon", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: an African-American girl desires blue eyes as a symbol of white beauty; raped by her father Cholly; marigolds fail to bloom foreshadowing premature baby's death", "back": "The Bluest Eye (Toni Morrison)", "work": "The Bluest Eye", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Joe Trace murders his mistress Dorcas; his wife Violet stabs the corpse at the funeral and earns the nickname 'Violent'", "back": "Jazz (Toni Morrison)", "work": "Jazz", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: opens 'They shoot the white girl first' but never reveals which Convent resident is white; nine men from Ruby, Oklahoma attack women at the Convent", "back": "Paradise (Toni Morrison)", "work": "Paradise", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: the stowaway Son and Sorbonne-educated Jadine on Isle des Chevaliers; the wealthy Valerian retires to his greenhouse after learning his wife Margaret beat their son", "back": "Tar Baby (Toni Morrison)", "work": "Tar Baby", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: PTSD-afflicted veteran Shadrack leads National Suicide Day on January 3rd in the neighborhood called the Bottom", "back": "Sula (Toni Morrison)", "work": "Sula", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: explores the 'Africanist presence' in American literature; 'Romancing the Shadow' chapter analyzes Poe's Arthur Gordon Pym; adapted from the 1990 Massey Lectures", "back": "Playing in the Dark (Toni Morrison)", "work": "Playing in the Dark", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: editor at Random House who compiled The Black Book and diversified publishing in the 1970s", "back": "Toni Morrison", "work": "General / Biographical", "frequency": 3, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

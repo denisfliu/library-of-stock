@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "George Sand";
 let cards = [{"type": "basic", "indicator": "Novel", "front": "Novel: Title character escapes/leaves Colonel Delmare (loveless marriage)", "back": "Indiana (George Sand)", "work": "Indiana", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Sir Ralph (cousin) — Indiana and Ralph attempt suicide by jumping into a waterfall together", "back": "Indiana (George Sand)", "work": "Indiana", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Set on the island of Reunion (French colony)", "back": "Indiana (George Sand)", "work": "Indiana", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Noun — Creole maid seduced by / drowns herself after pregnancy by Raymon", "back": "Indiana (George Sand)", "work": "Indiana", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Raymon de Ramiere — the rake / seducer", "back": "Indiana (George Sand)", "work": "Indiana", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Jules Neraud provided travel diary / descriptions of Reunion (Sand had never been there)", "back": "Indiana (George Sand)", "work": "Indiana", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Indiana implies the blackness / Creole identity of Noun (grew up together on Reunion)", "back": "Indiana (George Sand)", "work": "Indiana", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: July Revolution of 1830 — Indiana is caught in it after a letter from Raymon brings her to Paris", "back": "Indiana (George Sand)", "work": "Indiana", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Title character is a Spanish orphan / zingarella modeled on Pauline Viardot", "back": "Consuelo (George Sand)", "work": "Consuelo", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Maestro Porpora discovers / teaches Consuelo singing", "back": "Consuelo (George Sand)", "work": "Consuelo", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Consuelo is an opera singer (soprano)", "back": "Consuelo (George Sand)", "work": "Consuelo", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Castle of the Giants / Rudolstadt family / sent to Bohemia", "back": "Consuelo (George Sand)", "work": "Consuelo", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Consuelo rejects Count Zustiniani", "back": "Consuelo (George Sand)", "work": "Consuelo", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Set in Venice", "back": "Consuelo (George Sand)", "work": "Consuelo", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: First published in Revue Indépendante (periodical Sand co-founded)", "back": "Consuelo (George Sand)", "work": "Consuelo", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Consuelo meets Haydn while fleeing to Vienna", "back": "Consuelo (George Sand)", "work": "Consuelo", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Sequel The Countess of Rudolstadt directly influenced Walt Whitman", "back": "Consuelo (George Sand)", "work": "Consuelo", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Character claims to have tried to steal business secrets after falling from a wall while meeting a maid", "back": "Consuelo (George Sand)", "work": "Consuelo", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Autobiographical travel novel / travelogue about stay with Chopin", "back": "A Winter in Majorca (George Sand)", "work": "A Winter in Majorca", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Tubercular / consumptive lover (Chopin) during the stay", "back": "A Winter in Majorca (George Sand)", "work": "A Winter in Majorca", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Stay at Valldemossa / Carthusian monastery", "back": "A Winter in Majorca (George Sand)", "work": "A Winter in Majorca", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Chopin composing music during the stay", "back": "A Winter in Majorca (George Sand)", "work": "A Winter in Majorca", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Describes 'incredible slowness' of agriculture at the title location", "back": "A Winter in Majorca (George Sand)", "work": "A Winter in Majorca", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Robert Graves translated it; appended Jose Quadrado's 'Refutation' calling Sand 'most immoral of writers' and 'most obscene of women'", "back": "A Winter in Majorca (George Sand)", "work": "A Winter in Majorca", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Fadette makes Landry dance with her in exchange for helping him find his sickly twin Sylvinet", "back": "La Petite Fadette (Little Fadette) (George Sand)", "work": "La Petite Fadette (Little Fadette)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Sylvinet — sickly twin brother of Landry", "back": "La Petite Fadette (Little Fadette) (George Sand)", "work": "La Petite Fadette (Little Fadette)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Fadette cures Sylvinet at the end", "back": "La Petite Fadette (Little Fadette) (George Sand)", "work": "La Petite Fadette (Little Fadette)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Sylvinet joins the army after falling in love with his twin brother's wife", "back": "La Petite Fadette (Little Fadette) (George Sand)", "work": "La Petite Fadette (Little Fadette)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: A widower travels to a farm to find a new wife but falls for a shepherdess traveling with him", "back": "The Devil's Pool (La Mare au Diable) (George Sand)", "work": "The Devil's Pool (La Mare au Diable)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Inspired the painting Ploughing in the Nivernais", "back": "The Devil's Pool (La Mare au Diable) (George Sand)", "work": "The Devil's Pool (La Mare au Diable)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: First appendix describes supernatural stories told by the village hemp-dresser on autumn nights", "back": "The Devil's Pool (La Mare au Diable) (George Sand)", "work": "The Devil's Pool (La Mare au Diable)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Bernard de Mauprat helps cousin Edmee escape savage relatives, extracts marriage promise by threatening rape", "back": "Mauprat (George Sand)", "work": "Mauprat", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Novel", "front": "Novel: Edmee civilizes Bernard based on Rousseau's Emile", "back": "Mauprat (George Sand)", "work": "Mauprat", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Lover / partner of Frederic Chopin", "back": "George Sand", "work": "General / Biographical", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Wrote under a male pseudonym / cross-dressing French author", "back": "George Sand", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Four pastoral novels appear in early scene of Proust's Swann's Way (gifted to narrator by mother/grandmother)", "back": "George Sand", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Alfred de Musset affair — fictionalized as Brigitte in Confession of a Child of the Century; She and He controversy", "back": "George Sand", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Gustave Flaubert correspondence — Flaubert addressed Sand as 'Master'", "back": "George Sand", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Elizabeth Barrett Browning wrote poems to Sand: 'A Desire' and 'A Recognition'", "back": "George Sand", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: called her 'large-brained woman and large-hearted man'", "back": "George Sand", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: George Eliot defended Sand in a letter about morality vs. artistry", "back": "George Sand", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Goncourt brothers describe Sand smoking cigars 'like an automaton', working only 1-4 AM", "back": "George Sand", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Celia Madden in The Damnation of Theron Ware likens herself to Sand", "back": "George Sand", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Hachette's founder Louis Hachette sold Sand's books", "back": "George Sand", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Also had affairs with Jules Sandeau and Prosper Merimee", "back": "George Sand", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Depicted in Iwaszkiewicz's play A Summer in Nohant alongside her kids and lover", "back": "George Sand", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

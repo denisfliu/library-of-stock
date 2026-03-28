@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Tom Stoppard";
 let cards = [{"type": "basic", "indicator": "Play", "front": "Play: Septimus Hodge tutors Thomasina Coverly at Sidley Park; defines 'carnal embrace' as 'the practice of throwing one's arms around a side of beef'", "back": "Arcadia (Tom Stoppard)", "work": "Arcadia", "frequency": 19, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: coin lands on heads 92 consecutive times; Guildenstern theorizes 'un-, sub- or supernatural forces'; retells Hamlet from two minor courtiers' perspective", "back": "Rosencrantz and Guildenstern Are Dead (Tom Stoppard)", "work": "Rosencrantz and Guildenstern Are Dead", "frequency": 22, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Vladimir Lenin, Tristan Tzara, and James Joyce mingle with diplomat Henry Carr in 1917 Zurich; Tzara makes a poem from cut-up words of Shakespeare's Sonnet 18", "back": "Travesties (Tom Stoppard)", "work": "Travesties", "frequency": 12, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Hannah Jarvis discovers that the 'hermit of Sidley Park' was Septimus Hodge; Bernard Nightingale's theory about Lord Byron killing Ezra Chater is disproven—Chater died of a monkey bite", "back": "Arcadia (Tom Stoppard)", "work": "Arcadia", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: critics Moon and Birdboot watch a murder mystery set at Muldoon Manor; Moon is killed when he discovers the body on stage is Higgs", "back": "The Real Inspector Hound (Tom Stoppard)", "work": "The Real Inspector Hound", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: jealous playwright Henry leaves Charlotte for actress Annie; good writing compared to a cricket bat; refuses to ghostwrite for the imprisoned soldier Brodie", "back": "The Real Thing (Tom Stoppard)", "work": "The Real Thing", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Viennese Jewish Merz family across 1899–1955; Nazis seize property during the Anschluss; ends with Rosa saying 'Auschwitz' to a list of family names", "back": "Leopoldstadt (Tom Stoppard)", "work": "Leopoldstadt", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Player and Tragedians emerge from barrels on the ship; Alfred forced into a skirt for The Rape of the Sabine Women; Player stabbed with retractable knife, stands to applause", "back": "Rosencrantz and Guildenstern Are Dead (Tom Stoppard)", "work": "Rosencrantz and Guildenstern Are Dead", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: A. E. Housman relives his unrequited love for Moses Jackson while crossing the River Styx to the afterlife", "back": "The Invention of Love (Tom Stoppard)", "work": "The Invention of Love", "frequency": 9, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: trilogy (Voyage, Shipwreck, Salvage) about 19th-century Russian intellectuals including Alexander Herzen, Ivan Turgenev, and Mikhail Bakunin", "back": "The Coast of Utopia (Tom Stoppard)", "work": "The Coast of Utopia", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Thomasina Coverly uses rice pudding to illustrate the Second Law of Thermodynamics; models an early fractal; play ends with Thomasina and Septimus waltzing", "back": "Arcadia (Tom Stoppard)", "work": "Arcadia", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Act 1 spoken entirely in limericks; another scene parodies the catechism chapter of Ulysses; Tzara chants 'Dada' 34 times; Carr labels Wilde a 'Gommorahist'", "back": "Travesties (Tom Stoppard)", "work": "Travesties", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: wrote Shakespeare in Love; wrote 'almost every dialogue' of Indiana Jones and the Last Crusade; co-wrote Brazil (creating 'Form 27B/6' alluding to Orwell's flat)", "back": "Tom Stoppard", "work": "Screenplays", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: Czech-born British playwright; born Tomas Straussler; shares his birth city (Prague) with Václav Havel; knighted as Sir Tom Stoppard", "back": "Tom Stoppard", "work": "General / Biographical", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: 'Game of Questions' in which rhetoricals and repetitions are fouls; characters insert variations into 'Give us this day our daily bread'; death is 'the absence of presence, nothing more'", "back": "Rosencrantz and Guildenstern Are Dead (Tom Stoppard)", "work": "Rosencrantz and Guildenstern Are Dead", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: features logical-positivist gymnasts; inspector Bones investigates McFee's murder; a character steps on his tortoise and accidentally shoots his hare while disproving Zeno's paradox", "back": "Jumpers (Tom Stoppard)", "work": "Other Works", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: opens with Hilary and Spike debating the 'hard problem of consciousness'; Hilary designs an experiment to prove human altruism; Amal's model fails to predict a stock market crash", "back": "The Hard Problem (Tom Stoppard)", "work": "Other Works", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Annie cast in 'Tis Pity She's a Whore, begins an affair with co-star Billy; opens with a play-within-a-play (House of Cards) gradually revealed to be fictional", "back": "The Real Thing (Tom Stoppard)", "work": "The Real Thing", "frequency": 5, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

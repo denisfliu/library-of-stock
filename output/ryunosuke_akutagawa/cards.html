@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Ryunosuke Akutagawa";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: in this story, the dead samurai Takehiro's ghost speaks through a medium and claims he committed suicide, contradicting six other testimonies", "back": "\"In a Grove\" (Ryunosuke Akutagawa)", "work": "\"In a Grove\"", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, the bandit Tajomaru claims to have lured his victim by promising cheap goods like mirrors buried under a mountain", "back": "\"In a Grove\" (Ryunosuke Akutagawa)", "work": "\"In a Grove\"", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, a sudden gust of wind reveals a woman's resemblance to a Bodhisattva; she later considers herself 'forsaken by Kannon'", "back": "\"In a Grove\" (Ryunosuke Akutagawa)", "work": "\"In a Grove\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, the dead woman had sold snake meat as dried fish, which the old wig-maker uses to justify robbing her hair", "back": "\"Rashomon\" (Ryunosuke Akutagawa)", "work": "\"Rashomon\"", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the artist Yoshihide ('Monkey-hide') binds apprentices with chains and attacks another with a horned owl to study pained expressions", "back": "\"Hell Screen\" (Ryunosuke Akutagawa)", "work": "\"Hell Screen\"", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Yoshihide studies a dead corpse to create Five Levels of Rebirth in this story", "back": "\"Hell Screen\" (Ryunosuke Akutagawa)", "work": "\"Hell Screen\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the character Yoshihide in this story is drawn from a painter of the same name in the third scroll of the Uji Shui", "back": "\"Hell Screen\" (Ryunosuke Akutagawa)", "work": "\"Hell Screen\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the thief Kandata's one act of kindness was sparing a spider; the Buddha sends a thread through a lotus pond to give him a chance to escape Hell", "back": "\"The Spider's Thread\" (Ryunosuke Akutagawa)", "work": "\"The Spider's Thread\"", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this story adapted the 'Parable of the Onion' from The Brothers Karamazov into a tale about a thief falling back into the Pool of Blood", "back": "\"The Spider's Thread\" (Ryunosuke Akutagawa)", "work": "\"The Spider's Thread\"", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this semi-autobiographical story, the narrator picks up Crime and Punishment but finds it misprinted as The Brothers Karamazov", "back": "\"Cogwheels\" / \"Spinning Gears\" (Ryunosuke Akutagawa)", "work": "\"Cogwheels\" / \"Spinning Gears\"", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, the narrator learns his arsonist brother-in-law has jumped in front of a train while wearing a raincoat", "back": "\"Cogwheels\" / \"Spinning Gears\" (Ryunosuke Akutagawa)", "work": "\"Cogwheels\" / \"Spinning Gears\"", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, the priest Zenchi Naigu has his long nose boiled and stomped on to extract millet-like beads of fat; he then compares himself to Liu Bei", "back": "\"The Nose\" (Ryunosuke Akutagawa)", "work": "\"The Nose\"", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this novel, a kappa society cannibalizes the unemployed, practices Viverism/Lifeism, and gives fetuses the option to be born or not", "back": "Kappa (Ryunosuke Akutagawa)", "work": "Kappa", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Patient 23 narrates this novel after falling down a hole while chasing Bag the fisherman into the land of Japanese water creatures", "back": "Kappa (Ryunosuke Akutagawa)", "work": "Kappa", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the red-nosed Goi aspires to eat his fill of the title foodstuff but loses his appetite after his wish is fulfilled", "back": "\"Yam Gruel\" (Ryunosuke Akutagawa)", "work": "\"Yam Gruel\" / \"Imogayu\"", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the long-nosed monk E'in erects a sign near Sarusawa Pond saying a dragon will ascend to heaven; a mass delusion results and he himself believes it", "back": "\"Dragon: the Old Potter's Tale\" (Ryunosuke Akutagawa)", "work": "\"Dragon: the Old Potter's Tale\"", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this author's suicide note titled 'A Note to a Certain Old Friend' describes 'diseased nerves, lucid as ice' and recalls discussing 'Empedocles on Etna' under linden trees", "back": "Ryunosuke Akutagawa", "work": "Suicide Note / \"A Note to a Certain Old Friend\" / \"A Fool's Life\"", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: this author's last work consists of 51 prose vignettes set at a bookstore and includes the aphorism 'life is not worth a single line of Baudelaire'", "back": "\"A Fool's Life\" (Ryunosuke Akutagawa)", "work": "Suicide Note / \"A Note to a Certain Old Friend\" / \"A Fool's Life\"", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: Kawabata quoted this author's suicide note in his Nobel lecture, alongside 'suicide is not a form of enlightenment'", "back": "Ryunosuke Akutagawa", "work": "Suicide Note / \"A Note to a Certain Old Friend\" / \"A Fool's Life\"", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the monk Lorenzo is ostracized for having a child with an umbrella-maker's daughter but is revealed to be a woman after saving the child from a fire", "back": "\"The Death of a Disciple\" (Ryunosuke Akutagawa)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, afterlife officials mistakenly kill the protagonist (meant for Henry Barrett) and send him back with the title animal's body parts", "back": "\"Horse Legs\" (Ryunosuke Akutagawa)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: in this story, the narrator is annoyed at a lower-class girl on a train until he sees her tossing the title fruit to her waiting brothers", "back": "\"Mandarins\" (Ryunosuke Akutagawa)", "work": "Other Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author had a longstanding debate with Tanizaki Jun'ichiro over the importance of plot in literature; his suicide occurred on Tanizaki's birthday", "back": "Ryunosuke Akutagawa", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: in Jim Jarmusch's Ghost Dog, the title assassin steals a collection of fiction by this author during a mob hit", "back": "Ryunosuke Akutagawa", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: this author's son Yasushi composed film scores including The Castle of Sand and Fires on the Plain", "back": "Ryunosuke Akutagawa", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

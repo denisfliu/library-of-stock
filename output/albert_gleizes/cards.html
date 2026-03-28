@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Albert Gleizes";
 let cards = [{"type": "basic", "indicator": "Treatise", "front": "Treatise: co-written with Jean Metzinger as the first major theoretical treatise on Cubism", "back": "Du \"Cubisme\" (Albert Gleizes)", "work": "Du \"Cubisme\" (On Cubism, 1912)", "frequency": 13, "tags": []}, {"type": "basic", "indicator": "Treatise", "front": "Treatise: argues that Cubism is based on non-Euclidean (Riemannian) geometry rather than Euclidean geometry", "back": "Du \"Cubisme\" (Albert Gleizes)", "work": "Du \"Cubisme\" (On Cubism, 1912)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Treatise", "front": "Treatise: reproduces Gleizes's painting The Bathers, which depicts bathers in front of smoke-producing factories in Clichy", "back": "Du \"Cubisme\" (Albert Gleizes)", "work": "Du \"Cubisme\" (On Cubism, 1912)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Treatise", "front": "Treatise: Guillaume Apollinaire's The Cubist Painters described this manifesto's co-author Gleizes as representing the 'scientific' branch of Cubism", "back": "Du \"Cubisme\" (Albert Gleizes)", "work": "Du \"Cubisme\" (On Cubism, 1912)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: depicts bathers in front of factories producing swirling smoke from Clichy in the background, at La Grande Jatte", "back": "The Bathers (Albert Gleizes)", "work": "The Bathers (Les Baigneurs, 1912)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Albert_Gleizes%2C_1912%2C_Les_Baigneuses%2C_oil_on_canvas%2C_105_x_171_cm%2C_Paris%2C_Mus%C3%A9e_d%27Art_Moderne_de_la_Ville_de_Paris.jpg/500px-Albert_Gleizes%2C_1912%2C_Les_Baigneuses%2C_oil_on_canvas%2C_105_x_171_cm%2C_Paris%2C_Mus%C3%A9e_d%27Art_Moderne_de_la_Ville_de_Paris.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: exhibited at the 1912 Salon des Independants; one of five Gleizes depictions of La Grande Jatte", "back": "The Bathers (Albert Gleizes)", "work": "The Bathers (Les Baigneurs, 1912)", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Albert_Gleizes%2C_1912%2C_Les_Baigneuses%2C_oil_on_canvas%2C_105_x_171_cm%2C_Paris%2C_Mus%C3%A9e_d%27Art_Moderne_de_la_Ville_de_Paris.jpg/500px-Albert_Gleizes%2C_1912%2C_Les_Baigneuses%2C_oil_on_canvas%2C_105_x_171_cm%2C_Paris%2C_Mus%C3%A9e_d%27Art_Moderne_de_la_Ville_de_Paris.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: depicts a man with a golden hunting horn, with a group of hunting dogs to his right", "back": "La Chasse / The Hunt (Albert Gleizes)", "work": "La Chasse (The Hunt, 1911)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Albert_Gleizes%2C_La_Chasse%2C_1911%2C_oil_on_canvas%2C_123.2_x_99_cm.jpg/500px-Albert_Gleizes%2C_La_Chasse%2C_1911%2C_oil_on_canvas%2C_123.2_x_99_cm.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: one of the largest Cubist paintings, equaled only by Robert Delaunay's La Ville de Paris", "back": "Harvest Threshing (Albert Gleizes)", "work": "Harvest Threshing (1912)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Albert_Gleizes%2C_1912%2C_Le_D%C3%A9piquage_des_Moissons%2C_Harvest_Threshing%2C_oil_on_canvas%2C_269_x_353_cm%2C_National_Museum_of_Western_Art%2C_Tokyo%2C_Japan.jpg/500px-Albert_Gleizes%2C_1912%2C_Le_D%C3%A9piquage_des_Moissons%2C_Harvest_Threshing%2C_oil_on_canvas%2C_269_x_353_cm%2C_National_Museum_of_Western_Art%2C_Tokyo%2C_Japan.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Movement", "front": "Movement: Cubist collective associated with Cubism and Orphism whose meetings were held at Gleizes's home; named 'Golden Section' by Josephin Peladan for the quantity phi", "back": "Section d'Or / Puteaux Group", "work": "Section d'Or (Puteaux Group)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Gleizes and Metzinger rejected Marcel Duchamp's Nude Descending a Staircase No. 2 from the 1912 Salon des Independants, feeling the nude should be shown reclining", "back": "Albert Gleizes", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: forger John Myatt began his career after his mountain village painting imitating this artist was accepted by Christie's", "back": "Albert Gleizes", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: chronicled the fortunes of the Salon d'Automne in The Epic: From Immobile Form to Mobile Form", "back": "Albert Gleizes", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: made money from the 1913 Armory Show alongside Jacques Villon", "back": "Albert Gleizes", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "image", "indicator": "Painting", "front": "", "back": "The Bathers (Les Baigneurs, 1912) (Albert Gleizes)", "work": "The Bathers (Les Baigneurs, 1912)", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Albert_Gleizes%2C_1912%2C_Les_Baigneuses%2C_oil_on_canvas%2C_105_x_171_cm%2C_Paris%2C_Mus%C3%A9e_d%27Art_Moderne_de_la_Ville_de_Paris.jpg/500px-Albert_Gleizes%2C_1912%2C_Les_Baigneuses%2C_oil_on_canvas%2C_105_x_171_cm%2C_Paris%2C_Mus%C3%A9e_d%27Art_Moderne_de_la_Ville_de_Paris.jpg", "tags": [], "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Portrait of Jacques Nayral (1911) (Albert Gleizes)", "work": "Portrait of Jacques Nayral (1911)", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Albert_Gleizes%2C_1911%2C_Portrait_de_Jacques_Nayral%2C_oil_on_canvas%2C_161.9_x_114_cm%2C_Tate_Modern%2C_London.jpg/500px-Albert_Gleizes%2C_1911%2C_Portrait_de_Jacques_Nayral%2C_oil_on_canvas%2C_161.9_x_114_cm%2C_Tate_Modern%2C_London.jpg", "tags": [], "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "La Chasse (The Hunt, 1911) (Albert Gleizes)", "work": "La Chasse (The Hunt, 1911)", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Albert_Gleizes%2C_La_Chasse%2C_1911%2C_oil_on_canvas%2C_123.2_x_99_cm.jpg/500px-Albert_Gleizes%2C_La_Chasse%2C_1911%2C_oil_on_canvas%2C_123.2_x_99_cm.jpg", "tags": [], "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Harvest Threshing (1912) (Albert Gleizes)", "work": "Harvest Threshing (1912)", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Albert_Gleizes%2C_1912%2C_Le_D%C3%A9piquage_des_Moissons%2C_Harvest_Threshing%2C_oil_on_canvas%2C_269_x_353_cm%2C_National_Museum_of_Western_Art%2C_Tokyo%2C_Japan.jpg/500px-Albert_Gleizes%2C_1912%2C_Le_D%C3%A9piquage_des_Moissons%2C_Harvest_Threshing%2C_oil_on_canvas%2C_269_x_353_cm%2C_National_Museum_of_Western_Art%2C_Tokyo%2C_Japan.jpg", "tags": [], "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

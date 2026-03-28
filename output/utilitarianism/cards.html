@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Utilitarianism";
 let cards = [{"type": "basic", "indicator": "Concept", "front": "Concept: the 'mere addition paradox' shows that for any population, a larger one whose members have lives barely worth living could have more total utility", "back": "Repugnant Conclusion (Derek Parfit)", "work": "Derek Parfit & the Repugnant Conclusion", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: debated J.J.C. Smart in a volume subtitled 'For and Against' and advanced the 'integrity objection' using the thought experiments of Jim and the Indians and George the chemical warfare researcher", "back": "Bernard Williams", "work": "Bernard Williams's Critiques", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: coined the term 'moral luck' in an essay arguing that we judge Gauguin's abandonment of his family based on how successful his art happened to be", "back": "Bernard Williams", "work": "Bernard Williams's Critiques", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: coined the phrase 'one thought too many' for the utilitarian prescription that a man should calculate before saving his wife over a stranger", "back": "Bernard Williams", "work": "Bernard Williams's Critiques", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: an imagined being that derives vastly more pleasure than others, so maximizing total utility means giving it everything", "back": "Utility Monster (Robert Nozick)", "work": "Critiques and Thought Experiments", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: the objection that strict adherence to maximizing utility would freeze a person into inaction because it allows 'no rest'", "back": "No Rest Objection to Utilitarianism (Louis Pojman)", "work": "Critiques and Thought Experiments", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: J.J.C. Smart criticized this form of utilitarianism as 'restricted'; it judges actions by whether they conform to rules that maximize utility", "back": "Rule Utilitarianism", "work": "Act vs. Rule Utilitarianism", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: defended utilitarianism from 'punishment' and 'promise-keeping' objections in 'Two Concepts of Rules' and later introduced the 'original position' in A Theory of Justice", "back": "John Rawls", "work": "Act vs. Rule Utilitarianism", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: used the drowning child analogy to argue wealthy people are morally obligated to donate to humanitarian causes in 'Famine, Affluence, and Morality'", "back": "Peter Singer", "work": "Peter Singer & Effective Altruism", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: coined the term 'speciesism' and argued the capability to suffer, not intelligence, should be the basis for moral rights", "back": "Peter Singer", "work": "Peter Singer & Effective Altruism", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: analyzes three methods of ethics — egoism, intuitionism, and utilitarianism — and its author is praised by G.E. Moore for not committing the naturalistic fallacy", "back": "The Methods of Ethics (Henry Sidgwick)", "work": "Henry Sidgwick & The Methods of Ethics", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Bentham likely took the phrase 'greatest happiness of the greatest number' from this enlightenment criminologist who opposed the death penalty in On Crimes and Punishments", "back": "Cesare Beccaria", "work": "The Greatest Happiness Principle & Core Doctrine", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: the inability of utilitarianism to accommodate acts that are morally good but not obligatory is known as this objection", "back": "Demandingness Objection", "work": "Critiques and Thought Experiments", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: R.M. Hare argued this form of utilitarianism is preferable for 'proles' who need 'intuitive level' moral principles because they lack the cognitive abilities of 'archangels'", "back": "Rule Utilitarianism", "work": "Act vs. Rule Utilitarianism", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: 'outsmarting' is J.J.C. Smart's coy name for embracing the reductio ad absurdum conclusions that result from this ethical position", "back": "Utilitarianism", "work": "Act vs. Rule Utilitarianism", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

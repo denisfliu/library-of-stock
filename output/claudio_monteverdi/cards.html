@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Claudio Monteverdi";
 let cards = [{"type": "basic", "indicator": "Composer", "front": "Composer: Italian; composed L'Orfeo (the earliest opera still in regular performance), The Coronation of Poppea, and the 1610 Vespers", "back": "Claudio Monteverdi", "work": "General / Biographical", "frequency": 20, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: Giovanni Artusi attacked his madrigals for 'licentious' dissonance; he responded by coining 'prima prattica' and 'seconda prattica'", "back": "Claudio Monteverdi", "work": "General / Biographical", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Composer", "front": "Composer: music director of St. Mark's Cathedral in Venice from 1613; Sir John Eliot Gardiner founded the Monteverdi Choir in 1964 to perform his 1610 Vespers", "back": "Claudio Monteverdi", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: opens with a brass toccata (trumpet fanfare repeated three times) before the personification of Music delivers a prologue; Orpheus descends to retrieve Eurydice", "back": "L'Orfeo (Monteverdi)", "work": "L'Orfeo", "frequency": 15, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: its opening toccata was reused as the 'Deus in adjutorium' opening of the 1610 Vespers", "back": "L'Orfeo (Monteverdi)", "work": "L'Orfeo", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: 'Possente spirto' — Orpheus's aria to persuade Charon; includes trumpet call-and-response; two alternative vocal lines were written for the soloist", "back": "L'Orfeo (Monteverdi)", "work": "L'Orfeo", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: the original librettist Alessandro Striggio's ending (the Bacchae murder Orpheus) was replaced by an Apollo deus ex machina finale; a 2019 Budapest production restored Striggio's ending", "back": "L'Orfeo (Monteverdi)", "work": "L'Orfeo", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Opera", "front": "Opera: Monteverdi's last opera; set in ancient Rome; Empress Ottavia tries to have Poppea killed; ends with the duet 'Pur ti miro, pur ti godo'; first revived in Naples in 1651", "back": "L'incoronazione di Poppea (Monteverdi)", "work": "L'incoronazione di Poppea (The Coronation of Poppea)", "frequency": 8, "tags": []}, {"type": "basic", "indicator": "Cantata", "front": "Sacred work: opens with 'Deus in adjutorium' (reusing the L'Orfeo toccata); includes 'Pulchra es,' 'Duo Seraphim' (two tenors joined by a third for the Trinity), and a large Magnificat setting", "back": "Vespers of 1610 (Monteverdi)", "work": "Vespers of 1610 (Vespro della Beata Vergine)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Lied", "front": "Madrigal: 'Il Combattimento di Tancredi e Clorinda' (from the 8th book) — depicts battle between Christian knight and Saracen woman; pioneered pizzicato and tremolo as the stile concitato", "back": "Monteverdi (8th Book of Madrigals)", "work": "Madrigals (Eight Books)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Lied", "front": "Madrigal: 'Lamento della ninfa' (1638, 8th book) — soprano sings 'at the tempo of her emotion' over a descending-fourth ground bass in A minor; three men sing in strict time", "back": "Monteverdi (8th Book of Madrigals)", "work": "Madrigals (Eight Books)", "frequency": 4, "tags": []}, {"type": "audio", "indicator": "high", "front": "Opening toccata trumpet melody: fast ascent from D to A, then scalar descent in dotted eighth-sixteenth pairs", "back": "L'Orfeo (Claudio Monteverdi)", "work": "L'Orfeo", "frequency": 0, "mp3": "audio/0.mp3", "abc": "X:1\nT:L'Orfeo toccata trumpet\n%%MIDI program 56\nM:4/4\nL:1/8\nK:C\n|D4 E2 F2 | G4 A4 | A3/2G/ F3/2E/ D3/2C/ D2 ||", "needs_review": true, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

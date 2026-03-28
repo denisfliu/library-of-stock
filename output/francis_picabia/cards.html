@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Francis Picabia";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: two interlocking gears, the smaller labeled 'femme' and the larger 'homme'", "back": "Machine Turn Quickly (Francis Picabia)", "work": "Machine Turn Quickly", "frequency": 6, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/d/df/Picabia_Machine_Turn.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/df/Picabia_Machine_Turn.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: mechanomorph depicting Alfred Stieglitz as a bellows-style camera with a gear shift under the word 'Ideal'", "back": "Here, This is Stieglitz Here (Francis Picabia)", "work": "Portrait of Stieglitz (Here, This is Stieglitz Here / Ici, c'est ici Stieglitz)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Francis_Picabia%2C_Ici%2C_c%27est_ici_Stieglitz%2C_foi_et_amour%2C_cover_of_291%2C_No1%2C_1915.jpg/500px-Francis_Picabia%2C_Ici%2C_c%27est_ici_Stieglitz%2C_foi_et_amour%2C_cover_of_291%2C_No1%2C_1915.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Francis_Picabia%2C_Ici%2C_c%27est_ici_Stieglitz%2C_foi_et_amour%2C_cover_of_291%2C_No1%2C_1915.jpg/500px-Francis_Picabia%2C_Ici%2C_c%27est_ici_Stieglitz%2C_foi_et_amour%2C_cover_of_291%2C_No1%2C_1915.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Cubist work shown at both the 1912 Section d'Or exhibition and the Armory Show", "back": "Dances at the Spring (Francis Picabia)", "work": "Dances at the Spring (1912)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Francis_Picabia%2C_The_Dance_at_the_Spring%2C_1912%2C_oil_on_canvas%2C_Philadelphia_Museum_of_Art.jpg/500px-Francis_Picabia%2C_The_Dance_at_the_Spring%2C_1912%2C_oil_on_canvas%2C_Philadelphia_Museum_of_Art.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Francis_Picabia%2C_The_Dance_at_the_Spring%2C_1912%2C_oil_on_canvas%2C_Philadelphia_Museum_of_Art.jpg/500px-Francis_Picabia%2C_The_Dance_at_the_Spring%2C_1912%2C_oil_on_canvas%2C_Philadelphia_Museum_of_Art.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: founded the Dadaist magazine 391, inspired by Stieglitz's 291 gallery; described as the richest Dadaist", "back": "Francis Picabia", "work": "General / Biographical", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: placed a stuffed toy monkey on cardboard as a portrait claiming to depict Cezanne, Renoir, or Rembrandt", "back": "Francis Picabia", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Transparencies are late-career mythological works evoking double exposure photography, painted in Mougins", "back": "Francis Picabia", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: 1909 painting Caoutchouc is a candidate for the first abstract painting, though it 'looks a bit like a bowl of fruit'", "back": "Francis Picabia", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: co-wrote Rene Clair's Entr'acte; fires a cannon alongside Erik Satie while Duchamp plays chess with Man Ray", "back": "Francis Picabia", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: collaborated with Tristan Tzara on the Dadaglobe project", "back": "Francis Picabia", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Rrose Selavy gained the extra 'r' from an almost illegible signature on Picabia's Cacodylate Eye", "back": "Francis Picabia", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Fig Leaf -- Oedipus-inspired drawing painted over Hot Eyes using Ripolin to critique censorship", "back": "Francis Picabia", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: I See Again in Memory My Dear Udnie uses automobile parts like spark plugs to evoke genitals", "back": "Francis Picabia", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "image", "indicator": "Painting", "front": "", "back": "Dances at the Spring (Francis Picabia)", "work": "Dances at the Spring (1912)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Francis_Picabia%2C_The_Dance_at_the_Spring%2C_1912%2C_oil_on_canvas%2C_Philadelphia_Museum_of_Art.jpg/500px-Francis_Picabia%2C_The_Dance_at_the_Spring%2C_1912%2C_oil_on_canvas%2C_Philadelphia_Museum_of_Art.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Francis_Picabia%2C_The_Dance_at_the_Spring%2C_1912%2C_oil_on_canvas%2C_Philadelphia_Museum_of_Art.jpg/500px-Francis_Picabia%2C_The_Dance_at_the_Spring%2C_1912%2C_oil_on_canvas%2C_Philadelphia_Museum_of_Art.jpg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Portrait of Stieglitz (Francis Picabia)", "work": "Portrait of Stieglitz (Here, This is Stieglitz Here / Ici, c'est ici Stieglitz)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Francis_Picabia%2C_Ici%2C_c%27est_ici_Stieglitz%2C_foi_et_amour%2C_cover_of_291%2C_No1%2C_1915.jpg/500px-Francis_Picabia%2C_Ici%2C_c%27est_ici_Stieglitz%2C_foi_et_amour%2C_cover_of_291%2C_No1%2C_1915.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Francis_Picabia%2C_Ici%2C_c%27est_ici_Stieglitz%2C_foi_et_amour%2C_cover_of_291%2C_No1%2C_1915.jpg/500px-Francis_Picabia%2C_Ici%2C_c%27est_ici_Stieglitz%2C_foi_et_amour%2C_cover_of_291%2C_No1%2C_1915.jpg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Machine Turn Quickly (Francis Picabia)", "work": "Machine Turn Quickly", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/d/df/Picabia_Machine_Turn.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/d/df/Picabia_Machine_Turn.jpg", "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

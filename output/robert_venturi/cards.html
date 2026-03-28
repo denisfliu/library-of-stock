@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Robert Venturi";
 let cards = [{"type": "image", "indicator": "Building", "front": "", "back": "Vanna House (Vanna Venturi House) (Robert Venturi)", "work": "Vanna House (Vanna Venturi House)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Vanna_Venturi_House_in_Chestnut_Hill%2C_Philadelphia%2C_Pennsylvania_LCCN2011631329.tif/lossy-page1-500px-Vanna_Venturi_House_in_Chestnut_Hill%2C_Philadelphia%2C_Pennsylvania_LCCN2011631329.tif.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: Philadelphia house designed for the architect's mother Vanna; exposed chimney, wrap-around staircase, sloping roof, monumental split-gable facade; called 'the first Postmodern anything'", "back": "Vanna House (Vanna Venturi House) (Robert Venturi)", "work": "Vanna House (Vanna Venturi House)", "frequency": 5, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Vanna_Venturi_House_in_Chestnut_Hill%2C_Philadelphia%2C_Pennsylvania_LCCN2011631329.tif/lossy-page1-500px-Vanna_Venturi_House_in_Chestnut_Hill%2C_Philadelphia%2C_Pennsylvania_LCCN2011631329.tif.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: Venturi lived in this house after marrying Denise Scott Brown; located near Louis Kahn's Esherick House", "back": "Vanna House (Vanna Venturi House) (Robert Venturi)", "work": "Vanna House (Vanna Venturi House)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Vanna_Venturi_House_in_Chestnut_Hill%2C_Philadelphia%2C_Pennsylvania_LCCN2011631329.tif/lossy-page1-500px-Vanna_Venturi_House_in_Chestnut_Hill%2C_Philadelphia%2C_Pennsylvania_LCCN2011631329.tif.jpg", "image_side": "back"}, {"type": "image", "indicator": "Book", "front": "", "back": "Learning from Las Vegas (Robert Venturi)", "work": "Learning from Las Vegas", "frequency": 6, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif/lossy-page1-500px-Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Book", "front": "Book: 1972 architectural manifesto co-authored with Denise Scott Brown and Steven Izenour; celebrated Las Vegas roadside decor; introduced the distinction between 'ducks' and 'decorated sheds'", "back": "Learning from Las Vegas (Robert Venturi)", "work": "Learning from Las Vegas", "frequency": 6, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif/lossy-page1-500px-Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Book", "front": "Book: full title is 'A Significance for A&P Parking Lots, or Learning from Las Vegas'; genesis came from a study of A&P parking lots", "back": "Learning from Las Vegas (Robert Venturi)", "work": "Learning from Las Vegas", "frequency": 2, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif/lossy-page1-500px-Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Book", "front": "Book: Venturi led Yale students on helicopter tours of Las Vegas dubbed the 'Great Proletarian Cultural Locomotive'; described neon sign movement as 'quicker than mosaic glitter'", "back": "Learning from Las Vegas (Robert Venturi)", "work": "Learning from Las Vegas", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif/lossy-page1-500px-Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Book", "front": "Book: its publication split architects into 'Greys' (followers) and 'Whites' (dissenters); the Whites included New York Five architects Richard Meier and Michael Graves", "back": "Learning from Las Vegas (Robert Venturi)", "work": "Learning from Las Vegas", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif/lossy-page1-500px-Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Book", "front": "Book: contains a section titled 'Space as God'; uses La Tourette Monastery as an example", "back": "Learning from Las Vegas (Robert Venturi)", "work": "Learning from Las Vegas", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif/lossy-page1-500px-Daytime_aerial_view_of_the_Strip%2C_Las_Vegas%2C_Nevada_LCCN2010630596.tif.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Book", "front": "Book: 1966 text calling for an eclectic 'messy vitality' against Modernist purity; attacked Mies van der Rohe's minimalism", "back": "Complexity and Contradiction in Architecture (Robert Venturi)", "work": "Complexity and Contradiction in Architecture", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: 'nonstraightforward' introduction presents a 'gentle manifesto'; cites Gödel's incompleteness theorem and T.S. Eliot's analysis of 'difficult' poetry as precedents", "back": "Complexity and Contradiction in Architecture (Robert Venturi)", "work": "Complexity and Contradiction in Architecture", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: analyzes 'double-functioning' and 'both-and' elements of buildings; argues buildings should use 'poche' instead of transparency", "back": "Complexity and Contradiction in Architecture (Robert Venturi)", "work": "Complexity and Contradiction in Architecture", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: praises Philip Johnson's Wiley House but bemoans the 'bland architecture' of his Glass House; praises Alvar Aalto for combining 'standardization with irrationality' in his Wolfsburg Cultural Center", "back": "Complexity and Contradiction in Architecture (Robert Venturi)", "work": "Complexity and Contradiction in Architecture", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Book", "front": "Book: Yale historian Vincent Scully wrote the introduction", "back": "Complexity and Contradiction in Architecture (Robert Venturi)", "work": "Complexity and Contradiction in Architecture", "frequency": 1, "tags": []}, {"type": "image", "indicator": "Building", "front": "", "back": "Fire Station No. 4, Columbus, Indiana (Robert Venturi)", "work": "Fire Station No. 4, Columbus, Indiana", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Fire_Station_4%2C_Columbus%2C_Indiana_LCCN2013650708.jpg/500px-Fire_Station_4%2C_Columbus%2C_Indiana_LCCN2013650708.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: fire station with a giant gold '4' at the top; hose-drying tower in the middle makes the whole structure resemble an overturned number four", "back": "Fire Station No. 4, Columbus, Indiana (Robert Venturi)", "work": "Fire Station No. 4, Columbus, Indiana", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Fire_Station_4%2C_Columbus%2C_Indiana_LCCN2013650708.jpg/500px-Fire_Station_4%2C_Columbus%2C_Indiana_LCCN2013650708.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Building", "front": "Building: financed by J. Irwin Miller in Columbus, Indiana, nicknamed 'Athens on the Prairie'", "back": "Fire Station No. 4, Columbus, Indiana (Robert Venturi)", "work": "Fire Station No. 4, Columbus, Indiana", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Fire_Station_4%2C_Columbus%2C_Indiana_LCCN2013650708.jpg/500px-Fire_Station_4%2C_Columbus%2C_Indiana_LCCN2013650708.jpg", "image_side": "back"}, {"type": "image", "indicator": "Building", "front": "", "back": "Sainsbury Wing (National Gallery, London) (Robert Venturi)", "work": "Sainsbury Wing (National Gallery, London)", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Galer%C3%ADa_Nacional%2C_Londres%2C_Inglaterra%2C_2014-08-07%2C_DD_036.JPG/500px-Galer%C3%ADa_Nacional%2C_Londres%2C_Inglaterra%2C_2014-08-07%2C_DD_036.JPG", "image_side": "front"}, {"type": "basic", "indicator": "Building", "front": "Building: addition to London's National Gallery co-designed with Denise Scott Brown; Scott Brown refused to attend the 1991 Pritzker Prize ceremony because Venturi received sole credit", "back": "Sainsbury Wing (National Gallery, London) (Robert Venturi)", "work": "Sainsbury Wing (National Gallery, London)", "frequency": 4, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Galer%C3%ADa_Nacional%2C_Londres%2C_Inglaterra%2C_2014-08-07%2C_DD_036.JPG/500px-Galer%C3%ADa_Nacional%2C_Londres%2C_Inglaterra%2C_2014-08-07%2C_DD_036.JPG", "image_side": "back"}, {"type": "basic", "indicator": "Architect", "front": "Architect: 'Less is a bore' — quip playing on Mies van der Rohe's 'Less is more'; leading figure of Postmodern architecture", "back": "Robert Venturi", "work": "Other Works / General", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Louis Kahn was his teacher; both worked in Philadelphia", "back": "Robert Venturi", "work": "Other Works / General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: Lieb House — semicircle 'sailboat' window, number nine beside the front door; had to be floated up the East River to escape New Jersey", "back": "Robert Venturi", "work": "Other Works / General", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: Franklin Court in Philadelphia — two steel-tube 'ghost structures' in the shape of homes", "back": "Robert Venturi", "work": "Other Works / General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: Denise Scott Brown's essay 'Room at the Top? Sexism and the Star System in Architecture' criticized the field for crediting him alone with coining the term 'duck building'", "back": "Robert Venturi", "work": "Other Works / General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Architect", "front": "Architect: his favorite building in America was Sever Hall by H.H. Richardson at Harvard", "back": "Robert Venturi", "work": "Other Works / General", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Building", "front": "Building: designed a bank in the Disney-sponsored planned town of Celebration, Florida, alongside a movie theatre by Cesar Pelli", "back": "Robert Venturi", "work": "Other Works / General", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

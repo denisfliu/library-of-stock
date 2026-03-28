@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "John Everett Millais";
 let cards = [{"type": "basic", "indicator": "Painting", "front": "Painting: a Shakespeare character sings while floating down a stream, holding a scattered bouquet of brightly colored flowers", "back": "Ophelia (John Everett Millais)", "work": "Ophelia (1851–1852)", "frequency": 7, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Elizabeth Siddal posed in a cold bathtub as the model", "back": "Ophelia (John Everett Millais)", "work": "Ophelia (1851–1852)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: her father requested payment for medical bills", "back": "Ophelia (John Everett Millais)", "work": "Ophelia (1851–1852)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: landscape inspired by the Hogsmill River", "back": "Ophelia (John Everett Millais)", "work": "Ophelia (1851–1852)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: controversial carpentry shop scene with wood shavings on the floor", "back": "Christ in the House of His Parents (John Everett Millais)", "work": "Christ in the House of His Parents (1849–1850)", "frequency": 7, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a red-headed boy holds up a bleeding hand and kisses his mother", "back": "Christ in the House of His Parents (John Everett Millais)", "work": "Christ in the House of His Parents (1849–1850)", "frequency": 7, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a dove on a ladder represents the Holy Spirit", "back": "Christ in the House of His Parents (John Everett Millais)", "work": "Christ in the House of His Parents (1849–1850)", "frequency": 7, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Charles Dickens criticized this carpentry scene; John Ruskin defended it", "back": "Christ in the House of His Parents (John Everett Millais)", "work": "Christ in the House of His Parents (1849–1850)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a woman hands the title document to a guard while her wounded husband (arm in a sling) embraces her and a dog jumps up", "back": "The Order of Release (John Everett Millais)", "work": "The Order of Release (1853)", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/John_Everett_Millais_-_The_Order_of_Release_1746_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_The_Order_of_Release_1746_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/John_Everett_Millais_-_The_Order_of_Release_1746_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_The_Order_of_Release_1746_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: married Effie Gray after her unconsummated marriage to John Ruskin", "back": "John Everett Millais", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: she posed for The Order of Release and Peace Concluded", "back": "John Everett Millais", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: a child looking up in wonder blowing bubbles", "back": "Bubbles (John Everett Millais)", "work": "Other Works", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: sold to Pears Soap for advertisements, commercializing the Homo Bulla motif", "back": "Bubbles (John Everett Millais)", "work": "Other Works", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Walter Raleigh listens to an old sailor's tales on the beach", "back": "The Boyhood of Raleigh (John Everett Millais)", "work": "Other Works", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: deconstructed on the Talk Talk album cover for It's My Life", "back": "The Boyhood of Raleigh (John Everett Millais)", "work": "Other Works", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: portrait of Trelawny as a wizened sailor subtitled 'It might be done and England should do it'", "back": "The North-West Passage (John Everett Millais)", "work": "Other Works", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: teetotaler Trelawny was outraged by the inclusion of a glass of grog", "back": "The North-West Passage (John Everett Millais)", "work": "Other Works", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: a reclining ornithologist shows a stuffed bird of paradise to a group of children", "back": "The Ruling Passion (John Everett Millais)", "work": "Other Works", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: two girls play with toy animals as their father holds a newspaper announcing the end of the Crimean War", "back": "Peace Concluded (John Everett Millais)", "work": "Peace Concluded (1856)", "frequency": 2, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Sir_John_Everett_Millais_-_Peace_Concluded_-_Google_Art_Project.jpg/500px-Sir_John_Everett_Millais_-_Peace_Concluded_-_Google_Art_Project.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Sir_John_Everett_Millais_-_Peace_Concluded_-_Google_Art_Project.jpg/500px-Sir_John_Everett_Millais_-_Peace_Concluded_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Other Works (John Everett Millais)", "work": "Other Works", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Ophelia (John Everett Millais)", "work": "Ophelia (1851–1852)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Christ in the House of His Parents (John Everett Millais)", "work": "Christ in the House of His Parents (1849–1850)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "The Order of Release (John Everett Millais)", "work": "The Order of Release (1853)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/John_Everett_Millais_-_The_Order_of_Release_1746_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_The_Order_of_Release_1746_-_Google_Art_Project.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/John_Everett_Millais_-_The_Order_of_Release_1746_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_The_Order_of_Release_1746_-_Google_Art_Project.jpg", "image_side": "front"}, {"type": "image", "indicator": "Painting", "front": "", "back": "Peace Concluded (John Everett Millais)", "work": "Peace Concluded (1856)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Sir_John_Everett_Millais_-_Peace_Concluded_-_Google_Art_Project.jpg/500px-Sir_John_Everett_Millais_-_Peace_Concluded_-_Google_Art_Project.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Sir_John_Everett_Millais_-_Peace_Concluded_-_Google_Art_Project.jpg/500px-Sir_John_Everett_Millais_-_Peace_Concluded_-_Google_Art_Project.jpg", "image_side": "front"}, {"type": "basic", "indicator": "Painting", "front": "Painting: long purple flowers represent 'dead men's fingers'; chain of violets around neck; poppy by her hand; flora so detailed a botany professor used it to instruct students", "back": "Ophelia (John Everett Millais)", "work": "Ophelia (1851–1852)", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: originally featured a water vole; Ruskin called the setting a 'rascally wirefenced garden-rolled-nursery-maid's paradise'", "back": "Ophelia (John Everett Millais)", "work": "Ophelia (1851–1852)", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Ophelia_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: Dickens called Mary 'so horrible in her ugliness' as to appear 'in the lowest ginshop in England'; his criticism ironically boosted the PRB's popularity", "back": "Christ in the House of His Parents (John Everett Millais)", "work": "Christ in the House of His Parents (1849–1850)", "frequency": 3, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg/500px-John_Everett_Millais_-_Christ_in_the_House_of_His_Parents_%28%60The_Carpenter%27s_Shop%27%29_-_Google_Art_Project.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: title woman fails to see a double rainbow in the background; a butterfly rests on her red cloak", "back": "The Blind Girl (John Everett Millais)", "work": "Other Works", "frequency": 2, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: painted John Ruskin standing in front of a waterfall in Glenfinlas; unfinished portrait of Thomas Carlyle was attacked by suffragette Anne Hunt", "back": "John Everett Millais", "work": "Other Works", "frequency": 1, "tags": [], "images": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/John_Everett_Millais_-_Autumn_Leaves.jpeg/500px-John_Everett_Millais_-_Autumn_Leaves.jpeg", "image_side": "back"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

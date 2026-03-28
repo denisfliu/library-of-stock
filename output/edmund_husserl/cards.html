@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Edmund Husserl";
 let cards = [{"type": "basic", "indicator": "Work", "front": "Work: attacks psychologism in its first volume; Volume II contains the rallying cry of phenomenology, 'back to the things themselves'", "back": "Logical Investigations (Husserl)", "work": "Logical Investigations", "frequency": 10, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: identifies three strata of logic: morphology of meanings, logic of consequence, and metalogic", "back": "Logical Investigations (Husserl)", "work": "Logical Investigations", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: examines mereology (the relationship between wholes and parts), in which objects not made of indivisible atoms are called 'gunk'", "back": "Logical Investigations (Husserl)", "work": "Logical Investigations", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: suspending judgment about the existence of the natural world while analyzing one's experience with phenomena; adopted from the Greek skeptics", "back": "Epoche / Bracketing (Husserl)", "work": "Epoche, Bracketing, and Eidetic Reduction", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: coined in Husserl's Ideas, this method focuses on first-person experience to identify essential features of phenomena", "back": "Eidetic reduction (Husserl)", "work": "Epoche, Bracketing, and Eidetic Reduction", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Husserl's distinction between conscious intentional acts and their objects-of-intention, extending Brentano's idea of intentionality", "back": "Noesis and Noema (Husserl)", "work": "Intentionality, Noesis, and Noema", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: Husserl's Aristotelian-derived term for sensory material formed from the intentional content of perceptual experience", "back": "Hyle (Husserl)", "work": "Intentionality, Noesis, and Noema", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: five 'meditations' modeled on Descartes, based on 1929 Sorbonne lectures; Eugen Fink added a sixth; first translated into French by Levinas", "back": "Cartesian Meditations (Husserl)", "work": "Cartesian Meditations", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Concept", "front": "Concept: the pregiven framework of beliefs and attitudes shaping shared human experience; introduced in The Crisis of European Sciences; Habermas synthesized it with 'system'", "back": "Lifeworld / Lebenswelt (Husserl)", "work": "The Lifeworld (Lebenswelt)", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: this thinker's first book, Philosophy of Arithmetic, was criticized for psychologism by Gottlob Frege; studied mathematics under Karl Weierstrass", "back": "Edmund Husserl", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Heidegger dedicated Being and Time to this thinker but rescinded the dedication due to this thinker's Jewish ancestry", "back": "Edmund Husserl", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Edith Stein wrote her dissertation on empathy under this thinker, later became a Carmelite nun, died at Auschwitz, and became a patron saint of Europe", "back": "Edmund Husserl", "work": "General / Biographical", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: argued 'naturalism refutes itself' in the paper 'Philosophy as Rigorous Science'", "back": "Edmund Husserl", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Derrida examined this thinker in Speech and Phenomena and wrote on the 'Origin of Geometry' essay", "back": "Edmund Husserl", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: argued perception of time depends on retention and protention", "back": "Edmund Husserl", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Philosopher", "front": "Philosopher: Herman Van Breda saved this thinker's archives from the Nazis", "back": "Edmund Husserl", "work": "General / Biographical", "frequency": 1, "tags": []}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();

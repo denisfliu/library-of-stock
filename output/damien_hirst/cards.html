@@ -333,6 +333,35 @@ h1 {
     color: #6b9eff;
     border-color: #6b9eff;
 }
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
 </style>
 </head>
 <body>
@@ -442,6 +471,26 @@ h1 {
     </div>
 </div>
 
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
 <script>
 const TOPIC = "Damien Hirst";
 let cards = [{"type": "basic", "indicator": "Sculpture", "front": "Sculpture: tiger shark preserved in formaldehyde, funded by Charles Saatchi", "back": "The Physical Impossibility of Death in the Mind of Someone Living (Damien Hirst)", "work": "The Physical Impossibility of Death in the Mind of Someone Living (1991)", "frequency": 7, "tags": [], "images": [{"url": "", "side": "back"}]}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: parodied by the Stuckists with A Dead Shark Isn't Art", "back": "The Physical Impossibility of Death in the Mind of Someone Living (Damien Hirst)", "work": "The Physical Impossibility of Death in the Mind of Someone Living (1991)", "frequency": 2, "tags": [], "images": [{"url": "", "side": "back"}]}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: sold to Steven Cohen in 2004; shark later replaced due to deterioration", "back": "The Physical Impossibility of Death in the Mind of Someone Living (Damien Hirst)", "work": "The Physical Impossibility of Death in the Mind of Someone Living (1991)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: displayed at the Met from 2007 to 2010 alongside Francis Bacon's Head I", "back": "The Physical Impossibility of Death in the Mind of Someone Living (Damien Hirst)", "work": "The Physical Impossibility of Death in the Mind of Someone Living (1991)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: part of the Natural History series; variations include The Kingdom", "back": "The Physical Impossibility of Death in the Mind of Someone Living (Damien Hirst)", "work": "The Physical Impossibility of Death in the Mind of Someone Living (1991)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: installed in front of Marcus Harvey's Myra (portrait made of children's handprints) at the Sensation exhibition", "back": "The Physical Impossibility of Death in the Mind of Someone Living (Damien Hirst)", "work": "The Physical Impossibility of Death in the Mind of Someone Living (1991)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: Don Thompson's book on art economics is titled in reference to this work", "back": "The Physical Impossibility of Death in the Mind of Someone Living (Damien Hirst)", "work": "The Physical Impossibility of Death in the Mind of Someone Living (1991)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: platinum-cast human skull encrusted with 8,601 diamonds", "back": "For the Love of God (Damien Hirst)", "work": "For the Love of God (2007)", "frequency": 5, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Damien-Hirst-1_%282007%29.jpg/500px-Damien-Hirst-1_%282007%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Damien-Hirst-1_%282007%29.jpg/500px-Damien-Hirst-1_%282007%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: pear-shaped 'Skull Star Diamond' is at its center", "back": "For the Love of God (Damien Hirst)", "work": "For the Love of God (2007)", "frequency": 1, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Damien-Hirst-1_%282007%29.jpg/500px-Damien-Hirst-1_%282007%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Damien-Hirst-1_%282007%29.jpg/500px-Damien-Hirst-1_%282007%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: displayed in Tate Modern's Turbine Hall when no Unilever commission was installed", "back": "For the Love of God (Damien Hirst)", "work": "For the Love of God (2007)", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Damien-Hirst-1_%282007%29.jpg/500px-Damien-Hirst-1_%282007%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: bull with gold-encrusted horns in formaldehyde, sold at Sotheby's 'Beautiful Inside My Head Forever' auction", "back": "The Golden Calf (Damien Hirst)", "work": "The Golden Calf (2008)", "frequency": 3, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Worshiping_the_golden_calf.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: the artist said it showed 'Life's like this, then it stops'; made for Charles Saatchi", "back": "Mother and Child Divided (Damien Hirst)", "work": "Other Formaldehyde Works", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: a lamb wandering off alone, preserved in formaldehyde", "back": "Away from the Flock (Damien Hirst)", "work": "Other Formaldehyde Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: a unicorn standing in a tank of formaldehyde", "back": "The Dream (Damien Hirst)", "work": "Other Formaldehyde Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: three Carrara marble plinths with bony carcasses in crucifixion poses in formaldehyde", "back": "God Alone Knows (Damien Hirst)", "work": "Other Formaldehyde Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Sculpture", "front": "Sculpture: rotting cow and bull, banned by New York public health officials", "back": "Two Fucking and Two Watching (Damien Hirst)", "work": "Other Formaldehyde Works", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Painting", "front": "Painting: over 1,000 Pharmaceutical/Spot paintings; only one contains a black dot", "back": "Spot Paintings (Damien Hirst)", "work": "Dot and Spot Paintings", "frequency": 1, "tags": [], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Damien_Hirst_%286712600369%29.jpg/500px-Damien_Hirst_%286712600369%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Painting", "front": "Painting: canvases covered with dots in a grid, inspired by Pierre Bonnard; accused of appropriating Aboriginal dot painting", "back": "Veil Paintings (Damien Hirst)", "work": "Dot and Spot Paintings", "frequency": 3, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Damien_Hirst_%286712600369%29.jpg/500px-Damien_Hirst_%286712600369%29.jpg", "side": "back"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Damien_Hirst_%286712600369%29.jpg/500px-Damien_Hirst_%286712600369%29.jpg", "image_side": "back"}, {"type": "basic", "indicator": "Artist", "front": "Artist: installation In and Out of Love killed 9,000 butterflies at the Tate Modern", "back": "Damien Hirst", "work": "Other Works and Installations", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Verity — large sculpture of pregnant woman with visible fetus in Devon, inspired by Degas's Little Dancer", "back": "Damien Hirst", "work": "Other Works and Installations", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Hell and The Acquired Inability to Escape — cigarette-themed sculptures", "back": "Damien Hirst", "work": "Other Works and Installations", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: curated the Freeze exhibition; early patron was Charles Saatchi", "back": "Damien Hirst", "work": "General / Biographical", "frequency": 5, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Venice exhibition 'Treasures from the Wreck of the Unbelievable' purported to display ancient Greek shipwreck artifacts", "back": "Damien Hirst", "work": "General / Biographical", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: butterfly and pills-themed Empathy Suite in Las Vegas — most expensive hotel room", "back": "Damien Hirst", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: accused of plagiarism by John LeKay regarding the Spiritus Callidus series", "back": "Damien Hirst", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Victor Ehikhamenor criticized him for copying a Yoruba sculpture for Golden Heads (Female)", "back": "Damien Hirst", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: reportedly admires Piero Manzoni's Artist's Breath", "back": "Damien Hirst", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Artist", "front": "Artist: Jay Jopling's White Cube gallery hosted YBA shows", "back": "Damien Hirst", "work": "General / Biographical", "frequency": 1, "tags": []}, {"type": "image", "indicator": "Sculpture", "front": "", "back": "The Physical Impossibility of Death in the Mind of Someone Living (Damien Hirst)", "work": "The Physical Impossibility of Death in the Mind of Someone Living (1991)", "frequency": 0, "tags": [], "images": [{"url": "", "side": "front"}]}, {"type": "image", "indicator": "Painting", "front": "", "back": "Veil Paintings (Damien Hirst)", "work": "Dot and Spot Paintings", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Damien_Hirst_%286712600369%29.jpg/500px-Damien_Hirst_%286712600369%29.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Damien_Hirst_%286712600369%29.jpg/500px-Damien_Hirst_%286712600369%29.jpg", "image_side": "front"}, {"type": "image", "indicator": "Sculpture", "front": "", "back": "For the Love of God (Damien Hirst)", "work": "For the Love of God (2007)", "frequency": 0, "tags": [], "images": [{"url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Damien-Hirst-1_%282007%29.jpg/500px-Damien-Hirst-1_%282007%29.jpg", "side": "front"}], "image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Damien-Hirst-1_%282007%29.jpg/500px-Damien-Hirst-1_%282007%29.jpg", "image_side": "front"}, {"type": "image", "indicator": "Sculpture", "front": "", "back": "The Golden Calf (2008) (Damien Hirst)", "work": "The Golden Calf (2008)", "frequency": 0, "image_url": "https://upload.wikimedia.org/wikipedia/commons/2/2f/Worshiping_the_golden_calf.jpg", "tags": [], "image_side": "front"}];
@@ -529,6 +578,83 @@ function duplicateSelected() {
     });
     renderTable();
 }
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+// ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {
     const tag = document.getElementById('bulk-tag').value.trim();
