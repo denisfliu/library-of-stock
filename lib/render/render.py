@@ -46,16 +46,16 @@ def _linkify(text, cross_refs, self_topic, escaped=True):
         pattern = r'(?<![/>])(\b' + re.escape(name_escaped) + r'\b)(?![^<]*>)'
 
         if ref.get('exists'):
-            slug = ref.get('target_slug', '')
+            slug = ref.get('slug') or ref.get('target_slug', '')
             href = f"../{slug}/stock.html"
             # If linking to a specific work within a page, add anchor
-            target_work = ref.get('target_work')
+            target_work = ref.get('target_work') or ref.get('work')
             if target_work:
                 anchor = re.sub(r'[^a-z0-9]+', '-', target_work.lower()).strip('-')
                 href += f"#{anchor}"
             replacement = f'<a href="{href}" class="crossref-inline">{name_escaped}</a>'
         else:
-            target = escape(ref.get('target_topic') or name)
+            target = escape(ref.get('target_topic') or ref.get('topic') or name)
             replacement = f'<span class="crossref-inline-red" title="No page yet: {target}">{name_escaped}</span>'
 
         new_text, count = re.subn(pattern, replacement, text, count=1, flags=re.IGNORECASE)
@@ -261,7 +261,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         for ref in cross_refs:
             ref_name = ref.get('name', '')
             if ref.get('exists') and ref_name and ref_name.lower() in work_name_lower:
-                slug = ref.get('target_slug', '')
+                slug = ref.get('slug') or ref.get('target_slug', '')
                 href = f"../{slug}/stock.html"
                 # If the ref points to a work (not the topic itself), add anchor
                 target_work = ref.get('target_work')

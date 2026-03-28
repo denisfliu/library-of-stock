@@ -218,9 +218,9 @@ def find_cross_refs(d, topic_name, topic_slug):
 
         ref = {
             'name': name,
-            'target_topic': target_topic,
-            'target_slug': target_slug,
-            'target_work': target_work,
+            'topic': target_topic,
+            'slug': target_slug,
+            'work': target_work,
             'type': entry_type,
             'exists': True,
         }

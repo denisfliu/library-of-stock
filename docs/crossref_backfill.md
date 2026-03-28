@@ -35,31 +35,33 @@ Scan all text fields (summary, comprehensive_summary, work descriptions, clue te
   "cross_refs": [
     {
       "name": "Robert Henri",
-      "target_topic": "Robert Henri",
-      "target_slug": "robert_henri",
-      "target_work": null,
+      "topic": "Robert Henri",
+      "slug": "robert_henri",
+      "work": null,
       "type": "topic",
       "exists": true
     },
     {
       "name": "John Sloan",
-      "target_topic": "Ashcan School",
-      "target_slug": "ashcan_school",
-      "target_work": "John Sloan",
+      "topic": "Ashcan School",
+      "slug": "ashcan_school",
+      "work": "John Sloan",
       "type": "work",
       "exists": true
     },
     {
       "name": "Winslow Homer",
-      "target_topic": "Winslow Homer",
-      "target_slug": "",
-      "target_work": null,
+      "topic": "Winslow Homer",
+      "slug": "",
+      "work": null,
       "type": "topic",
       "exists": false
     }
   ]
 }
 ```
+
+**Field names**: use `slug`, `topic`, `work` — these match what `topic_index.json` returns directly. Do NOT use `target_slug`, `target_topic`, `target_work` (old format, still supported by renderer but deprecated).
 
 ## Priority Rules
 
@@ -88,9 +90,10 @@ To check: look up the name in `output/topic_index.json`. If found with `type: "t
 - Don't modify any field except `cross_refs`
 - Don't add refs for generic terms ("painting", "novel", "philosophy")
 - Don't add refs for the topic itself
-- Don't add duplicate refs (same target_topic + target_work)
-- Don't set `target_topic` to `null` — use the name string instead if no page exists
-- Don't set `target_slug` to `null` — use empty string `""` if no page exists
+- Don't add duplicate refs (same topic + work)
+- Don't set `topic` to `null` — use the name string instead if no page exists
+- Don't set `slug` to `null` — use empty string `""` if no page exists
+- **Always populate `slug` when `exists: true`** — copy it directly from the index entry
 
 ## Pipeline
 
