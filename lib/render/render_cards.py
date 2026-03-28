@@ -783,6 +783,25 @@ function attachCtxMenu() {{
     }});
 }}
 attachCtxMenu();
+
+// ── Shift-click range selection ───────────────────────────────
+let lastCheckedIdx = -1;
+document.getElementById('card-body').addEventListener('click', e => {{
+    const cb = e.target.closest('.row-cb');
+    if (!cb) return;
+    const idx = parseInt(cb.dataset.idx);
+    if (e.shiftKey && lastCheckedIdx >= 0) {{
+        const allCbs = [...document.querySelectorAll('.row-cb')];
+        const indices = allCbs.map(c => parseInt(c.dataset.idx));
+        const a = indices.indexOf(lastCheckedIdx);
+        const b = indices.indexOf(idx);
+        if (a >= 0 && b >= 0) {{
+            const lo = Math.min(a, b), hi = Math.max(a, b);
+            allCbs.slice(lo, hi + 1).forEach(c => c.checked = cb.checked);
+        }}
+    }}
+    lastCheckedIdx = idx;
+}});
 // ──────────────────────────────────────────────────────────────
 
 function addTagToSelected() {{
