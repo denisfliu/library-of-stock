@@ -720,6 +720,9 @@ function saveModal(andNew) {{
     if (!card.front && (!card.images || !card.images.length)) {{ alert('Front or image required'); return; }}
     if (editIndex >= 0) {{
         cards[editIndex] = {{ ...cards[editIndex], ...card }};
+        // Clear legacy image fields — images array is now authoritative
+        delete cards[editIndex].image_url;
+        delete cards[editIndex].image_side;
     }} else {{
         cards.push(card);
     }}
