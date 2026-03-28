@@ -73,6 +73,10 @@ Write this as if someone who knows nothing about the topic will read it to get a
 The analysis JSON must include these fields for the index page:
 
 - **`category`** and **`subcategory`**: pulled automatically from qbreader API data (see `docs/categories.md`)
+- **`genre`**: the most specific type within the subcategory, when applicable. Required for:
+  - Fine Arts > Other Fine Arts: set to the specific type from `docs/categories.md`: `"Architecture"`, `"Film"`, `"Photography"`, `"Dance"`, `"Jazz"`, `"Musicals"`, `"Opera"`, or `"Misc Arts"`
+  - Science > Other Science: set to the specific field from `docs/categories.md`: `"Math"`, `"Astronomy"`, `"Computer Science"`, `"Earth Science"`, `"Engineering"`, or `"Misc Science"`
+  - Leave as `""` for all other subcategories (Visual Fine Arts, Auditory Fine Arts, Biology, Chemistry, Physics, etc.)
 - **`year`**: birth year for people, creation/publication year for works, start year for periods/movements. Use negative numbers for BCE. This is outside knowledge — OK to use here.
 - **`continent`**: where the topic is primarily associated with. One of: Africa, Asia, Europe, North America, Oceania, South America. This is outside knowledge — OK to use here.
 - **`country`**: country the topic is primarily associated with (e.g., "France", "Japan", "England"). This is outside knowledge — OK to use here.

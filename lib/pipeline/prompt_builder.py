@@ -108,7 +108,7 @@ Read all output files. Label text mention clues as contextual.
 Read `output/{{slug}}/clues.txt`. Create `output/{{slug}}/analysis.json` following the analysis protocol above.
 Set "topic" to the FULL proper name (from the answerline). Reference `output/emily_carr/analysis.json` for formatting.
 
-Required fields: `topic`, `summary` (non-empty), `works`, `comprehensive_summary`, `cards`, `category`, `subcategory`, `year`, `continent`, `country`, `tags`, `links`, `recursive_suggestions`
+Required fields: `topic`, `summary` (non-empty), `works`, `comprehensive_summary`, `cards`, `category`, `subcategory`, `genre`, `year`, `continent`, `country`, `tags`, `links`, `recursive_suggestions`
 
 Leave `cards` as an empty array `[]` — a dedicated card agent will generate them after the batch.
 
