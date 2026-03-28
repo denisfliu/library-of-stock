@@ -56,7 +56,7 @@ For each work/subtopic, provide:
 1. **Work name**, brief identification (from clues), and **`indicator`** field — the card type indicator for this work (e.g., `"Play"`, `"Novel"`, `"Painting"`). For general/biographical sections, use the creator type (e.g., `"Playwright"`, `"Composer"`). This is stored on the work object in the JSON and used during card generation.
 2. **Clues ranked by frequency**, each with:
    - A clear statement of what the clue is
-   - How many times it appeared (approximate)
+   - How many times it appeared as a **number** (e.g. "appears 4 times") — never use text labels like "very common", "common", "rare"
    - 1-2 example quotes from actual questions showing how it's worded
 3. Mark which clues tend to appear in power (early/hard) vs. giveaway (late/easy)
 

@@ -12,7 +12,7 @@ Each card object has:
 - **`front`**: for `"basic"` cards, the full card front text including indicator (e.g., `"Play: the protagonist tricks..."`). For `"image"` cards, always `""` — the image is the front.
 - **`back`**: the card back text
 - **`work`**: the EXACT `name` of the work section this card belongs to (must match character-for-character). The renderer uses this to automatically attach the work's image to the card — missing or wrong `work` = no image on card back.
-- **`frequency`**: the approximate frequency of the underlying clue
+- **`frequency`**: the number of times this clue appeared across all questions (integer, e.g. `3`). Never use text labels like "common" or "rare".
 - **`tags`**: ALWAYS set to empty list `[]` — do NOT copy from topic-level tags or work names. The user adds card tags interactively in the card editor.
 
 ### Basic cards (work-based clues)
