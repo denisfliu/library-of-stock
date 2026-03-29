@@ -260,7 +260,7 @@ for filepath, d in missing_files:
         updated += 1
         print(f'  {topic_name}: {len(refs)} refs')
         for r in refs[:3]:
-            print(f'    -> {r["name"]!r} ({r["target_topic"]})')
+            print(f'    -> {r["name"]!r} ({r["topic"]})')
     else:
         d['cross_refs'] = []
         if not DRY_RUN:
