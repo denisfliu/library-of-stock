@@ -20,12 +20,14 @@ Each card object has:
 For each clue that has specific, learnable content (not just "this Czech composer" identifiers), generate a basic card:
 
 - **Front**: `Indicator: self-contained clue, lowercase start after colon`
-- **Back**: `Work Name (Creator)` when the card is about a specific work, or just `Creator Name` when the card is a general fact about the person (collaborations, biographical info, etc.). Only use the `Work (Creator)` format when it makes sense — i.e., the clue is specifically about that work.
+- **Back**: `Work Name (Creator)` when the card is about a specific work, or just `Creator Name` when the card is a general fact about the person (collaborations, biographical info, etc.). The back should be the thing the indicator names — if the indicator is `Photograph:`, the back is the photograph, not the photographer.
 
-The **indicator** is the type of thing being tested. Choose the most specific applicable one:
+The **indicator** tells the reader what type of thing they're trying to identify. Use the **broadest label that still uniquely identifies the type** — don't over-specify. Match the indicator to what the clue is actually about, not the creator's general medium. Think about what the thing *is*, not what the person *does*.
 - Works: `Novel:`, `Play:`, `Poem:`, `Opera:`, `Symphony:`, `Painting:`, `Sculpture:`, `Film:`, `Short Story:` etc.
 - Creators: `Author:`, `Composer:`, `Artist:`, `Playwright:`, `Philosopher:` etc.
 - Other: `Work:` (generic fallback), `Concept:`, `Event:`, `Place:` etc.
+- Prefer broad: `Work:` over `Short Story:`, `Artist:` over `Sculptor:`, `Author:` over `Novelist:`
+- Only get specific when the broad label would be ambiguous or misleading — e.g., use `Photograph:` if the work could be mistaken for a painting, `Opera:` to distinguish from a play
 
 The clue text should be a clean, self-contained statement — not a raw quote from a question. Rewrite if needed for clarity, but preserve the factual content. Preserve proper noun capitalization; only lowercase common words at the start (e.g., "the protagonist" not "The protagonist", but "Vindice" stays capitalized).
 
@@ -51,7 +53,7 @@ Each card object includes an `"indicator"` field storing which indicator was use
 
 ### Card quality rules
 
+- **Each card tests ONE fact.** This is the most important rule. If a front contains two independent facts joined by semicolons, "and", or separate clauses, split them into separate cards. Two facts = two cards, always. A card with "X; also Y" is wrong — make one card for X and one for Y.
 - **Never leak the answer on the front.** If the back is "Work (Creator)", do not mention the creator's name on the front. Rewrite to remove it — e.g., "Lawren Harris called this work its artist's best work" not "Lawren Harris called it Carr's best work."
 - **Use general indicators**: `Artist:` (not `Painter:` or `Sculptor:`), `Author:` (not `Novelist:`), etc.
 - **The front must teach something specific.** Every card front should contain a fact that, once memorized, helps you identify the answer in a quizbowl question.
-- **Each card tests ONE fact.** If a clue has multiple semicolons packing different facts, split into separate cards.
