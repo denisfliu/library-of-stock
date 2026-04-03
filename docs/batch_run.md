@@ -108,7 +108,7 @@ Open `progress.html` (via `./serve.sh`) — auto-refreshes every 5s showing queu
 python3 post_batch.py
 
 # 2. Launch ALL agents printed by post_batch.py IN PARALLEL:
-#    - One card agent per topic (step 3/4): each generates cards for one topic
+#    - Card agents (step 3/4): each generates cards for 3-5 topics
 #    - Sonnet crossref agent (step 4/4): adds cross_refs to all completed topics
 #    Launch them all at the same time — they write to different fields and don't conflict.
 
