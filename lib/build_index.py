@@ -395,6 +395,9 @@ h1 {
     <a href="dev/score_clues_review.html" style="display:block;background:transparent;color:#9aa0a7;border:1px solid #2a2f37;border-radius:4px;padding:0.3rem 0.7rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#1a1f25'" onmouseout="this.style.background='transparent'">Score Clue Reviews</a>
     <button style="display:block;width:100%;text-align:left;background:transparent;color:#9aa0a7;border:1px solid #2a2f37;border-radius:4px;padding:0.3rem 0.7rem;font-size:0.78rem;cursor:pointer;white-space:nowrap;" onmouseover="this.style.background='#1a1f25'" onmouseout="this.style.background='transparent'" onclick="var p=document.getElementById('queue-panel');p.style.display=p.style.display==='none'?'block':'none';document.getElementById('dev-panel').style.display='none'">Queue <span style="background:#2a3040;color:#6b9eff;border-radius:8px;padding:0.1rem 0.4rem;font-size:0.72rem;margin-left:0.3rem;">QUEUE_TOTAL</span></button>
     <a href="dev/progress.html" style="display:block;background:transparent;color:#9aa0a7;border:1px solid #2a2f37;border-radius:4px;padding:0.3rem 0.7rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#1a1f25'" onmouseout="this.style.background='transparent'">Progress</a>
+    <a href="dev/stats.html" style="display:block;background:transparent;color:#9aa0a7;border:1px solid #2a2f37;border-radius:4px;padding:0.3rem 0.7rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#1a1f25'" onmouseout="this.style.background='transparent'">Stats</a>
+    <a href="dev/changelog.html" style="display:block;background:transparent;color:#9aa0a7;border:1px solid #2a2f37;border-radius:4px;padding:0.3rem 0.7rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#1a1f25'" onmouseout="this.style.background='transparent'">Changelog</a>
+    <a href="dev/crossrefs.html" style="display:block;background:transparent;color:#9aa0a7;border:1px solid #2a2f37;border-radius:4px;padding:0.3rem 0.7rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#1a1f25'" onmouseout="this.style.background='transparent'">Cross-refs</a>
   </div>
 </div>
 <button style="background:#1a1f25;color:#9aa0a7;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.6rem;font-size:0.85rem;cursor:pointer;line-height:1;" title="Random guide" onclick="const g=guides[Math.floor(Math.random()*guides.length)];if(g)window.location.href=g.path;">&#x1f3b2;</button>
@@ -409,6 +412,10 @@ h1 {
     <div style="flex:1;">
       <h3 style="font-size:0.85rem;color:#e0e0e0;margin-bottom:0.4rem;">Second Pass (SECOND_COUNT)</h3>
       <ul style="list-style:none;max-height:30vh;overflow-y:auto;color:#9aa0a7;">SECOND_PASS_LIST</ul>
+    </div>
+    <div style="flex:1;">
+      <h3 style="font-size:0.85rem;color:#e0e0e0;margin-bottom:0.4rem;">Redo 1st Pass (REDO_COUNT)</h3>
+      <ul style="list-style:none;max-height:30vh;overflow-y:auto;color:#9aa0a7;">REDO_PASS_LIST</ul>
     </div>
   </div>
 </div>
@@ -978,11 +985,34 @@ def build():
     # Queue data for index page
     queue_first = json.loads(Path("queue/queue_first_pass.json").read_text()) if Path("queue/queue_first_pass.json").exists() else {"queue": []}
     queue_second = json.loads(Path("queue/queue_second_pass.json").read_text()) if Path("queue/queue_second_pass.json").exists() else {"queue": []}
+    queue_redo = json.loads(Path("queue/queue_redo_first.json").read_text()) if Path("queue/queue_redo_first.json").exists() else {"queue": []}
     first_count = len(queue_first["queue"])
     second_count = len(queue_second["queue"])
-    total_count = first_count + second_count
+    redo_count = len(queue_redo["queue"])
+    total_count = first_count + second_count + redo_count
     first_list = "".join(f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{item["topic"]}</li>' for item in queue_first["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
-    second_list = "".join(f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{item["topic"]}</li>' for item in queue_second["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
+
+    def _second_li(item):
+        slug = item.get("slug", "")
+        topic = item["topic"]
+        if slug:
+            return f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25"><a href="output/{slug}/stock.html" style="color:#9aa0a7;text-decoration:none;" onmouseover="this.style.color=\'#6b9eff\'" onmouseout="this.style.color=\'#9aa0a7\'">{topic}</a></li>'
+        return f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{topic}</li>'
+    second_list = "".join(_second_li(item) for item in queue_second["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
+
+    tier_colors = {"definite": "#ff6b6b", "likely": "#ffa94d", "maybe": "#999"}
+    def _redo_li(item):
+        slug = item.get("slug", "")
+        topic = item["topic"]
+        tier = item.get("tier", "maybe")
+        color = tier_colors.get(tier, "#999")
+        stats = f'{item.get("works_before","?")}w / {item.get("questions_available","?")}Q'
+        badge = f'<span style="color:{color};font-size:0.72rem;margin-left:0.3rem">[{tier}]</span>'
+        detail = f'<span style="color:#555;font-size:0.72rem;margin-left:0.3rem">({stats})</span>'
+        if slug:
+            return f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25"><a href="output/{slug}/stock.html" style="color:#9aa0a7;text-decoration:none;" onmouseover="this.style.color=\'#6b9eff\'" onmouseout="this.style.color=\'#9aa0a7\'">{topic}</a>{badge}{detail}</li>'
+        return f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{topic}{badge}{detail}</li>'
+    redo_list = "".join(_redo_li(item) for item in queue_redo["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
 
     # Write shared guides data file for search_nav.js
     guides_js_path = OUTPUT_DIR / "guides_data.js"
@@ -995,8 +1025,10 @@ def build():
     html = html.replace("QUEUE_TOTAL", str(total_count))
     html = html.replace("FIRST_COUNT", str(first_count))
     html = html.replace("SECOND_COUNT", str(second_count))
+    html = html.replace("REDO_COUNT", str(redo_count))
     html = html.replace("FIRST_PASS_LIST", first_list)
     html = html.replace("SECOND_PASS_LIST", second_list)
+    html = html.replace("REDO_PASS_LIST", redo_list)
 
     out_path = Path("index.html")
     with open(out_path, "w") as f:
