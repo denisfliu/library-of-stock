@@ -217,6 +217,41 @@ python3 lib/render/render_cards.py
 ```\
 """
 
+CARD_AGENT_BATCH_TEMPLATE = """\
+You are a card generation agent. Generate the `cards` array for each of the {n} topics below, then exit. Do NOT ask for confirmation.
+
+Working directory: /home/laufey/code/stock
+
+## Card Rules
+
+{cards_block}
+
+---
+
+## Topics ({n} total)
+
+{topic_list}
+
+## For each topic (in order):
+
+### Step A — Read the analysis
+Read `output/<slug>/analysis.json`. Study all work sections and clues carefully.
+
+### Step B — Generate cards
+Following the card rules above, produce a complete `cards` array. Every clue with specific learnable content gets a card. Do not skip clues.
+
+### Step C — Write back
+Replace ONLY the `cards` field in `output/<slug>/analysis.json`. Do not modify any other field.
+
+Finish all topics before rendering.
+
+## After all topics are done:
+
+```bash
+python3 lib/render/render_cards.py
+```\
+"""
+
 
 AGENT_TEMPLATE = """You are a {pass_label} agent for {category} topics. Process one topic from the shared batch queue, then exit. Do NOT ask for confirmation.
 
@@ -225,6 +260,41 @@ AGENT_TEMPLATE = """You are a {pass_label} agent for {category} topics. Process 
 {protocol}
 
 {loop}"""
+
+
+def build_card_prompt_batch(topics: list, category: str | None = None) -> str:
+    """Build a card agent prompt for a batch of 3–5 topics.
+
+    Each entry in topics is either a string (topic name) or a dict with
+    'topic' and optional 'category' and 'slug' keys.
+    """
+    cards_block = read_block(DOCS_DIR / 'analysis_cards.md')
+
+    supplement_block = ''
+    if category:
+        cat_key = category.lower()
+        if cat_key in CATEGORY_SUPPLEMENTS:
+            sup_path = DOCS_DIR / CATEGORY_SUPPLEMENTS[cat_key]
+            if sup_path.exists():
+                supplement_block = '\n\n---\n\n' + read_block(sup_path)
+
+    lines = []
+    for entry in topics:
+        if isinstance(entry, dict):
+            name = entry.get('topic', '')
+            slug = entry.get('slug') or name.lower().replace(' ', '_')
+        else:
+            name = entry
+            slug = name.lower().replace(' ', '_')
+        lines.append(f"- **{name}** → `output/{slug}/analysis.json`")
+
+    topic_list = '\n'.join(lines)
+
+    return CARD_AGENT_BATCH_TEMPLATE.format(
+        n=len(topics),
+        cards_block=cards_block + supplement_block,
+        topic_list=topic_list,
+    ).strip()
 
 
 def build_card_prompt(topic: str, category: str | None = None) -> str:

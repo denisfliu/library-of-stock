@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from lib.pipeline.prompt_builder import build_card_prompt
+from lib.pipeline.prompt_builder import build_card_prompt_batch
 
 ROOT = Path(__file__).parent
 BATCH_FILE = ROOT / 'queue' / 'current_batch.json'
@@ -109,19 +109,35 @@ def main():
 
     topic_list_str = "\n".join(f"- {t}" for t in topics)
 
-    # Step 3: Print one card agent prompt per topic (launch all in parallel with crossref agent)
-    print(f"\n[3/4] Launch {len(topics)} card generation agent(s) in parallel with the crossref agent:\n")
+    # Step 3: Print card agent prompts (3–5 topics each) in parallel with crossref agent
+    CARD_BATCH_SIZE = 4  # 3–5 topics per card agent
+
+    # Resolve per-topic category and slug for batch grouping
+    topic_entries = []
     for topic in topics:
-        # Infer per-topic category from its analysis.json if batch is mixed
+        slug = topic.lower().replace(' ', '_')
         topic_category = batch_category
         if not topic_category:
-            slug = topic.lower().replace(' ', '_')
             json_path = ROOT / 'output' / slug / 'analysis.json'
             if json_path.exists():
                 with open(json_path) as f:
                     topic_category = json.load(f).get('category')
+        topic_entries.append({'topic': topic, 'slug': slug, 'category': topic_category})
+
+    # Chunk into groups of CARD_BATCH_SIZE
+    batches = [topic_entries[i:i + CARD_BATCH_SIZE]
+               for i in range(0, len(topic_entries), CARD_BATCH_SIZE)]
+
+    n_agents = len(batches)
+    print(f"\n[3/4] Launch {n_agents} card agent(s) ({CARD_BATCH_SIZE} topics each) "
+          f"in parallel with the crossref agent:\n")
+    for idx, batch in enumerate(batches, 1):
+        # Infer shared category if all topics in the chunk agree
+        chunk_cats = {e['category'] for e in batch if e.get('category')}
+        chunk_category = chunk_cats.pop() if len(chunk_cats) == 1 else None
+        print(f"--- Card agent {idx}/{n_agents} ({len(batch)} topics) ---")
         print("=" * 60)
-        print(build_card_prompt(topic, category=topic_category))
+        print(build_card_prompt_batch(batch, category=chunk_category))
         print("=" * 60)
         print()
 

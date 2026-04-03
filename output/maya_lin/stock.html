@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Maya Lin</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Maya Lin</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Chinese-American architect and artist, best known for designing the Vietnam Veterans Memorial in Washington, D.C. as a 21-year-old Yale undergraduate. Her design of two black granite walls in a V-shape inscribed with 58,000+ names beat Frederick Hart&#x27;s entry in a 1981 competition. Also known for land art (Wave Field series), the Civil Rights Memorial in Montgomery, Alabama, the Confluence Project along the Columbia River, and environmental works like What Is Missing? and Ghost Forest.</div>
+
+        <details class="work" id="vietnam-veterans-memorial-1982" open>
+            <summary class="work-title">Vietnam Veterans Memorial (1982)</summary>
+            <p class="work-desc">Two walls of polished black granite (gabbro) arranged in a V-shape on the National Mall, inscribed with 58,000+ names of soldiers killed in the Vietnam War. Designed when Lin was a 21-year-old Yale undergraduate. Frederick Hart's Three Soldiers statue and Glenna Goodacre's Women's Memorial were later added nearby. <a href="https://en.wikipedia.org/wiki/Vietnam_Veterans_Memorial" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Vietnam_veterans_memorial_in_summer.jpg/500px-Vietnam_veterans_memorial_in_summer.jpg" alt="Vietnam Veterans Memorial (1982)" loading="lazy">
+                        <figcaption>Vietnam Veterans Memorial (1982)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Two black granite walls in a V-shape inscribed with 58,000+ names of deceased soldiers</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">two black granite walls where visitors rub the inscribed names of deceased soldiers onto paper | consists of black granite walls inscribed with over 58,000 names | Two large black granite slabs arranged in a V-shape make up a monument dedicated to these people by Maya Lin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Beat Frederick Hart&#x27;s design in a 1981 competition; Hart&#x27;s Three Soldiers statue was placed nearby</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this architect imagined &#x27;taking a knife and cutting into the earth&#x27; for a project that beat Frederick Hart&#x27;s design in a 1981 competition | Frederick Hart&#x27;s Three Soldiers sculpture | Frederick Hart sculpted a group of three soldiers next to a monument in this city</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Designed while Lin was an undergraduate at Yale, age 21</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">While an undergraduate at Yale, this architect designed two black granite walls | this architect, who won the commission to design Washington D.C&#x27;s Vietnam War Memorial at the age of twenty-one | a 21-year-old Asian-American Yale student</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lin imagined &#x27;taking a knife and cutting into the earth&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This architect imagined &#x27;taking a knife and cutting into the earth&#x27; for a project that beat Frederick Hart&#x27;s design</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Glenna Goodacre&#x27;s sculpture of nurses was built as a &#x27;Women&#x27;s&#x27; counterpart</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A sculpture of nurses by Glenna Goodacre was built as a &#x27;Women&#x27;s&#x27; counterpart to a design by this architect</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Made of gabbro; material was called &#x27;too feminine&#x27; by some architects</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Some architects claimed that the choice of this material for one project was &#x27;too feminine&#x27; | a memorial consisting of two walls of gabbro</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="wave-field-wavefields-earth-drawings" open>
+            <summary class="work-title">Wave Field / Wavefields (Earth Drawings)</summary>
+            <p class="work-desc">Series of undulating landscape installations inspired by the Great Serpent Mound and Adena/Hopewell mounds. Locations include the University of Michigan (Ann Arbor), Miami, and Storm King Art Center. Also includes Eleven Minute Line in Sweden. <a href="https://en.wikipedia.org/wiki/Wave_Field" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Wave_Field_1.JPG/500px-Wave_Field_1.JPG" alt="Wave Field at University of Michigan" loading="lazy">
+                        <figcaption>Wave Field at University of Michigan</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Undulating grass hills / landscape at the University of Michigan (Ann Arbor)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of this artist&#x27;s &#x27;earth drawings,&#x27; Wave Field, is on the University of Michigan&#x27;s campus | an eleven-acre field of undulating grass hills at the University of Michigan | The UMich campus, Miami, and the Storm King Art Center are the sites of three square plots of undulating land</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by the Serpent Mound / Adena and Hopewell mounds of Ohio</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This architect was inspired by the Serpent Mounds to create &#x27;earth drawings&#x27; such as The Wave Field | Inspired by the Adena and Hopewell mounds of her home state</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Eleven Minute Line — earthwork in Sweden, part of the same series</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist&#x27;s &#x27;Earth Drawings&#x27; include the Serpent Mound-like Eleven Minute Line | This artist&#x27;s Eleven Minute Line is an earthwork located in Sweden inspired by the Great Serpent Mound</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also at Storm King Art Center and Miami</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The UMich campus, Miami, and the Storm King Art Center are the sites of three square plots of undulating land by this artist</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="civil-rights-memorial-1989" open>
+            <summary class="work-title">Civil Rights Memorial (1989)</summary>
+            <p class="work-desc">A circular black granite table and wall fountain in Montgomery, Alabama, inscribed with names of 41 civil rights activists and a Martin Luther King Jr. quote. Commissioned by the Southern Poverty Law Center. Uses the same material as the Vietnam Veterans Memorial. <a href="https://en.wikipedia.org/wiki/Civil_Rights_Memorial" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/CivilRightsMemorial.jpg/500px-CivilRightsMemorial.jpg" alt="Civil Rights Memorial in Montgomery, Alabama" loading="lazy">
+                        <figcaption>Civil Rights Memorial in Montgomery, Alabama</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Black stone/granite fountain in Montgomery, Alabama inspired by a Martin Luther King Jr. quote</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a black stone fountain inspired by a Martin Luther King quote in Montgomery, Alabama | a fountain in Montgomery&#x27;s Civil Rights Memorial inscribed with the names of 41 activists</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Conical table uses the same material (black granite) as the Vietnam Veterans Memorial</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The conical table in this artist&#x27;s Civil Rights Memorial uses the same material as a monument to which the statue Three Soldiers was added</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-women-s-table-1993" open>
+            <summary class="work-title">The Women&#x27;s Table (1993)</summary>
+            <p class="work-desc">A sculpture at Yale University consisting of a granite table inscribed with a spiral of numbers representing the university's rising female enrollment over time. <a href="https://en.wikipedia.org/wiki/The_Women%27s_Table" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Women%27s_Table_Yale.jpg/500px-Women%27s_Table_Yale.jpg" alt="The Women&#x27;s Table at Yale University" loading="lazy">
+                        <figcaption>The Women&#x27;s Table at Yale University</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Spiral of numbers / years on a granite table at Yale commemorating rising female enrollment</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Women&#x27;s Table, which contains a spiral to denote Yale&#x27;s rising female enrollment | Maya Lin&#x27;s sculpture The Women&#x27;s Table depicts a spiral of increasing numbers to commemorate the female enrollment at this U.S. university | This architect inscribed years in a spiral pattern on a granite table on Yale&#x27;s campus</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="what-is-missing-ghost-forest" open>
+            <summary class="work-title">What Is Missing? / Ghost Forest</summary>
+            <p class="work-desc">An ongoing multimedia project documenting endangered and extinct species, described as Lin's 'last memorial.' Ghost Forest (2021) installed 49 dead cedar trees in Madison Square Park as part of this project.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ongoing project to document endangered and extinct species, Lin&#x27;s &#x27;last memorial&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Listening Cone is part of this artist&#x27;s &#x27;last memorial,&#x27; an ongoing project to document endangered and extinct species entitled What Is Missing? | an installation that is part of this architect&#x27;s What Is Missing? project</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ghost Forest: 49 dead cedar trees installed in Madison Square Park in 2021</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In 2021, this architect installed 49 dead cedar trees in Madison Square Park in Ghost Forest | Maya Lin planted 49 dead cedars for her Ghost Project in this park</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="confluence-project" open>
+            <summary class="work-title">Confluence Project</summary>
+            <p class="work-desc">A series of seven art installations along the Columbia River exploring Native American history and culture, inspired by the Lewis and Clark Expedition. Includes an elevated wooden barn in Clinton, Tennessee dedicated to <a href="../langston_hughes/stock.html" class="crossref-inline">Langston Hughes</a>.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Seven artworks along the Columbia River exploring Native American stories and Lewis and Clark</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This architect installed seven artworks along the Columbia River in the Confluence Project | The Confluence Project, which explores the history and culture of the Columbia River, was spearheaded by this architect</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Elevated wooden barn in Clinton, Tennessee dedicated to Langston Hughes</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In Clinton, Tennessee, this architect designed an elevated wooden barn dedicated to Langston Hughes</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="other-works" open>
+            <summary class="work-title">Other Works</summary>
+            <p class="work-desc">Includes Groundswell (recycled safety glass mounds at the Wexner Center), Folding of the Chesapeake (54,000 glass marbles at the Renwick Gallery), Listening Cone (bronze/redwood megaphone sculpture), Silver River (84-foot recycled silver sculpture in Las Vegas), and a reading garden at the Cleveland Public Library.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Groundswell: ground-up recycled safety glass mounds at the Wexner Center for the Arts</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">gathered ground-up recycled safety glass into mounds for Groundswell at the Wexner Center for the Arts</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Folding of the Chesapeake: 54,000 glass marbles in the shape of the Anacostia Watershed at the Renwick Gallery (2015 reopening)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this artist glued 54,000 glass marbles in the shape of the Anacostia Watershed to create Folding of the Chesapeake</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Listening Cone: megaphone-shaped sculpture of bronze and redwood</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A megaphone-shaped sculpture made of bronze and redwood by this artist</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Silver River: 84-foot recycled silver sculpture in Las Vegas</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Maya Lin used recycled silver for her 84-foot &#x27;Silver River&#x27; sculpture in this city</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Beeswax phases of the moon portable sculpture</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist used beeswax to depict the phases of the moon in one portable sculpture</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Reading garden at the Cleveland Public Library</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This designer of the reading garden at the Cleveland Public Library</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">DNA-inspired glass sculpture at the Pavilion at Penn</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a two-story sculpture made of thousands of glass balls forming the shape of a tree found in the Pavilion at Penn and created by Maya Lin</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Maya Lin is identified and biographical clues.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Chinese-American architect who designed the Vietnam Veterans Memorial</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this architect who designed Washington DC&#x27;s Vietnam Veterans Memorial | name this Chinese-American architect of the Vietnam Veterans&#x27; Memorial</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Yale alumna / designed the memorial while an undergraduate at Yale</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">While an undergraduate at Yale, this architect designed two black granite walls</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Won the commission at age 21</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">who won the commission to design Washington D.C&#x27;s Vietnam War Memorial at the age of twenty-one</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ross Perot called her an &#x27;egg roll&#x27; after learning her ethnicity</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this man called Maya Lin an &#x27;egg roll&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by Adena and Hopewell mounds of her home state (Ohio)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Inspired by the Adena and Hopewell mounds of her home state</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Maya Lin is one of the most frequently clued architects in quiz bowl, appearing as both an answerline and a common mention in questions about Washington D.C., land art, the Vietnam War, and Yale University. Her career is defined by the Vietnam Veterans Memorial (1982), which she designed while still an undergraduate at Yale. The memorial consists of two walls of polished black granite arranged in a V-shape, inscribed with over 58,000 names of deceased soldiers. Visitors rub names onto paper. The design was controversial — it beat Frederick Hart&#x27;s submission in a 1981 competition, and Hart&#x27;s bronze statue Three Soldiers was later placed nearby as a compromise. A Women&#x27;s counterpart by Glenna Goodacre was also added. Lin described her concept as &#x27;taking a knife and cutting into the earth.&#x27; The material (black granite or gabbro) is itself clued in bonus parts, with some architects calling it &#x27;too feminine.&#x27;</p><p>Lin&#x27;s second most-clued work is the Wave Field series (also called Wavefields or Earth Drawings), undulating landscapes inspired by the Serpent Mound and Adena/Hopewell mounds of her home state of Ohio. Installations exist at the University of Michigan (Ann Arbor), Miami, and Storm King Art Center. Her Eleven Minute Line, an earthwork in Sweden, is also part of this series.</p><p>The Civil Rights Memorial in Montgomery, Alabama features a conical black granite table inscribed with names of 41 civil rights activists and a Martin Luther King Jr. quote, using the same material as the Vietnam Veterans Memorial. The Women&#x27;s Table at Yale depicts a spiral of numbers representing rising female enrollment, inscribed on black granite.</p><p>The Confluence Project consists of seven art installations along the Columbia River, exploring Native American history and the Lewis and Clark Expedition. Her environmental project What Is Missing? documents endangered and extinct species and includes Ghost Forest (49 dead cedar trees installed in Madison Square Park in 2021). Other notable works include Folding of the Chesapeake (54,000 glass marbles at the Renwick Gallery), Groundswell (recycled safety glass mounds at the Wexner Center), Listening Cone (bronze and redwood megaphone-shaped sculpture), and Silver River (84-foot recycled silver sculpture in Las Vegas).</p><p>Lin is consistently identified as Chinese-American, a Yale alumna, and as having won the Vietnam Memorial commission at age 21. Ross Perot infamously called her an &#x27;egg roll&#x27; after learning her ethnicity. She is clued in land art questions alongside <a href="../robert_smithson/stock.html" class="crossref-inline">Robert Smithson</a>&#x27;s <a href="../robert_smithson/stock.html#spiral-jetty-1970" class="crossref-inline">Spiral Jetty</a> and Michael Heizer&#x27;s Double Negative.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Maya_Lin" target="_blank">Maya Lin -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Vietnam_Veterans_Memorial" target="_blank">Vietnam Veterans Memorial -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Civil_Rights_Memorial" target="_blank">Civil Rights Memorial -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Wave_Field" target="_blank">Wave Field -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Women%27s_Table" target="_blank">The Women&#x27;s Table -- Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Frederick Hart -- sculptor of Three Soldiers, frequently paired with Maya Lin in clues</li><li>Land Art -- Maya Lin appears in questions about this movement alongside Smithson, Heizer</li><li>Vietnam War -- Lin&#x27;s memorial is the most common visual arts clue in Vietnam War questions</li><li>Washington D.C. (Fine Arts) -- Lin&#x27;s memorial is a frequent clue in D.C. identification questions</li><li>Yale University -- Lin&#x27;s alma mater; Women&#x27;s Table and other works are clued in Yale questions</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'maya_lin' });</script>
+
+</body>
+</html>

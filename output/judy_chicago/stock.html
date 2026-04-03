@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Judy Chicago</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Judy Chicago</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">American feminist artist born Judith Sylvia Cohen. Best known for The Dinner Party, a massive triangular installation with 39 place settings dedicated to famous women throughout history, permanently housed at the Brooklyn Museum. Co-organized the Womanhouse installation with Miriam Schapiro at CalArts. Pioneer of feminist art; changed her last name from Cohen to Chicago. Works span installation, needlework, ceramics, welding, and performance.</div>
+
+        <details class="work" id="the-dinner-party-1979" open>
+            <summary class="work-title">The Dinner Party (1979)</summary>
+            <p class="work-desc">A massive triangular table installation with 39 place settings dedicated to famous women from history, each with hand-painted ceramic plates and embroidered runners. Permanently housed at the Elizabeth A. Sackler Center for Feminist Art at the Brooklyn Museum. Originally titled "Twenty-Five Women Who Were Eaten Alive." <a href="https://en.wikipedia.org/wiki/The_Dinner_Party" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/en/5/56/The_Dinner_Party_by_Judy_Chicago.jpg" alt="The Dinner Party (1979)" loading="lazy">
+                        <figcaption>The Dinner Party (1979)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Triangular table/installation with 39 place settings representing famous women from history</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">created 39 place settings representing famous women in The Dinner Party | A large triangular installation by this artist is a table with sections dedicated to Virginia Woolf and Artemisia Gentileschi | arranged place settings for 39 famous women from history in her installation The Dinner Party</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Permanently exhibited at the Elizabeth A. Sackler Center for Feminist Art at the Brooklyn Museum</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">whose best-known artwork is on permanent exhibition at the Elizabeth A. Sackler Center for Feminist Art at the Brooklyn Museum | Her installation The Dinner Party occupies a room in the Brooklyn Museum | This artwork was the first piece purchased for the Elizabeth A. Sackler Center at the Brooklyn Museum</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Plates decorated with vagina/vulva/butterfly imagery; uses &quot;central core imagery&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a triangular table with place settings for 39 famous women from history, decorated with china plates and embroidered runners with vagina imagery | This artist made a triangular installation with &#x27;butterfly-vagina&#x27; imagery | This artwork incorporated its creator&#x27;s idea of &#x27;central core imagery&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Heritage Floor: porcelain tile floor inscribed with 999 names</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One of these objects sits on top of a porcelain base signed with 999 names | a porcelain tile floor inscribed with the names of 999 significant people from history and legend | This artwork&#x27;s &#x27;central-core&#x27; imagery recurs in three wings from prehistory to the &#x27;revolution&#x27; around the 999 names of its &#x27;Heritage Floor&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Georgia O&#x27;Keeffe is the final place setting / guest of honor</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The final &#x27;guest&#x27; in Chicago&#x27;s The Dinner Party is this American artist [Georgia O&#x27;Keeffe] | Georgia O&#x27;Keeffe is a &#x27;guest of honor&#x27; in this artwork and has a vulva-like plate on a triangular table | The final place setting in Judy Chicago&#x27;s The Dinner Party is set for this artist</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Originally titled &quot;Twenty-Five Women Who Were Eaten Alive&quot;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This work of art was originally named &#x27;Twenty-Five Women Who Were Eaten Alive.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Runners made with embroidery/needlework; names of guests written in embroidery</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Loft volunteers sewed a Coptic portrait and opus teutonicum embroidery into some of this artwork&#x27;s runners | This art form was used to write the names of the &#x27;guests&#x27; in Judy Chicago&#x27;s The Dinner Party</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Includes settings for Artemisia Gentileschi, Virginia Woolf, Emily Dickinson, Sojourner Truth, Sappho, the Minoan Snake Goddess, Isadora Duncan, and others</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A large triangular installation by this artist is a table with sections dedicated to Virginia Woolf and Artemisia Gentileschi | Judy Chicago used a swirling, rainbow-colored design to decorate the plate of [Artemisia Gentileschi] | Alice Walker criticized the only parts of this artwork to depict faces [Sojourner Truth&#x27;s setting]</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mocked as &quot;a lumbering mishmash of sleaze and cheese&quot; at San Francisco MoMA; planned national tour canceled</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artwork was mocked as &#x27;a lumbering mishmash of sleaze and cheese&#x27; during a flop opening at the San Francisco MoMA, causing a planned national tour to be canceled</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Stayed in storage in New Mexico; grassroots efforts and the documentary Right Out of History brought it to Houston and Frankfurt</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artwork stayed in storage in New Mexico for many years after grassroots efforts inspired by the documentary Right Out of History brought it to Houston and Frankfurt</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Diane Gelon helped get it exhibited at unusual locations including the top floor of a Chicago office building and Boston&#x27;s Cyclorama</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Diane Gelon helped get this artwork exhibited at unusual locations such as the top floor of a Chicago office building and Boston&#x27;s Cyclorama</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Alice Walker criticized the Sojourner Truth setting for depicting faces instead of vaginal imagery — the only one to do so</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Alice Walker criticized the only parts of this artwork to depict faces | Alice Walker stated that &#x27;[white women] can not imagine black women have vaginas&#x27; to criticize the fact that the setting for [Sojourner Truth], the only Black woman seated at The Dinner Party, depicts three faces rather than vaginal imagery</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Criticized for essentialism in its representation of women; concept of the &quot;male gaze&quot; (Laura Mulvey) applied to its sexual imagery</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Feminist art historians like Amelia Jones have criticized Judy Chicago&#x27;s The Dinner Party in part for the essentialism implied by its representation of women</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Amelia Jones curated an exhibit at the Hammer Museum contextualizing this work &quot;in Feminist Art History&quot;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Amelia Jones curated an exhibit at the Hammer Museum contextualizing this artist&#x27;s most famous work &#x27;in Feminist Art History&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Washington, D.C. newspaper campaign to block a university from accepting it</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A newspaper in this city led a campaign to block a university here from accepting Judy Chicago&#x27;s The Dinner Party</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="womanhouse-1972" open>
+            <summary class="work-title">Womanhouse (1972)</summary>
+            <p class="work-desc">Collaborative installation co-organized with Miriam Schapiro at CalArts' Feminist Art Program, in which students refitted an abandoned Victorian mansion in Hollywood with feminist artworks. <a href="https://en.wikipedia.org/wiki/Womanhouse" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Co-organized with Miriam Schapiro; students from the Feminist Art Program at CalArts refitted an abandoned Victorian mansion</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Schapiro organized the Womanhouse installation with this artist | students from the Feminist Art Program at CalArts refitted an abandoned Victorian mansion | Miriam Schapiro and Judy Chicago organized a collaborative exhibition titled for a &#x27;woman&#x27; one of these entities [houses]</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Included a Nurturant Kitchen with eggs that morph into breasts</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A Nurturant Kitchen with eggs that morph into breasts was part of Womanhouse | a kitchen in which eggs transform into breasts</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Included a bathroom overflowing with used tampons and a linen closet whose drawers bisect a female mannequin</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a bathroom overflowing with used tampons... and a linen closet whose drawers bisect the body of a female mannequin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Featured a Bridal Staircase — a mannequin bride trailing a long, dirty outfit down a staircase</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Womanhouse featured a mannequin representing one of these people [a bride] trailing a long, dirty outfit down a staircase</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A component featuring a nude man with an erect penis with a tray of bananas is housed at the Smithsonian</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The Smithsonian houses a component of this installation featuring a nude man with an erect penis with a tray of bananas at his feet</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="atmospheres-performance-series" open>
+            <summary class="work-title">Atmospheres (performance series)</summary>
+            <p class="work-desc">A series of ephemeral, colorful smoke performances that countered the masculinity of land art, featuring Chicago's students nude with body paint.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Countered land art&#x27;s masculinity with ephemeral, colorful performances featuring students nude with body paint</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Judy Chicago countered this movement&#x27;s masculinity with a series of ephemeral, colorful performances, featuring her students nude with body paint</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="international-honor-quilt" open>
+            <summary class="work-title">International Honor Quilt</summary>
+            <p class="work-desc">A companion piece to The Dinner Party; a quilt whose triangles represent different women from around the world. Over 100 needleworkers contributed.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Companion piece to The Dinner Party; a quilt with triangles representing different women from around the world</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Chicago created an International Honor one of these objects [quilts] whose triangles represent different women from around the world | Judy Chicago&#x27;s companion piece to Dinner Party was a work in this medium [quilts] titled for &#x27;International Honor&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="holocaust-project" open>
+            <summary class="work-title">Holocaust Project</summary>
+            <p class="work-desc">A sixteen-work project about the Holocaust, inspired by viewing the film Shoah.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Sixteen-work project about the Holocaust, inspired by viewing the film Shoah</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">After viewing the film Shoah, Chicago was inspired to design a sixteen work project about this event</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="birth-project" open>
+            <summary class="work-title">Birth Project</summary>
+            <p class="work-desc">A needlework project about childbirth, created by coordinating over 100 needleworkers.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coordinated over 100 needleworkers to create images about childbirth/giving birth</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Before working on the Holocaust Project, Judy Chicago coordinated over 100 needleworkers to create images about this event [giving birth]</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Judy Chicago is identified and biographical clues.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Changed her last name from Cohen to Chicago; placed an ad in Artforum explaining the change</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist, who placed an ad in Artforum explaining why she changed her last name from Cohen | Judy Chicago posing as a [boxer] while wearing a shirt with her name on it</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">American feminist artist; media include needlework and welding</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this American feminist artist | this feminist artist of Womanhouse and Powerplay, whose media include needlework and welding</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Posed as a boxer in a 1970 Artforum photograph wearing a shirt with her name</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A photograph in a 1970 issue of Artforum showed Judy Chicago posing as a person in this profession [boxer] while wearing a shirt with her name on it</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Taught at CalArts; organized The Last Plastics Show exhibit there in 1972</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">While teaching at this school in 1972, Judy Chicago organized the exhibit The Last Plastics Show</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coined the term &quot;feminist art&quot; with her students at Fresno</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Judy Chicago, and her students at Fresno, coined the term for this type of art [feminist art]</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Also created works titled Powerplay and Through the Flower</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this feminist artist of Womanhouse and Powerplay | This artwork incorporated its creator&#x27;s idea of &#x27;central core imagery,&#x27; which its artist had earlier used in the painting Through the Flower</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Suzanne Lacy was a student of Chicago&#x27;s, known for performance art like The Crystal Quilt</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Suzanne Lacy, a student of Judy Chicago, specialized in creating this kind of art [performance art], such as The Crystal Quilt</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Judy Chicago (born Judith Sylvia Cohen) is an American feminist artist whose work spans installation, ceramics, needlework, welding, and performance. She is overwhelmingly asked about in the context of The Dinner Party, her 1979 triangular table installation with 39 place settings dedicated to famous women throughout history. The Dinner Party appears in the vast majority of clues about Chicago, and its key identifiers include: its triangular shape, the 39 place settings with hand-painted ceramic plates featuring vagina/butterfly imagery (described as &quot;central core imagery&quot;), the Heritage Floor inscribed with 999 names, its permanent home at the Elizabeth A. Sackler Center for Feminist Art at the Brooklyn Museum, and the fact that Georgia O&#x27;Keeffe is the final guest of honor. The work was originally titled &quot;Twenty-Five Women Who Were Eaten Alive&quot; and includes settings for figures ranging from the Minoan Snake Goddess to Artemisia Gentileschi, <a href="../virginia_woolf/stock.html" class="crossref-inline">Virginia Woolf</a>, and <a href="../emily_dickinson/stock.html" class="crossref-inline">Emily Dickinson</a>. It was criticized by Alice Walker for its treatment of Sojourner Truth (the only setting with faces instead of vaginal imagery) and by feminist art historians for essentialism. Chicago&#x27;s second most frequently referenced work is Womanhouse (1972), the collaborative installation she co-organized with Miriam Schapiro at CalArts, in which students refitted an abandoned Hollywood mansion with feminist works including a Nurturant Kitchen where eggs morph into breasts. Other works that appear include the Atmospheres performance series (colorful smoke performances countering land art&#x27;s masculinity), the International Honor Quilt (companion to The Dinner Party), the Holocaust Project (sixteen works inspired by the film Shoah), the Birth Project (needlework about childbirth made with over 100 needleworkers), and the paintings Powerplay and Through the Flower. Biographical clues note that she changed her name from Cohen to Chicago and advertised the change in Artforum, that she and her students at Fresno coined the term &quot;feminist art,&quot; and that she posed as a boxer in a 1970 Artforum photograph.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Judy_Chicago" target="_blank">Judy Chicago -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Dinner_Party" target="_blank">The Dinner Party -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Womanhouse" target="_blank">Womanhouse -- Wikipedia</a></li><li><a href="https://www.brooklynmuseum.org/exhibitions/dinner_party" target="_blank">The Dinner Party -- Brooklyn Museum</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>The Dinner Party -- Chicago&#x27;s most famous work; appears as its own answerline frequently</li><li>Miriam Schapiro -- co-organizer of Womanhouse; frequently paired with Chicago in questions about feminist art and femmage</li><li>Georgia O&#x27;Keeffe -- final guest of honor in The Dinner Party; frequently cross-referenced</li><li>Womanhouse -- appears as its own answerline</li><li>Feminist art -- movement Chicago helped pioneer; appears as its own topic</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'judy_chicago' });</script>
+
+</body>
+</html>
