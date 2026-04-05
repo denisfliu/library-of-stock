@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Gaetano Donizetti</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Gaetano Donizetti</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Italian bel canto opera composer (1797–1848). Best known for <a href="../lucia_di_lammermoor/stock.html#lucia-di-lammermoor" class="crossref-inline">Lucia di Lammermoor</a>, The Elixir of Love, The Daughter of the Regiment, and Don Pasquale. Grouped with Bellini and Rossini as the three great bel canto composers. Known for prolific output — Berlioz quipped one could no longer speak of Paris&#x27;s opera houses, only Donizetti&#x27;s. His Tudor Queens trilogy (Anna Bolena, Maria Stuarda, Roberto Devereux) and the &#x27;mad scene&#x27; from Lucia are staples of the soprano repertoire.</div>
+
+        <details class="work" id="lucia-di-lammermoor" open>
+            <summary class="work-title">Lucia di Lammermoor <a href="../lucia_di_lammermoor/stock.html" class="work-link-btn" title="Go to ">&rarr;</a></summary>
+            <p class="work-desc">Donizetti's most famous opera, based on Walter Scott's novel about Lucy Ashton. Contains the celebrated 'mad scene' (aria 'Il dolce suono'), the sextet 'Chi mi frena in tal momento,' and the soprano showpiece 'Ardon gli incensi.' The lead role is written for coloratura soprano. The opera begins with Normanno searching for an intruder (Edgardo) and ends with Edgardo killing himself. Lucia is tricked into signing a marriage contract to Arturo, whom she then murders. <a href="https://en.wikipedia.org/wiki/Lucia_di_Lammermoor" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contains the famous &#x27;mad scene,&#x27; in which Lucia sings the aria &#x27;Il dolce suono&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer included the aria &#x27;Il dolce suono&#x27; in the &#x27;mad scene&#x27; from his Lucia di Lammermoor | this man&#x27;s also created a character sings &#x27;Il dolce suono&#x27; in a mad scene</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The sextet &#x27;Chi mi frena in tal momento&#x27; follows Lucia being tricked into signing a marriage contract, leading her to murder her husband Arturo</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s sextet &#x27;Chi mi frena in tal momento&#x27; follows a scene in which the title soprano is tricked into signing a marriage contract, which leads her to murder her husband Arturo.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Ardon gli incensi&#x27; often ends with a flute cadenza by Mathilde Marchesi, as in Joan Sutherland&#x27;s Met debut</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s excerpt &#x27;Ardon gli incensi&#x27; often ends with a flute cadenza by Mathilde Marchesi, as in Joan Sutherland&#x27;s Met debut.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on Lucy Ashton, the title character of a Walter Scott novel</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the protagonist, who is based on Lucy Ashton, the title character of a Walter Scott novel</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Opens with Normanno searching for an intruder, who turns out to be Edgardo; Edgardo kills himself at the end</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">begins with Normanno searching for an intruder, who turns out to be Edgardo | that character is loved by Edgardo who ends the opera by killing himself</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Used themes from &#x27;Home Sweet Home&#x27; in a scene where a woman asks to be led to the castle where she was born; ends with the challenging soprano cabaletta &#x27;Coppia iniqua&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer used themes from &#x27;Home Sweet Home&#x27; in a scene where a woman asks to be led to the castle where she was born. That opera by this composer ends with the challenging soprano cabaletta &#x27;Coppia iniqua.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The lead role is an example of a coloratura soprano, able to sing elaborate vocal lines with trills and arpeggios</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The lead role in Lucia di Lammermoor is an example of this type of soprano, who is able to sing elaborate vocal lines embellished with trills and arpeggios.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-elixir-of-love-l-elisir-d-amore" open>
+            <summary class="work-title">The Elixir of Love (L&#x27;elisir d&#x27;amore)</summary>
+            <p class="work-desc">Comic opera in which the peasant Nemorino loves Adina. The charlatan Dr. Dulcamara sells Nemorino cheap Bordeaux wine disguised as a love potion. Contains the famous tenor aria 'Una furtiva lagrima,' in which Nemorino sees a tear in Adina's eye and believes she has fallen for him. Other characters include the soldier Belcore and Giannetta. <a href="https://en.wikipedia.org/wiki/L%27elisir_d%27amore" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Una furtiva lagrima&#x27; — famous tenor aria sung by Nemorino after seeing Adina shed a tear; he cries out &#x27;Cielo! Si puo morir!&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Nemorino sings the aria &#x27;Una furtiva lacrima&#x27; in this opera | The singer cries out, &#x27;Cielo! Si puo morir!&#x27; in a tenor aria by this composer sung by a peasant.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dr. Dulcamara sells Nemorino wine he believes to be a love potion (&#x27;a glorified bottle of Bordeaux wine&#x27;)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Dr. Dulcamara sells Bordeaux wine to Nemorino | the hack Dr. Dulcamara sells him the title potion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dulcamara sings &#x27;Udite, udite, o rustici&#x27; as a sales pitch to villagers</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another of his characters sings &#x27;Udite, udite, o rustici&#x27; to make a sales pitch to some villagers.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Belcore is supposed to marry Adina; Nemorino joins the army to pay for the elixir</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Belcore is supposed to marry Adina after some fraud is committed by Dr. Dulcamara | he joined the army in order to pay a charlatan for wine he believes to be a magic potion</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Giannetta and a group of workers hear the love story of Tristan and Isolde</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In another opera by this man, Giannetta and a group of workers hear the love story of Tristan and Isolde.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A woman drinks cheap red wine and begins to shed tears, prompting the tenor aria</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another of this composer&#x27;s tenor arias is sung after a woman drinks cheap red wine and begins to shed tears.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A barcarolle for a gondolier and chorus opens Donizetti&#x27;s opera Marino Faliero (bonus clue referencing this composer&#x27;s barcarolle style)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A barcarolle for a gondolier and chorus opens this composer&#x27;s opera Marino Faliero.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="the-daughter-of-the-regiment-la-fille-du-regiment" open>
+            <summary class="work-title">The Daughter of the Regiment (La Fille du Regiment)</summary>
+            <p class="work-desc">French-language opera comique set during the Napoleonic wars. Marie is raised as an army regiment's canteen girl. Tonio joins the regiment to marry Marie and sings 'Ah! mes amis,' which requires the tenor to hit nine high Cs — called the 'Mount Everest' of tenor arias. Also contains the aria 'Chacun le sait.' Marie gets distracted playing piano with the Marquise of Birkenfeld, who is revealed to be her mother. Ruth Bader Ginsburg had a non-singing cameo as the Duchess of Krakenthorp in a 2016 production. <a href="https://en.wikipedia.org/wiki/La_fille_du_r%C3%A9giment" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Ah! mes amis&#x27; requires the tenor to sing nine high Cs — called the &#x27;Mount Everest&#x27; of tenor arias</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">An aria composed by this man has been called the &#x27;Mount Everest&#x27; of tenor arias because it features nine high Cs. | this composer called for the tenor to sing nine high Cs in &#x27;Ah! mes amis&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marie is the title character, raised as an army regiment&#x27;s canteen girl; Tonio joins the regiment to marry her, helped by Sulpice</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">his opera about Marie, who is raised as an army&#x27;s canteen girl | Tonio, who has joined the title group so that he can marry Marie, the title character</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">&#x27;Chacun le sait&#x27; — aria praising the regiment (&#x27;feared by one sex and loved by the other&#x27;)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this composer wrote an opera whose main soprano sings an aria which repeats the phrases &#x27;over there&#x27; and &#x27;it is there&#x27; and praises the title group, who is &#x27;feared by one sex and loved by the other&#x27; | During a singing lesson in one of this composer&#x27;s works, one character sings parts of the aria &#x27;Chacun le sait&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Marie gets distracted playing piano with the Marquise of Birkenfeld, who is revealed to be her mother</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character of another opera by this composer gets distracted while playing piano with the Marquise of Birkenfeld, who is revealed to be her mother.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Despite being Italian, Donizetti wrote this opera in French</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Despite being Italian, this composer wrote a French language opera containing the aria &#x27;Ah! Mes amis&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ruth Bader Ginsburg had a cameo as the Duchess of Krakenthorp in the 2016 Washington National Opera production, satirizing the Obama birther controversy</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Ruth Bader Ginsburg wrote lines satirizing the Obama birther controversy for her cameo in the 2016 Washington National Opera production of this opera, as the non-singing Duchess of Krakenthorp.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Set during the Napoleonic wars; an opera comique</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this opera comique set during the Napoleonic wars.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="don-pasquale" open>
+            <summary class="work-title">Don Pasquale</summary>
+            <p class="work-desc">Opera buffa in which the elderly bachelor Don Pasquale consults the roguish Dr. Malatesta about finding a wife so he can disinherit his nephew Ernesto, who is in love with the soubrette Norina. Features the duet 'Cheti cheti immantinenti' between Pasquale and Malatesta. Don Pasquale opens with the title character singing about how he will sire six children with Malatesta's sister. <a href="https://en.wikipedia.org/wiki/Don_Pasquale" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Don Pasquale wants to disinherit his nephew Ernesto, who is in love with Norina; consults Dr. Malatesta to find a wife</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the title old bachelor disinherits his nephew Ernesto, who is in love with Norina, and consults with the roguish physician Dr. Malatesta to find a wife | This Donizetti opera opens with the title character in the house of Dr. Malatesta singing how he will sire six children with Malatesta&#x27;s sister.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Malatesta&#x27;s cousin poses as a notary for a marriage contract; Malatesta sings &#x27;Figliol non mi far scene&#x27; to get Ernesto to be quiet</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One character in this opera instructs his cousin to pose as a notary for a marriage contract, and has to sing &#x27;Figliol non mi far scene&#x27; to get Ernesto to shut up</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Norina is a quintessential soubrette role — a stock coy and conceited female character</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Don Pasquale&#x27;s Norina is a quintessential role of this kind, a stock coy and conceited female character.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pasquale and Malatesta sing the duet &#x27;Cheti cheti immantinenti&#x27;; the characters learn not to marry in old age</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the eponymous protagonist and his doctor Malatesta sing the duet &#x27;Cheti chete immaninenti&#x27;, and the characters learn not to marry in old age.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="tudor-queens-trilogy-anna-bolena-maria-stuarda-roberto-devereux" open>
+            <summary class="work-title">Tudor Queens Trilogy (Anna Bolena, Maria Stuarda, Roberto Devereux)</summary>
+            <p class="work-desc">Three operas about the lives of Tudor queens, sometimes called the 'Three Queens.' <span class="crossref-inline-red" title="No page yet: Beverly Sills">Beverly Sills</span> performed all three as a series at the New York City Opera in 1971, making the cover of Time magazine. Montserrat Caballe famously floated a pianissimo G for 22 seconds in Maria Stuarda. Roberto Devereux features Elizabeth I ordering the execution of the title character after a blue scarf reveals his love for another woman. Anna Bolena features Smeton dropping a locket with a portrait of the queen. <a href="https://en.wikipedia.org/wiki/Roberto_Devereux_(opera)" target="_blank">Wikipedia (Roberto Devereux)</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Beverly Sills performed all three Tudor Queens operas at the New York City Opera in 1971, making the cover of Time</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Beverly Sills made the cover of Time after starring in the New York City Opera&#x27;s 1971 revival of three of this composer&#x27;s works. | Beverly Sills performed all three as a series at the New York City Opera.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Maria Stuarda, the title character insults the other female lead by calling her an &#x27;impure daughter&#x27; and &#x27;vile bastard&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title character of an opera by this composer insults the other female lead by calling her an &#x27;impure daughter&#x27; and &#x27;vile bastard&#x27; during their confrontation scene.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Montserrat Caballe floated a pianissimo G for 22 seconds in Maria Stuarda</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Caballe floated a pianissimo on G for 22 seconds in a performance of this composer&#x27;s opera Maria Stuarda.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Roberto Devereux, a blue scarf convinces Elizabeth I that the title character loves another woman; Elizabeth sings the mad scene &#x27;Vivi ingrato...Quel sangue versato&#x27; after ordering his execution</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a blue scarf convinces Elizabeth I that the title character is in love with another woman. Elizabeth sings the mad scene &#x27;Vivi ingrato...Quel sangue versato&#x27; after ordering the title character&#x27;s execution.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Anna Bolena, Smeton drops a locket with a portrait of the title queen at the feet of her husband Enrico, who has his eye on Giovanna Seymour</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Smeton drops a locket with a portrait of the title queen at the feet of her husband Enrico, who has his eye on Giovanna Seymour</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Donizetti&#x27;s mentor Simon Mayr refused to call him &#x27;Maestro&#x27; until he wrote Anna Bolena</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s mentor Simon Mayr refused to call him &#x27;Maestro&#x27; until this composer wrote an opera in which Smeton drops a locket</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Donizetti is one of the three great bel canto composers alongside Bellini and Rossini. He was prolific — Berlioz complained 'one can no longer speak of the opera houses of Paris, but only of Donizetti's opera houses.' His mentor was <span class="crossref-inline-red" title="No page yet: Simon Mayr">Simon Mayr</span>. He left Naples for Paris after censors refused to allow his production of Poliuto. He also wrote Dom Sebastien (libretto by Eugene Scribe) and Marino Faliero. The bel canto style is characterized by dramatic melodic lines and smooth vocal legato (Italian for 'beautiful singing').</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Grouped with Bellini and Rossini as the three great bel canto composers; the 1950s &#x27;bel canto revival&#x27; is credited to him</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Donizetti was often grouped with Vincenzo Bellini and Gioachino Rossini during a 1950s &#x27;revival&#x27; of a style of opera known by this name. | Scholars in the 1950s credited this composer with playing a major role in the &#x27;bel canto revival.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Berlioz complained about Donizetti&#x27;s prolific output: &#x27;one can no longer speak of the opera houses of Paris, but only of Donizetti&#x27;s opera houses&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Complaining of this composer&#x27;s constant output, Hector Berlioz noted &#x27;one can no longer speak of the opera houses of Paris, but only of&#x27; [this man&#x27;s] opera houses.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His mentor was Simon Mayr</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This composer&#x27;s mentor Simon Mayr refused to call him &#x27;Maestro&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Left Naples for Paris after censors refused to allow his production of Poliuto</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man left Naples for Paris after censors refused to allow his production of Poliuto.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wrote Dom Sebastien (libretto by Eugene Scribe), and Marino Faliero</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Scribe wrote the libretto to Dom Sebastien, an opera by this Italian composer | A barcarolle for a gondolier and chorus opens this composer&#x27;s opera Marino Faliero.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His brother Giuseppe Donizetti (&#x27;Donizetti Pasha&#x27;) was an Italian-born composer who worked for the Ottoman Empire, writing its first national anthem</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this Italian-born composer... Mahmudiye Marsı was the Ottoman Empire&#x27;s first national anthem (He was the brother of Gaetano Donizetti.)</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Once conducted Rossini&#x27;s Stabat Mater in Bologna</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Donizetti once conducted a work of this name by Rossini in Bologna</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Gaetano Donizetti is one of the most frequently clued opera composers in quizbowl, appearing across all difficulty levels. He is almost always identified through his three most famous operas: <a href="../lucia_di_lammermoor/stock.html#lucia-di-lammermoor" class="crossref-inline">Lucia di Lammermoor</a>, The Elixir of Love, and The Daughter of the Regiment, with Don Pasquale as a frequent fourth.</p><p><a href="../lucia_di_lammermoor/stock.html#lucia-di-lammermoor" class="crossref-inline">Lucia di Lammermoor</a> is his most iconic work and the most common giveaway identifier. The &#x27;mad scene&#x27; (aria &#x27;Il dolce suono&#x27;) appears in nearly every tossup. Other Lucia clues include the sextet &#x27;Chi mi frena in tal momento,&#x27; the excerpt &#x27;Ardon gli incensi&#x27; (with its flute cadenza associated with <span class="crossref-inline-red" title="No page yet: Joan Sutherland">Joan Sutherland</span>&#x27;s Met debut), the Walter Scott source novel about Lucy Ashton, the characters Normanno and Edgardo, and the use of &#x27;Home Sweet Home&#x27; themes. The lead role is a coloratura soprano.</p><p>The Daughter of the Regiment is the second most commonly clued opera. Its signature clue is the tenor aria &#x27;Ah! mes amis,&#x27; which requires nine high Cs and has been called the &#x27;Mount Everest&#x27; of tenor arias. The plot involves Marie, a canteen girl raised by an army regiment, and Tonio, who joins the regiment to marry her. The aria &#x27;Chacun le sait&#x27; and the role of the Marquise of Birkenfeld (revealed to be Marie&#x27;s mother) appear at higher difficulties. A memorable bonus clue notes Ruth Bader Ginsburg&#x27;s cameo as the Duchess of Krakenthorp in a 2016 production. Notably, despite Donizetti being Italian, this opera is in French.</p><p>The Elixir of Love centers on Nemorino&#x27;s love for Adina and the quack Dr. Dulcamara, who sells cheap Bordeaux wine as a love potion. The aria &#x27;Una furtiva lagrima&#x27; is the most common identifier for this opera, with Nemorino seeing a tear in Adina&#x27;s eye. Power-mark clues include Dulcamara&#x27;s sales pitch aria &#x27;Udite, udite, o rustici,&#x27; and Giannetta&#x27;s scene involving the Tristan and Isolde love story.</p><p>Don Pasquale appears frequently in bonuses. It is an opera buffa about an old bachelor who consults Dr. Malatesta and tries to disinherit his nephew Ernesto. Norina is identified as a classic soubrette role.</p><p>The Tudor Queens trilogy — Anna Bolena, Maria Stuarda, and Roberto Devereux — appears across multiple questions. <span class="crossref-inline-red" title="No page yet: Beverly Sills">Beverly Sills</span> performing all three at the New York City Opera in 1971 and making the cover of Time is a key clue. Montserrat Caballe&#x27;s 22-second pianissimo in Maria Stuarda and the confrontation scene (&#x27;impure daughter,&#x27; &#x27;vile bastard&#x27;) are power clues. Roberto Devereux features Elizabeth I and a blue scarf. Anna Bolena features Smeton&#x27;s dropped locket.</p><p>Biographical clues include: Donizetti is grouped with Bellini and Rossini as the three bel canto masters (the 1950s bel canto revival is credited to him); Berlioz&#x27;s quip about Donizetti&#x27;s prolific output; his mentor <span class="crossref-inline-red" title="No page yet: Simon Mayr">Simon Mayr</span>; his departure from Naples to Paris after censors blocked Poliuto; his less famous works Dom Sebastien (libretto by Scribe) and Marino Faliero; and his brother Giuseppe Donizetti (&#x27;Donizetti Pasha&#x27;), who composed the Ottoman Empire&#x27;s first national anthem.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Gaetano_Donizetti" target="_blank">Gaetano Donizetti — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Lucia_di_Lammermoor" target="_blank">Lucia di Lammermoor — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/L%27elisir_d%27amore" target="_blank">L&#x27;elisir d&#x27;amore — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/La_fille_du_r%C3%A9giment" target="_blank">La fille du regiment — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Don_Pasquale" target="_blank">Don Pasquale — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Roberto_Devereux_(opera)" target="_blank">Roberto Devereux — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Lucia di Lammermoor — most clued Donizetti opera, deserves its own stock guide</li><li>Bel canto — frequently appears as its own answerline involving Donizetti, Bellini, and Rossini</li><li>Beverly Sills — connected through the Tudor Queens trilogy performances</li><li>The Elixir of Love — enough distinct clue material for a standalone guide</li><li>The Daughter of the Regiment — &#x27;Ah! mes amis&#x27; and nine high Cs are iconic identifiers</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'gaetano_donizetti' });</script>
+
+</body>
+</html>
