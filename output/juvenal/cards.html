@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cards: Juvenal</title>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    font-size: 14px;
+    line-height: 1.5;
+}
+a { color: #6b9eff; text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: normal;
+    color: #e0e0e0;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #3a3f47;
+}
+.toolbar button, .toolbar select {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.82rem;
+    background: #1a1f25;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.toolbar button:hover { background: #262d37; }
+.toolbar button.primary {
+    background: #2a3a55;
+    color: #6b9eff;
+    border-color: #6b9eff;
+}
+.toolbar button.danger {
+    color: #f08080;
+    border-color: #6b2a2a;
+}
+.toolbar input[type="text"] {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.82rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+    width: 160px;
+}
+.toolbar input:focus { border-color: #6b9eff; }
+.stats {
+    font-size: 0.82rem;
+    color: #808790;
+    margin-left: auto;
+}
+/* Card table */
+.card-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.card-table th {
+    text-align: left;
+    padding: 0.4rem 0.5rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    color: #9aa0a7;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.card-table th.cb-col { width: 2rem; text-align: center; }
+.card-table th.freq-col { width: 2.5rem; text-align: center; }
+.card-table th.type-col { width: 4rem; }
+.card-table th.tags-col { width: 10rem; }
+.card-table td {
+    padding: 0.35rem 0.5rem;
+    border-bottom: 1px solid #2a2f37;
+    vertical-align: top;
+}
+.card-table tr:hover td {
+    background: #1a1f25;
+}
+.card-table tr.selected td {
+    background: #1e2a3a;
+}
+.card-table td.cb-col { text-align: center; }
+.card-table td.freq-col {
+    text-align: center;
+    color: #808790;
+    font-weight: bold;
+}
+.card-table .editable {
+    cursor: text;
+    min-height: 1.2em;
+    outline: none;
+    border-radius: 2px;
+    padding: 0.1rem 0.2rem;
+}
+.card-table .editable:focus {
+    background: #15191e;
+    box-shadow: 0 0 0 1px #6b9eff;
+}
+.card-table .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    background: #15191e;
+    border: 1px solid #2a2f37;
+    border-radius: 8px;
+    padding: 0 0.35rem;
+    margin: 0.1rem 0.1rem;
+    color: #808790;
+}
+.back-link {
+    display: inline-block;
+    margin-bottom: 0.8rem;
+    font-size: 0.88rem;
+}
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 6px;
+    padding: 1.2rem;
+    min-width: 400px;
+    max-width: 600px;
+}
+.modal h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+    color: #e0e0e0;
+}
+.modal label {
+    display: block;
+    font-size: 0.82rem;
+    color: #9aa0a7;
+    margin-bottom: 0.2rem;
+    margin-top: 0.6rem;
+}
+.modal input, .modal textarea, .modal select {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    font-family: inherit;
+    outline: none;
+}
+.modal textarea { min-height: 60px; resize: vertical; }
+.modal input:focus, .modal textarea:focus { border-color: #6b9eff; }
+.modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+}
+.img-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem;
+    border: 1px solid #2a2f37;
+    border-radius: 3px;
+    margin-bottom: 0.3rem;
+    background: #15191e;
+}
+.img-list-item img {
+    max-width: 80px;
+    max-height: 60px;
+    border-radius: 2px;
+    border: 1px solid #3a3f47;
+    flex-shrink: 0;
+}
+.img-list-item .img-info {
+    flex: 1;
+    font-size: 0.78rem;
+    color: #9aa0a7;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.img-list-item .img-side {
+    font-size: 0.72rem;
+    color: #808790;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    padding: 0.1rem 0.3rem;
+}
+.img-list-item .img-remove {
+    color: #f08080;
+    cursor: pointer;
+    font-size: 0.82rem;
+    flex-shrink: 0;
+}
+.img-palette {
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    background: #15191e;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+}
+.img-palette summary {
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #9aa0a7;
+    user-select: none;
+}
+.img-palette summary:hover { color: #c8ccd1; }
+.palette-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+.palette-img {
+    position: relative;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 3px;
+    transition: border-color 0.15s;
+}
+.palette-img:hover { border-color: #6b9eff; }
+.palette-img.selected { border-color: #6b9eff; }
+.palette-img img {
+    max-height: 70px;
+    max-width: 110px;
+    display: block;
+    border-radius: 2px;
+}
+.palette-img .palette-remove {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #1a1f25;
+    color: #f08080;
+    border: 1px solid #3a3f47;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    line-height: 14px;
+    text-align: center;
+    cursor: pointer;
+    display: none;
+}
+.palette-img:hover .palette-remove { display: block; }
+.palette-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+.palette-actions input {
+    flex: 1;
+    min-width: 150px;
+}
+.palette-actions button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.78rem;
+    background: #1a1f25;
+    color: #6b9eff;
+    border: 1px solid #6b9eff;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+}
+.palette-apply {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #9aa0a7;
+}
+.palette-apply button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.78rem;
+    background: #2a3a55;
+    color: #6b9eff;
+    border: 1px solid #6b9eff;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+}
+.modal-actions button {
+    padding: 0.35rem 0.8rem;
+    font-size: 0.82rem;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    background: #1a1f25;
+    color: #c8ccd1;
+}
+.modal-actions button.primary {
+    background: #2a3a55;
+    color: #6b9eff;
+    border-color: #6b9eff;
+}
+#ctx-menu {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    background: #1e2329;
+    border: 1px solid #3a3f47;
+    border-radius: 5px;
+    padding: 0.3rem 0;
+    min-width: 180px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+#ctx-menu .ctx-item {
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    white-space: nowrap;
+}
+#ctx-menu .ctx-item:hover { background: #2a3040; }
+#ctx-menu .ctx-sep { border-top: 1px solid #3a3f47; margin: 0.25rem 0; }
+#ctx-menu .ctx-item.danger { color: #e06c75; }
+#ctx-menu .ctx-sub {
+    padding: 0.35rem 1rem 0.2rem;
+    font-size: 0.75rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
+</style>
+</head>
+<body>
+<div class="back-link"><a href="../../index.html">&larr; Home</a> · <a href="stock.html">Study guide</a></div>
+<h1>Cards: Juvenal</h1>
+
+<div class="toolbar">
+    <button onclick="addCard()" class="primary">+ Add card</button>
+    <button onclick="duplicateSelected()">Duplicate selected</button>
+    <button onclick="deleteSelected()" class="danger">Delete selected</button>
+    <span style="color:#3a3f47">|</span>
+    <input type="text" id="bulk-tag" placeholder="Tag to add..." list="tag-suggestions">
+    <datalist id="tag-suggestions">
+        <option value="Juvenal"><option value="Satires (general)"><option value="Satire 1 (Programmatic)"><option value="Satire 3 (On Rome, via Umbricius)"><option value="Satire 4 (The Turbot)"><option value="Satire 5 (The Dinner Party)"><option value="Satire 6 (Against Women/Marriage)"><option value="Satire 10 (Vanity of Human Wishes)"><option value="Satire 12 (Friendship)"><option value="Satire 14 (On Education in Avarice)"><option value="Satire 15 (Cannibalism in Egypt)"><option value="Satire 16 (Soldiers vs. Citizens)"><option value="General / Biographical"><option value="Roman"><option value="Satire"><option value="Classical Literature"><option value="Latin poetry">
+    </datalist>
+    <button onclick="addTagToSelected()">Add tag to selected</button>
+    <span style="color:#3a3f47">|</span>
+    <input type="text" id="bulk-indicator" placeholder="Indicator..." list="indicator-suggestions">
+    <button onclick="setIndicatorSelected()">Set indicator</button>
+    <span style="color:#3a3f47">|</span>
+    <select id="filter-work" onchange="renderTable()">
+        <option value="">All works</option>
+    </select>
+    <span style="color:#3a3f47">|</span>
+    <button onclick="exportJSON()" class="primary">Save JSON</button>
+    <button onclick="exportTSV()">Export TSV</button>
+    <button onclick="exportApkgBtn()" class="primary">Download .apkg</button>
+    <span class="stats" id="stats"></span>
+</div>
+
+<details class="img-palette" open>
+    <summary>Media Palette <span id="palette-count"></span></summary>
+    <div class="palette-grid" id="palette-grid"></div>
+    <div class="palette-actions">
+        <input type="text" id="palette-url" placeholder="Add image URL...">
+        <button onclick="addToPalette()">+ Add</button>
+        <span style="font-size:0.72rem;color:#555;">or Ctrl+V to paste</span>
+    </div>
+    <div class="palette-apply" id="palette-apply" style="display:none;">
+        <span>Selected image:</span>
+        <select id="palette-side">
+            <option value="back">Back</option>
+            <option value="front">Front</option>
+        </select>
+        <button onclick="applyPaletteToSelected()">Apply to selected cards</button>
+        <button onclick="clearPaletteSelection()" style="background:#1a1f25;">Cancel</button>
+    </div>
+    
+</details>
+
+<table class="card-table">
+    <thead>
+        <tr>
+            <th class="cb-col"><input type="checkbox" id="select-all" onchange="toggleAll(this.checked)"></th>
+            <th class="freq-col">Freq</th>
+            <th class="type-col">Indicator</th>
+            <th>Front</th>
+            <th>Back</th>
+            <th class="tags-col">Tags</th>
+        </tr>
+    </thead>
+    <tbody id="card-body"></tbody>
+</table>
+
+<!-- Add/Edit modal -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <h3 id="modal-title">Add Card</h3>
+        <label>Type</label>
+        <select id="m-type"><option value="basic">Basic</option><option value="image">Image</option></select>
+        <label>Indicator (e.g. Play, Novel, Composer, Painting)</label>
+        <input type="text" id="m-indicator" list="indicator-suggestions">
+        <datalist id="indicator-suggestions">
+            <option value="Play"><option value="Novel"><option value="Poem"><option value="Short Story">
+            <option value="Opera"><option value="Symphony"><option value="Painting"><option value="Sculpture">
+            <option value="Author"><option value="Composer"><option value="Painter"><option value="Playwright">
+            <option value="Philosopher"><option value="Film"><option value="Work"><option value="Concept">
+        </datalist>
+        <label>Front</label>
+        <textarea id="m-front"></textarea>
+        <label>Back</label>
+        <input type="text" id="m-back">
+        <label>Images <span style="font-weight:normal;font-size:0.78rem;color:#808790;">&mdash; click palette image, paste (Ctrl+V), or add by URL</span></label>
+        <div id="m-images-list"></div>
+        <div id="m-palette-picker" style="margin-top:0.3rem;"></div>
+        <div id="m-image-drop" style="border:1px dashed #3a3f47;border-radius:4px;padding:0.5rem;margin-top:0.3rem;text-align:center;background:#15191e;cursor:pointer;" tabindex="0">
+            <div style="font-size:0.82rem;color:#808790;">Paste image here (Ctrl+V) or drag &amp; drop</div>
+        </div>
+        <div style="display:flex;gap:0.4rem;align-items:center;margin-top:0.4rem;">
+            <input type="text" id="m-image-url" placeholder="Or enter image URL...">
+            <select id="m-image-side-new" style="width:auto;padding:0.3rem;">
+                <option value="back">Back</option>
+                <option value="front">Front</option>
+            </select>
+            <button type="button" onclick="addImageToList()" style="padding:0.3rem 0.6rem;font-size:0.82rem;background:#1a1f25;color:#6b9eff;border:1px solid #6b9eff;border-radius:3px;cursor:pointer;">+ Add</button>
+        </div>
+        <label>Tags (comma separated)</label>
+        <input type="text" id="m-tags">
+        <div style="margin-top:0.3rem;display:flex;flex-wrap:wrap;gap:0.2rem;">
+            <span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Juvenal</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satires (general)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire 1 (Programmatic)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire 3 (On Rome, via Umbricius)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire 4 (The Turbot)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire 5 (The Dinner Party)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire 6 (Against Women/Marriage)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire 10 (Vanity of Human Wishes)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire 12 (Friendship)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire 14 (On Education in Avarice)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire 15 (Cannibalism in Egypt)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire 16 (Soldiers vs. Citizens)</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">General / Biographical</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Roman</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Satire</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Classical Literature</span><span class="tag" style="cursor:pointer" onclick="appendTag(this.textContent)">Latin poetry</span>
+        </div>
+        <div class="modal-actions">
+            <button onclick="closeModal()">Cancel</button>
+            <button onclick="saveModal(true)" class="primary">Save &amp; New</button>
+            <button onclick="saveModal()" class="primary">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Context menu -->
+<div id="ctx-menu">
+    <div class="ctx-sub" id="ctx-label">1 card</div>
+    <div class="ctx-item" onclick="ctxDuplicate()">Duplicate</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Tag</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-sub">Indicator</div>
+    <div style="padding:0.2rem 0.7rem 0.4rem;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+    </div>
+    <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" onclick="ctxDelete()">Delete</div>
+</div>
+
+<script>
+const TOPIC = "Juvenal";
+let cards = [{"type": "basic", "indicator": "Poem", "front": "Poem: Samuel Johnson adapted its 10th section as \"The Vanity of Human Wishes\"", "back": "Satires (Juvenal)", "work": "Satires (general)", "frequency": 7, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: coined the phrase \"bread and circuses\" (panem et circenses) to mock the Roman public's distraction", "back": "Juvenal", "work": "Satires (general)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: coined the phrase \"quis custodiet ipsos custodes?\" / \"who watches the watchmen?\"", "back": "Juvenal", "work": "Satires (general)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: the phrase \"who watches the watchmen?\" from it provided the title of a graphic novel by Alan Moore", "back": "Satires (Juvenal)", "work": "Satires (general)", "frequency": 6, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: coined \"a sound mind in a sound body\" (mens sana in corpore sano) in his 10th Satire", "back": "Juvenal", "work": "Satires (general)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Work", "front": "Work: consists of 16 poems in dactylic hexameter criticizing Roman society and mores", "back": "Satires (Juvenal)", "work": "Satires (general)", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Juvenal's tenth satire mocks this Carthaginian general's deluded ambitions", "back": "Satire 10 / mocks Hannibal (Juvenal)", "work": "Satires (general)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: programmatic opener declaring that \"it is difficult not to write\" satire", "back": "Satire 1 (Juvenal)", "work": "Satire 1 (Programmatic)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: complains about women participating in boar hunts and the exiled Marius Priscus spending all afternoon drinking", "back": "Satire 1 (Juvenal)", "work": "Satire 1 (Programmatic)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: speaking through his friend Umbricius, the poet declares that Rome is no place where \"no decent Roman\" belongs", "back": "Satire 3 (Juvenal)", "work": "Satire 3 (On Rome, via Umbricius)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Samuel Johnson adapted it as \"London,\" which begins \"Tho' Grief and Fondness in my Breast Rebel\" and has Thales leaving the title city", "back": "Satire 3 (Juvenal)", "work": "Satire 3 (On Rome, via Umbricius)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: in Dryden's \"Paraphrase\" of it, a \"penniless exile\" becomes a poet resembling Dryden himself", "back": "Satire 3 (Juvenal)", "work": "Satire 3 (On Rome, via Umbricius)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Dryden inserted the line \"When the King's Trump, the Mob are for the King\" into his version of it", "back": "Satire 3 (Juvenal)", "work": "Satire 3 (On Rome, via Umbricius)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a Council is called to deal with how to cook a huge turbot that is too large for any pan", "back": "Satire 4 (Juvenal)", "work": "Satire 4 (The Turbot)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the courtier Crispinus buys a huge fish for 6,000 sesterces, baffling Domitian's counselors, and Montanus suggests potters craft a giant vessel", "back": "Satire 4 (Juvenal)", "work": "Satire 4 (The Turbot)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes the worst possible dinner party, in which the patron Virro humiliates a poor client", "back": "Satire 5 (Juvenal)", "work": "Satire 5 (The Dinner Party)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the host sips old wine \"bottled when Consuls wore their hair long\" and orders distilled water \"cooler than frost in Thrace\"", "back": "Satire 5 (Juvenal)", "work": "Satire 5 (The Dinner Party)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: the host is served a Messina lamprey while the addressee gets \"the stringy snake's relative\" from \"a denizen of that drain beneath the heart of Subura\"", "back": "Satire 5 (Juvenal)", "work": "Satire 5 (The Dinner Party)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: concludes that \"you won't be afraid to endure the whip: that's the dinner and friend you're worthy of\"", "back": "Satire 5 (Juvenal)", "work": "Satire 5 (The Dinner Party)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: a diatribe against marriage addressed to Postumus, urging him to hang himself from the Aemilian bridge or take a boy lover rather than marry", "back": "Satire 6 (Juvenal)", "work": "Satire 6 (Against Women/Marriage)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: source of \"quis custodiet ipsos custodes?\", which in context mocks the decline of womanly virtue rather than government institutions", "back": "Satire 6 (Juvenal)", "work": "Satire 6 (Against Women/Marriage)", "frequency": 3, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: claims that \"luxury\" is \"more damaging than any foe\" and notes that \"we are now suffering the calamities of a long peace\"", "back": "Satire 6 (Juvenal)", "work": "Satire 6 (Against Women/Marriage)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Play", "front": "Play: Truewit's anti-feminist anti-marriage diatribe in it is adapted from Juvenal's Satire 6", "back": "Epicoene (Ben Jonson)", "work": "Satire 6 (Against Women/Marriage)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes a cringing husband closing his eyes after his drunk wife vomits \"like a snake\" on a marble floor", "back": "Satire 6 (Juvenal)", "work": "Satire 6 (Against Women/Marriage)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Samuel Johnson's adaptation of it begins \"Let observation with extensive view / Survey mankind, from China to Peru\"", "back": "Satire 10 (Juvenal)", "work": "Satire 10 (Vanity of Human Wishes)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: advises one to pray for a sound mind in a sound body and a brave heart with no fear of death", "back": "Satire 10 (Juvenal)", "work": "Satire 10 (Vanity of Human Wishes)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Juvenal's Twelfth Satire is on this topic", "back": "Friendship (amicitia) — Satire 12 (Juvenal)", "work": "Satire 12 (Friendship)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: titled \"On education in avarice,\" its opening bemoans those who bring safety deposit boxes rather than wallets to the tables and a barber who becomes richer than the wealthy", "back": "Satire 14 (Juvenal)", "work": "Satire 14 (On Education in Avarice)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: refers to the Old Testament as \"the sacred volume of Moses\" and blames a father's observance of the Sabbath as the \"cause and culprit\" of his child's vices", "back": "Satire 14 (Juvenal)", "work": "Satire 14 (On Education in Avarice)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: describes stories of Hercules and the Minotaur as frivolous, depicting instead a society where husbands steal money from their wives' friends", "back": "Satire 14 (Juvenal)", "work": "Satire 14 (On Education in Avarice)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: claims men are crueler than animals, citing as evidence a riot in Egypt in which a man was torn to pieces and eaten", "back": "Satire 15 (Juvenal)", "work": "Satire 15 (Cannibalism in Egypt)", "frequency": 1, "tags": []}, {"type": "basic", "indicator": "Poem", "front": "Poem: Juvenal's fragmentary final satire, whose surviving portion discusses the advantages soldiers have over ordinary citizens", "back": "Satire 16 (Juvenal)", "work": "Satire 16 (Soldiers vs. Citizens)", "frequency": 2, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: full name Decimus Junius Juvenalis", "back": "Juvenal", "work": "General / Biographical", "frequency": 4, "tags": []}, {"type": "basic", "indicator": "Author", "front": "Author: fragments of the Augustan poet Sulpicia survive as two lines quoted by a scholiast on this Roman satirist", "back": "Juvenal", "work": "General / Biographical", "frequency": 1, "tags": []}];
+const SCORE_CLIPS = [];
+let editIndex = -1; // -1 = adding new
+
+// Populate work filter
+const works = [...new Set(cards.map(c => c.work).filter(Boolean))];
+const workSelect = document.getElementById('filter-work');
+works.forEach(w => {
+    const opt = document.createElement('option');
+    opt.value = w;
+    opt.textContent = w;
+    workSelect.appendChild(opt);
+});
+
+function renderTable() {
+    const tbody = document.getElementById('card-body');
+    const filterWork = document.getElementById('filter-work').value;
+    const visible = cards.map((c, i) => ({ ...c, _idx: i }))
+        .filter(c => !filterWork || c.work === filterWork);
+
+    tbody.innerHTML = visible.map(c => `
+        <tr data-idx="${c._idx}">
+            <td class="cb-col"><input type="checkbox" class="row-cb" data-idx="${c._idx}"></td>
+            <td class="freq-col">${c.frequency || ''}x</td>
+            <td>${c.indicator || c.type || 'basic'}</td>
+            <td>${getImgs(c,'front')}${getImgs(c,'front') ? '<br>' : ''}<div class="editable" style="display:inline" contenteditable="true" data-field="front" data-idx="${c._idx}">${escHtml(c.front)}</div></td>
+            <td><div class="editable" contenteditable="true" data-field="back" data-idx="${c._idx}">${escHtml(c.back)}</div>${getImgs(c,'back')}</td>
+            <td>${(c.tags || []).map(t => `<span class="tag">${escHtml(t)}</span>`).join('')}</td>
+        </tr>
+    `).join('');
+
+    // Inline edit handlers
+    tbody.querySelectorAll('.editable').forEach(el => {
+        el.addEventListener('blur', () => {
+            const idx = parseInt(el.dataset.idx);
+            const field = el.dataset.field;
+            cards[idx][field] = el.textContent.trim();
+        });
+    });
+
+    // Double-click row to open editor
+    tbody.querySelectorAll('tr').forEach(tr => {
+        tr.addEventListener('dblclick', (e) => {
+            if (e.target.classList.contains('editable') || e.target.type === 'checkbox') return;
+            openEditModal(parseInt(tr.dataset.idx));
+        });
+    });
+
+    document.getElementById('stats').textContent = visible.length + ' of ' + cards.length + ' cards';
+}
+
+function escHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+}
+
+function toggleAll(checked) {
+    document.querySelectorAll('.row-cb').forEach(cb => cb.checked = checked);
+}
+
+function getSelected() {
+    return [...document.querySelectorAll('.row-cb:checked')].map(cb => parseInt(cb.dataset.idx));
+}
+
+function deleteSelected() {
+    const sel = getSelected().sort((a, b) => b - a);
+    if (sel.length === 0) return;
+    if (!confirm(`Delete ${sel.length} card(s)?`)) return;
+    sel.forEach(i => cards.splice(i, 1));
+    renderTable();
+}
+
+function duplicateSelected() {
+    const sel = getSelected().sort((a, b) => a - b);
+    if (sel.length === 0) return;
+    // Insert duplicates after each original, offset by how many we've inserted
+    let offset = 0;
+    sel.forEach(i => {
+        const copy = JSON.parse(JSON.stringify(cards[i + offset]));
+        cards.splice(i + offset + 1, 0, copy);
+        offset++;
+    });
+    renderTable();
+}
+
+// ── Context menu ──────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+let ctxTargetIdx = -1;
+
+function showCtxMenu(e, rowIdx) {
+    e.preventDefault();
+    // If the right-clicked row isn't already selected, select only it
+    const cb = document.querySelector(`.row-cb[data-idx="${rowIdx}"]`);
+    if (cb && !cb.checked) {
+        document.querySelectorAll('.row-cb').forEach(c => c.checked = false);
+        cb.checked = true;
+    }
+    ctxTargetIdx = rowIdx;
+    const sel = getSelected();
+    document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
+    ctxMenu.style.display = 'block';
+    const x = Math.min(e.clientX, window.innerWidth - ctxMenu.offsetWidth - 8);
+    const y = Math.min(e.clientY, window.innerHeight - ctxMenu.offsetHeight - 8);
+    ctxMenu.style.left = x + 'px';
+    ctxMenu.style.top = y + 'px';
+    // Pre-fill inputs from first selected card
+    const firstIdx = sel[0] ?? ctxTargetIdx;
+    if (firstIdx >= 0) {
+        document.getElementById('ctx-indicator-input').value = cards[firstIdx].indicator || '';
+    }
+    document.getElementById('ctx-tag-input').value = '';
+    document.getElementById('ctx-tag-input').focus();
+}
+
+function hideCtxMenu() { ctxMenu.style.display = 'none'; }
+
+document.addEventListener('click', e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+function ctxDuplicate() { hideCtxMenu(); duplicateSelected(); }
+
+function ctxAddTag() {
+    const tag = document.getElementById('ctx-tag-input').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxSetIndicator() {
+    const ind = document.getElementById('ctx-indicator-input').value.trim();
+    if (!ind) return;
+    getSelected().forEach(i => {
+        cards[i].indicator = ind;
+        if (cards[i].front && cards[i].front.includes(': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.split(': ').slice(1).join(': ');
+        }
+    });
+    hideCtxMenu();
+    renderTable();
+}
+
+function ctxDelete() {
+    hideCtxMenu();
+    deleteSelected();
+}
+
+// Attach context menu to table rows
+function attachCtxMenu() {
+    document.getElementById('card-body').addEventListener('contextmenu', e => {
+        const tr = e.target.closest('tr[data-idx]');
+        if (!tr) return;
+        showCtxMenu(e, parseInt(tr.dataset.idx));
+    });
+}
+attachCtxMenu();
+
+// ── Shift-click range selection ───────────────────────────────
+let lastCheckedIdx = -1;
+document.getElementById('card-body').addEventListener('click', e => {
+    const cb = e.target.closest('.row-cb');
+    if (!cb) return;
+    const idx = parseInt(cb.dataset.idx);
+    if (e.shiftKey && lastCheckedIdx >= 0) {
+        const allCbs = [...document.querySelectorAll('.row-cb')];
+        const indices = allCbs.map(c => parseInt(c.dataset.idx));
+        const a = indices.indexOf(lastCheckedIdx);
+        const b = indices.indexOf(idx);
+        if (a >= 0 && b >= 0) {
+            const lo = Math.min(a, b), hi = Math.max(a, b);
+            allCbs.slice(lo, hi + 1).forEach(c => c.checked = cb.checked);
+        }
+    }
+    lastCheckedIdx = idx;
+});
+// ──────────────────────────────────────────────────────────────
+
+function addTagToSelected() {
+    const tag = document.getElementById('bulk-tag').value.trim();
+    if (!tag) return;
+    const sel = getSelected();
+    if (sel.length === 0) { alert('Select cards first'); return; }
+    sel.forEach(i => {
+        if (!cards[i].tags) cards[i].tags = [];
+        if (!cards[i].tags.includes(tag)) cards[i].tags.push(tag);
+    });
+    document.getElementById('bulk-tag').value = '';
+    renderTable();
+}
+
+function setIndicatorSelected() {
+    const ind = document.getElementById('bulk-indicator').value.trim();
+    if (!ind) return;
+    const sel = getSelected();
+    if (sel.length === 0) { alert('Select cards first'); return; }
+    sel.forEach(i => {
+        const old = cards[i].indicator || '';
+        cards[i].indicator = ind;
+        // Update front text: replace old indicator prefix or prepend new one
+        if (old && cards[i].front.startsWith(old + ': ')) {
+            cards[i].front = ind + ': ' + cards[i].front.slice(old.length + 2);
+        } else if (!cards[i].front.startsWith(ind + ': ')) {
+            cards[i].front = ind + ': ' + cards[i].front;
+        }
+    });
+    document.getElementById('bulk-indicator').value = '';
+    renderTable();
+}
+
+// Modal
+function openEditModal(idx) {
+    editIndex = idx;
+    const c = idx >= 0 ? cards[idx] : { type: 'basic', front: '', back: '', images: [], tags: [] };
+    document.getElementById('modal-title').textContent = idx >= 0 ? 'Edit Card' : 'Add Card';
+    document.getElementById('m-type').value = c.type || 'basic';
+    document.getElementById('m-indicator').value = c.indicator || '';
+    document.getElementById('m-front').value = c.front || '';
+    document.getElementById('m-back').value = c.back || '';
+    modalImages = getCardImages(c).map(img => ({ ...img }));
+    renderImageList();
+    renderModalPalette();
+    document.getElementById('m-tags').value = (c.tags || []).join(', ');
+    document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    editIndex = -1;
+}
+
+function addCard() { openEditModal(-1); }
+
+function saveModal(andNew) {
+    const indicator = document.getElementById('m-indicator').value.trim();
+    let frontText = document.getElementById('m-front').value.trim();
+    // Auto-prepend indicator if not already present
+    if (indicator && !frontText.startsWith(indicator + ':')) {
+        frontText = indicator + ': ' + frontText;
+    }
+    const card = {
+        type: document.getElementById('m-type').value,
+        indicator: indicator,
+        front: frontText,
+        back: document.getElementById('m-back').value.trim(),
+        images: modalImages.slice(),
+        tags: document.getElementById('m-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+        frequency: editIndex >= 0 ? (cards[editIndex].frequency || 0) : 0,
+        work: editIndex >= 0 ? (cards[editIndex].work || '') : '',
+    };
+    if (!card.front && (!card.images || !card.images.length)) { alert('Front or image required'); return; }
+    if (editIndex >= 0) {
+        cards[editIndex] = { ...cards[editIndex], ...card };
+        // Clear legacy image fields — images array is now authoritative
+        delete cards[editIndex].image_url;
+        delete cards[editIndex].image_side;
+    } else {
+        cards.push(card);
+    }
+    renderTable();
+    if (andNew) {
+        openEditModal(-1);
+    } else {
+        closeModal();
+    }
+}
+
+// Export
+function exportJSON() {
+    const blob = new Blob([JSON.stringify(cards, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = TOPIC.toLowerCase().replace(/\s+/g, '_') + '_cards.json';
+    a.click();
+}
+
+// Multi-image handling
+let modalImages = [];
+
+function getCardImages(card) {
+    // Normalize: support both old image_url and new images array
+    if (card.images && card.images.length) return card.images;
+    if (card.image_url) return [{ url: card.image_url, side: card.image_side || (card.type === 'image' ? 'front' : 'back') }];
+    return [];
+}
+
+function getImgs(card, side) {
+    const imgs = getCardImages(card);
+    return imgs.filter(img => img.side === side)
+        .map(img => `<img src="${img.url}" style="max-height:60px;max-width:100px;vertical-align:middle;margin:0.1rem;">`)
+        .join('');
+}
+
+function renderImageList() {
+    const el = document.getElementById('m-images-list');
+    if (modalImages.length === 0) {
+        el.innerHTML = '<div style="font-size:0.78rem;color:#555;padding:0.3rem;">No images</div>';
+        return;
+    }
+    el.innerHTML = modalImages.map((img, i) => `
+        <div class="img-list-item">
+            <img src="${img.url}" onerror="this.style.display='none'">
+            <div class="img-info">${img.url.startsWith('data:') ? '(pasted image)' : img.url.split('/').pop().substring(0, 40)}</div>
+            <span class="img-side" style="cursor:pointer;" onclick="toggleImgSide(${i})" title="Click to toggle front/back">${img.side}</span>
+            <span class="img-remove" onclick="modalImages.splice(${i},1);renderImageList();">&times;</span>
+        </div>
+    `).join('');
+}
+
+function toggleImgSide(idx) {
+    if (modalImages[idx]) {
+        modalImages[idx].side = modalImages[idx].side === 'front' ? 'back' : 'front';
+        renderImageList();
+    }
+}
+
+function addImageToList() {
+    const url = document.getElementById('m-image-url').value.trim();
+    if (!url) return;
+    const side = document.getElementById('m-image-side-new').value;
+    modalImages.push({ url, side });
+    document.getElementById('m-image-url').value = '';
+    renderImageList();
+}
+
+function renderModalPalette() {
+    const picker = document.getElementById('m-palette-picker');
+    if (!picker || paletteImages.length === 0) {
+        if (picker) picker.innerHTML = '';
+        return;
+    }
+    const side = document.getElementById('m-image-side-new').value;
+    picker.innerHTML = '<div style="font-size:0.75rem;color:#808790;margin-bottom:0.25rem;">From palette (click to add):</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;">' +
+        paletteImages.map((img, i) => `
+            <div style="position:relative;cursor:pointer;border:1px solid #3a3f47;border-radius:3px;overflow:hidden;"
+                 onclick="addPaletteImgToModal(${i})" title="${img.label}">
+                <img src="${img.url}" style="max-height:50px;max-width:80px;display:block;" onerror="this.parentElement.style.display='none'">
+            </div>
+        `).join('') + '</div>';
+}
+
+function addPaletteImgToModal(idx) {
+    const img = paletteImages[idx];
+    if (!img) return;
+    const side = document.getElementById('m-image-side-new').value;
+    if (!modalImages.some(m => m.url === img.url)) {
+        modalImages.push({ url: img.url, side });
+        renderImageList();
+    }
+}
+
+function appendTag(tag) {
+    const input = document.getElementById('m-tags');
+    const existing = input.value.split(',').map(t => t.trim()).filter(Boolean);
+    if (!existing.includes(tag)) {
+        existing.push(tag);
+        input.value = existing.join(', ');
+    }
+}
+
+function exportTSV() {
+    const header = 'Front\tBack\tTags\n';
+    const rows = cards.map(c =>
+        [c.front, c.back, (c.tags || []).join(' ')].map(f => f.replace(/\t/g, ' ').replace(/\n/g, ' ')).join('\t')
+    ).join('\n');
+    const blob = new Blob([header + rows], { type: 'text/tab-separated-values' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = TOPIC.toLowerCase().replace(/\s+/g, '_') + '_cards.tsv';
+    a.click();
+}
+
+// Disable paste on contenteditable fields in the table (not in modal)
+document.querySelector('.card-table')?.addEventListener('paste', e => {
+    e.preventDefault();
+});
+
+// Image paste/drop handling in modal
+function handleImageFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const side = document.getElementById('m-image-side-new').value;
+        modalImages.push({ url: ev.target.result, side });
+        renderImageList();
+    };
+    reader.readAsDataURL(file);
+}
+
+// Paste anywhere in modal adds image
+document.getElementById('modal')?.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            handleImageFile(item.getAsFile());
+            return;
+        }
+    }
+});
+
+// Drag & drop on the drop zone
+const dropZone = document.getElementById('m-image-drop');
+if (dropZone) {
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#6b9eff';
+        dropZone.style.background = '#1a2535';
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = '#3a3f47';
+        dropZone.style.background = '#15191e';
+    });
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#3a3f47';
+        dropZone.style.background = '#15191e';
+        const file = e.dataTransfer?.files?.[0];
+        if (file) handleImageFile(file);
+    });
+}
+
+// Keyboard: Escape closes modal
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// --- Image Palette ---
+let paletteImages = [];
+let selectedPaletteIdx = -1;
+
+// Initialize palette from existing work images
+(function initPalette() {
+    const seen = new Set();
+    cards.forEach(c => {
+        (getCardImages(c)).forEach(img => {
+            if (img.url && !seen.has(img.url)) {
+                seen.add(img.url);
+                paletteImages.push({ url: img.url, label: c.work || '' });
+            }
+        });
+    });
+})();
+
+// --- Score Clips Palette ---
+
+function initClipsPalette() {
+    const clips = SCORE_CLIPS.filter(c => c.mp3);
+    if (!clips.length) return;
+    const section = document.getElementById('clips-section');
+    const grid = document.getElementById('clips-grid');
+    section.style.display = '';
+    grid.innerHTML = clips.map((clip, i) => `
+        <div style="background:#1a1f25;border:1px solid #3a3f47;border-radius:4px;padding:0.4rem 0.6rem;min-width:180px;max-width:280px;">
+            <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${escHtml(clip.work || '')}${clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}</div>
+            <div id="clip-notation-${i}" style="max-width:100%;overflow:hidden;"></div>
+            <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
+                <audio controls preload="none" src="${escHtml(clip.mp3)}${clip.mp3_v ? '?v=' + clip.mp3_v : ''}" style="height:24px;width:120px;"></audio>
+            </div>
+        </div>
+    `).join('');
+
+    // Render ABC notation for each clip
+    clips.forEach((clip, i) => {
+        if (clip.abc && typeof ABCJS !== 'undefined') {
+            try {
+                ABCJS.renderAbc(`clip-notation-${i}`, clip.abc, {
+                    responsive: 'resize',
+                    staffwidth: 240,
+                    scale: 0.7,
+                    paddingright: 0,
+                    paddingleft: 0,
+                });
+            } catch(e) {}
+        }
+    });
+}
+
+function renderPalette() {
+    const grid = document.getElementById('palette-grid');
+    const countEl = document.getElementById('palette-count');
+    countEl.textContent = paletteImages.length ? `(${paletteImages.length})` : '';
+    if (paletteImages.length === 0) {
+        grid.innerHTML = '<span style="font-size:0.78rem;color:#555;">No images yet. Add one below or paste with Ctrl+V.</span>';
+        return;
+    }
+    grid.innerHTML = paletteImages.map((img, i) => `
+        <div class="palette-img ${i === selectedPaletteIdx ? 'selected' : ''}" onclick="selectPaletteImg(${i})" title="${img.label}">
+            <img src="${img.url}" onerror="this.parentElement.style.display='none'">
+            <span class="palette-remove" onclick="event.stopPropagation();removePaletteImg(${i})">&times;</span>
+        </div>
+    `).join('');
+    document.getElementById('palette-apply').style.display = selectedPaletteIdx >= 0 ? '' : 'none';
+}
+
+function selectPaletteImg(idx) {
+    selectedPaletteIdx = selectedPaletteIdx === idx ? -1 : idx;
+    renderPalette();
+}
+
+function clearPaletteSelection() {
+    selectedPaletteIdx = -1;
+    renderPalette();
+}
+
+function removePaletteImg(idx) {
+    paletteImages.splice(idx, 1);
+    if (selectedPaletteIdx === idx) selectedPaletteIdx = -1;
+    else if (selectedPaletteIdx > idx) selectedPaletteIdx--;
+    renderPalette();
+}
+
+function addToPalette() {
+    const input = document.getElementById('palette-url');
+    const url = input.value.trim();
+    if (!url) return;
+    if (!paletteImages.some(p => p.url === url)) {
+        paletteImages.push({ url, label: 'Custom' });
+    }
+    input.value = '';
+    renderPalette();
+}
+
+function applyPaletteToSelected() {
+    if (selectedPaletteIdx < 0) return;
+    const img = paletteImages[selectedPaletteIdx];
+    const side = document.getElementById('palette-side').value;
+    const checked = document.querySelectorAll('.row-cb:checked');
+    if (checked.length === 0) { alert('Select cards first (checkboxes)'); return; }
+    checked.forEach(cb => {
+        const idx = parseInt(cb.dataset.idx);
+        const card = cards[idx];
+        if (!card.images) card.images = [];
+        // Don't add duplicate
+        if (!card.images.some(i => i.url === img.url && i.side === side)) {
+            card.images.push({ url: img.url, side });
+        }
+    });
+    selectedPaletteIdx = -1;
+    renderPalette();
+    renderTable();
+}
+
+// Paste on palette area
+document.querySelector('.img-palette')?.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                if (!paletteImages.some(p => p.url === ev.target.result)) {
+                    paletteImages.push({ url: ev.target.result, label: 'Pasted' });
+                    renderPalette();
+                }
+            };
+            reader.readAsDataURL(item.getAsFile());
+            return;
+        }
+    }
+});
+
+renderPalette();
+renderTable();
+
+</script>
+
+<script src="../../lib/js/anki_export.js"></script>
+<script>
+async function exportApkgBtn() {
+    const btn = event.target;
+    const origText = btn.textContent;
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+    try {
+        const blob = await exportApkg(cards, 'StockQB::' + TOPIC);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = TOPIC.toLowerCase().replace(/\s+/g, '_') + '.apkg';
+        a.click();
+        btn.textContent = 'Downloaded!';
+        setTimeout(() => { btn.textContent = origText; }, 2000);
+    } catch (e) {
+        console.error(e);
+        alert('Export failed: ' + e.message);
+        btn.textContent = origText;
+    } finally {
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>

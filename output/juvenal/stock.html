@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Juvenal</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Juvenal</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Early 2nd-century Roman satirist (Decimus Junius Juvenalis), author of the sixteen Satires. Coined famous phrases including &quot;bread and circuses&quot; (panem et circenses), &quot;who watches the watchmen?&quot; (quis custodiet ipsos custodes?), and &quot;a sound mind in a sound body&quot; (mens sana in corpore sano). His 10th Satire was adapted by Samuel Johnson as &quot;The Vanity of Human Wishes&quot; and his 3rd Satire as Johnson&#x27;s &quot;London.&quot;</div>
+
+        <details class="work" id="satires-general" open>
+            <summary class="work-title">Satires (general)</summary>
+            <p class="work-desc">Juvenal's collected 16 Satires, his only surviving work, divided into five books. Written in dactylic hexameter, they savage Roman vice, corruption, and social decline. The collection is the source of many of Juvenal's most famous phrases and Samuel Johnson adapted it into English verse. <a href="https://en.wikipedia.org/wiki/Satires_(Juvenal)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Samuel Johnson adapted Juvenal&#x27;s 10th Satire as &quot;The Vanity of Human Wishes&quot;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Samuel Johnson&#x27;s &quot;The Vanity of Human Wishes&quot; was adapted from a work by this author | Samuel Johnson adapted one of this man&#x27;s works as &quot;The Vanity of Human Wishes.&quot; | The tenth section was adapted by Samuel Johnson into his poem &quot;The Vanity of Human Wishes&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coined the phrase &quot;bread and circuses&quot; (panem et circenses) to mock the Roman public&#x27;s distraction</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">mocked the public desire for &quot;bread and circuses&quot; in his Satires | the phrases &quot;bread and circuses&quot; and &quot;who will guard the guards themselves&quot; were coined by what Roman author | In the tenth satire, Juvenal bemoans that the public no longer cares about government corruption, instead pointing out that the public is only satiated by these two things</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coined the phrase &quot;quis custodiet ipsos custodes?&quot; / &quot;who watches the watchmen?&quot;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">coined phrases like &quot;who watches the watchers?&quot; and &quot;bread and circuses&quot; | The 6th part contains the phrase &quot;Sed quis custodiet ipsos custodes&quot;, often translated as &quot;who watches the watchmen?&quot; | That quote provided the title of a graphic novel by Alan Moore</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Coined &quot;a sound mind in a sound body&quot; (mens sana in corpore sano) in the 10th Satire</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">instead preferring &quot;a sound mind in a sound body, and a brave heart&quot; | advises one to wish for &quot;sound mind in a sound body&quot; | the first entry in a list of things that one should pray to the gods for, where it immediately precedes &quot;a stout heart that has no fear of death&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Consists of 16 poems (the Satires) criticizing Roman society / mores</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">His best-known work consists of 16 poems | these 16 poems criticizing the mores of Roman Society | The sixteen Satires are the most famous works of this man</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The tenth Satire mocks Hannibal</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a work by this author that mocks Hannibal and advises one to wish for &quot;sound mind in a sound body&quot;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satire-1-programmatic" open>
+            <summary class="work-title">Satire 1 (Programmatic)</summary>
+            <p class="work-desc">The opening programmatic satire, which famously declares that "it is difficult not to write" satire. It complains about a litany of evils including women participating in boar hunts and the exiled Marius Priscus spending all afternoon drinking. <a href="https://en.wikipedia.org/wiki/Satires_(Juvenal)#Book_I" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Programmatic poem declaring that &quot;it is difficult not to write&quot; satire</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Name this programmatic poem, which declares that &quot;it is difficult not to write&quot; works in the genre to which it belongs</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Complains about women participating in boar hunts and the exiled Marius Priscus spending all afternoon drinking</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poem complains about a litany of evils, including women participating in boar hunts and the exiled Marius Priscus spending all afternoon drinking</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satire-3-on-rome-via-umbricius" open>
+            <summary class="work-title">Satire 3 (On Rome, via Umbricius)</summary>
+            <p class="work-desc">A diatribe in which Juvenal's friend Umbricius leaves Rome, complaining that "no decent Roman" belongs there and detailing the horrors of foreigners packing the city. Samuel Johnson adapted it as "London," opening "Tho' Grief and Fondness in my Breast Rebel" and with Thales standing in for Umbricius. <a href="https://en.wikipedia.org/wiki/Satires_(Juvenal)#Satire_III:_There's_no_Room_in_Rome_for_a_Roman" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Speaking through his friend Umbricius, Juvenal declares Rome is no place where &quot;no decent Roman&quot; belongs</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Speaking through his friend Umbricius, this man wrote that Rome is a place where &quot;no decent Roman&quot; belongs | His 3rd Satire is all about the horrors of the foreigners packing Rome</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Adapted by Samuel Johnson as &quot;London,&quot; which begins &quot;Tho&#x27; Grief and Fondness in my Breast Rebel&quot; and describes Thales leaving the title city</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A poem patterned after this author begins: &quot;Tho&#x27; Grief and Fondness in my Breast Rebel&quot; and describes Thales leaving the title city, London | Samuel Johnson parodied two works of another poet in this genre in his poems London and The Vanity of Human Wishes</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Dryden inserted the line &quot;When the King&#x27;s Trump, the Mob are for the King&quot; into his version; and his &quot;Paraphrase&quot; of another turned a &quot;penniless exile&quot; into a poet resembling Dryden himself</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Dryden inserted the line &quot;When the King&#x27;s Trump, the Mob are for the King&quot; into his version of one of this author&#x27;s works, and in his &quot;Paraphrase&quot; of another work by this author, Dryden turned a &quot;penniless exile&quot; into a poet with life circumstances similar to Dryden himself</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satire-4-the-turbot" open>
+            <summary class="work-title">Satire 4 (The Turbot)</summary>
+            <p class="work-desc">A mock-epic in which the courtier Crispinus buys a huge turbot for 6,000 sesterces and the emperor Domitian convenes a Council to decide how to cook a fish too large for any existing pan. Montanus suggests having potters craft a giant vessel. <a href="https://en.wikipedia.org/wiki/Satires_(Juvenal)#Satire_IV:_The_Emperor's_Fish" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A Council is called to deal with how to cook a huge turbot that is too large for any pan</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a man proposes making a massive serving dish after a Council is called to deal with the issue of cooking a huge turbot | One of this author&#x27;s works describes a discussion of the problem of how to cook a turbot too large for any pan</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The courtier Crispinus purchases a big fish for 6,000 sesterces, baffling Domitian&#x27;s counselors; Montanus suggests potters make a giant vessel</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the courtier Crispinus purchases a big one of these things for 6,000 sesterces, thus baffling Domitian&#x27;s various counselors. Montanus suggests having potters make a giant vessel for it</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satire-5-the-dinner-party" open>
+            <summary class="work-title">Satire 5 (The Dinner Party)</summary>
+            <p class="work-desc">Describes the worst possible dinner party, in which the addressee (a poor client) is humiliated by his patron Virro: Virro sips old wine bottled "when Consuls wore their hair long" and eats a Messina lamprey, while the guest is served a watery snake-relative from a Subura drain. <a href="https://en.wikipedia.org/wiki/Satires_(Juvenal)#Satire_V:_Patron_and_Client" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes the worst possible dinner party</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">describes the worst possible dinner party in his fifth satire</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A man sips old wine &quot;bottled when Consuls wore their hair long&quot; and orders distilled water &quot;cooler than frost in Thrace&quot;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet describes a man who &quot;sips old wine, bottled when Consuls wore their hair long&quot;, who orders &quot;distilled water cooler than frost in Thrace&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A man is served a Messina lamprey while the addressee gets &quot;the stringy snake&#x27;s relative&quot; from &quot;a denizen of that drain beneath the heart of Subura&quot;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That man, is served a lamprey from Messina, while the addressee is offered &quot;the stringy snake&#x27;s relative&quot; or &quot;a denizen of that drain beneath the heart of Subura&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">If you were given four thousand in gold, &quot;you&#x27;d turn from a nobody into one of Virro&#x27;s dear friends&quot;; concludes &quot;you won&#x27;t be afraid to endure the whip: that&#x27;s the dinner and friend you&#x27;re worthy of&quot;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet mocks that if you were given four thousand in gold, &quot;you&#x27;d turn from a nobody into one of Virro&#x27;s dear friends&quot; | This poet concludes that poem by declaring that &quot;you won&#x27;t be afraid to endure the whip: that&#x27;s the dinner and friend you&#x27;re worthy of&quot;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satire-6-against-women-marriage" open>
+            <summary class="work-title">Satire 6 (Against Women/Marriage)</summary>
+            <p class="work-desc">Juvenal's longest poem, a diatribe against marriage and women addressed to Postumus, whom the speaker urges to hang himself from the Aemilian bridge or take a boy lover rather than marry. It contains the famous line "Sed quis custodiet ipsos custodes?" — in context mocking the decline of womanly virtue rather than government. <a href="../ben_jonson/stock.html" class="crossref-inline">Ben Jonson</a>'s Epicoene adapts an anti-feminist diatribe from it. <a href="https://en.wikipedia.org/wiki/Satires_(Juvenal)#Satire_VI:_The_Decay_of_Feminine_Virtue" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A diatribe against marriage and women, addressed to Postumus, urging him to hang himself from the Aemilian bridge or take a boy lover instead of marrying</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The beginning of this poem addresses Postumus and proposes that he hang himself from the Aemilian bridge or find a boy lover instead of getting married | a poem in which Postumus is warned against marriage, as a response to the advice &quot;throw the bolt and lock her in&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Source of &quot;Sed quis custodiet ipsos custodes?&quot; — in context mocks the decline of womanly virtue rather than government institutions</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poet&#x27;s famous phrase quis custodiet ipsos custodies in context mocks the decline of womanly virtue, rather than government institutions | Its most famous line comes after the speaker recounts advice to &quot;keep your women at home, and put them under lock and key.&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Claims &quot;luxury&quot; is &quot;more damaging than any foe&quot; and notes &quot;we are now suffering the calamities of a long peace&quot;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This poem claims that &quot;luxury&quot; is &quot;more damaging than any foe&quot; and notes that &quot;we are now suffering the calamities of a long peace&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Ben Jonson&#x27;s Epicoene adapts Truewit&#x27;s anti-feminist anti-marriage diatribe from this satire</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In Ben Jonson&#x27;s Epicoene, Truewit&#x27;s anti-feminist anti-marriage diatribe is adapted from this author</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes a cringing husband closing his eyes after his drunk wife vomits &quot;like a snake&quot; on a marble floor</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In one poem, this author describes a cringing husband closing his eyes after his drunk wife vomits &quot;like a snake&quot; on a marble floor</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satire-10-vanity-of-human-wishes" open>
+            <summary class="work-title">Satire 10 (Vanity of Human Wishes)</summary>
+            <p class="work-desc">The source of "bread and circuses," "mens sana in corpore sano," and the mockery of Hannibal. The basis for Samuel Johnson's "The Vanity of Human Wishes," which begins "Let observation with extensive view / Survey mankind, from China to Peru." <a href="https://en.wikipedia.org/wiki/Satires_(Juvenal)#Satire_X:_The_Vanity_of_Wishes" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Samuel Johnson&#x27;s adaptation begins &quot;Let observation with extensive view / Survey mankind, from China to Peru&quot;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another poem imitating this author declares &quot;Let observation with extensive view / Survey mankind, from China to Peru.&quot;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Advises one to pray for a sound mind in a sound body and a brave heart that has no fear of death</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">mocked the vanity of human wishes, instead preferring &quot;a sound mind in a sound body, and a brave heart&quot; | this phrase, the first entry in a list of things that one should pray to the gods for, where it immediately precedes &quot;a stout heart that has no fear of death&quot;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satire-12-friendship" open>
+            <summary class="work-title">Satire 12 (Friendship)</summary>
+            <p class="work-desc">A shorter satire on the topic of friendship (amicitia). <a href="https://en.wikipedia.org/wiki/Satires_(Juvenal)" target="_blank">Wikipedia</a></p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Juvenal&#x27;s Twelfth Satire is on the topic of friendship (amicitia)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Juvenal&#x27;s Twelfth Satire is on this topic</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satire-14-on-education-in-avarice" open>
+            <summary class="work-title">Satire 14 (On Education in Avarice)</summary>
+            <p class="work-desc">A satire on how parents teach their children greed. Titled "On education in avarice," its opening bemoans those who bring safety deposit boxes rather than wallets to the tables, and a barber who becomes richer than the wealthy. At one point it refers to the Old Testament as "the sacred volume of Moses" and claims a father's separation of the Sabbath from the rest of life is the "cause and culprit" for his child's vices.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Titled &quot;On education in avarice&quot;; opening bemoans those who bring safety deposit boxes rather than wallets to tables, and a barber who becomes richer than the wealthy</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">That portion is titled &quot;On education in avarice.&quot; Its opening bemoans those who bring safety deposit boxes, rather than wallets, to the tables, and a barber who becomes richer than the wealthy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Refers to the Old Testament as &quot;the sacred volume of Moses&quot; and blames the Sabbath as &quot;cause and culprit&quot; of a child&#x27;s vices</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the author refers to the old Testament as &quot;the sacred volume of Moses&quot; before claiming that a father&#x27;s separation of the Sabbath from the rest of life is the &quot;cause and culprit&quot; for his child having vices</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Describes stories of Hercules and the Minotaur as frivolous; depicts a society where husbands steal money from their wives&#x27; friends</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Its author describes the stories of Hercules and the Minotaur as frivolous, instead describing a society where husbands steal money from their wives&#x27; friends</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satire-15-cannibalism-in-egypt" open>
+            <summary class="work-title">Satire 15 (Cannibalism in Egypt)</summary>
+            <p class="work-desc">Claims that men are crueler than animals, using as evidence a riot in Egypt in which a man was torn to pieces and eaten.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Claims men are crueler than animals and describes a riot in Egypt in which a man was torn to pieces and eaten</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Another of this author&#x27;s works claims that men are crueler than animals and describes a riot in Egypt in which a man was torn to pieces and eaten as evidence</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="satire-16-soldiers-vs-citizens" open>
+            <summary class="work-title">Satire 16 (Soldiers vs. Citizens)</summary>
+            <p class="work-desc">Juvenal's final, fragmentary satire. The last portion is lost, but what survives discusses the advantages that soldiers have over ordinary citizens.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The last portion is lost; the remaining part discusses advantages that soldiers have over citizens</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The last portion is lost, but the remaining part discusses advantages that soldiers have over citizens | Juvenal&#x27;s fragmentary last Satire describes the certain advantages that people with this occupation had over normal citizens</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Juvenal is identified and biographical framing.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Early 2nd-century Roman poet / acerbic Roman satirist</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this early 2nd-century poet | name this acerbic Roman | identify this Roman author of the Satires</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Full name Decimus Junius Juvenalis</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Juvenal [or Decimus Iunius Iuvenalis] | Juvenal [or Decimus Junius Juvenalis]</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fragments of the Augustan poet Sulpicia survive as two lines quoted by a scholiast on Juvenal</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The only fragments fully attributed to the Domitian Sulpicia are two lines quoted by a scholiast on this author</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Juvenal (Decimus Junius Juvenalis) is an early 2nd-century Roman satirist, the author of sixteen Satires that are his only surviving work. Clues overwhelmingly identify him via Samuel Johnson&#x27;s English adaptations: Satire 10 was transformed into &quot;The Vanity of Human Wishes&quot; (beginning &quot;Let observation with extensive view / Survey mankind, from China to Peru&quot;) and Satire 3 became &quot;London&quot; (beginning &quot;Tho&#x27; Grief and Fondness in my Breast Rebel,&quot; with Thales substituting for Juvenal&#x27;s Umbricius, the friend through whom Juvenal declares Rome a place where &quot;no decent Roman&quot; belongs). <a href="../john_dryden/stock.html" class="crossref-inline">Dryden</a> also translated Juvenal, inserting the line &quot;When the King&#x27;s Trump, the Mob are for the King&quot; and adapting a &quot;penniless exile&quot; into a self-portrait. The Satires are the source of Juvenal&#x27;s most famous phrases: &quot;bread and circuses&quot; (panem et circenses, from Satire 10), &quot;a sound mind in a sound body&quot; (mens sana in corpore sano, also from Satire 10, immediately preceding &quot;a stout heart that has no fear of death&quot;), and &quot;quis custodiet ipsos custodes?&quot; (&quot;who watches the watchmen?&quot;, from Satire 6, where in context it mocks the decline of womanly virtue rather than government corruption; the phrase titled Alan Moore&#x27;s Watchmen). Satire 1 is the programmatic opener, declaring that &quot;it is difficult not to write&quot; satire, and complains about women participating in boar hunts and the exiled Marius Priscus drinking all afternoon. Satire 3 attacks foreigners packing Rome. Satire 4 is a mock-epic in which the courtier Crispinus buys a huge turbot for 6,000 sesterces and a Council of Domitian is summoned to decide how to cook a fish too large for any pan, with Montanus proposing potters make a giant vessel. Satire 5 depicts the worst possible dinner party, where the patron Virro sips old wine &quot;bottled when Consuls wore their hair long,&quot; orders water &quot;cooler than frost in Thrace,&quot; and eats a Messina lamprey, while the poor client addressee gets &quot;the stringy snake&#x27;s relative&quot; from a Subura drain; Juvenal concludes &quot;you won&#x27;t be afraid to endure the whip: that&#x27;s the dinner and friend you&#x27;re worthy of.&quot; Satire 6 is a long diatribe against marriage addressed to Postumus (who is urged to hang himself from the Aemilian bridge or find a boy lover instead), featuring a cringing husband whose drunk wife vomits &quot;like a snake&quot; on a marble floor and noting that &quot;luxury&quot; is &quot;more damaging than any foe&quot;; <a href="../ben_jonson/stock.html" class="crossref-inline">Ben Jonson</a> adapted Truewit&#x27;s anti-marriage diatribe in Epicoene from it. Satire 10 mocks Hannibal among other deluded ambitions. Satire 12 concerns friendship (amicitia). Satire 14, &quot;On education in avarice,&quot; bemoans those who bring safety deposit boxes to dinner and a barber richer than the wealthy, references the Old Testament as &quot;the sacred volume of Moses,&quot; and blames a father&#x27;s observance of the Sabbath as the &quot;cause and culprit&quot; of his child&#x27;s vices, while calling Hercules and the Minotaur stories frivolous. Satire 15 argues men are crueler than animals, citing a riot in Egypt in which a man was torn to pieces and eaten. The fragmentary final Satire 16 discusses the advantages soldiers enjoy over ordinary citizens.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Juvenal" target="_blank">Juvenal — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Satires_(Juvenal)" target="_blank">Satires of Juvenal — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Vanity_of_Human_Wishes" target="_blank">The Vanity of Human Wishes — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/London_(Samuel_Johnson_poem)" target="_blank">London (Samuel Johnson poem) — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Satire 6 — own answerline multiple times (2014, 2015); deserves deep dive on Postumus/marriage/quis custodiet</li><li>Satire 10 / Vanity of Human Wishes — heavily clued as Johnson adaptation source</li><li>Samuel Johnson&#x27;s The Vanity of Human Wishes — paired answerline repeatedly</li><li>&quot;Bread and circuses&quot; (panem et circenses) — has appeared as its own answerline</li><li>Horace — companion Roman satirist</li><li>Martial and Petronius — companion Roman satirical/witty authors</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'juvenal' });</script>
+
+</body>
+</html>
