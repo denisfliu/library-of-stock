@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Corot</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Corot</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">French landscape painter of the Barbizon school, considered a bridge between Neoclassicism and Impressionism. Known for plein air sketches, silvery landscapes at Ville-d&#x27;Avray, and &quot;souvenir&quot; paintings drawn from memory. His Bridge at Narni is his most frequently asked-about work. Teacher of <span class="crossref-inline-red" title="No page yet: Berthe Morisot">Berthe Morisot</span> and <a href="../camille_pissarro/stock.html" class="crossref-inline">Camille Pissarro</a>. One of the most forged artists in history.</div>
+
+        <details class="work" id="the-bridge-at-narni-1826" open>
+            <summary class="work-title">The Bridge at Narni (1826)</summary>
+            <p class="work-desc">Corot's most iconic work, depicting the ruins of the Ponte d'Augusto, a Roman arch bridge in the Umbrian city of Narni. Painted during an 1825 trip to Italy. Kenneth Clark praised the preliminary plein air sketch as 'as free as the most vigorous Constable,' though he later criticized the finished studio painting. The preparatory sketch and the final landscape (View at Narni) are distinct works; the sketch hangs in the Louvre. Turner also sketched the same bridge years earlier. Corot's teacher Achille Etna Michallon had previously painted the same view. <a href="https://en.wikipedia.org/wiki/The_Bridge_at_Narni" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Corot_-_The_Bridge_at_Narni%2C_1827.jpg/500px-Corot_-_The_Bridge_at_Narni%2C_1827.jpg" alt="The Bridge at Narni (1826)" loading="lazy">
+                        <figcaption>The Bridge at Narni (1826)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">10x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Depicts the ruins/remnants of the Ponte d&#x27;Augusto, a Roman arch bridge at Narni</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">painted a ruined Roman arch bridge at Narni | painted some broken piers in his Bridge at Narni | the ruins of the title structure, including an arch to the right and a support to the left, are all that remains of it</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kenneth Clark called the preliminary sketch &#x27;as free as the most vigorous Constable&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Art critic Kenneth Clark called the preliminary sketch of this painting &#x27;as free as the most vigorous Constable&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Turner also sketched the Ponte d&#x27;Augusto at Narni</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The title bridge at Narni, Ponte d&#x27;Augusto, was also sketched years earlier by this artist of The Slave Ship</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Corot&#x27;s teacher Achille Etna Michallon previously painted this view</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this painting whose view was previously painted by the artist&#x27;s teacher, Achille Etna Michallon</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Left and right sides dominated by two large hills; right hill bathed in its own shadow</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">The left and right sides of this painting are dominated by two large hills, the right of which is bathed in the darkness of its own shadow</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Painted during an 1825 trip to Italy; a couple shepherds and umbrella pine trees were added to the final version</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">produced on an 1825 trip to Italy | A couple shepherds and umbrella pine trees were added to a painting showing the lone surviving arch</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="views-of-ville-d-avray" open>
+            <summary class="work-title">Views of Ville-d&#x27;Avray</summary>
+            <p class="work-desc">Corot inherited a property at Ville-d'Avray, a commune west of Paris, and painted its pond and surrounding trees many times throughout his career. These silvery, shimmering landscapes of spindly trees before a lake became some of his most characteristic and recognizable images. Ville-d'Avray is virtually synonymous with Corot in quiz bowl. <a href="https://en.wikipedia.org/wiki/Ville-d%27Avray_(Corot)" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/%28Agen%29_L%27%C3%A9tang_de_Ville-d%27Avray_-_Corot_-_RF_1787.jpg/500px-%28Agen%29_L%27%C3%A9tang_de_Ville-d%27Avray_-_Corot_-_RF_1787.jpg" alt="Views of Ville-d&#x27;Avray" loading="lazy">
+                        <figcaption>Views of Ville-d&#x27;Avray</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Painted many views of the pond at Ville-d&#x27;Avray, a property he inherited</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He painted many views of the pond overlooking the property he inherited at Ville-d&#x27;Avray | this major Barbizon painter became known for works like Recollection of Mortefontaine, La Concert Champetre, and the famous landscape The Bridge at Narni | he painted some spindly, shimmering trees before a silver lakefront in his depiction of the commune at Ville d&#x27;Avray</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Characterized by silvery, shimmering trees before a lakefront</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">painted some spindly, shimmering trees before a silver lakefront in his depiction of the commune at Ville d&#x27;Avray | painted a large, leafless tree in his Ville d&#x27;Avray</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="souvenir-de-mortefontaine-recollection-of-mortefontaine-1864" open>
+            <summary class="work-title">Souvenir de Mortefontaine / Recollection of Mortefontaine (1864)</summary>
+            <p class="work-desc">One of Corot's most celebrated 'souvenir' landscapes, painted from memory rather than on-site. Depicts a mother and her daughters picking foliage from a thin tree beside a larger tree that casts a huge shadow on a tranquil lake. Part of his mature practice of painting dreamy, idealized recollections of places he had visited. <a href="https://en.wikipedia.org/wiki/Souvenir_de_Mortefontaine" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Souvenir_de_Mortefontaine_-_Jean-Baptiste_Camille_Corot_-_Mus%C3%A9e_du_Louvre_Peintures_MI_692_bis_-_photo_2.jpg/500px-Souvenir_de_Mortefontaine_-_Jean-Baptiste_Camille_Corot_-_Mus%C3%A9e_du_Louvre_Peintures_MI_692_bis_-_photo_2.jpg" alt="Souvenir de Mortefontaine / Recollection of Mortefontaine (1864)" loading="lazy">
+                        <figcaption>Souvenir de Mortefontaine / Recollection of Mortefontaine (1864)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A mother and children picking shrubbery/fruit from a thin tree, beside a larger tree casting a shadow on a lake</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">painted a mother and her girls picking shrubbery off a thin tree, next to a much larger tree casting a huge shadow on a lake | two children stand to the left of a woman in pink who is reaching up into a tree that leans to the left on the shores of a pond | depicted three girls stripping fruit from a tree in Recollection of Mortefontaine</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One of his &#x27;souvenir&#x27; landscapes — drawn from memory of places visited</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In his mature period he began painting &#x27;souvenir&#x27; landscapes drawn from memory of places like Castel Gandolfo and Mortefontaine | This French painter of many Souvenirs</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="hagar-in-the-wilderness-1835" open>
+            <summary class="work-title">Hagar in the Wilderness (1835)</summary>
+            <p class="work-desc">A biblical scene depicting Hagar and Ishmael in the desert after being cast out by Abraham. In Corot's version, a child in white lies prone on a rock next to a kneeling woman in black who clutches her head in despair, while an angel flies toward them in the distance. Corot re-used a study of oak trees at Bas-Breau for this painting, blending his landscape studies with historical subject matter. <a href="https://en.wikipedia.org/wiki/Hagar_in_the_Wilderness_(Corot)" target="_blank">Wikipedia</a></p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/1835_Corot_Hagar_in_der_Wildnis_anagoria.JPG/500px-1835_Corot_Hagar_in_der_Wildnis_anagoria.JPG" alt="Hagar in the Wilderness (1835)" loading="lazy">
+                        <figcaption>Hagar in the Wilderness (1835)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Child in white lies on a rock; kneeling woman in black clutches her head; angel flies toward them in the distance</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a child in white lies prone on a rock next to a kneeling woman in black, who clutches her head in despair, while an angel can be spotted flying towards them in the distance | caused controversy with his depiction of Hagar in the Wilderness</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Re-used a study of oak trees at Bas-Breau for this painting</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist re-used a study of oak trees at Bas-Breau for his painting Hagar in the Wilderness</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="figure-paintings-young-woman-with-a-mandolin-interrupted-reading-etc" open>
+            <summary class="work-title">Figure Paintings (Young Woman with a Mandolin, Interrupted Reading, etc.)</summary>
+            <p class="work-desc">In his later career, Corot painted many candid-style portraits of lone women, often depicted reading or holding instruments. Young Woman with a Mandolin shows a melancholy woman sitting next to an easel holding the title instrument. His Interrupted Reading shows a young woman who has paused from reading, holding a book in her lap. These figure studies represent a lesser-known but still quizzed side of his output.</p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/34/Corot_-_Landscape_with_Figure%2C_1974.325.jpg/500px-Corot_-_Landscape_with_Figure%2C_1974.325.jpg" alt="Figure Paintings (Young Woman with a Mandolin, Interrupted Reading, etc.)" loading="lazy">
+                        <figcaption>Figure Paintings (Young Woman with a Mandolin, Interrupted Reading, etc.)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Young Woman with a Mandolin: melancholy woman sits next to an easel holding the title instrument</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A melancholy woman sits next to an easel and holds the title instrument in his Young Woman with a Mandolin</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Interrupted Reading: young woman holds a book in her lap after being &#x27;interrupted&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">His paintings of young women reading include one in which the subject has been &#x27;interrupted&#x27; from reading and holds the book in her lap</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Many candid-style portraits of lone females in his later career</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Before taking to painting dozens of good but vaguely stalkerish candid portraits of lone females</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">How Corot is identified in quiz bowl and key biographical facts about his life and legacy.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">French landscape painter of the Barbizon school</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this oft-forged French landscape artist whose en plein air painting inspired the Impressionists | name this French Realist of the Barbizon school, who painted The Bridge at Narni | the leading landscape painter of the Barbizon school</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Plein air painting; inspired the Impressionists</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this oft-forged French landscape artist whose en plein air painting inspired the Impressionists | He&#x27;s best remembered today for his plein air sketches prepared for studio landscapes</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Teacher of Berthe Morisot and Camille Pissarro</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This St. Thomas-born student of Corot was the only person to show works in all eight Impressionist exhibitions | the teacher of Berthe Morisot and Camille Pissarro</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Studied under Victor Bertin</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Under the tutelage of Victor Bertin, this artist made many small sketches called pochades</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Pochades — small sketches he rarely developed into full canvases</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this artist made many small sketches called pochades that he rarely developed into full canvases</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">One of the most forged artists in history; over 2,100 forgeries in the Jousseaume collection alone</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">over 2,100 works attributed to this painter in the Jousseaume collection were forgeries | this artist &#x27;painted 3,000 canvases, 10,000 of which have been sold in America&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Catalogue raisonne by Alfred Robaut and Etienne Moreau-Nelaton</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Forgers often took advantage of the gaps in the catalogue raissone of his works by Alfred Robaut and Etienne Moreau-Nelaton</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cliche-verres (glass prints), including Les Arbres dans la Montagne</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Thick, diagonal lines characterize his cliche-verres like Les Arbres dans la Montagne</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">1825 trip to Italy was formative; painted views of Rome including Castel Sant&#x27;Angelo</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">produced on an 1825 trip to Italy | an on-the-spot depiction of the Castel Sant&#x27;Angelo and St. Peter&#x27;s cupola in his canvas View of Rome | During one of his trips to Italy, this artist painted a landscape with the broken remnants of the Ponte di Augusto</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Jean-Baptiste-Camille Corot (1796-1875) is the leading landscape painter of the Barbizon school and a pivotal figure linking Neoclassicism to Impressionism. In quiz bowl, he appears almost exclusively in Fine Arts Visual tossups and bonuses at difficulty 7-10, with The Bridge at Narni serving as his signature giveaway clue -- this painting of the ruined Ponte d&#x27;Augusto in the Umbrian city of Narni is referenced in nearly every question about him. His plein air sketch for the painting is often distinguished from the finished studio version, and Kenneth Clark&#x27;s praise of the sketch is a notable power clue. His views of Ville-d&#x27;Avray, where he inherited property and repeatedly painted the silvery pond and spindly trees, are the second most common identifier. Souvenir de Mortefontaine (also called Recollection of Mortefontaine) is his most celebrated &#x27;souvenir&#x27; landscape, depicting a mother and children picking from a tree beside a tranquil lake, and questions often note that his mature practice involved painting landscapes from memory. Hagar in the Wilderness, a biblical scene with a kneeling woman and a child on a rock in a desert, is another regularly asked work, sometimes clued through his re-use of a Bas-Breau oak tree study. Biographical identifiers include his role as teacher of <span class="crossref-inline-red" title="No page yet: Berthe Morisot">Berthe Morisot</span> and <a href="../camille_pissarro/stock.html" class="crossref-inline">Camille Pissarro</a>, his study under Victor Bertin, his formative 1825 trip to Italy, and his status as one of the most forged artists in history (Rene Huyghe famously quipped he &#x27;painted 3,000 canvases, 10,000 of which have been sold in America&#x27;). Less common but still tested clues include his cliche-verres, his figure paintings of solitary women, Le Concert Champetre, Diana and Actaeon, and Homer and the Shepherds.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Jean-Baptiste-Camille_Corot" target="_blank">Jean-Baptiste-Camille Corot -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Bridge_at_Narni" target="_blank">The Bridge at Narni -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Souvenir_de_Mortefontaine" target="_blank">Souvenir de Mortefontaine -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Ville-d%27Avray_(Corot)" target="_blank">Ville-d&#x27;Avray (painting) -- Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Barbizon_school" target="_blank">Barbizon school -- Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>Barbizon school -- Corot is its leading landscape painter; frequently co-clued with Millet, Rousseau, Daubigny</li><li>Camille Pissarro -- student of Corot; only artist in all eight Impressionist exhibitions</li><li>Berthe Morisot -- student of Corot; one of the three grandes dames of Impressionism</li><li>J. M. W. Turner -- also painted the bridge at Narni; Constable influence on Barbizon</li><li>Claude Lorrain -- Roman bridge paintings; Turner connection</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'corot' });</script>
+
+</body>
+</html>

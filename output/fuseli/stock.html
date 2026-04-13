@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Fuseli</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Fuseli</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Swiss-born Romantic painter (born Johann Heinrich Fussli), best known for The Nightmare. Prolific contributor to Boydell&#x27;s Shakespeare Gallery and creator of the failed Milton Gallery. Friend of Johann Caspar Lavater and <a href="../william_blake/stock.html" class="crossref-inline">William Blake</a>. Royal Academy professor whose diploma work was Thor Battering the Midgard Serpent.</div>
+
+        <details class="work" id="the-nightmare-1781" open>
+            <summary class="work-title">The Nightmare (1781)</summary>
+            <p class="work-desc">Fuseli's most famous work, depicting an incubus crouching on the chest of a sleeping woman while a ghostly horse with pale, white eyes pokes its head through a red curtain. He created at least four versions. The original was widely popularized by a Thomas Burke engraving. A small table in the scene holds a book, mirror, and vial; a later version added an erotic sculpture. Fuseli's unrequited fantasies about Anna Landolt (Johann Caspar Lavater's niece) may have inspired the painting. Doja Cat recreated it for her Scarlet tour posters in 2024. The horse's head has been interpreted as a symbol of phallic penetration.</p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/Henry_Fuseli_%281741%E2%80%931825%29%2C_The_Nightmare%2C_1781.jpg/500px-Henry_Fuseli_%281741%E2%80%931825%29%2C_The_Nightmare%2C_1781.jpg" alt="The Nightmare (1781)" loading="lazy">
+                        <figcaption>The Nightmare (1781)</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">An incubus/demon sits on the chest of a sleeping woman while a horse&#x27;s head pokes through curtains</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a horse peers out from between curtains as a demon perches atop a sleeping woman | a white-eyed horse pokes its head from behind a curtain while an incubus sits on the chest of a sleeping woman | a ghostly horse pokes its head through a curtain and stares at the incubus crouched on a sleeping woman</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Multiple versions exist (at least four); Nicolai Abildgaard reworked one to show two people instead of one</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One painting by this artist was reworked to show two people instead of one, in a version by Nicolai Abildgaard. | This artist created four versions of a painting in which phallic penetration is symbolized by a ghostly horse&#x27;s head poking into a tent.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Widely distributed by a Thomas Burke engraving</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A painting by this artist was widely distributed by an engraving done by Thomas Burke. | This artist&#x27;s fantasies about Lavater&#x27;s niece, Anna Landolt, may have inspired a painting popularized by a Thomas Burke engraving.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A small table contains a book, a mirror, and a vial; later version added erotic sculpture</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a work in which a small table contains a book, a mirror, and a vial | that work had a later version with an erotic sculpture of a man and a woman on the table that previously held only a mirror, book, and vial</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by unrequited love for Anna Landolt (Lavater&#x27;s niece); unfinished portrait of her on back of canvas</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist left an unfinished portrait of Anna Landolt on the back of one of his canvases | This artist&#x27;s fantasies about Lavater&#x27;s niece, Anna Landolt, may have inspired a painting popularized by a Thomas Burke engraving.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Recreated by Doja Cat for her Scarlet tour posters</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A painting by this artist was recreated by Doja Cat for the posters of her Scarlet tour, in which she depicted herself as the central figure.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="thor-battering-the-midgard-serpent-1790" open>
+            <summary class="work-title">Thor Battering the Midgard Serpent (1790)</summary>
+            <p class="work-desc">Fuseli's Royal Academy diploma work, depicting a nude Thor standing on the prow of a boat next to Hymir, pulling a chained sea serpent from the water. A spray of blood is visible from the creature. Based on Thomas Percy's translation of the Northern Antiquities. One of Fuseli's most frequently referenced mythological scenes.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">8x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Royal Academy diploma work; nude god on prow of boat pulling a chained serpent/monster</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A man cowers in the back of a boat as a muscular nude yanks a chain attached to a glistening snake | A nude god at the prow of a ship pulls a chained sea monster in his reception piece for the Royal Academy | This painter who also depicted a mythological figure mid-combat with a serpent in a painting that he submitted as his diploma work to the Royal Academy</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Based on Thomas Percy&#x27;s translation of the Northern Antiquities</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist was inspired by Thomas Percy&#x27;s translation of the Northern Antiquities to paint a work in which a man cowers in fear in the prow of a boat | shown nude mid-combat in a painting based on Thomas Percy&#x27;s book Northern Antiquities</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">A spray of blood from the creature; Hymir cowers in the boat</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A spray of blood can be seen from a creature captured by a chain held by a god standing on the prow of a boat | a painting showing a god in a boat next to Hymir, Thor Battering the Midgard Serpent</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="milton-gallery-the-shepherd-s-dream" open>
+            <summary class="work-title">Milton Gallery / The Shepherd&#x27;s Dream</summary>
+            <p class="work-desc">Fuseli's ambitious but commercially failed venture: a gallery of 47 paintings (some sources say 40) based on scenes from <a href="../john_milton/stock.html#paradise-lost" class="crossref-inline">Paradise Lost</a>, produced over an eight-year period. The Shepherd's Dream, depicting fairies bewitching a peasant (based on Paradise Lost's comparison of fallen angels to fairies), is one of the most frequently cited individual paintings from this series. The financial failure of the Milton Gallery required rescue by his patron Thomas Coutts.</p>
+            <div class="work-images">
+                    <figure>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Johann_Heinrich_Fuseli_-_John_Milton%27s_Paradise_Lost%2C_Satan_and_the_Birth_of_Sin_%28Book_II%2C_746-758%29_Painting_no._6_from_The_Milton_Gallery_-_1996.104.FA_-_Dallas_Museum_of_Art.jpg/500px-thumbnail.jpg" alt="Milton Gallery / The Shepherd&#x27;s Dream" loading="lazy">
+                        <figcaption>Milton Gallery / The Shepherd&#x27;s Dream</figcaption>
+                    </figure>
+                    </div>
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">47 paintings (or 40) based on Paradise Lost, created over eight years; commercially failed</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist created a failed &#x27;Milton Gallery&#x27; after contributing to John Boydell&#x27;s Shakespeare Gallery | Over an eight-year period, he made 47 paintings based on Paradise Lost for his &#x27;Milton Gallery&#x27; | he produced 40 paintings of scenes from Paradise Lost</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Shepherd&#x27;s Dream depicts fairies bewitching a peasant (based on Paradise Lost)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One painting by this artist illustrates a moment in Paradise Lost in which the fallen angels are compared to fairies bewitching a peasant. | another was based on Paradise Lost and depicts the title Shepherd&#x27;s Dream | A floating throng of fairies hold hands in a circle in a painting from a gallery of forty-seven paintings of Milton</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Thomas Coutts (principal patron) saved Fuseli from financial ruin after the Milton Gallery failed</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist was saved from financial ruin by his principal patron, Thomas Coutts, after the public failure of a venture inspired by this artist&#x27;s participation in John Boydell&#x27;s Shakespeare Gallery.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="shakespeare-inspired-works-titania-and-bottom-lady-macbeth-seizing-the-daggers-lady-macbeth-sleepwalking" open>
+            <summary class="work-title">Shakespeare-Inspired Works (Titania and Bottom, Lady Macbeth Seizing the Daggers, Lady Macbeth Sleepwalking)</summary>
+            <p class="work-desc">Fuseli was a major contributor to John Boydell's Shakespeare Gallery and created numerous Shakespeare-inspired works. Titania and Bottom depicts a tiny man with outstretched arms in the palm of a character with a donkey's head, surrounded by an eerie fairy retinue from A Midsummer Night's Dream. Lady Macbeth Seizing the Daggers shows the ghostly Lady Macbeth raising her finger to hush Macbeth as he yields his weapons. He also painted Lady Macbeth Sleepwalking, Macbeth Consulting the Vision of the Armed Head, and The Vision of Catherine of Aragon (from Henry VIII).</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Contributed to John Boydell&#x27;s Shakespeare Gallery</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">contributing to John Boydell&#x27;s Shakespeare Gallery | Fuseli was included in John Boydell&#x27;s Shakespeare Gallery | contributed to Boydell&#x27;s Shakespeare Gallery</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Titania and Bottom: tiny man in palm of donkey-headed figure, creepy fairy retinue (A Midsummer Night&#x27;s Dream)</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A tiny man with outstretched arms stands in the palm of a Shakespearean character with a donkey&#x27;s head in his Titania and Bottom. | depicts a girl with a butterfly for hair and an eyeless woman in white clustered around a naked woman and a man with a donkey&#x27;s head | This artist created an extremely creepy fairy retinue for A Midsummer Night&#x27;s Dream in his painting Titania and Bottom</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lady Macbeth Seizing the Daggers: ghostly Lady Macbeth raises finger to hush Macbeth</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the ghostly title figure raises her finger to her lips to hush a man who is yielding his weapons in Lady Macbeth Seizing the Daggers | a terrifying-looking Lady Macbeth Seizing the Daggers | Another play by this author inspired Fuseli&#x27;s Lady Macbeth Seizing The Daggers.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Lady Macbeth Sleepwalking and Macbeth Consulting the Vision of the Armed Head</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Shakespeare influenced his Lady Macbeth Sleepwalking, one of his many works depicting her | his other Shakespeare-inspired work includes Lady Macbeth Sleepwalking and Macbeth Consulting the Vision of the Armed Head</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Vision of Catherine of Aragon, based on Shakespeare&#x27;s Henry VIII</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Fuseli painted another nightmarish scene in The Vision of Catherine of Aragon, which was based on this author&#x27;s play Henry VIII.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="oath-of-the-rutli" open>
+            <summary class="work-title">Oath of the Rutli</summary>
+            <p class="work-desc">A painting drawing on Swiss mythology, inspired by <span class="crossref-inline-red" title="No page yet: Jacques-Louis David">Jacques-Louis David</span>'s Oath of the Horatii. Depicts the swearing of an oath at Rutli, a foundational event in Swiss national mythology.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Inspired by Jacques-Louis David&#x27;s Oath of the Horatii; draws on Swiss mythology</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Jacques-Louis David&#x27;s similar work inspired him to paint Oath of the Rutli | Fuseli drew on Swiss mythology for his painting of this type of action at Rutli. He may have been inspired by a Jacques-Louis David painting titled for this action that shows the Horatii saluting their father.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Henry Fuseli (born Johann Heinrich Fussli) was a Swiss-born painter who settled in England after 1779. A Romantic and proto-Surrealist figure, he was a friend of <a href="../william_blake/stock.html" class="crossref-inline">William Blake</a> (who eulogized him as 'both Turk and Jew') and Johann Caspar Lavater. He translated Lavater's Essays on Physiognomy and Winckelmann's Reflections on the Painting and Sculpture of the Greeks. He became a professor at the Royal Academy in 1790, beating Joseph Bonomi — which caused Sir <a href="../joshua_reynolds/stock.html" class="crossref-inline">Joshua Reynolds</a> to resign in protest. Reynolds had earlier encouraged Fuseli to take up painting. He was rumored to fuel his imagination with raw pork and opium. His wife was Sophia Rawlings, and his former residence was at Somerset House.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Swiss-born painter who settled in England; giveaway as &#x27;Swiss painter of The Nightmare&#x27;</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this Swiss painter of The Nightmare | name this Anglo-Swiss artist who painted The Nightmare</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Friend of Johann Caspar Lavater; translated his Essays on Physiognomy and Winckelmann&#x27;s Reflections</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist of Thor Battling the Midgard Serpent and friend of Johann Caspar Lavater | This friend of Lavater made an English translation of his Essays on Physiognomy | also translated Johann Winckelmann&#x27;s Reflections on the Painting and Sculpture of the Greeks</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Studied alongside Jakob Bodmer; self-portrait shows them talking together with bust of Homer</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist of The Shepherd&#x27;s Dream studied alongside Jakob Bodmer, who appears in a self-portrait in which the artist is seen talking to him. | one of his paintings shows a bust of Homer between him and his mentor J.J. Bodmer</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Became Royal Academy professor in 1790 instead of Joseph Bonomi; Joshua Reynolds resigned in protest</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">When this artist of Mad Kate became a professor of the Royal Academy instead of Joseph Bonomi in 1790, Sir Joshua Reynolds resigned in protest.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Reynolds encouraged him to take up painting</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Encouraged to take up painting by Sir Joshua Reynolds</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">William Blake eulogized him as &#x27;both Turk and Jew&#x27;; Tate Britain exhibition named for them both</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a Tate Britain exhibition named for him and William Blake, who eulogized him as &#x27;both Turk and Jew&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Rumored to fuel imagination with raw pork and opium; called a &#x27;wizard painter&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Baron Brooke Boothby threw a forested Gothic pageant for this &#x27;wizard painter&#x27; who was rumored to fuel his imagination with raw pork and opium.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Wife was Sophia Rawlings; lived at Somerset House; made naked drawings of his wife</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This painter&#x27;s former residence at Somerset House is now hosting an exhibit of naked drawings that this painter made of his wife, Sophia Rawlings.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Silence: man sitting cross-legged with long hair falling into his lap</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist depicted a man sitting cross-legged with his long hair falling down into his lap in his Silence | One work by this artist is a depiction of a ghostly figure sitting cross-legged with its head hidden in its long hair.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Three Witches: bonneted crones extending their left arms forward</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">One painting by this artist shows the title bonneted crones extending their left arms forward</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Mad Kate: bug-eyed woman with red-ribboned bonnet on a rock, black cape blown by wind</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">a bug-eyed woman with a red-ribboned bonnet sits on a rock, while her black cape is blown by the furious wind</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Apotheosis of Penelope Boothby: star-crowned cherub with torch, girl carried to heaven by angel</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist showed a star-crowned cherub with a torch above a young girl being carried up to heaven by an angel in The Apotheosis of Penelope Boothby.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Kreimhild and Gunther: homage to Burgundian legend</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">He paid homage to Burgundian legend in Kreimhild and Gunther.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Odysseus in Front of Scylla and Charybdis</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">His penchant for mythology led him to paint Odysseus in Front of Scylla and Charybdis</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Trompe-L&#x27;oeil: sketch of several bulls on paper attached to wooden board</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This painter&#x27;s work Trompe-L&#x27;oeil shows a sketch of several bulls on a sheet of paper attached to a wooden board.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Translated Aphorisms on Man and served as cover designer for it (by Lavater)</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This artist served as the translator and cover designer for a fellow countryman&#x27;s book Aphorisms on Man</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Henry Fuseli (born Johann Heinrich Fussli, 1741-1825) is one of the most frequently asked about Romantic painters in quiz bowl, almost always identifiable through his signature work The Nightmare. The painting&#x27;s iconic imagery — an incubus crouching on the chest of a sleeping woman while a pale-eyed horse peers through red curtains — appears in nearly every tossup and bonus about him and serves as the standard giveaway. Questions often note that multiple versions exist (at least four), that a Thomas Burke engraving made it widely known, and that the work may have been inspired by Fuseli&#x27;s unrequited feelings for Anna Landolt, Lavater&#x27;s niece. In 2024, Doja Cat recreated the painting&#x27;s imagery for her Scarlet tour posters.</p><p>Fuseli&#x27;s second most frequently referenced work is Thor Battering the Midgard Serpent, his Royal Academy diploma piece, which shows a nude Thor standing on the prow of a boat pulling a chained sea serpent while a companion cowers. Questions regularly note it was based on Thomas Percy&#x27;s Northern Antiquities. His ambitious Milton Gallery — 47 paintings based on <a href="../john_milton/stock.html#paradise-lost" class="crossref-inline">Paradise Lost</a> produced over eight years — is referenced as a famous commercial failure, often alongside The Shepherd&#x27;s Dream (depicting fairies bewitching a peasant). His patron Thomas Coutts rescued him from the resulting financial ruin.</p><p>Fuseli&#x27;s Shakespeare-related works form another major cluster. He contributed to John Boydell&#x27;s Shakespeare Gallery and produced numerous Shakespeare-inspired paintings, most notably Titania and Bottom (a tiny man in the palm of a donkey-headed figure surrounded by an eerie fairy retinue) and Lady Macbeth Seizing the Daggers (the ghostly Lady Macbeth raising a finger to hush Macbeth). Other Shakespeare works include Lady Macbeth Sleepwalking, Macbeth Consulting the Vision of the Armed Head, and The Vision of Catherine of Aragon.</p><p>Biographical clues center on his Swiss origins and English career. He was a friend of Johann Caspar Lavater (translating his Essays on Physiognomy) and <a href="../william_blake/stock.html" class="crossref-inline">William Blake</a> (who eulogized him as &#x27;both Turk and Jew&#x27;). He studied with Jakob Bodmer, was encouraged to paint by <a href="../joshua_reynolds/stock.html" class="crossref-inline">Joshua Reynolds</a>, and became a Royal Academy professor in 1790 — beating Joseph Bonomi and prompting Reynolds&#x27;s protest resignation. Less common works that appear include Silence, The Three Witches, Mad Kate, Oath of the Rutli (inspired by David&#x27;s Oath of the Horatii), Kreimhild and Gunther, Odysseus in Front of Scylla and Charybdis, The Apotheosis of Penelope Boothby, and his unusual Trompe-L&#x27;oeil painting of bulls on paper.</p>
+        </section>
+        
+
+        <section class="links">
+            <h2>Further Reading</h2>
+            <ul><li><a href="https://en.wikipedia.org/wiki/Henry_Fuseli" target="_blank">Henry Fuseli — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/The_Nightmare" target="_blank">The Nightmare — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Thor_Battering_the_Midgard_Serpent" target="_blank">Thor Battering the Midgard Serpent — Wikipedia</a></li><li><a href="https://en.wikipedia.org/wiki/Boydell_Shakespeare_Gallery" target="_blank">Boydell Shakespeare Gallery — Wikipedia</a></li></ul>
+            
+        <h3>Suggested Deep Dives</h3>
+        <ul><li>William Blake — frequently paired with Fuseli; Tate Britain exhibition featured both</li><li>Johann Caspar Lavater — close friend; Fuseli translated his works</li><li>Boydell&#x27;s Shakespeare Gallery — Fuseli was a major contributor alongside Angelica Kauffmann</li><li>Jacques-Louis David — Oath of the Horatii inspired Fuseli&#x27;s Oath of the Rutli</li></ul>
+        
+        </section>
+        
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'fuseli' });</script>
+
+</body>
+</html>
