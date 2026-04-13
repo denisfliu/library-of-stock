@@ -48,8 +48,7 @@ def build_protocol(pass_type: str, category: str) -> str:
     """Assemble the analysis protocol from building blocks.
 
     Concatenation order:
-        analysis_core → analysis_{pass_type} → category_supplement
-    Note: card generation is handled by a separate card agent after analysis completes.
+        analysis_core → analysis_{pass_type} → category_supplement → analysis_cards
     """
     blocks = []
 
@@ -68,6 +67,9 @@ def build_protocol(pass_type: str, category: str) -> str:
         sup_path = DOCS_DIR / CATEGORY_SUPPLEMENTS[cat_key]
         if sup_path.exists():
             blocks.append(read_block(sup_path))
+
+    # 4. Card generation rules (always included — agents generate cards inline)
+    blocks.append(read_block(DOCS_DIR / 'analysis_cards.md'))
 
     # Concatenate with dividers and renumber all steps sequentially
     combined = '\n\n---\n\n'.join(b for b in blocks if b)
@@ -110,7 +112,7 @@ Set "topic" to the FULL proper name (from the answerline). Reference `output/emi
 
 Required fields: `topic`, `summary` (non-empty), `works`, `comprehensive_summary`, `cards`, `category`, `subcategory`, `genre`, `year`, `continent`, `country`, `tags`, `links`, `recursive_suggestions`
 
-Leave `cards` as an empty array `[]` — a dedicated card agent will generate them after the batch.
+Generate the `cards` array following the card generation rules in this prompt. Every clue with specific learnable content gets a card.
 
 ### Self-check (MANDATORY)
 - [ ] `summary` filled (concise blurb — NOT empty)
@@ -166,7 +168,7 @@ Skip works with 5+ clues already. If 0 results, skip.
 Read ALL new clue files. Follow the merge protocol above.
 Reference `output/emily_carr/analysis.json` for formatting.
 
-Do NOT regenerate or modify the `cards` array — a dedicated card agent will handle cards after the batch.
+Generate cards for any new clues added during this pass (append to the existing `cards` array). Follow the card generation rules in this prompt.
 
 ### Self-check (MANDATORY)
 - [ ] All existing work sections preserved; no frequency counts reduced
