@@ -144,7 +144,7 @@ def main():
     # Step 4: Print Sonnet crossref agent prompt
     print("\n[4/4] Launch this Sonnet crossref backfill agent for richer semantic links:\n")
     print("=" * 60)
-    print(f"""Read /home/laufey/code/stock/docs/crossref_backfill.md for full instructions.
+    print(f"""Follow the /crossref skill for full instructions.
 
 Add cross_refs to these topics (working directory: /home/laufey/code/stock):
 {topic_list_str}

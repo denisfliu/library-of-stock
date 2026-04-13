@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Stock: Heraclitus</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: #101418;
+    color: #c8ccd1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.5rem;
+    line-height: 1.5;
+    font-size: 14px;
+}
+a { color: #6b9eff; }
+a:hover { text-decoration: underline; }
+h1 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.8rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.summary {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.2rem;
+    font-size: 0.92rem;
+    color: #9aa0a7;
+}
+.work {
+    border: 1px solid #3a3f47;
+    margin-bottom: 1rem;
+    background: #1a1f25;
+}
+.work-title {
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    background: #1f252d;
+    border-bottom: 1px solid #3a3f47;
+    user-select: none;
+    list-style: none;
+    color: #e0e0e0;
+}
+.work-title::-webkit-details-marker { display: none; }
+.work-title::before {
+    content: '▶';
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    transition: transform 0.15s;
+    color: #9aa0a7;
+}
+.work[open] > .work-title::before {
+    transform: rotate(90deg);
+}
+.work-title:hover {
+    background: #262d37;
+}
+.work-link-btn {
+    float: right;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.8rem;
+    color: #6b9eff;
+    border: 1px solid #2a4060;
+    border-radius: 3px;
+    text-decoration: none;
+    background: #1a2535;
+    margin-left: 0.5rem;
+}
+.work-link-btn:hover {
+    background: #223050;
+    text-decoration: none;
+}
+.work-desc {
+    padding: 0.3rem 0.8rem;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-desc a { color: #6b9eff; text-decoration: none; }
+.work-desc a:hover { text-decoration: underline; }
+.work-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0.5rem 0.8rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.work-images img {
+    max-width: 250px;
+    max-height: 280px;
+    border: 1px solid #3a3f47;
+    object-fit: contain;
+    background: #15191e;
+}
+.work-images figure { margin: 0; }
+.work-images figcaption {
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    margin-top: 0.2rem;
+    text-align: center;
+}
+.work-images .image-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 60px;
+    background: #15191e;
+    border: 1px dashed #3a3f47;
+    padding: 0.5rem;
+}
+.work-images .image-link a {
+    color: #6b9eff;
+    font-size: 0.82rem;
+}
+/* clue table */
+.clue-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+}
+.clue-row td {
+    padding: 0.15rem 0.4rem;
+    border-top: 1px solid #2a2f37;
+    vertical-align: middle;
+}
+.clue-freq {
+    width: 2rem;
+    text-align: center;
+    color: #9aa0a7;
+    font-size: 0.75rem;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.clue-body {
+    line-height: 1.35;
+}
+.clue-text {
+    color: #c8ccd1;
+}
+.badge {
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    font-weight: bold;
+    white-space: nowrap;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+.badge-power { background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }
+.badge-giveaway { background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }
+.badge-mid { background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }
+.ex-icon {
+    display: inline-block;
+    width: 1.1rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: #555;
+    cursor: pointer;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    position: relative;
+}
+.ex-icon:hover { color: #6b9eff; }
+.ex-icon .ex-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+    color: #9aa0a7;
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    width: max-content;
+    max-width: 350px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: left;
+    line-height: 1.3;
+}
+.ex-icon:hover .ex-tooltip { display: block; }
+.suggestions, .links {
+    margin-top: 1.2rem;
+}
+.suggestions h2, .links h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.4rem;
+    color: #e0e0e0;
+}
+.suggestions ul, .links ul {
+    margin: 0 0 0 1.5rem;
+    padding: 0;
+    font-size: 0.88rem;
+}
+.suggestions li, .links li {
+    margin-bottom: 0.15rem;
+}
+.links a { color: #6b9eff; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.crossref-inline {
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}
+.crossref-inline:hover {
+    text-decoration: none;
+    border-bottom: 1px solid #6b9eff;
+}
+.crossref-inline-red {
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+    cursor: default;
+}
+.comp-summary {
+    margin-top: 1.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.8rem 1rem;
+}
+.comp-summary h2 {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+.comp-summary p {
+    font-size: 0.88rem;
+    color: #c8ccd1;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+.comp-summary p:last-child {
+    margin-bottom: 0;
+}
+.nav-bar {
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+.nav-bar a {
+    color: #6b9eff;
+    text-decoration: none;
+}
+.nav-bar a:hover {
+    text-decoration: underline;
+}
+.nav-links {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.nav-overflow-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.nav-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.nav-secondary a::before {
+    content: '·';
+    margin-right: 0.5rem;
+    color: #555;
+}
+.nav-overflow-btn {
+    display: none;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+}
+.nav-overflow-btn:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+@media (max-width: 600px) {
+    .nav-overflow-btn {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        margin-left: 0.4rem;
+    }
+    .nav-secondary {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        flex-direction: column;
+        align-items: flex-start;
+        background: #1a1f25;
+        border: 1px solid #3a3f47;
+        border-radius: 4px;
+        padding: 0.4rem 0;
+        z-index: 100;
+        min-width: 180px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        gap: 0;
+    }
+    .nav-overflow-wrap.open .nav-secondary {
+        display: flex;
+    }
+    .nav-secondary a {
+        padding: 0.5rem 0.8rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .nav-secondary a::before {
+        display: none;
+    }
+    .nav-secondary a:hover {
+        background: #262d37;
+        text-decoration: none;
+    }
+    .search-nav-input {
+        width: 110px;
+    }
+    .search-nav-input:focus {
+        width: 150px;
+    }
+    .search-nav-random,
+    .search-nav-prev,
+    .search-nav-next {
+        min-height: 36px;
+        padding: 0.4rem 0.6rem;
+    }
+}
+/* search nav */
+.search-nav { display: inline-block; }
+.search-nav-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+}
+.search-nav-input-wrap {
+    position: relative;
+}
+.search-nav-input {
+    width: 160px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    background: #15191e;
+    color: #c8ccd1;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    outline: none;
+    font-family: inherit;
+}
+.search-nav-input:focus {
+    border-color: #6b9eff;
+    width: 220px;
+}
+.search-nav-input::placeholder { color: #555; }
+.search-nav-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.2rem;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+.search-nav-dropdown.open { display: block; }
+.search-nav-result {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.4rem 0.6rem;
+    color: #c8ccd1;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #2a2f37;
+}
+.search-nav-result:last-child { border-bottom: none; }
+.search-nav-result:hover, .search-nav-result.active {
+    background: #262d37;
+}
+.search-nav-result-name {
+    color: #6b9eff;
+}
+.search-nav-result-cat {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+}
+.search-nav-empty {
+    padding: 0.6rem;
+    color: #555;
+    font-size: 0.82rem;
+    font-style: italic;
+}
+.search-nav-random {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    line-height: 1;
+}
+.search-nav-random:hover {
+    background: #262d37;
+    color: #c8ccd1;
+    border-color: #6b9eff;
+}
+.search-nav-prev, .search-nav-next {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: bold;
+}
+.search-nav-prev:hover, .search-nav-next:hover {
+    background: #262d37;
+    color: #6b9eff;
+    border-color: #6b9eff;
+    text-decoration: none;
+}
+.score-clip {
+    margin: 0.6rem 0.8rem 0.4rem;
+    background: #151a20;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+}
+.score-clip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 0.35rem;
+    flex-wrap: wrap;
+}
+.score-clip-label {
+    font-size: 0.8rem;
+    color: #808790;
+}
+.review-badge {
+    font-size: 0.72rem;
+    color: #f0a060;
+}
+.score-notation svg {
+    max-width: 100%;
+}
+.score-notation .abcjs-staff path {
+    fill: #c8ccd1;
+    stroke: #c8ccd1;
+}
+</style>
+</head>
+<body>
+<h1>Heraclitus</h1>
+<div class="nav-bar"><div class="nav-links"><a href="../../index.html" class="nav-home">&larr; Home</a><div class="nav-overflow-wrap"><button class="nav-overflow-btn" title="More">&#9776;</button><div class="nav-secondary"><a href="questions.html">View source questions</a><a href="cards.html">Make cards</a></div></div></div><div class="nav-search"></div></div>
+<div class="summary">Heraclitus of Ephesus was a Pre-Socratic Greek philosopher known as &#x27;the weeping philosopher&#x27; and &#x27;the obscure.&#x27; He is best known for his doctrine of flux, summarized in the aphorism that one cannot step into the same river twice, and his belief that fire was the fundamental element of the universe. He introduced the concept of logos as a universal governing principle and developed the idea of the unity of opposites, illustrated through examples like <a href="../octavio_paz/stock.html#the-bow-and-the-lyre-children-of-the-mire" class="crossref-inline">The Bow and the Lyre</a>, and the road up being the same as the road down.</div>
+
+        <details class="work" id="doctrine-of-flux-and-the-river" open>
+            <summary class="work-title">Doctrine of Flux and the River</summary>
+            <p class="work-desc">The single most commonly clued aspect of Heraclitus, his doctrine of flux holds that the universe is in a state of constant change. This is summarized by the phrase panta rhei ('everything flows') and most famously illustrated by the statement that no man can step into the same river twice. The original fragment more precisely states that 'upon those who step into the same rivers, different and again different waters flow.' This doctrine appears as the giveaway in virtually every Heraclitus tossup. Cratylus, a radical disciple of Heraclitus, strengthened this claim to the seemingly nonsensical position that one cannot step into the same river even once. In the Platonic dialogue Theaetetus, <a href="../socrates/stock.html" class="crossref-inline">Socrates</a> argues that Heraclitus's doctrine of flux renders knowledge through perception impossible. <a href="../jorge_luis_borges/stock.html" class="crossref-inline">Jorge Luis Borges</a> praised this statement's 'dialectical skill' in 'A New Refutation of Time,' and Kierkegaard references it in <a href="../søren_kierkegaard/stock.html#fear-and-trembling" class="crossref-inline">Fear and Trembling</a>.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">25x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His doctrine of flux is summarized by the aphorism panta rhei (&#x27;everything flows&#x27;) and the statement that one cannot step into the same river twice.</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">name this philosopher from Ephesus, whose doctrine that the universe is always in flux is often illustrated with the statement that &#x27;no man ever steps into the same river twice.&#x27; | this pre-Socratic philosopher who illustrated his focus on constant change by saying that you cannot step in the same river twice | His belief in nature as &#x27;flux&#x27; might explain his adage that you can&#x27;t step in the same river twice.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The original fragment more precisely states that &#x27;upon those who step into the same rivers, different and again different waters flow.&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man&#x27;s work survives only in fragments and his most notable dictum may be a misquote of a fragment which states &#x27;Upon those who step into the same rivers, different and again different waters flow.&#x27; | he more precisely stated that waters flowing through the same river are always different</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">9x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Cratylus, his radical disciple, strengthened the river claim to the seemingly nonsensical position that one cannot step into the same river even once.</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A radical student of this thinker advocates for people to communicate with finger wags in his namesake Platonic dialogue, Cratylus. | This statement was strengthened to a seemingly nonsensical version by a radical disciple of its originator named Cratylus. | This thinker&#x27;s disciple Cratylus proposed a more extreme version of one of his aphorisms.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In the Theaetetus, Socrates argues that Heraclitus&#x27;s doctrine of flux renders knowledge through perception impossible; the &#x27;dice paradox&#x27; also appears in this dialogue.</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">the Theatetus argues that this thinker&#x27;s major idea renders knowledge through perception impossible | In one dialogue, Socrates says this thinker&#x27;s ideas imply that changes in an object&#x27;s qualities only reflect changes in the perception of that object. | That statement, known as the dice paradox, appears in a dialogue which discusses both this thinker and Protagoras.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">In Fear and Trembling, Kierkegaard uses this statement and a later refinement of it to illustrate the philosophical impulse to &#x27;go further.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In the final paragraph of Fear and Trembling, Soren Kierkegaard uses this statement and a later refinement of it to illustrate the philosophical impulse to &#x27;go further.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Jorge Luis Borges praised the river statement&#x27;s &#x27;dialectical skill&#x27; in &#x27;A New Refutation of Time.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In &#x27;A New Refutation of Time,&#x27; Jorge Luis Borges praises this statement&#x27;s &#x27;dialectical skill&#x27; while discussing the memories conjured by his walks around his neighborhood.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="unity-of-opposites" open>
+            <summary class="work-title">Unity of Opposites</summary>
+            <p class="work-desc">One of Heraclitus's central doctrines, the unity of opposites holds that seemingly contradictory attributes share a common essence. This is illustrated by several recurring examples in quiz bowl: the tension in a bow and a lyre, the observation that 'the way up and the way down are one and the same,' and the claim that sea water is 'the purest and most polluted water' (good for fish but poisonous to humans). Other illustrations include 'the same thing in us are living and dead, waking and sleeping, young and old' and the line 'the name of the bow is life; its work is death.' Heraclitus also championed the unity of strife and justice, stating that 'war is common' and 'strife is justice.' The Heidegger-Fink seminar at the University of Freiburg discussed this concept through the bow and lyre example, and <a href="../octavio_paz/stock.html" class="crossref-inline">Octavio Paz</a>'s book <a href="../octavio_paz/stock.html#the-bow-and-the-lyre-children-of-the-mire" class="crossref-inline">The Bow and the Lyre</a> takes its title from this analogy.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He illustrated the unity of opposites through the example of the tension in a bow and a lyre.</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This philosopher used the example of the tension in a lyre or a bowstring to illustrate his &#x27;unity of opposites.&#x27; | This native of Ephesus discussed the attunement of the bow and lyre, and posited a unity of opposites. | Octavio Paz&#x27;s book The Bow and the Lyre is titled for an analogy that this earlier philosopher used to describe the &#x27;unity of opposites.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His statement that &#x27;the way up and the way down are one and the same&#x27; (or &#x27;the road up is the road down&#x27;) exemplifies the unity of opposites.</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This philosopher&#x27;s statement that &#x27;the way up and the way down are one and the same&#x27; exemplifies the &#x27;unity of opposites&#x27;. | This thinker&#x27;s observation that the road up is the same as the road down illustrates his idea of the unity of opposites. | This philosopher&#x27;s concept of a &#x27;unity of opposites&#x27; is exemplified by his claim that the &#x27;road up&#x27; is the &#x27;road down.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He said that sea water is &#x27;the purest and most polluted water,&#x27; good for fish but poisonous to humans.</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This thinker offered the example of the sea being &#x27;the purest and most polluted water,&#x27; to illustrate his doctrine of the unity of opposites | McCabe challenged the received understanding of this philosopher&#x27;s line about an emulsified beverage, arguing that it parallels this philosopher&#x27;s statement that sea water is good for fish but poisonous to humans.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He championed the unity of strife and justice, stating that &#x27;war is common&#x27; and &#x27;strife is justice.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker wrote of fire transforming to water transforming to earth in his &#x27;downward path,&#x27; and championed the unity of strife and justice | This thinker said that Homer should have been &#x27;beaten with a staff,&#x27; and also wrote that &#x27;war is common&#x27; and &#x27;strife is justice.&#x27; | He believed that &#x27;strife is justice,&#x27; and said that no man ever steps in the same river twice.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="fire-as-fundamental-element" open>
+            <summary class="work-title">Fire as Fundamental Element</summary>
+            <p class="work-desc">Heraclitus believed that fire was the fundamental element or arche of the universe. Clues frequently state that he believed the other elements derived from fire, or that 'all things are composed of fire, and into fire they are again resolved,' as recorded by <a href="../diogenes/stock.html#diogenes-laertius-biographer" class="crossref-inline">Diogenes Laertius</a>. His belief in fire connects to his concept of ekpyrosis, or cycles of conflagration. His 'downward path' describes fire transforming to water transforming to earth. He also stated that 'for souls it is death to become water,' often contrasting water with fire. His advice to have a 'dry' soul follows from this belief. The statement that 'lightning steers the universe' also relates to this emphasis on fire.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">13x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He believed that fire was the fundamental element of the universe.</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This so-called &#x27;weeping philosopher&#x27; believed that the other elements derived from fire. | name this pre-Socratic Greek philosopher who stated that one could not step into the same river twice. | This philosopher held that fire was the most important of the four elements.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His &#x27;downward path&#x27; describes fire transforming to water transforming to earth, and vice versa on the &#x27;upward path.&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker wrote of fire transforming to water transforming to earth in his &#x27;downward path&#x27; | Hegel, in his Lectures on the History of Philosophy, claims that his own logic adapts all the thought of this man, who proposed a cosmic &#x27;downward path&#x27; and &#x27;upward path.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He stated that &#x27;for souls it is death to become water&#x27; and advised having a &#x27;dry&#x27; soul.</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Heraclitus claimed that &#x27;for souls it is death to become water&#x27; | This philosopher&#x27;s advice to have a &#x27;dry&#x27; soul follows from his belief that fire was the fundamental element.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He stated that &#x27;lightning steers the universe.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker, who described people who observe the world around them but do not understand it as having &#x27;barbarian souls,&#x27; also said that &#x27;lightning steers the universe.&#x27; | This thinker&#x27;s claim that &#x27;lightening steers the universe&#x27; is a key subject of discussion in a 1966 debate</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He promoted the idea of ekpyrosis, or cycles of conflagration and fire.</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Often given the epithet &#x27;the obscure&#x27; for his self-contradictory statements, this pre-Socratic philosopher from Ephesus promoted the idea of ekpyrosis, or cycles of conflagration and fire.</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="logos" open>
+            <summary class="work-title">Logos</summary>
+            <p class="work-desc">Heraclitus is considered the first thinker to use the word logos for a general organizing principle governing the universe. He stated that 'all things are in accordance with logos' but that humans cannot understand it, and that logos is 'common, though most people live as if they had their own private understanding' of it. <a href="../martin_heidegger/stock.html" class="crossref-inline">Martin Heidegger</a> delivered a lecture on Heraclitus's principle of logos. The concept later influenced Stoicism, where logos spermatikos became the supreme creative force, and was taken up by Philo of Alexandria and Gnostic thought to refer to a divine being.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">7x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He was the first thinker to use the word logos for a general organizing principle governing the universe.</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This is the first known thinker to use the word logos for a general organizing principle. | This philosopher believed that fire is the fundamental element and that everything is in flux, and first suggested that the governing principle of the world is logos. | This pre-Socratic philosopher, nicknamed the &#x27;weeping philosopher,&#x27; claimed that logos is the governing principle of the world.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He stated that &#x27;all things are in accordance with logos&#x27; but humans cannot understand it, and that logos is &#x27;common, though most people live as if they had their own private understanding.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This philosopher argued that &#x27;all things are in accordance with logos,&#x27; but humans cannot understand it. | An epigraph to another of these poems quotes an ancient thinker in stating &#x27;many live as if they have wisdom of their own&#x27;. | Heraclitus, who claimed that this concept is &#x27;common, though most people live as if they had their own private understanding&#x27; of it.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Heidegger delivered a lecture on Heraclitus&#x27;s principle of logos.</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This Greek term titles an early lecture by Martin Heidegger on Heraclitus</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="reception-and-legacy" open>
+            <summary class="work-title">Reception and Legacy</summary>
+            <p class="work-desc">Heraclitus has been the subject of extensive philosophical reception. Hegel, in his Lectures on the History of Philosophy, claimed that 'there is no proposition of Heraclitus which I have not adopted in my Logic' and considered him the teacher of both Hippocrates and <a href="../plato/stock.html" class="crossref-inline">Plato</a>. Nietzsche wrote in Twilight of the Idols that Heraclitus will remain 'eternally right' for 'declaring that Being was an empty illusion' and embracing 'becoming,' and in Ecce Homo stated that he feels 'warmest' near Heraclitus because he affirms the need for destruction. Heidegger and Eugen Fink held a 1966 seminar at the University of Freiburg on Heraclitus, and Heidegger also glossed Heraclitus's term aletheia as 'disclosure' of truth. Georges Bataille wrote a 'Heraclitean Meditation' beginning 'I myself am War,' published in Acephale. Val Plumwood adopted a 'Heraclitean' view of the food chain after a near-fatal crocodile attack. In art, Michelangelo served as the model for <a href="../raphael/stock.html" class="crossref-inline">Raphael</a>'s depiction of Heraclitus in the School of Athens.</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">4x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Hegel stated &#x27;there is no proposition of Heraclitus which I have not adopted in my Logic&#x27; and considered him the teacher of Hippocrates and Plato.</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Hegel&#x27;s Lectures on the History of Philosophy claims that this thinker should be considered the teacher of both Hippocrates and Plato. | G.W.F. Hegel states of this philosopher &#x27;here we see land; there is no proposition of [his] which I have not adopted in my Logic.&#x27; | Hegel, in his Lectures on the History of Philosophy, claims that his own logic adapts all the thought of this man</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Nietzsche wrote in Twilight of the Idols that Heraclitus will remain &#x27;eternally right&#x27; for &#x27;declaring that Being was an empty illusion,&#x27; and in Ecce Homo stated he feels &#x27;warmest&#x27; near Heraclitus.</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In Twilight of the Idols, Friedrich Nietzsche wrote that this thinker will remain &#x27;eternally right&#x27; for &#x27;declaring that Being was an empty illusion&#x27; and embracing &#x27;becoming.&#x27; | Friedrich Nietzsche, in Ecce Homo, wrote that he feels &#x27;warmest&#x27; in proximity to this philosopher, because this philosopher affirms the need for destruction.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">5x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Heidegger and Eugen Fink held a seminar at the University of Freiburg on Heraclitus; Heidegger also glossed his term aletheia as &#x27;disclosure&#x27; of truth.</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Heidegger&#x27;s Introduction to Metaphysics interprets [him] as a predecessor to Christianity&#x27;s &#x27;revealed truth&#x27; | This teacher of Cratylus was the subject of a University of Freiburg seminar by Eugen Fink and Martin Heidegger | This man&#x27;s term aletheia was glossed as &#x27;disclosure&#x27; of truth by Martin Heidegger.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Georges Bataille wrote a &#x27;Heraclitean Meditation&#x27; beginning &#x27;I myself am War,&#x27; published in Acephale as part of &#x27;The Practice of Joy Before Death.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">A text titled for this philosopher that states &#x27;I imagine the gift of infinite suffering&#x27; was the last in the sequence &#x27;The Practice of Joy Before Death,&#x27; published in Acephale.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Michelangelo was the model for Raphael&#x27;s depiction of Heraclitus in the School of Athens, where he wears large boots and uses a marble slab as his writing desk.</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Michelangelo was the model for Raphael&#x27;s depiction of this man, who wears large boots and uses a marble slab as his writing desk apart from the other thinkers.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Val Plumwood adopted a &#x27;Heraclitean&#x27; view of the food chain after a near-fatal crocodile attack.</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">In 1985, Plumwood was nearly killed by a crocodile, leading to her adoption of a view of the food chain that she named in homage to this presocratic philosopher&#x27;s statement that &#x27;everything flows.&#x27;</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+        <details class="work" id="general-biographical" open>
+            <summary class="work-title">General / Biographical</summary>
+            <p class="work-desc">Heraclitus was a native of Ephesus and is commonly referred to as 'the weeping philosopher,' in contrast to <span class="crossref-inline-red" title="No page yet: Democritus">Democritus</span>. He was also given the epithet 'the obscure' for his self-contradictory statements. According to <a href="../diogenes/stock.html#diogenes-laertius-biographer" class="crossref-inline">Diogenes Laertius</a>, whose Lives of the Eminent Philosophers begins Book 9 with Heraclitus's biography, he deposited his writings at a temple of Artemis hoping that familiarity would 'breed contempt,' and he once fled society to live alone in the mountains. Most known anecdotes about him are preserved by <a href="../diogenes/stock.html" class="crossref-inline">Diogenes</a> Laertius, including that he renounced kingship to allow his brother to rule. His works survive only in fragments organized by the Diels-Kranz numbering system (chapter 22). Hermann Diels developed an influential system for organizing his works based upon the author citing him. He described a drunk man as being 'led along, stumbling, by a beardless boy' while his soul is moist, and stated that 'the most beautiful kosmos is a pile of things poured out at random.' Fragment B119, 'ethos anthropoi daimon,' is variously translated as 'a man's character is his fate' or 'destiny.' He also said that people who observe but do not understand have 'barbarian souls,' that Homer should have been 'beaten with a staff,' and that 'nature loves to hide.'</p>
+            
+            <table class="clue-table">
+            <tr class="clue-row">
+                <td class="clue-freq">12x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He is known as &#x27;the weeping philosopher,&#x27; in contrast to Democritus.</span>
+                    <span class="badge badge-giveaway">giveaway</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This so-called &#x27;weeping philosopher&#x27; believed that the other elements derived from fire. | Diogenes Laertius called this thinker &#x27;the weeping philosopher,&#x27; and contrasted him with Democritus. | He is thus depicted as &#x27;the weeping philosopher.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">6x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Most known anecdotes about Heraclitus are preserved by Diogenes Laertius in Lives of the Eminent Philosophers, which begins Book 9 with his biography.</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Book 9 of Lives of the Eminent Philosophers begins with a biography of this thinker, and claims that he once fled society to live alone in the mountains. | According to Diogenes Laertius, this thinker hoped that familiarity would &#x27;breed contempt&#x27; when he deposited his writings at a temple of Artemis. | Most of the known anecdotes about Heraclitus, such as the fact he renounced kingship to allow his brother to rule, are preserved in this man&#x27;s Lives and Opinions of the Ancient Philosophers.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">3x</td>
+                <td class="clue-body">
+                    <span class="clue-text">His works survive only in fragments; they make up chapter 22 of the Diels-Kranz numbering system.</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Hermann Diels developed an influential system for organizing this thinkers works based upon the author citing him. | A collection of surviving fragments of this thinker&#x27;s writings makes up the 22nd chapter of the Diels-Kranz numbering system. | This man&#x27;s work survives only in fragments</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He was given the epithet &#x27;the obscure&#x27; for his self-contradictory statements.</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Often given the epithet &#x27;the obscure&#x27; for his self-contradictory statements</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He described a drunk man as being &#x27;led along, stumbling, by a beardless boy&#x27; while his soul is moist.</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This thinker describes a drunk man as being &#x27;led along, stumbling, by a beardless boy&#x27; while his soul is moist.</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">Fragment B119, &#x27;ethos anthropoi daimon,&#x27; is translated as &#x27;a man&#x27;s character is his fate/destiny.&#x27;</span>
+                    <span class="badge badge-mid">mid</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">Two of this philosopher&#x27;s maxims claim that nature loves to hide its meanings and that a man&#x27;s character is his destiny. | Fragment B119 of Heraclitus consists of the words ethos, &#x27;anthropoi&#x27; and this other Greek word</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He said that &#x27;nature loves to hide.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">this thinker&#x27;s claim that &#x27;nature loves to hide&#x27; | Two of this philosopher&#x27;s maxims claim that nature loves to hide its meanings</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He said Homer should have been &#x27;beaten with a staff.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This thinker said that Homer should have been &#x27;beaten with a staff&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">1x</td>
+                <td class="clue-body">
+                    <span class="clue-text">He stated that &#x27;the most beautiful kosmos is a pile of things poured out at random.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This man stated that &#x27;the most beautiful kosmos is a pile of things poured out at random.&#x27;</span></span>
+                </td>
+            </tr>
+            
+            <tr class="clue-row">
+                <td class="clue-freq">2x</td>
+                <td class="clue-body">
+                    <span class="clue-text">The Derveni Papyrus, which likens him to Orpheus, contains his statement that &#x27;eternity is a child playing at the table.&#x27;</span>
+                    <span class="badge badge-power">power</span><span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">This philosopher&#x27;s statement that &#x27;eternity is a child playing at the table&#x27; appears in a text likening him to Orpheus, the Derveni Papyrus. | The author of the Derveni Papyrus is believed to have drawn from this philosopher</span></span>
+                </td>
+            </tr>
+            </table>
+        </details>
+        
+
+        <section class="comp-summary">
+            <h2>Summary of Facts</h2>
+            <p>Heraclitus of Ephesus is one of the most frequently clued Pre-Socratic philosophers in quiz bowl, with a highly predictable structure to tossups. The overwhelming giveaway is his doctrine of flux, expressed through the aphorism that one cannot step into the same river twice (panta rhei, &#x27;everything flows&#x27;). This appears in virtually every tossup and many bonuses. Closely linked is the identification of fire as the fundamental element, which serves as a secondary giveaway or late-mid clue.</p><p>The unity of opposites is the next most common concept, appearing in about fifteen clues with several standard illustrations: <a href="../octavio_paz/stock.html#the-bow-and-the-lyre-children-of-the-mire" class="crossref-inline">The Bow and the Lyre</a> (often the subject of an <a href="../octavio_paz/stock.html" class="crossref-inline">Octavio Paz</a> title), the road up being the same as the road down, and sea water being simultaneously purest and most polluted. His concept of logos as a universal governing principle appears in about eleven clues, typically in the mid-range of tossups.</p><p>Cratylus, his radical disciple who appears in the namesake Platonic dialogue and who extended Heraclitus&#x27;s river claim to the nonsensical position that one cannot step in the river even once, is a very common power-level clue appearing about nine times. The finger-wagging detail from Cratylus is particularly distinctive.</p><p>Reception clues feature heavily at the power mark. Hegel&#x27;s claim that he adopted all of Heraclitus&#x27;s thought into his Logic appears four times. The Heidegger-Fink seminar at Freiburg and Heidegger&#x27;s gloss of aletheia as &#x27;disclosure&#x27; appear five times combined. Nietzsche&#x27;s praise in Twilight of the Idols and Ecce Homo appears twice. Georges Bataille&#x27;s &#x27;Heraclitean Meditation&#x27; is a hard power clue.</p><p>Biographical details from <a href="../diogenes/stock.html#diogenes-laertius-biographer" class="crossref-inline">Diogenes Laertius</a> are common mid-range clues: the &#x27;weeping philosopher&#x27; epithet (twelve mentions, usually giveaway), depositing writings at the temple of Artemis, fleeing to the mountains, and renouncing kingship. His fragments are organized as chapter 22 of the Diels-Kranz system. Notable fragment quotations that appear as power clues include &#x27;nature loves to hide,&#x27; &#x27;eternity is a child playing at the table&#x27; (from the Derveni Papyrus), &#x27;a man&#x27;s character is his fate&#x27; (B119), &#x27;lightning steers the universe,&#x27; and &#x27;the most beautiful kosmos is a pile of things poured out at random.&#x27;</p>
+        </section>
+        
+
+<script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/search_nav.js"></script>
+<script>initSearchNav('.nav-search', { prefix: '../../', currentSlug: 'heraclitus' });</script>
+
+</body>
+</html>
