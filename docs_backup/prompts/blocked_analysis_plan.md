@@ -1,0 +1,8 @@
+Good. We recently ran a batch run that made several mistakes. In order to reduce the amount of error, I would like to do the following:
+
+1. We should treat the analysis_*.md files as the most critical files for agents to read and understand. Thus, when batch creates them, we should actually construct them directly and not tell them to just "read" the files. With that said, this means that batch_run.md and analysis_instructions.md have a lot of things that are basically saying the same thing. I want to treat the markdown files we have as building blocks that we can append to each other to pass as instructions to agents.
+2. This means that batch_run should avoid any repeated information and should just be the infrastructure behind what agents do, how the batch files should be concatenated to create agents, and what to do post collection (and also manage progress bar stuff).
+3. This also means that we might want to split the analysis_instructions into distinct sections. The first tenet of the analysis_instructions, that is critical to all agents. So maybe we should have like universal rules (top stuff, search querying, filtering, etc, analyzing clues, etc). We also have first pass only things and second pass only things. Then we have anki card generating. 
+4. When we have this, we will devise a concatenation strategy (or text insertion strategy) to initiate agents with the necessary detailed instructions for each task (sonnet agent already has its thing with crossref_backfill, first pass sort of, second pass also sort of)
+Please be interactive and work with me while devising the strategy to approach this. This will probably be a critical undertaking for the future of this project.
+
