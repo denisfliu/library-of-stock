@@ -18,6 +18,10 @@ API_BASE = "https://www.qbreader.org/api"
 RATE_LIMIT = 20  # max requests per second
 DEFAULT_CACHE_DIR = Path("cache")
 DEFAULT_MIN_YEAR = 2012
+# qbreader returns at most maxReturnLength results with no pagination.
+# 500 covers the biggest canon topics (Beethoven: 107 tossups / 111
+# bonuses at diff 7-10); the old default of 25 silently truncated them.
+DEFAULT_MAX_RESULTS = 500
 
 # Minimum interval between requests to stay under rate limit.
 MIN_INTERVAL = 1.0 / RATE_LIMIT + 0.01
@@ -41,6 +45,15 @@ def _rate_limited_get(url: str, params: dict, max_retries: int = 5) -> requests.
             continue
         resp.raise_for_status()
         return resp
+
+
+def _is_truncated(matches: dict) -> bool:
+    """True if a cached result holds fewer questions than qbreader reported.
+    Detects caches written before the 25-result cap was lifted."""
+    if not matches:
+        return True
+    return (len(matches.get('tossups', [])) < matches.get('tossups_found', 0)
+            or len(matches.get('bonuses', [])) < matches.get('bonuses_found', 0))
 
 
 def _sanitize_filename(name: str) -> str:
@@ -67,7 +80,7 @@ def query_page(
     difficulties: list[int] | None = None,
     categories: list[str] | None = None,
     min_year: int = DEFAULT_MIN_YEAR,
-    max_results: int = 25,
+    max_results: int = DEFAULT_MAX_RESULTS,
 ) -> dict:
     """
     Fetch a single page of results from qbreader.
@@ -94,6 +107,10 @@ def query_page(
     bonuses = data["bonuses"]["questionArray"]
     print(f"    Got {len(tossups)} tossups (of {data['tossups']['count']}), "
           f"{len(bonuses)} bonuses (of {data['bonuses']['count']})")
+    if (len(tossups) < data['tossups']['count']
+            or len(bonuses) < data['bonuses']['count']):
+        print(f"    WARNING: results truncated at maxReturnLength={max_results} "
+              f"— raise DEFAULT_MAX_RESULTS in fetch.py")
 
     return {
         "tossups": tossups,
@@ -124,9 +141,12 @@ def fetch_topic(
     cache_path = cache_dir / f"{key}.json"
 
     if use_cache and cache_path.exists():
-        print(f"Loading cached data from {cache_path}")
         with open(cache_path, encoding='utf-8') as f:
-            return json.load(f)
+            cached = json.load(f)
+        if not _is_truncated(cached.get('answer_matches', {})):
+            print(f"Loading cached data from {cache_path}")
+            return cached
+        print(f"Cached data at {cache_path} was truncated (old 25-result cap) — refetching")
 
     print(f"Fetching topic: '{query_string}'")
 
@@ -170,9 +190,12 @@ def fetch_text_mentions(
     cache_path = cache_dir / f"{key}.json"
 
     if use_cache and cache_path.exists():
-        print(f"Loading cached mentions from {cache_path}")
         with open(cache_path, encoding='utf-8') as f:
-            return json.load(f)
+            cached = json.load(f)
+        if not _is_truncated(cached.get('text_mentions', {})):
+            print(f"Loading cached mentions from {cache_path}")
+            return cached
+        print(f"Cached mentions at {cache_path} were truncated (old 25-result cap) — refetching")
 
     print(f"Fetching text mentions: '{query_string}'")
 

@@ -12,24 +12,11 @@ Examples:
     python run.py "Smetana" "5,6,7,8,9,10" --mentions
     python run.py "Beckett" "7,8,9,10" --outdir output/samuel_beckett
 """
-import sys as _sys
-from pathlib import Path as _Path
-_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
-import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
-
-
 import sys
 from pathlib import Path
 
-# Ensure project root is on sys.path so imports work from any cwd.
-# Also remove lib/ from sys.path — Python adds the script's own directory
-# automatically, but lib/queue/ would shadow the stdlib 'queue' module.
-_project_root = str(Path(__file__).resolve().parent.parent)
-_lib_dir = str(Path(__file__).resolve().parent)
-sys.path.insert(0, _project_root)
-if _lib_dir in sys.path:
-    sys.path.remove(_lib_dir)
-
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
 from lib.pipeline.fetch import fetch_topic, fetch_text_mentions
 from lib.pipeline.parse import parse_answer_clues, parse_text_mention_clues
 

@@ -7,7 +7,7 @@ Quizbowl study guide generator. Fetches clues from qbreader, analyzes them, gene
 - `output/{slug}/analysis.json` is the **source of truth** for every topic. All HTML is generated from it — **never read or edit generated `.html` files** (there are ~2,500 of them); edit the JSON or the renderer, then run `./build.sh`.
 - Renderers: `lib/render/render.py` (stock.html), `lib/render/render_cards.py` (cards.html), `lib/render/render_questions.py` (questions.html), `lib/build_index.py` (index.html). Each is a Python file emitting one big HTML template.
 - Pipeline: `lib/pipeline/fetch.py` (qbreader API, cached) → `lib/pipeline/parse.py` (clue extraction) → `lib/run.py` (CLI wrapper producing `clues.txt`).
-- Queues: `lib/queue/topic_queue.py` (global first/second-pass queues), `lib/queue/batch_worker.py` (per-batch claim/complete). State lives in `queue/*.json`.
+- Queues: `lib/queues/topic_queue.py` (global first/second-pass queues), `lib/queues/batch_worker.py` (per-batch claim/complete). State lives in `queue/*.json`.
 - Cross-refs: `lib/crossref/crossref.py` rebuilds `output/topic_index.json`; `lib/crossref/backfill_crossrefs.py` adds mechanical links; the `/crossref` skill adds semantic ones.
 - Agent workflows are skills in `.claude/skills/<name>/SKILL.md`: `/batch`, `/first-pass`, `/second-pass`, `/cards`, `/crossref`, plus category supplements (`/literature`, `/vfa`, `/afa`, `/philosophy`, `/science`). These are the single source of truth for agent instructions.
 - `lib/common.py` provides `ROOT`/`OUTPUT_DIR`/`QUEUE_DIR`/etc., UTF-8 stdio, and `file_lock`. Every entry script imports it — new scripts should too.
@@ -18,8 +18,8 @@ Quizbowl study guide generator. Fetches clues from qbreader, analyzes them, gene
 ./build.sh                                  # incremental render of everything + validate
 ./build.sh --force                          # full re-render
 python lib/validate.py                     # health check on all analysis JSONs
-python lib/queue/topic_queue.py summary    # queue counts by category
-python lib/queue/batch_worker.py status    # current batch progress
+python lib/queues/topic_queue.py summary    # queue counts by category
+python lib/queues/batch_worker.py status    # current batch progress
 python post_batch.py                       # after a batch: rebuild index + print agent prompts
 ```
 
@@ -61,5 +61,5 @@ python post_batch.py                       # after a batch: rebuild index + prin
 - `output/{slug}/analysis.json` — per-topic analysis data
 - `output/{slug}/stock.html` — rendered study page
 - `output/topic_index.json` — master index of all topics/works
-- `queue/` — all queue JSON files (never `lib/queue/`)
+- `queue/` — all queue JSON files (never `lib/queues/`)
 - `categories.md` — valid qbreader category/subcategory names

@@ -22,12 +22,12 @@ library-of-stock/
 ├── CLAUDE.md                 # Agent instructions (rules for analysis quality + metadata)
 │
 ├── .claude/skills/           # Agent workflows (the primary way work gets done)
-│   ├── batch.md              # /batch — full autopilot batch run
-│   ├── first-pass.md         # /first-pass — new topic from scratch
-│   ├── second-pass.md        # /second-pass — enrich an existing topic
-│   ├── cards.md              # /cards — generate/audit Anki cards
-│   ├── crossref.md           # /crossref — cross-link topics
-│   └── literature|vfa|afa|philosophy|science.md   # category supplements
+│   ├── batch/                # /batch — full autopilot batch run
+│   ├── first-pass/           # /first-pass — new topic from scratch
+│   ├── second-pass/          # /second-pass — enrich an existing topic
+│   ├── cards/                # /cards — generate/audit Anki cards
+│   ├── crossref/             # /crossref — cross-link topics
+│   └── literature|vfa|afa|philosophy|science/     # category supplements
 │
 ├── lib/
 │   ├── run.py                # Fetch + parse runner (CLI used by agents and manually)
@@ -38,7 +38,7 @@ library-of-stock/
 │   ├── pipeline/
 │   │   ├── fetch.py          # qbreader API client (rate-limited, cached)
 │   │   └── parse.py          # Clue extraction from cached API JSON
-│   ├── queue/
+│   ├── queues/               # (not "queue" — that would shadow the stdlib module)
 │   │   ├── topic_queue.py    # Global first/second-pass queue management
 │   │   ├── batch_worker.py   # Batch queue pop/complete with file locking
 │   │   └── scan_redo.py      # Find shallow analyses that need a redo
@@ -90,10 +90,10 @@ Work is driven by Claude Code skills in `.claude/skills/`. The typical flows:
 
 ```bash
 # 1. Check what's queued
-python lib/queue/topic_queue.py summary
+python lib/queues/topic_queue.py summary
 
 # 2. Initialize a batch (pops from global queues into queue/current_batch.json)
-python lib/queue/batch_worker.py init "my-batch" --first 40 --second 10 --category Literature
+python lib/queues/batch_worker.py init "my-batch" --first 40 --second 10 --category Literature
 
 # 3. Run the /batch skill (or launch analysis agents following /first-pass and /second-pass)
 
@@ -122,10 +122,10 @@ python lib/run.py "Smetana" "7,8,9,10" --outdir output/bedrich_smetana
 ### Queue management
 
 ```bash
-python lib/queue/topic_queue.py add-first "Frida Kahlo" --category "Fine Arts"
-python lib/queue/topic_queue.py add-second "Thomas Cole" --reason "sparse"
-python lib/queue/topic_queue.py list | summary | status
-python lib/queue/scan_redo.py            # find shallow analyses worth redoing
+python lib/queues/topic_queue.py add-first "Frida Kahlo" --category "Fine Arts"
+python lib/queues/topic_queue.py add-second "Thomas Cole" --reason "sparse"
+python lib/queues/topic_queue.py list | summary | status
+python lib/queues/scan_redo.py            # find shallow analyses worth redoing
 ```
 
 ## Browsing
@@ -134,6 +134,6 @@ Open `index.html` directly in a browser, or serve the repo root with any static 
 
 ## Requirements
 
-- Python 3.10+ with `requests` and `genanki` (`pip install -r requirements.txt`)
+- Python 3.10+ with `requests`, `genanki`, and `filelock` (`pip install -r requirements.txt`)
 - Audio rendering only: `music21`, `fluidsynth`, `ffmpeg`, and a GM soundfont
-- Scripts invoke `python` and `batch_worker.py` uses `fcntl` file locking — the batch tooling currently assumes a POSIX environment (Linux/macOS/WSL/Git Bash with Python installed)
+- Cross-platform: file locking uses `filelock` and all I/O is explicit UTF-8, so Windows, macOS, and Linux all work

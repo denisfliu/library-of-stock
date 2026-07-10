@@ -9,10 +9,10 @@ Single-work topics (films, operas, specific compositions, specific novels)
 are excluded since having few sections is expected for them.
 
 Usage:
-  python lib/queue/scan_redo.py                  # print ranked candidates
-  python lib/queue/scan_redo.py --enqueue        # also add to redo queue
-  python lib/queue/scan_redo.py --min-questions 15  # adjust threshold
-  python lib/queue/scan_redo.py --json           # JSON output
+  python lib/queues/scan_redo.py                  # print ranked candidates
+  python lib/queues/scan_redo.py --enqueue        # also add to redo queue
+  python lib/queues/scan_redo.py --min-questions 15  # adjust threshold
+  python lib/queues/scan_redo.py --json           # JSON output
 """
 import sys as _sys
 from pathlib import Path as _Path

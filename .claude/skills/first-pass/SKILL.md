@@ -15,7 +15,7 @@ You are creating a **new analysis from scratch** for the topic named in $ARGUMEN
 
 If a category was provided in $ARGUMENTS, use it. Otherwise, check the queue:
 ```bash
-python lib/queue/topic_queue.py summary
+python lib/queues/topic_queue.py summary
 ```
 Match the topic to its category. Reference `categories.md` (project root) for valid category/subcategory names.
 

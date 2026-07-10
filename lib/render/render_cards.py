@@ -137,7 +137,7 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
 <title>Cards: {escape(topic)}</title>
 {abcjs_script}
 <style>
-{base_css(max_width='1100px', body_padding='1.5rem', h1_size='1.6rem', links_plain=True)}
+{base_css(max_width='1100px', body_padding='1.5rem', h1_size='1.6rem')}
 .toolbar {{
     display: flex;
     flex-wrap: wrap;

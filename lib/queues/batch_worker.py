@@ -5,9 +5,9 @@ batch_worker.py — Pop a topic from the active batch queue (with file locking).
 Used by agents to claim work without race conditions.
 
 Usage:
-    python lib/queue/batch_worker.py pop          # pop next topic, print JSON
-    python lib/queue/batch_worker.py complete "Topic Name"  # mark topic as done
-    python lib/queue/batch_worker.py status       # print batch status
+    python lib/queues/batch_worker.py pop          # pop next topic, print JSON
+    python lib/queues/batch_worker.py complete "Topic Name"  # mark topic as done
+    python lib/queues/batch_worker.py status       # print batch status
 """
 import json, sys
 from pathlib import Path
@@ -94,7 +94,7 @@ def complete(topic_name):
             print(f'Completed: {topic_name}')
             # Automatically enqueue for second pass
             if completed_item.get('pass_type') == 'first':
-                from lib.queue.topic_queue import add_second
+                from lib.queues.topic_queue import add_second
                 add_second(topic_name, reason='first pass done')
         else:
             # Might not be in in_progress if agent didn't pop properly, just add to completed
@@ -114,7 +114,7 @@ def init(name, first_count=0, second_count=0, category=None):
 
     Pops items from the global queues and creates current_batch.json.
     """
-    from lib.queue.topic_queue import pop_first, pop_second
+    from lib.queues.topic_queue import pop_first, pop_second
 
     batch_queue = []
 

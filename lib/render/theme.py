@@ -29,18 +29,18 @@ PALETTE = {
 def base_css(max_width='960px', body_padding='1.5rem 1.5rem',
              type_scale=True, h1_size='1.8rem',
              h1_pad='0.25rem', h1_margin='0.5rem',
-             links_plain=False, global_links=True) -> str:
+             global_links=True) -> str:
     """Shared page-header CSS: reset, body, links, h1.
 
     Parameters cover the deliberate per-page differences (page width,
-    heading size, link underline style); everything else — palette, font
-    stacks, reset — is defined once here. Colors come from PALETTE.
+    heading size); everything else — palette, font stacks, reset, link
+    style (plain, underline on hover) — is defined once here. Colors
+    come from PALETTE.
     """
     p = PALETTE
     type_rules = "\n    line-height: 1.5;\n    font-size: 14px;" if type_scale else ""
     if global_links:
-        link_deco = " text-decoration: none;" if links_plain else ""
-        links = (f"a {{ color: {p['link']};{link_deco} }}\n"
+        links = (f"a {{ color: {p['link']}; text-decoration: none; }}\n"
                  "a:hover { text-decoration: underline; }\n")
     else:
         links = ""

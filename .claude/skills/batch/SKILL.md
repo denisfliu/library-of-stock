@@ -15,7 +15,7 @@ Full autopilot. Run all steps without confirmation between stages.
 ## Step 1: Check Queues
 
 ```bash
-python lib/queue/topic_queue.py summary
+python lib/queues/topic_queue.py summary
 ```
 
 Determine which topics are queued for first pass vs. second pass. A batch can include a mix of both.
@@ -23,7 +23,7 @@ Determine which topics are queued for first pass vs. second pass. A batch can in
 ## Step 2: Initialize Batch
 
 ```bash
-python lib/queue/batch_worker.py init "batch-$(date +%Y%m%d)" --first N --second M --category CATEGORY
+python lib/queues/batch_worker.py init "batch-$(date +%Y%m%d)" --first N --second M --category CATEGORY
 ```
 Adjust `--first` and `--second` counts based on the queue summary and the count given in $ARGUMENTS. This pops items from the global queues into `queue/current_batch.json`.
 
@@ -35,7 +35,7 @@ For each agent slot (up to the agent count given in $ARGUMENTS, default 3, in pa
 
 ### First-pass agent prompt
 Instruct the agent to follow the `/first-pass` skill protocol:
-1. Pop one topic: `python lib/queue/batch_worker.py pop first --category "{category}"`
+1. Pop one topic: `python lib/queues/batch_worker.py pop first --category "{category}"`
 2. Derive slug
 3. Fetch clues with `lib/run.py`
 4. Read the appropriate category supplement skill (`/literature`, `/vfa`, `/afa`, `/philosophy`, `/science`) before analyzing
@@ -44,11 +44,11 @@ Instruct the agent to follow the `/first-pass` skill protocol:
 7. Generate cards following `/cards` skill rules
 8. Run self-check
 9. Render
-10. Mark complete: `python lib/queue/batch_worker.py complete "TOPIC"` and `python lib/queue/topic_queue.py remove-first "TOPIC"`
+10. Mark complete: `python lib/queues/batch_worker.py complete "TOPIC"` and `python lib/queues/topic_queue.py remove-first "TOPIC"`
 
 ### Second-pass agent prompt
 Instruct the agent to follow the `/second-pass` skill protocol:
-1. Pop one topic: `python lib/queue/batch_worker.py pop second --category "{category}"`
+1. Pop one topic: `python lib/queues/batch_worker.py pop second --category "{category}"`
 2. Load existing analysis.json
 3. Read the appropriate category supplement skill before fetching/analyzing
 4. Fetch additional data (text mentions, subitem queries)
@@ -56,7 +56,7 @@ Instruct the agent to follow the `/second-pass` skill protocol:
 6. Audit existing cards, generate new cards
 7. Run self-check
 8. Render
-9. Mark complete: `python lib/queue/batch_worker.py complete "TOPIC"` and `python lib/queue/topic_queue.py remove-second "TOPIC"`
+9. Mark complete: `python lib/queues/batch_worker.py complete "TOPIC"` and `python lib/queues/topic_queue.py remove-second "TOPIC"`
 
 ### One topic per agent
 Each agent pops one topic, processes it fully, and exits. This eliminates context accumulation and reduces cost.
@@ -131,7 +131,7 @@ for f in sorted(Path('output').glob('*/analysis.json')):
 8. **Empty summary**: Left `summary` blank. Fix: required field + self-check.
 9. **Forgot post-batch agents**: Skipped cards or crossref. Fix: run `post_batch.py` immediately, launch both agents.
 10. **verify_images.py re-runs**: Backgrounds itself silently. Fix: run once, wait for notification.
-11. **Queue JSON in wrong dir**: Written to `lib/queue/` instead of `queue/`. Fix: queue data exclusively in `queue/`.
+11. **Queue JSON in wrong dir**: Written to `lib/queues/` instead of `queue/`. Fix: queue data exclusively in `queue/`.
 12. **Orphan subitem dirs**: `lib/run.py` without `--outdir`. Fix: always pass `--outdir output/{slug}`.
 
 ## Permissions
