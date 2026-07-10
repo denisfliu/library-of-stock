@@ -13,7 +13,7 @@ Add cross-references (hyperlinks between related topics) to analysis JSON files.
 ## Step 1: Run Deterministic Script First
 
 ```bash
-python3 lib/crossref/backfill_crossrefs.py
+python lib/crossref/backfill_crossrefs.py
 ```
 This handles mechanical name matches automatically — only touches topics with no `cross_refs` key yet. Conservative: only matches canonical multi-word names from the index.
 

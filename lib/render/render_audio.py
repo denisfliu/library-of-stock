@@ -134,7 +134,7 @@ def build_all(force: bool = False) -> None:
     for analysis_file in sorted(OUTPUT_DIR.glob("*/analysis.json")):
         topic_key = analysis_file.parent.name
 
-        with open(analysis_file) as f:
+        with open(analysis_file, encoding='utf-8') as f:
             analysis = json.load(f)
 
         score_clues = analysis.get("score_clues", [])
@@ -172,7 +172,7 @@ def build_all(force: bool = False) -> None:
                 errors += 1
 
         if changed:
-            with open(analysis_file, "w") as f:
+            with open(analysis_file, "w", encoding='utf-8') as f:
                 json.dump(analysis, f, indent=2, ensure_ascii=False)
 
     parts = [f"Built {count} audio clips"]

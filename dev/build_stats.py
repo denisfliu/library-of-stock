@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Generate dev/stats_data.json for the stats visualization page."""
 
 import json
@@ -37,7 +37,7 @@ def main():
     score_clue_rows = []
 
     for f in files:
-        with open(f) as fp:
+        with open(f, encoding='utf-8') as fp:
             try:
                 d = json.load(fp)
             except json.JSONDecodeError:
@@ -107,7 +107,7 @@ def main():
         'score_clues': score_clue_rows,
     }
 
-    with open(OUT_FILE, 'w') as fp:
+    with open(OUT_FILE, 'w', encoding='utf-8') as fp:
         json.dump(data, fp, indent=2)
 
     print(f"Written -> {OUT_FILE}")

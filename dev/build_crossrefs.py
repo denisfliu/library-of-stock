@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Generate dev/crossrefs_data.json for the crossref graph visualization."""
 
 import json
@@ -17,7 +17,7 @@ def main():
     in_degree = {}  # slug -> count
 
     for f in files:
-        with open(f) as fp:
+        with open(f, encoding='utf-8') as fp:
             try:
                 d = json.load(fp)
             except json.JSONDecodeError:
@@ -65,7 +65,7 @@ def main():
         'links': links,
     }
 
-    with open(OUT_FILE, 'w') as fp:
+    with open(OUT_FILE, 'w', encoding='utf-8') as fp:
         json.dump(data, fp, separators=(',', ':'))
 
     print(f"Written {len(data['nodes'])} nodes, {len(data['links'])} links -> {OUT_FILE}")

@@ -265,7 +265,7 @@ function showTab(i) {{
 </html>"""
 
     output_path.parent.mkdir(exist_ok=True)
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding='utf-8') as f:
         f.write(html)
     return output_path
 
@@ -306,7 +306,7 @@ def find_cache_for_topic(topic_key: str, topic_name: str = "") -> Path | None:
             if not name_lower:
                 return f  # no topic_name to validate against, accept blindly
             try:
-                qs = json.load(open(f)).get("query_string", "").lower()
+                qs = json.load(open(f, encoding='utf-8')).get("query_string", "").lower()
             except Exception:
                 continue
             if qs and qs in name_lower:
@@ -367,7 +367,7 @@ def build_all(force: bool = False):
         topic_key = analysis_file.parent.name
 
         # Load topic display name
-        with open(analysis_file) as f:
+        with open(analysis_file, encoding='utf-8') as f:
             analysis = json.load(f)
         topic_display = analysis.get("topic", topic_key.replace("_", " ").title())
 
@@ -411,7 +411,7 @@ def build_all(force: bool = False):
         sources = []
         is_mentions_flags = []
         for cf in cache_files:
-            with open(cf) as f:
+            with open(cf, encoding='utf-8') as f:
                 sources.append(json.load(f))
             is_mentions_flags.append("_mentions" in cf.name)
 
@@ -436,7 +436,7 @@ if __name__ == "__main__":
     if len(remaining) == 2:
         cache_path = remaining[0]
         output_path = sys.argv[2]
-        with open(cache_path) as f:
+        with open(cache_path, encoding='utf-8') as f:
             data = json.load(f)
         render_questions_html(data, output_path)
         print(f"Rendered to {output_path}")

@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 post_batch.py — Run all post-batch steps after analysis agents finish.
 
 Usage:
-    python3 post_batch.py
+    python post_batch.py
 
 Steps:
   1. Rebuild cross-ref index
@@ -30,7 +30,7 @@ def main():
         print("ERROR: queue/current_batch.json not found.")
         sys.exit(1)
 
-    with open(BATCH_FILE) as f:
+    with open(BATCH_FILE, encoding='utf-8') as f:
         batch = json.load(f)
 
     completed = batch.get('completed', [])
@@ -47,7 +47,7 @@ def main():
     index = {}  # normalized name -> (canonical_topic, slug)
     for json_path in output_dir.glob('*/analysis.json'):
         slug = json_path.parent.name
-        with open(json_path) as f:
+        with open(json_path, encoding='utf-8') as f:
             data = json.load(f)
         canonical = data.get('topic', '')
         # Index by canonical name and by slug-derived name (handles accents, punctuation)
@@ -95,14 +95,14 @@ def main():
 
     # Step 1: Rebuild cross-ref index
     print("\n[1/4] Rebuilding cross-reference index...")
-    result = subprocess.run("python3 lib/crossref/crossref.py", shell=True, cwd=ROOT)
+    result = subprocess.run("python lib/crossref/crossref.py", shell=True, cwd=ROOT)
     if result.returncode != 0:
         print("ERROR: crossref rebuild failed")
         sys.exit(1)
 
     # Step 2: Deterministic backfill (fast, no LLM needed)
     print("\n[2/4] Running deterministic crossref backfill (lib/crossref/backfill_crossrefs.py)...")
-    result = subprocess.run("python3 lib/crossref/backfill_crossrefs.py", shell=True, cwd=ROOT)
+    result = subprocess.run("python lib/crossref/backfill_crossrefs.py", shell=True, cwd=ROOT)
     if result.returncode != 0:
         print("ERROR: backfill_crossrefs.py failed")
         sys.exit(1)
@@ -120,7 +120,7 @@ def main():
         if not topic_category:
             json_path = ROOT / 'output' / slug / 'analysis.json'
             if json_path.exists():
-                with open(json_path) as f:
+                with open(json_path, encoding='utf-8') as f:
                     topic_category = json.load(f).get('category')
         topic_entries.append({'topic': topic, 'slug': slug, 'category': topic_category})
 

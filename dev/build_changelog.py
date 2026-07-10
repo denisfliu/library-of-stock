@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 build_changelog.py — Extract topic-level changelog from git history.
 
@@ -7,7 +7,7 @@ topics were newly added (first pass) vs updated (second pass / refinement),
 and outputs dev/changelog_data.json for the changelog page.
 
 Usage:
-    python3 dev/build_changelog.py
+    python dev/build_changelog.py
 """
 import json
 import subprocess
@@ -34,7 +34,7 @@ def main():
     slug_to_category = {}
     index_path = ROOT / 'output' / 'topic_index.json'
     if index_path.exists():
-        with open(index_path) as f:
+        with open(index_path, encoding='utf-8') as f:
             idx = json.load(f)
         for val in idx.values():
             if val.get('type') == 'topic':
@@ -93,7 +93,7 @@ def main():
                 'updated': updated,
             })
 
-    with open(OUTPUT, 'w') as f:
+    with open(OUTPUT, 'w', encoding='utf-8') as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
 
     total_added = sum(len(d['added']) for d in result)

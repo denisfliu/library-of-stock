@@ -1,46 +1,42 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 batch_worker.py — Pop a topic from the active batch queue (with file locking).
 
 Used by agents to claim work without race conditions.
 
 Usage:
-    python3 lib/batch_worker.py pop          # pop next topic, print JSON
-    python3 lib/batch_worker.py complete "Topic Name"  # mark topic as done
-    python3 lib/batch_worker.py status       # print batch status
+    python lib/queue/batch_worker.py pop          # pop next topic, print JSON
+    python lib/queue/batch_worker.py complete "Topic Name"  # mark topic as done
+    python lib/queue/batch_worker.py status       # print batch status
 """
-import json, sys, fcntl, time
+import json, sys
 from pathlib import Path
 from datetime import datetime
-import re
 
 ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(ROOT))
+
+from lib.common import file_lock
+
 BATCH_FILE = ROOT / 'queue' / 'current_batch.json'
 LOCK_FILE = ROOT / 'queue' / '.batch.lock'
 
 
 def _locked(fn):
     """Execute fn while holding an exclusive file lock."""
-    LOCK_FILE.parent.mkdir(exist_ok=True)
-    lock_fd = open(LOCK_FILE, 'w')
-    fcntl.flock(lock_fd, fcntl.LOCK_EX)
-    try:
+    with file_lock(LOCK_FILE):
         return fn()
-    finally:
-        fcntl.flock(lock_fd, fcntl.LOCK_UN)
-        lock_fd.close()
 
 
 def _load():
     if BATCH_FILE.exists():
-        with open(BATCH_FILE) as f:
+        with open(BATCH_FILE, encoding='utf-8') as f:
             return json.load(f)
     return None
 
 
 def _save(data):
-    with open(BATCH_FILE, 'w') as f:
+    with open(BATCH_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 

@@ -17,7 +17,7 @@ Full autopilot. Run all steps without confirmation between stages.
 ## Step 1: Check Queues
 
 ```bash
-python3 lib/queue/topic_queue.py summary
+python lib/queue/topic_queue.py summary
 ```
 
 Determine which topics are queued for first pass vs. second pass. A batch can include a mix of both.
@@ -25,7 +25,7 @@ Determine which topics are queued for first pass vs. second pass. A batch can in
 ## Step 2: Initialize Batch
 
 ```bash
-python3 lib/queue/batch_worker.py init "batch-$(date +%Y%m%d)" --first N --second M --category CATEGORY
+python lib/queue/batch_worker.py init "batch-$(date +%Y%m%d)" --first N --second M --category CATEGORY
 ```
 Adjust `--first` and `--second` counts based on the queue summary and `$ARGUMENTS.count`. This pops items from the global queues into `queue/current_batch.json`.
 
@@ -37,7 +37,7 @@ For each agent slot (up to $ARGUMENTS.agents parallel), spawn a sub-agent using 
 
 ### First-pass agent prompt
 Instruct the agent to follow the `/first-pass` skill protocol:
-1. Pop one topic: `python3 lib/queue/batch_worker.py pop first --category "{category}"`
+1. Pop one topic: `python lib/queue/batch_worker.py pop first --category "{category}"`
 2. Derive slug
 3. Fetch clues with `lib/run.py`
 4. Read the appropriate category supplement skill (`/literature`, `/vfa`, `/afa`, `/philosophy`, `/science`) before analyzing
@@ -46,11 +46,11 @@ Instruct the agent to follow the `/first-pass` skill protocol:
 7. Generate cards following `/cards` skill rules
 8. Run self-check
 9. Render
-10. Mark complete: `python3 lib/queue/batch_worker.py complete "TOPIC"` and `python3 lib/queue/topic_queue.py remove-first "TOPIC"`
+10. Mark complete: `python lib/queue/batch_worker.py complete "TOPIC"` and `python lib/queue/topic_queue.py remove-first "TOPIC"`
 
 ### Second-pass agent prompt
 Instruct the agent to follow the `/second-pass` skill protocol:
-1. Pop one topic: `python3 lib/queue/batch_worker.py pop second --category "{category}"`
+1. Pop one topic: `python lib/queue/batch_worker.py pop second --category "{category}"`
 2. Load existing analysis.json
 3. Read the appropriate category supplement skill before fetching/analyzing
 4. Fetch additional data (text mentions, subitem queries)
@@ -58,7 +58,7 @@ Instruct the agent to follow the `/second-pass` skill protocol:
 6. Audit existing cards, generate new cards
 7. Run self-check
 8. Render
-9. Mark complete: `python3 lib/queue/batch_worker.py complete "TOPIC"` and `python3 lib/queue/topic_queue.py remove-second "TOPIC"`
+9. Mark complete: `python lib/queue/batch_worker.py complete "TOPIC"` and `python lib/queue/topic_queue.py remove-second "TOPIC"`
 
 ### One topic per agent
 Each agent pops one topic, processes it fully, and exits. This eliminates context accumulation and reduces cost.
@@ -74,7 +74,7 @@ Open `progress.html` (via `./serve.sh`) — auto-refreshes every 5s.
 After ALL analysis agents complete:
 
 ```bash
-python3 post_batch.py
+python post_batch.py
 ```
 This rebuilds the cross-ref index and prints agent prompts for the next steps.
 
@@ -96,18 +96,18 @@ After BOTH card and crossref agents finish:
 ## Step 8: VFA Image Pipeline (VFA batches only)
 
 ```bash
-python3 lib/images/fix_images.py
+python lib/images/fix_images.py
 ```
 Then review `cache/pending_images.json`. Then:
 ```bash
-python3 lib/images/verify_images.py
+python lib/images/verify_images.py
 ```
 Run verify_images.py **once** — it may background itself. Wait for completion notification, do NOT re-run.
 
 ## Step 9: Quality Audit
 
 ```bash
-python3 -c "
+python -c "
 import json
 from pathlib import Path
 for f in sorted(Path('output').glob('*/analysis.json')):

@@ -1222,7 +1222,7 @@ async function exportApkgBtn() {{
 </html>"""
 
     output_path.parent.mkdir(exist_ok=True)
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding='utf-8') as f:
         f.write(html)
     return output_path
 
@@ -1238,7 +1238,7 @@ def build_all(force: bool = False):
             skipped += 1
             continue
 
-        with open(f) as fh:
+        with open(f, encoding='utf-8') as fh:
             analysis = json.load(fh)
         # Render if there are cards, images, or score clips to show
         has_images = any(
@@ -1262,7 +1262,7 @@ if __name__ == "__main__":
     remaining = [a for a in sys.argv[1:] if a != "--force"]
     if remaining:
         json_path = Path(remaining[0])
-        with open(json_path) as f:
+        with open(json_path, encoding='utf-8') as f:
             analysis = json.load(f)
         out = render_cards_html(analysis, json_path.parent / "cards.html")
         print(f"Rendered to {out}")

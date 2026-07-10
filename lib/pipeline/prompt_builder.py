@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 prompt_builder.py — Assemble agent prompts from building blocks.
 
@@ -6,9 +6,9 @@ Reads markdown blocks from docs/, concatenates them in the correct order,
 renumbers steps sequentially, and wraps in the agent loop template.
 
 Usage:
-    python3 lib/pipeline/prompt_builder.py first --category Literature
-    python3 lib/pipeline/prompt_builder.py second --category Philosophy
-    python3 lib/pipeline/prompt_builder.py first --category "Fine Arts"
+    python lib/pipeline/prompt_builder.py first --category Literature
+    python lib/pipeline/prompt_builder.py second --category Philosophy
+    python lib/pipeline/prompt_builder.py first --category "Fine Arts"
 """
 import re
 import sys
@@ -31,7 +31,7 @@ def read_block(path: Path) -> str:
     if not path.exists():
         print(f'Warning: block not found: {path}', file=sys.stderr)
         return ''
-    return path.read_text().strip()
+    return path.read_text(encoding='utf-8').strip()
 
 
 def renumber_steps(text: str) -> str:
@@ -84,7 +84,7 @@ FIRST_PASS_LOOP = """## Process one topic
 
 ### Pop topic
 ```bash
-python3 lib/queue/batch_worker.py pop first --category "{category}"
+python lib/queue/batch_worker.py pop first --category "{category}"
 ```
 If output is "EMPTY", queue is empty — exit.
 Parse JSON output to get the full topic name and metadata.
@@ -95,14 +95,14 @@ Examples: "Samuel Beckett" → `samuel_beckett` | "Béla Bartók" → `béla_bar
 
 ### Fetch clues
 ```
-python3 lib/run.py "SEARCH TERM" "7,8,9,10" --outdir output/{{slug}}
+python lib/run.py "SEARCH TERM" "7,8,9,10" --outdir output/{{slug}}
 ```
 Use the minimally identifiable search term (usually last name or common name). Saves `output/{{slug}}/clues.txt`.
 
 ### Expand if sparse
 If fewer than **10 total tossups + bonuses**, run:
-1. `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --outdir output/{{slug}}`
-2. `python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{{slug}}`
+1. `python lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --outdir output/{{slug}}`
+2. `python lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{{slug}}`
 
 Read all output files. Label text mention clues as contextual.
 
@@ -124,25 +124,25 @@ Generate the `cards` array following the card generation rules in this prompt. E
 
 ### Render
 ```bash
-python3 -c "from lib.render.render import render_html; import json; f=open('output/{{slug}}/analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
+python -c "from lib.render.render import render_html; import json; f=open('output/{{slug}}/analysis.json', encoding='utf-8'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
 ```
 
 ### Mark complete
 ```bash
-python3 lib/queue/batch_worker.py complete "FULL TOPIC NAME"
-python3 lib/queue/topic_queue.py remove-first "FULL TOPIC NAME"
+python lib/queue/batch_worker.py complete "FULL TOPIC NAME"
+python lib/queue/topic_queue.py remove-first "FULL TOPIC NAME"
 ```
 
 ## RULES
 - Do NOT manually construct or guess image URLs. VFA agents: run `fix_images.py --slug {{slug}}` after writing analysis.json as instructed in the protocol above. All other categories: no image steps.
-- ALWAYS run `python3 lib/run.py` to fetch clues — NEVER write clues.txt manually. The API cache JSON is required for the questions page renderer.
+- ALWAYS run `python lib/run.py` to fetch clues — NEVER write clues.txt manually. The API cache JSON is required for the questions page renderer.
 - If 0 results: mark complete with "(no results)" and exit."""
 
 SECOND_PASS_LOOP = """## Process one topic
 
 ### Pop topic
 ```bash
-python3 lib/queue/batch_worker.py pop second --category "{category}"
+python lib/queue/batch_worker.py pop second --category "{category}"
 ```
 If output is "EMPTY", queue is empty — exit.
 Parse JSON output to get the topic name and slug.
@@ -153,12 +153,12 @@ Read `output/{{slug}}/analysis.json`. Note work sections, card count, and thin-c
 ### Fetch additional data
 If sparse (<10 original tossups+bonuses or <4 work sections):
 ```bash
-python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{{slug}}
+python lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{{slug}}
 ```
 
 For each major work (skip "General / Biographical" and "Other Works"):
 ```bash
-python3 lib/run.py "WORK NAME" "7,8,9,10" --outdir output/{{slug}}
+python lib/run.py "WORK NAME" "7,8,9,10" --outdir output/{{slug}}
 ```
 Always use `--outdir output/{{slug}}` — never let subitem results land in their own top-level directories.
 Strip dates and parentheticals (e.g. "The Course of Empire (1833–1836)" → "The Course of Empire").
@@ -179,17 +179,17 @@ Generate cards for any new clues added during this pass (append to the existing 
 
 ### Render
 ```bash
-python3 -c "from lib.render.render import render_html; import json; f=open('output/{{slug}}/analysis.json'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
+python -c "from lib.render.render import render_html; import json; f=open('output/{{slug}}/analysis.json', encoding='utf-8'); a=json.load(f); render_html(a, 'output/{{slug}}/stock.html')"
 ```
 
 ### Mark complete
 ```bash
-python3 lib/queue/batch_worker.py complete "FULL TOPIC NAME"
-python3 lib/queue/topic_queue.py remove-second "FULL TOPIC NAME"
+python lib/queue/batch_worker.py complete "FULL TOPIC NAME"
+python lib/queue/topic_queue.py remove-second "FULL TOPIC NAME"
 ```
 
 ## RULES
-- VFA and Other Fine Arts (architecture) agents: run `python3 lib/images/fix_images.py --slug {{slug}}` after updating analysis.json — same as first pass. All other categories: no image steps.
+- VFA and Other Fine Arts (architecture) agents: run `python lib/images/fix_images.py --slug {{slug}}` after updating analysis.json — same as first pass. All other categories: no image steps.
 - Do NOT remove existing data — only add to it."""
 
 
@@ -215,7 +215,7 @@ Replace ONLY the `cards` field in `output/{slug}/analysis.json`. Do not modify a
 
 ### 4. Render
 ```bash
-python3 lib/render/render_cards.py
+python lib/render/render_cards.py
 ```\
 """
 
@@ -250,7 +250,7 @@ Finish all topics before rendering.
 ## After all topics are done:
 
 ```bash
-python3 lib/render/render_cards.py
+python lib/render/render_cards.py
 ```\
 """
 

@@ -1,13 +1,13 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Cross-reference index for stock guides.
 
 Maintains output/topic_index.json — a lookup of all topics and works.
 The LLM uses this during analysis to add cross_refs to each page.
 
 Usage:
-    python3 lib/crossref.py                    # rebuild index
-    python3 lib/crossref.py --lookup "Kant"    # look up a name
-    python3 lib/crossref.py --lookup "Guernica"
+    python lib/crossref.py                    # rebuild index
+    python lib/crossref.py --lookup "Kant"    # look up a name
+    python lib/crossref.py --lookup "Guernica"
 """
 import json, re, sys
 from pathlib import Path
@@ -21,7 +21,7 @@ def rebuild_index():
     index = {}
 
     for f in sorted((ROOT / 'output').glob('*/analysis.json')):
-        with open(f) as fh:
+        with open(f, encoding='utf-8') as fh:
             data = json.load(fh)
         slug = f.parent.name
         topic = data.get('topic', '')
@@ -61,7 +61,7 @@ def rebuild_index():
                 if len(first_part) > 3:
                     index.setdefault(first_part, work_entry)
 
-    with open(INDEX_FILE, 'w') as f:
+    with open(INDEX_FILE, 'w', encoding='utf-8') as f:
         json.dump(index, f, indent=2, ensure_ascii=False)
 
     topics_count = len(set(v['slug'] for v in index.values()))
@@ -73,7 +73,7 @@ def lookup(name, index=None):
     """Look up a name in the index. Returns the entry or None."""
     if index is None:
         if INDEX_FILE.exists():
-            with open(INDEX_FILE) as f:
+            with open(INDEX_FILE, encoding='utf-8') as f:
                 index = json.load(f)
         else:
             return None

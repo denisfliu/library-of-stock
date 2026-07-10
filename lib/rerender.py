@@ -164,7 +164,7 @@ def main():
             skipped_up_to_date += 1
             continue
 
-        with open(json_path) as f:
+        with open(json_path, encoding='utf-8') as f:
             analysis = json.load(f)
 
         total_clues = sum(len(w.get("clues", [])) for w in analysis.get("works", []))

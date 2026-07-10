@@ -16,7 +16,7 @@ You are creating a **new analysis from scratch** for the topic "$ARGUMENTS.topic
 
 If a category was provided ("$ARGUMENTS.category"), use it. Otherwise, check the queue:
 ```bash
-python3 lib/queue/topic_queue.py summary
+python lib/queue/topic_queue.py summary
 ```
 Match the topic to its category. Reference `categories.md` (project root) for valid category/subcategory names.
 
@@ -34,15 +34,15 @@ The search term (Step 3) can still be the short name, but the slug and `topic` f
 ## Step 3: Fetch Clues
 
 ```bash
-python3 lib/run.py "SEARCH TERM" "7,8,9,10" --outdir output/{slug}
+python lib/run.py "SEARCH TERM" "7,8,9,10" --outdir output/{slug}
 ```
 Use the **minimally identifiable name** — the shortest form qbreader indexes on (usually last name). But set the `topic` field in the JSON to the **full proper name** from the answerline.
 
 ### Expand if sparse
 If fewer than **10 total tossups + bonuses**:
 ```bash
-python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --outdir output/{slug}
-python3 lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{slug}
+python lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --outdir output/{slug}
+python lib/run.py "SEARCH TERM" "5,6,7,8,9,10" --mentions --outdir output/{slug}
 ```
 
 ## Step 4: Read Category Supplement
@@ -107,7 +107,7 @@ Follow `/cards` skill rules to generate the `cards` array inline. Every clue wit
 ## Step 9: Render
 
 ```bash
-python3 -c "from lib.render.render import render_html; import json; f=open('output/{slug}/analysis.json'); a=json.load(f); render_html(a, 'output/{slug}/stock.html')"
+python -c "from lib.render.render import render_html; import json; f=open('output/{slug}/analysis.json'); a=json.load(f); render_html(a, 'output/{slug}/stock.html')"
 ```
 
 ## Data Fetching Rules

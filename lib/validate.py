@@ -13,8 +13,8 @@ import json
 import sys
 from pathlib import Path
 
-OUTPUT_DIR = Path("output")
-CACHE_DIR = Path("cache")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.common import OUTPUT_DIR, CACHE_DIR
 
 
 def run_checks() -> list[str]:
@@ -24,7 +24,7 @@ def run_checks() -> list[str]:
 
     for f in analysis_files:
         try:
-            analysis = json.load(open(f))
+            analysis = json.load(open(f, encoding='utf-8'))
         except json.JSONDecodeError as e:
             issues.append(f"[BROKEN JSON] {f.parent.name}/analysis.json: {e}")
             continue

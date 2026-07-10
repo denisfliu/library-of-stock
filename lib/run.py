@@ -245,7 +245,7 @@ def main():
         output = format_clues_for_analysis(parsed)
         out_path = topic_dir / clue_filename
 
-    with open(out_path, "w") as f:
+    with open(out_path, "w", encoding='utf-8') as f:
         f.write(output)
 
     print(f"\nClue output saved to {out_path}")

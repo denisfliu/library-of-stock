@@ -1,14 +1,14 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Fix missing images across all VFA analysis JSONs.
 
 Thin wrapper around lib/images.py — scans all analysis files and calls
 find_image() for any visual work missing an embedded image URL.
 
 Usage:
-    python3 lib/images/fix_images.py                  # fix all missing (skip known failures)
-    python3 lib/images/fix_images.py --slug hokusai   # fix one topic only
-    python3 lib/images/fix_images.py --retry          # retry previously failed lookups
-    python3 lib/images/fix_images.py --delay 1        # custom delay (default 2s)
+    python lib/images/fix_images.py                  # fix all missing (skip known failures)
+    python lib/images/fix_images.py --slug hokusai   # fix one topic only
+    python lib/images/fix_images.py --retry          # retry previously failed lookups
+    python lib/images/fix_images.py --delay 1        # custom delay (default 2s)
 """
 import json, sys
 from pathlib import Path
@@ -55,7 +55,7 @@ def main():
     # Load failure cache to skip works already tried and not found
     known_cache = {}
     if CACHE_FILE.exists():
-        with open(CACHE_FILE) as f:
+        with open(CACHE_FILE, encoding='utf-8') as f:
             known_cache = json.load(f)
 
     # Determine which analysis files to scan
@@ -69,7 +69,7 @@ def main():
     needs_fix = []
     skipped_failures = 0
     for f in analysis_files:
-        with open(f) as fh:
+        with open(f, encoding='utf-8') as fh:
             data = json.load(fh)
         if data.get('category') != 'Fine Arts':
             continue
@@ -110,12 +110,12 @@ def main():
             continue
 
         # Load fresh, update, save
-        with open(f) as fh:
+        with open(f, encoding='utf-8') as fh:
             data = json.load(fh)
 
         set_work_image(data, work_name, url)
 
-        with open(f, 'w') as fh:
+        with open(f, 'w', encoding='utf-8') as fh:
             json.dump(data, fh, indent=2, ensure_ascii=False)
 
         fixed += 1

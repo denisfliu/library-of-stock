@@ -36,7 +36,7 @@ For movements (Ashcan School, YBA, etc.): use `Movement` indicator and organize 
 
 After writing `analysis.json`, run the image finder scoped to your topic:
 ```bash
-python3 lib/images/fix_images.py --slug {slug}
+python lib/images/fix_images.py --slug {slug}
 ```
 The file lock serializes concurrent agents automatically — no rate limiting risk. Run this **before** rendering so the HTML includes any found images.
 
@@ -52,10 +52,10 @@ The link must point to the specific work's article, not the artist's general pag
 
 ### Image pipeline (post-batch)
 
-1. Run `python3 lib/images/fix_images.py` — searches Commons for all missing visual works
+1. Run `python lib/images/fix_images.py` — searches Commons for all missing visual works
 2. Review `cache/pending_images.json` — approve or reject ambiguous matches
 3. For works that remain imageless (copyrighted), manually add Wikipedia links
-4. Run `python3 lib/images/verify_images.py` to confirm all URLs return HTTP 200
+4. Run `python lib/images/verify_images.py` to confirm all URLs return HTTP 200
 
 ### Rate limiting
 

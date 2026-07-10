@@ -1,9 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 Backfill cross_refs for topics that are missing them.
 Conservative approach: only match canonical names (not single-word aliases).
 
-Usage: python3 backfill_crossrefs.py [--dry-run]
+Usage: python backfill_crossrefs.py [--dry-run]
 """
 
 import json
@@ -14,7 +14,7 @@ from pathlib import Path
 DRY_RUN = '--dry-run' in sys.argv
 
 # Load topic index
-with open('output/topic_index.json') as f:
+with open('output/topic_index.json', encoding='utf-8') as f:
     index = json.load(f)
 
 # Build CANONICAL-only search set:
@@ -237,7 +237,7 @@ def get_slug(filepath, d):
 # Find all topics missing cross_refs
 missing_files = []
 for f in sorted(Path('output').glob('*/analysis.json')):
-    d = json.load(open(f))
+    d = json.load(open(f, encoding='utf-8'))
     if not d.get('cross_refs'):
         missing_files.append((f, d))
 
@@ -255,7 +255,7 @@ for filepath, d in missing_files:
     if refs:
         d['cross_refs'] = refs
         if not DRY_RUN:
-            with open(filepath, 'w') as f:
+            with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(d, f, indent=2, ensure_ascii=False)
         updated += 1
         print(f'  {topic_name}: {len(refs)} refs')
@@ -264,7 +264,7 @@ for filepath, d in missing_files:
     else:
         d['cross_refs'] = []
         if not DRY_RUN:
-            with open(filepath, 'w') as f:
+            with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(d, f, indent=2, ensure_ascii=False)
         no_refs_found.append(topic_name)
         print(f'  {topic_name}: (no external refs found)')

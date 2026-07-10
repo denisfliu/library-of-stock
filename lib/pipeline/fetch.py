@@ -125,7 +125,7 @@ def fetch_topic(
 
     if use_cache and cache_path.exists():
         print(f"Loading cached data from {cache_path}")
-        with open(cache_path) as f:
+        with open(cache_path, encoding='utf-8') as f:
             return json.load(f)
 
     print(f"Fetching topic: '{query_string}'")
@@ -146,7 +146,7 @@ def fetch_topic(
     }
 
     cache_dir.mkdir(parents=True, exist_ok=True)
-    with open(cache_path, "w") as f:
+    with open(cache_path, "w", encoding='utf-8') as f:
         json.dump(result, f, indent=2)
     print(f"Cached to {cache_path}")
 
@@ -171,7 +171,7 @@ def fetch_text_mentions(
 
     if use_cache and cache_path.exists():
         print(f"Loading cached mentions from {cache_path}")
-        with open(cache_path) as f:
+        with open(cache_path, encoding='utf-8') as f:
             return json.load(f)
 
     print(f"Fetching text mentions: '{query_string}'")
@@ -192,7 +192,7 @@ def fetch_text_mentions(
     }
 
     cache_dir.mkdir(parents=True, exist_ok=True)
-    with open(cache_path, "w") as f:
+    with open(cache_path, "w", encoding='utf-8') as f:
         json.dump(result, f, indent=2)
     print(f"Cached to {cache_path}")
 

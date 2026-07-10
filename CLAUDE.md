@@ -2,6 +2,27 @@
 
 Quizbowl study guide generator. Fetches clues from qbreader, analyzes them, generates Anki-style cards, and renders HTML study pages.
 
+## Orientation (read this before exploring)
+
+- `output/{slug}/analysis.json` is the **source of truth** for every topic. All HTML is generated from it — **never read or edit generated `.html` files** (there are ~2,500 of them); edit the JSON or the renderer, then run `./build.sh`.
+- Renderers: `lib/render/render.py` (stock.html), `lib/render/render_cards.py` (cards.html), `lib/render/render_questions.py` (questions.html), `lib/build_index.py` (index.html). Each is a Python file emitting one big HTML template.
+- Pipeline: `lib/pipeline/fetch.py` (qbreader API, cached) → `lib/pipeline/parse.py` (clue extraction) → `lib/run.py` (CLI wrapper producing `clues.txt`).
+- Queues: `lib/queue/topic_queue.py` (global first/second-pass queues), `lib/queue/batch_worker.py` (per-batch claim/complete). State lives in `queue/*.json`.
+- Cross-refs: `lib/crossref/crossref.py` rebuilds `output/topic_index.json`; `lib/crossref/backfill_crossrefs.py` adds mechanical links; the `/crossref` skill adds semantic ones.
+- Agent workflows live in `.claude/skills/` (`batch`, `first-pass`, `second-pass`, `cards`, `crossref` + category supplements). `docs_backup/` is the pre-skills version, kept for reference only.
+- `lib/pipeline/prompt_builder.py` predates the skills migration and reads from the deleted `docs/` directory — do not rely on it without fixing that.
+
+## Common commands
+
+```bash
+./build.sh                                  # incremental render of everything + validate
+./build.sh --force                          # full re-render
+python lib/validate.py                     # health check on all analysis JSONs
+python lib/queue/topic_queue.py summary    # queue counts by category
+python lib/queue/batch_worker.py status    # current batch progress
+python post_batch.py                       # after a batch: rebuild index + print agent prompts
+```
+
 ## Universal Rules
 
 ### Analysis Quality

@@ -74,5 +74,5 @@ Replace ONLY the `cards` field in `output/{slug}/analysis.json`. Do not modify a
 ## Step 4: Render
 
 ```bash
-python3 lib/render/render_cards.py
+python lib/render/render_cards.py
 ```

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Scan existing topics for shallow first-pass analyses that need a redo.
 
 Identifies topics where the analysis has few work sections relative to the
@@ -9,10 +9,10 @@ Single-work topics (films, operas, specific compositions, specific novels)
 are excluded since having few sections is expected for them.
 
 Usage:
-  python3 lib/queue/scan_redo.py                  # print ranked candidates
-  python3 lib/queue/scan_redo.py --enqueue        # also add to redo queue
-  python3 lib/queue/scan_redo.py --min-questions 15  # adjust threshold
-  python3 lib/queue/scan_redo.py --json           # JSON output
+  python lib/queue/scan_redo.py                  # print ranked candidates
+  python lib/queue/scan_redo.py --enqueue        # also add to redo queue
+  python lib/queue/scan_redo.py --min-questions 15  # adjust threshold
+  python lib/queue/scan_redo.py --json           # JSON output
 """
 import json, sys, re
 from pathlib import Path
@@ -98,7 +98,7 @@ def scan(min_questions=10, max_works=3):
 
     for analysis_path in sorted(OUTPUT.glob('*/analysis.json')):
         slug = analysis_path.parent.name
-        with open(analysis_path) as f:
+        with open(analysis_path, encoding='utf-8') as f:
             data = json.load(f)
 
         topic = data.get('topic', slug)
@@ -193,7 +193,7 @@ def enqueue(candidates, tiers=('definite', 'likely')):
     """Add candidates to the redo queue."""
     queue_data = {'queue': []}
     if REDO_QUEUE.exists():
-        with open(REDO_QUEUE) as f:
+        with open(REDO_QUEUE, encoding='utf-8') as f:
             queue_data = json.load(f)
 
     existing = {item['topic'].lower() for item in queue_data['queue']}
@@ -222,7 +222,7 @@ def enqueue(candidates, tiers=('definite', 'likely')):
         added += 1
 
     REDO_QUEUE.parent.mkdir(exist_ok=True)
-    with open(REDO_QUEUE, 'w') as f:
+    with open(REDO_QUEUE, 'w', encoding='utf-8') as f:
         json.dump(queue_data, f, indent=2, ensure_ascii=False)
 
     print(f'Added {added} topics to {REDO_QUEUE.relative_to(ROOT)}')

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Verify all image URLs across VFA analysis JSONs.
 
 Checks every unique embedded image URL returns HTTP 200.
@@ -8,8 +8,8 @@ Broken URLs are cleared from cache so fix_images.py can re-find them.
 Respects Wikimedia Retry-After headers per rate limit policy.
 
 Usage:
-    python3 lib/verify_images.py          # default 2s delay
-    python3 lib/verify_images.py 1        # 1s delay (faster)
+    python lib/verify_images.py          # default 2s delay
+    python lib/verify_images.py 1        # 1s delay (faster)
 """
 import requests, json, time, sys
 from pathlib import Path
@@ -60,7 +60,7 @@ def main():
         print('No image cache found. Run fix_images.py first.', flush=True)
         return
 
-    with open(CACHE_FILE) as f:
+    with open(CACHE_FILE, encoding='utf-8') as f:
         cache = json.load(f)
 
     # Deduplicate: group cache keys by URL
@@ -101,7 +101,7 @@ def main():
     # Also clear broken URLs from analysis JSONs and cards
     files_modified = set()
     for f in sorted(output_dir.glob('*/analysis.json')):
-        with open(f) as fh:
+        with open(f, encoding='utf-8') as fh:
             data = json.load(fh)
 
         changed = False
@@ -118,11 +118,11 @@ def main():
                                     ci['url'] = ''
 
         if changed:
-            with open(f, 'w') as fh:
+            with open(f, 'w', encoding='utf-8') as fh:
                 json.dump(data, fh, indent=2, ensure_ascii=False)
             files_modified.add(f.name)
 
-    with open(CACHE_FILE, 'w') as f:
+    with open(CACHE_FILE, 'w', encoding='utf-8') as f:
         json.dump(cache, f, indent=2, ensure_ascii=False)
 
     print(f'\n=== Results ===', flush=True)
@@ -133,9 +133,9 @@ def main():
     print(f'Files modified: {len(files_modified)}', flush=True)
 
     if broken_urls:
-        print(f'\nRun `python3 lib/fix_images.py` to re-find cleared images.', flush=True)
+        print(f'\nRun `python lib/fix_images.py` to re-find cleared images.', flush=True)
     if rate_limited:
-        print(f'Re-run `python3 lib/verify_images.py` later to check remaining {rate_limited} URLs.', flush=True)
+        print(f'Re-run `python lib/verify_images.py` later to check remaining {rate_limited} URLs.', flush=True)
 
 
 if __name__ == '__main__':

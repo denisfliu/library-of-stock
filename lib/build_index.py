@@ -948,7 +948,7 @@ def build():
         tags = []
         if analysis_json.exists():
             try:
-                with open(analysis_json) as af:
+                with open(analysis_json, encoding='utf-8') as af:
                     data = json.load(af)
                     works_count = str(sum(1 for w in data.get("works", [])
                         if not any(x in w.get("name", "") for x in
@@ -983,9 +983,9 @@ def build():
         guides.append(guide)
 
     # Queue data for index page
-    queue_first = json.loads(Path("queue/queue_first_pass.json").read_text()) if Path("queue/queue_first_pass.json").exists() else {"queue": []}
-    queue_second = json.loads(Path("queue/queue_second_pass.json").read_text()) if Path("queue/queue_second_pass.json").exists() else {"queue": []}
-    queue_redo = json.loads(Path("queue/queue_redo_first.json").read_text()) if Path("queue/queue_redo_first.json").exists() else {"queue": []}
+    queue_first = json.loads(Path("queue/queue_first_pass.json").read_text(encoding='utf-8')) if Path("queue/queue_first_pass.json").exists() else {"queue": []}
+    queue_second = json.loads(Path("queue/queue_second_pass.json").read_text(encoding='utf-8')) if Path("queue/queue_second_pass.json").exists() else {"queue": []}
+    queue_redo = json.loads(Path("queue/queue_redo_first.json").read_text(encoding='utf-8')) if Path("queue/queue_redo_first.json").exists() else {"queue": []}
     first_count = len(queue_first["queue"])
     second_count = len(queue_second["queue"])
     redo_count = len(queue_redo["queue"])
@@ -1016,7 +1016,7 @@ def build():
 
     # Write shared guides data file for search_nav.js
     guides_js_path = OUTPUT_DIR / "guides_data.js"
-    with open(guides_js_path, "w") as gf:
+    with open(guides_js_path, "w", encoding='utf-8') as gf:
         gf.write("const GUIDES_DATA = ")
         json.dump(guides, gf, ensure_ascii=False)
         gf.write(";\n")
@@ -1031,7 +1031,7 @@ def build():
     html = html.replace("REDO_PASS_LIST", redo_list)
 
     out_path = Path("index.html")
-    with open(out_path, "w") as f:
+    with open(out_path, "w", encoding='utf-8') as f:
         f.write(html)
 
     # Summary

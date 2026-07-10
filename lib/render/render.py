@@ -13,7 +13,7 @@ def _load_crossref_index():
     """Load the topic index for inline linking."""
     idx_path = Path(__file__).parent.parent / 'output' / 'topic_index.json'
     if idx_path.exists():
-        with open(idx_path) as f:
+        with open(idx_path, encoding='utf-8') as f:
             return json.load(f)
     return {}
 
@@ -867,7 +867,7 @@ document.querySelectorAll('.score-clip').forEach(function(clip) {{
 </html>"""
 
     output_path.parent.mkdir(exist_ok=True)
-    with open(output_path, "w") as f:
+    with open(output_path, "w", encoding='utf-8') as f:
         f.write(html)
 
     return output_path

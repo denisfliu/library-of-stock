@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Queue management for stock guide generation.
 
 Two queues:
@@ -6,12 +6,12 @@ Two queues:
   - second_pass: Existing topics to enrich/deepen
 
 Usage:
-  python3 lib/topic_queue.py add-first "Frida Kahlo" --category "Fine Arts" --diff "7,8,9,10"
-  python3 lib/topic_queue.py add-second "Thomas Cole" --reason "sparse"
-  python3 lib/topic_queue.py list
-  python3 lib/topic_queue.py pop-first 10
-  python3 lib/topic_queue.py pop-second 10
-  python3 lib/topic_queue.py status          # JSON summary for index page
+  python lib/topic_queue.py add-first "Frida Kahlo" --category "Fine Arts" --diff "7,8,9,10"
+  python lib/topic_queue.py add-second "Thomas Cole" --reason "sparse"
+  python lib/topic_queue.py list
+  python lib/topic_queue.py pop-first 10
+  python lib/topic_queue.py pop-second 10
+  python lib/topic_queue.py status          # JSON summary for index page
 """
 import json, sys, re
 from pathlib import Path
@@ -24,14 +24,14 @@ SECOND_PASS = ROOT / 'queue' / 'queue_second_pass.json'
 
 def _load(path):
     if path.exists():
-        with open(path) as f:
+        with open(path, encoding='utf-8') as f:
             return json.load(f)
     return {"queue": []}
 
 
 def _save(path, data):
     path.parent.mkdir(exist_ok=True)
-    with open(path, 'w') as f:
+    with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
@@ -70,7 +70,7 @@ def add_second(topic, reason='', difficulties='7,8,9,10'):
         print(f'Warning: no analysis JSON found for {topic} ({slug}). Use first pass instead?')
     category = ''
     if analysis_file.exists():
-        with open(analysis_file) as f:
+        with open(analysis_file, encoding='utf-8') as f:
             cat_data = json.load(f)
         category = cat_data.get('category', '')
     data['queue'].append({

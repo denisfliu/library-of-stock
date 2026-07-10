@@ -36,7 +36,7 @@ Reference `categories.md` (project root) for valid category/subcategory names.
 
 **Text mentions** — if the page is sparse (<10 original tossups+bonuses or <4 work sections):
 ```bash
-python3 lib/run.py "TOPIC" "5,6,7,8,9,10" --mentions --outdir output/{slug}
+python lib/run.py "TOPIC" "5,6,7,8,9,10" --mentions --outdir output/{slug}
 ```
 
 **Subitem answerline queries** — for each major work listed in the analysis (skip "General / Biographical", "Other Works"), query it directly. Strip dates and parentheticals before querying:
@@ -44,7 +44,7 @@ python3 lib/run.py "TOPIC" "5,6,7,8,9,10" --mentions --outdir output/{slug}
 - "Vltava / The Moldau" -> "The Moldau"
 
 ```bash
-python3 lib/run.py "WORK NAME" "7,8,9,10" --outdir output/{slug}
+python lib/run.py "WORK NAME" "7,8,9,10" --outdir output/{slug}
 ```
 For sparse topics, expand to difficulties 5-6. Skip works with 5+ clues already. If 0 results, skip.
 
@@ -106,7 +106,7 @@ Generate cards for any new clues added during this pass. Append to existing `car
 ## Step 8: Render
 
 ```bash
-python3 -c "from lib.render.render import render_html; import json; f=open('output/{slug}/analysis.json'); a=json.load(f); render_html(a, 'output/{slug}/stock.html')"
+python -c "from lib.render.render import render_html; import json; f=open('output/{slug}/analysis.json'); a=json.load(f); render_html(a, 'output/{slug}/stock.html')"
 ```
 
 ## Data Fetching Rules

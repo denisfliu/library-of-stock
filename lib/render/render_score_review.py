@@ -2,7 +2,7 @@
 render_score_review.py — Generate a consolidated review page for all score clues.
 
 Usage:
-    python3 lib/render_score_review.py
+    python lib/render_score_review.py
     # Output: dev/score_clues_review.html
 """
 
@@ -21,7 +21,7 @@ def collect_clues():
     seen_abc = set()
     clues = []
     for f in sorted(OUTPUT_DIR.glob("*/analysis.json")):
-        data = json.load(open(f))
+        data = json.load(open(f, encoding='utf-8'))
         topic = data.get("topic", "")
         slug = f.parent.name
         for i, c in enumerate(data.get("score_clues", [])):

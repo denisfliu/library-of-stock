@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Single source of truth for all image URL operations.
 
 ALL image URLs must go through this module. Never construct or write
@@ -12,10 +12,15 @@ Usage:
     if url:
         set_work_image(analysis_data, "The Great Wave off Kanagawa", url)
 """
-import requests, json, time, re, fcntl
+import sys
+import requests, json, time, re
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(ROOT))
+
+from lib.common import file_lock
+
 CACHE_FILE = ROOT / 'cache' / 'image_urls.json'
 LOCK_FILE = ROOT / 'cache' / '.images.lock'
 
@@ -39,11 +44,11 @@ def _get_session():
     return _session
 
 
-def _load_cache():
+def _load_cache(force=False):
     global _cache
-    if _cache is None:
+    if _cache is None or force:
         if CACHE_FILE.exists():
-            with open(CACHE_FILE) as f:
+            with open(CACHE_FILE, encoding='utf-8') as f:
                 _cache = json.load(f)
         else:
             _cache = {}
@@ -53,7 +58,7 @@ def _load_cache():
 def _save_cache():
     if _cache is not None:
         CACHE_FILE.parent.mkdir(exist_ok=True)
-        with open(CACHE_FILE, 'w') as f:
+        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
             json.dump(_cache, f, indent=2, ensure_ascii=False)
 
 
@@ -179,14 +184,14 @@ PENDING_FILE = ROOT / 'cache' / 'pending_images.json'
 
 def _load_pending():
     if PENDING_FILE.exists():
-        with open(PENDING_FILE) as f:
+        with open(PENDING_FILE, encoding='utf-8') as f:
             return json.load(f)
     return {}
 
 
 def _save_pending(pending):
     PENDING_FILE.parent.mkdir(exist_ok=True)
-    with open(PENDING_FILE, 'w') as f:
+    with open(PENDING_FILE, 'w', encoding='utf-8') as f:
         json.dump(pending, f, indent=2, ensure_ascii=False)
 
 
@@ -211,19 +216,13 @@ def find_image(work_name, artist_name):
         return cache[cache_key] or None
 
     # Acquire file lock so only one process hits Wikimedia at a time
-    LOCK_FILE.parent.mkdir(exist_ok=True)
-    lock_fd = open(LOCK_FILE, 'w')
-    fcntl.flock(lock_fd, fcntl.LOCK_EX)
-    try:
+    with file_lock(LOCK_FILE):
         # Re-check cache after acquiring lock (another process may have found it)
-        cache = _load_cache()
+        cache = _load_cache(force=True)
         if cache_key in cache:
             return cache[cache_key] or None
 
         return _search_and_validate(work_name, artist_name, cache_key, cache)
-    finally:
-        fcntl.flock(lock_fd, fcntl.LOCK_UN)
-        lock_fd.close()
 
 
 def _search_and_validate(work_name, artist_name, cache_key, cache):
@@ -300,7 +299,7 @@ def set_work_image(data, work_name, url):
 if __name__ == '__main__':
     import sys
     if len(sys.argv) < 3:
-        print('Usage: python3 lib/images.py "Painting Name" "Artist Name"')
+        print('Usage: python lib/images.py "Painting Name" "Artist Name"')
         sys.exit(1)
     painting = sys.argv[1]
     artist = sys.argv[2]
