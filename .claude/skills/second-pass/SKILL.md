@@ -110,7 +110,7 @@ python -c "from lib.render.render import render_html; import json; f=open('outpu
 
 ## Data Fetching Rules
 
-- **Always** use `lib/run.py` to fetch clues — never write clues.txt manually.
+- **Always** use `lib/run.py` to fetch clues — never write clue files manually. Read the `*_digest.txt` files it produces (clustered, counted); use `clues.txt` only for spot-checks.
 - **Always** pass `--outdir output/{slug}` for every `lib/run.py` call — never let subitem results land in their own top-level directories.
 - Never delete orphan cache directories — move their files into the correct parent directory.
 

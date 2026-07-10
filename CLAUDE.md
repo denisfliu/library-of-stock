@@ -51,11 +51,15 @@ python post_batch.py                       # after a batch: rebuild index + prin
 - `genre` is only set for:
   - Fine Arts > Other Fine Arts: specific type from categories.md (`Architecture`, `Film`, `Photography`, `Dance`, `Jazz`, `Musicals`, `Opera`, `Misc Arts`)
   - Science > Other Science: specific field (`Math`, `Astronomy`, `Computer Science`, `Earth Science`, `Engineering`, `Misc Science`)
+  - Social Science: alternate_subcategory (`Psychology`, `Anthropology`, `Economics`, `Linguistics`, `Sociology`, `Other Social Science`)
   - Leave as `""` for all other subcategories.
 - `year`: birth year for people, creation/publication year for works, start year for periods. Negative for BCE.
+- `year_end` (optional): end year for periods, wars, empires, movements — renders as a timeline span. Omit for people and single works.
+- `coordinates` (optional): `[lat, lon]` decimal degrees for Geography and place-anchored topics (buildings, monuments). Outside knowledge OK, like `year`.
+- `group` (optional): one clustering value per topic where the category supplement defines a vocabulary — science field ("Organic Chemistry"), mythology tradition ("Greek"), religion ("Buddhism"), philosophy school ("German Idealism").
 - `continent`: one of Africa, Asia, Europe, North America, Oceania, South America.
 - `country`: country the topic is primarily associated with.
-- `tags`: recognized movements/schools/styles only (e.g., `["Surrealism"]`). NOT broad geographic descriptors like "Japanese literature."
+- `tags`: recognized movements/schools/styles only (e.g., `["Surrealism"]`). NOT broad geographic descriptors like "Japanese literature." Don't duplicate the `group` value.
 
 ## Key Paths
 - `output/{slug}/analysis.json` — per-topic analysis data

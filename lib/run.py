@@ -17,6 +17,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.pipeline.digest import format_digest
 from lib.pipeline.fetch import fetch_topic, fetch_text_mentions
 from lib.pipeline.parse import parse_answer_clues, parse_text_mention_clues
 
@@ -228,23 +229,29 @@ def main():
                                    min_year=min_year, cache_dir=topic_dir)
         parsed = parse_text_mention_clues(data)
         output = format_text_mentions_for_analysis(parsed)
-        out_path = topic_dir / clue_filename
     else:
         # Standard answerline search
         data = fetch_topic(topic, difficulties=diffs, categories=categories,
                            min_year=min_year, cache_dir=topic_dir)
         parsed = parse_answer_clues(data)
         output = format_clues_for_analysis(parsed)
-        out_path = topic_dir / clue_filename
 
+    out_path = topic_dir / clue_filename
     with open(out_path, "w", encoding='utf-8') as f:
         f.write(output)
 
-    # Print only the header summary — agents read the saved file, so echoing
+    # Also write the clustered digest — the token-efficient file agents
+    # should analyze. The full text above stays for spot-checks/audits.
+    digest_text = format_digest(parsed)
+    digest_path = topic_dir / clue_filename.replace("clues.txt", "clues_digest.txt")
+    with open(digest_path, "w", encoding='utf-8') as f:
+        f.write(digest_text)
+
+    # Print only the header summary — agents read the saved files, so echoing
     # the full clue text to stdout would double their token cost.
-    print(f"\nClue output saved to {out_path}")
-    print(f"({len(output)} characters, ~{len(output)//4} tokens)")
-    print("\n" + "\n".join(output.splitlines()[:4]))
+    print(f"\nFull clue text: {out_path} ({len(output)} chars, ~{len(output)//4} tokens)")
+    print(f"ANALYZE THIS -> {digest_path} ({len(digest_text)} chars, ~{len(digest_text)//4} tokens)")
+    print("\n" + "\n".join(digest_text.splitlines()[:3]))
 
 
 if __name__ == "__main__":

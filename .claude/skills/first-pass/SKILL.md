@@ -57,7 +57,9 @@ These contain category-specific sectioning, indicator, and processing rules that
 
 ## Step 5: Analyze Clues
 
-Read `output/{slug}/clues.txt` and all cache JSONs. Apply category supplement rules throughout.
+Read `output/{slug}/clues_digest.txt` — clues pre-grouped by answerline and clustered by fact, with **computed counts: use them directly as each clue's `frequency`**. The answerline groups map onto your work sections. `clues.txt` holds the full unclustered text — consult it only when a cluster looks wrong or a singleton was truncated.
+
+If the digest is large (>100 KB — only the biggest canon topics), read it in sections with offset/limit, one answerline group at a time, building the analysis incrementally. Apply category supplement rules throughout.
 
 ### Filter irrelevant results
 Scan all tossups and bonuses. Discard any clearly about a different topic (check answerline). Note how many discarded.
