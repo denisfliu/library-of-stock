@@ -3,7 +3,7 @@
 Backfill cross_refs for topics that are missing them.
 Conservative approach: only match canonical names (not single-word aliases).
 
-Usage: python backfill_crossrefs.py [--dry-run]
+Usage: python lib/crossref/backfill_crossrefs.py [--dry-run]
 """
 
 import json
@@ -11,11 +11,8 @@ import re
 import sys
 from pathlib import Path
 
-DRY_RUN = '--dry-run' in sys.argv
-
-# Load topic index
-with open('output/topic_index.json', encoding='utf-8') as f:
-    index = json.load(f)
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from lib.common import OUTPUT_DIR, TOPIC_INDEX_FILE
 
 # Build CANONICAL-only search set:
 # - For topics: only include if name == entry['topic'] (exact canonical name)
@@ -97,20 +94,18 @@ def is_canonical(name, entry):
         return name == work and len(name.split()) >= 2
     return False
 
-searchable = {}
-for name, entry in index.items():
-    if name in SKIP_TERMS:
-        continue
-    if len(name) < MIN_LEN:
-        continue
-    if not is_canonical(name, entry):
-        continue
-    searchable[name] = entry
-
-# Sort by length descending (match longer names first, avoiding partial matches)
-search_names = sorted(searchable.keys(), key=len, reverse=True)
-
-print(f'Searchable canonical entries: {len(search_names)}')
+def build_searchable(index):
+    """Filter the topic index down to canonical, unambiguous names."""
+    searchable = {}
+    for name, entry in index.items():
+        if name in SKIP_TERMS:
+            continue
+        if len(name) < MIN_LEN:
+            continue
+        if not is_canonical(name, entry):
+            continue
+        searchable[name] = entry
+    return searchable
 
 
 def get_text_fields(d):
@@ -133,14 +128,35 @@ def get_text_fields(d):
     return '\n'.join(texts)
 
 
-def find_cross_refs(d, topic_name, topic_slug):
+# Words that may legitimately precede a single-word name without forming
+# a longer proper name ("The Raphael tradition" vs "Anton Raphael Mengs").
+_STOP_WORDS = {'The', 'A', 'An', 'And', 'Or', 'But', 'In', 'On',
+               'At', 'To', 'For', 'Of', 'By', 'As', 'Is', 'Was',
+               'His', 'Her', 'Their', 'Its', 'This', 'That', 'These'}
+
+
+def _is_part_of_longer_name(masked_text, m):
+    """True if a single-word match sits between two capitalized words,
+    i.e. it is likely a middle chunk of a longer proper name
+    (e.g. 'Raphael' inside 'Anton Raphael Mengs')."""
+    pre_words = re.findall(r'\b\w+\b', masked_text[:m.start()].rstrip())
+    post_words = re.findall(r'\b\w+\b', masked_text[m.end():].lstrip())
+    prev_word = pre_words[-1] if pre_words else ''
+    next_word = post_words[0] if post_words else ''
+    return (prev_word and prev_word[0].isupper() and
+            next_word and next_word[0].isupper() and
+            len(prev_word) > 2 and len(next_word) > 2 and
+            prev_word not in _STOP_WORDS)
+
+
+def find_cross_refs(d, topic_name, topic_slug, searchable, search_names):
     """Find all cross-refs for a given analysis dict."""
     full_text = get_text_fields(d)
     # We'll mask matched spans with spaces to prevent shorter names from matching
     # within already-matched longer names
     masked_text = full_text
     found = []
-    seen_targets = set()  # (target_topic, target_work) to avoid duplicates
+    seen_targets = set()  # (topic, work) to avoid duplicates
 
     for name in search_names:
         entry = searchable[name]
@@ -151,46 +167,10 @@ def find_cross_refs(d, topic_name, topic_slug):
         if not m:
             continue
 
-        # For single-word names (topic type), verify the match isn't part of
-        # a longer multi-word name (e.g., 'Raphael' in 'Anton Raphael Mengs').
-        # Require that the match is either at start of text, end of text, or
-        # surrounded by non-alpha characters (punctuation, spaces, numbers).
-        if len(name.split()) == 1 and entry.get('type') == 'topic':
-            start = m.start()
-            end = m.end()
-            before = masked_text[start-1] if start > 0 else ' '
-            after = masked_text[end] if end < len(masked_text) else ' '
-            # If preceded by a capital letter word (another name word), skip
-            # More precisely: if preceded by an alphabetic character that's part of a word
-            if start > 0 and masked_text[start-1].isalpha():
-                # This match is preceded by a letter — could be a compound name
-                # Skip this match (e.g., 'Raphael' preceded by 'Anton ')
-                pass  # word boundary already handles this
-            # Check: if preceded by Title case word (another name), it's a full name
-            # Look back for the previous word
-            pre_match = masked_text[:start].rstrip()
-            pre_words = re.findall(r'\b\w+\b', pre_match)
-            if pre_words:
-                prev_word = pre_words[-1]
-                # If prev word is a capitalized word (potential first name) and
-                # next part is also a word (potential last name), this is risky
-                post_match = masked_text[end:].lstrip()
-                post_words = re.findall(r'\b\w+\b', post_match)
-                next_word = post_words[0] if post_words else ''
-                # If surrounded by capitalized words, it's likely a middle name
-                if (prev_word and prev_word[0].isupper() and
-                    next_word and next_word[0].isupper() and
-                    len(prev_word) > 2 and len(next_word) > 2):
-                    # e.g., 'Anton Raphael Mengs' — skip
-                    # But not 'The Raphael tradition' — 'The' is too common
-                    # Actually check: is prev_word a likely first name?
-                    # Simple heuristic: if prev_word is not in a small stop-word set
-                    stop_words = {'The', 'A', 'An', 'And', 'Or', 'But', 'In', 'On',
-                                  'At', 'To', 'For', 'Of', 'By', 'As', 'Is', 'Was',
-                                  'His', 'Her', 'Their', 'Its', 'This', 'That', 'These'}
-                    if prev_word not in stop_words:
-                        masked_text = re.sub(pattern, ' ' * len(name), masked_text)
-                        continue
+        if (len(name.split()) == 1 and entry.get('type') == 'topic'
+                and _is_part_of_longer_name(masked_text, m)):
+            masked_text = re.sub(pattern, ' ' * len(name), masked_text)
+            continue
 
         # Always mask this name to prevent shorter sub-names from re-matching
         masked_text = re.sub(pattern, ' ' * len(name), masked_text)
@@ -205,73 +185,77 @@ def find_cross_refs(d, topic_name, topic_slug):
         if name in topic_name:
             continue
 
-        target_topic = entry['topic']
-        target_slug = entry['slug']
         entry_type = entry['type']
-        target_work = entry.get('work') if entry_type == 'work' else None
+        work = entry.get('work') if entry_type == 'work' else None
 
         # Dedup key
-        dedup_key = (target_topic, target_work)
+        dedup_key = (entry['topic'], work)
         if dedup_key in seen_targets:
             continue
         seen_targets.add(dedup_key)
 
-        ref = {
+        found.append({
             'name': name,
-            'topic': target_topic,
-            'slug': target_slug,
-            'work': target_work,
+            'topic': entry['topic'],
+            'slug': entry['slug'],
+            'work': work,
             'type': entry_type,
             'exists': True,
-        }
-        found.append(ref)
+        })
 
     return found
 
 
-def get_slug(filepath, d):
-    """Get slug from filepath."""
-    return filepath.parent.name
+def main():
+    dry_run = '--dry-run' in sys.argv
 
+    with open(TOPIC_INDEX_FILE, encoding='utf-8') as f:
+        index = json.load(f)
 
-# Find all topics missing cross_refs
-missing_files = []
-for f in sorted(Path('output').glob('*/analysis.json')):
-    d = json.load(open(f, encoding='utf-8'))
-    if not d.get('cross_refs'):
-        missing_files.append((f, d))
+    searchable = build_searchable(index)
+    # Sort by length descending (match longer names first, avoiding partial matches)
+    search_names = sorted(searchable.keys(), key=len, reverse=True)
+    print(f'Searchable canonical entries: {len(search_names)}')
 
-print(f'Found {len(missing_files)} topics missing cross_refs')
-print()
+    # Find all topics missing cross_refs
+    missing_files = []
+    for f in sorted(OUTPUT_DIR.glob('*/analysis.json')):
+        with open(f, encoding='utf-8') as fh:
+            d = json.load(fh)
+        if not d.get('cross_refs'):
+            missing_files.append((f, d))
 
-updated = 0
-no_refs_found = []
+    print(f'Found {len(missing_files)} topics missing cross_refs')
+    print()
 
-for filepath, d in missing_files:
-    topic_name = d.get('topic', filepath.stem)
-    topic_slug = get_slug(filepath, d)
-    refs = find_cross_refs(d, topic_name, topic_slug)
+    updated = 0
+    no_refs_found = []
 
-    if refs:
+    for filepath, d in missing_files:
+        topic_name = d.get('topic', filepath.stem)
+        topic_slug = filepath.parent.name
+        refs = find_cross_refs(d, topic_name, topic_slug, searchable, search_names)
+
         d['cross_refs'] = refs
-        if not DRY_RUN:
+        if not dry_run:
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(d, f, indent=2, ensure_ascii=False)
-        updated += 1
-        print(f'  {topic_name}: {len(refs)} refs')
-        for r in refs[:3]:
-            print(f'    -> {r["name"]!r} ({r["topic"]})')
-    else:
-        d['cross_refs'] = []
-        if not DRY_RUN:
-            with open(filepath, 'w', encoding='utf-8') as f:
-                json.dump(d, f, indent=2, ensure_ascii=False)
-        no_refs_found.append(topic_name)
-        print(f'  {topic_name}: (no external refs found)')
+        if refs:
+            updated += 1
+            print(f'  {topic_name}: {len(refs)} refs')
+            for r in refs[:3]:
+                print(f'    -> {r["name"]!r} ({r["topic"]})')
+        else:
+            no_refs_found.append(topic_name)
+            print(f'  {topic_name}: (no external refs found)')
 
-print()
-print('Summary:')
-print(f'  Topics with refs added: {updated}')
-print(f'  Topics with no refs: {len(no_refs_found)}')
-if no_refs_found:
-    print(f'  Empty: {no_refs_found}')
+    print()
+    print('Summary:')
+    print(f'  Topics with refs added: {updated}')
+    print(f'  Topics with no refs: {len(no_refs_found)}')
+    if no_refs_found:
+        print(f'  Empty: {no_refs_found}')
+
+
+if __name__ == '__main__':
+    main()

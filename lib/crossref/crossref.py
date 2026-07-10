@@ -5,10 +5,15 @@ Maintains output/topic_index.json — a lookup of all topics and works.
 The LLM uses this during analysis to add cross_refs to each page.
 
 Usage:
-    python lib/crossref.py                    # rebuild index
-    python lib/crossref.py --lookup "Kant"    # look up a name
-    python lib/crossref.py --lookup "Guernica"
+    python lib/crossref/crossref.py                    # rebuild index
+    python lib/crossref/crossref.py --lookup "Kant"    # look up a name
+    python lib/crossref/crossref.py --lookup "Guernica"
 """
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
+import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+
 import json, re, sys
 from pathlib import Path
 

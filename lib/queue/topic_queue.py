@@ -13,6 +13,11 @@ Usage:
   python lib/topic_queue.py pop-second 10
   python lib/topic_queue.py status          # JSON summary for index page
 """
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
+import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+
 import json, sys, re
 from pathlib import Path
 from datetime import date

@@ -14,7 +14,8 @@ import sys
 from html import escape
 from pathlib import Path
 
-OUTPUT_DIR = Path("output")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from lib.common import OUTPUT_DIR
 
 
 def _synthesize_image_cards(analysis: dict, cards: list) -> list:
@@ -116,7 +117,7 @@ def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
     rec_tags = list(dict.fromkeys(rec_tags))  # dedupe, preserve order
 
     has_score_clips = bool(analysis.get("score_clues"))
-    abcjs_script = '<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>' if has_score_clips else ''
+    abcjs_script = '<script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.4/dist/abcjs-basic-min.js"></script>' if has_score_clips else ''
 
     # Add mp3_v (mtime-based cache buster) to each score clip so JS can use it
     score_clues_with_v = []
@@ -915,7 +916,7 @@ function getCardImages(card) {{
 function getImgs(card, side) {{
     const imgs = getCardImages(card);
     return imgs.filter(img => img.side === side)
-        .map(img => `<img src="${{img.url}}" style="max-height:60px;max-width:100px;vertical-align:middle;margin:0.1rem;">`)
+        .map(img => `<img src="${{escHtml(img.url)}}" style="max-height:60px;max-width:100px;vertical-align:middle;margin:0.1rem;">`)
         .join('');
 }}
 
@@ -927,8 +928,8 @@ function renderImageList() {{
     }}
     el.innerHTML = modalImages.map((img, i) => `
         <div class="img-list-item">
-            <img src="${{img.url}}" onerror="this.style.display='none'">
-            <div class="img-info">${{img.url.startsWith('data:') ? '(pasted image)' : img.url.split('/').pop().substring(0, 40)}}</div>
+            <img src="${{escHtml(img.url)}}" onerror="this.style.display='none'">
+            <div class="img-info">${{img.url.startsWith('data:') ? '(pasted image)' : escHtml(img.url.split('/').pop().substring(0, 40))}}</div>
             <span class="img-side" style="cursor:pointer;" onclick="toggleImgSide(${{i}})" title="Click to toggle front/back">${{img.side}}</span>
             <span class="img-remove" onclick="modalImages.splice(${{i}},1);renderImageList();">&times;</span>
         </div>
@@ -962,8 +963,8 @@ function renderModalPalette() {{
         '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;">' +
         paletteImages.map((img, i) => `
             <div style="position:relative;cursor:pointer;border:1px solid #3a3f47;border-radius:3px;overflow:hidden;"
-                 onclick="addPaletteImgToModal(${{i}})" title="${{img.label}}">
-                <img src="${{img.url}}" style="max-height:50px;max-width:80px;display:block;" onerror="this.parentElement.style.display='none'">
+                 onclick="addPaletteImgToModal(${{i}})" title="${{escHtml(img.label)}}">
+                <img src="${{escHtml(img.url)}}" style="max-height:50px;max-width:80px;display:block;" onerror="this.parentElement.style.display='none'">
             </div>
         `).join('') + '</div>';
 }}
@@ -1113,8 +1114,8 @@ function renderPalette() {{
         return;
     }}
     grid.innerHTML = paletteImages.map((img, i) => `
-        <div class="palette-img ${{i === selectedPaletteIdx ? 'selected' : ''}}" onclick="selectPaletteImg(${{i}})" title="${{img.label}}">
-            <img src="${{img.url}}" onerror="this.parentElement.style.display='none'">
+        <div class="palette-img ${{i === selectedPaletteIdx ? 'selected' : ''}}" onclick="selectPaletteImg(${{i}})" title="${{escHtml(img.label)}}">
+            <img src="${{escHtml(img.url)}}" onerror="this.parentElement.style.display='none'">
             <span class="palette-remove" onclick="event.stopPropagation();removePaletteImg(${{i}})">&times;</span>
         </div>
     `).join('');

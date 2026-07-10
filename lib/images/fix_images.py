@@ -10,6 +10,11 @@ Usage:
     python lib/images/fix_images.py --retry          # retry previously failed lookups
     python lib/images/fix_images.py --delay 1        # custom delay (default 2s)
 """
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
+import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+
 import json, sys
 from pathlib import Path
 

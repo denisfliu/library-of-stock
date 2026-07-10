@@ -13,6 +13,9 @@ import sys
 from html import escape
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+
 
 def _sanitize(name: str) -> str:
     """Same normalization fetch.py uses for cache filenames."""
@@ -33,11 +36,16 @@ def _tab_label(cache_data: dict, is_mentions: bool) -> str:
 
 
 def _highlight_query(text: str, query: str) -> str:
-    """Wrap all case-insensitive occurrences of query in <mark> tags."""
+    """Wrap all case-insensitive occurrences of query in <mark> tags.
+
+    ``text`` is qbreader's HTML question text (it carries <b>/<i> power
+    markup by design, so it must NOT be escaped here). The lookahead
+    keeps matches out of tag internals, mirroring render.py's _linkify.
+    """
     if not query:
         return text
     return re.sub(
-        r'(' + re.escape(query) + r')',
+        r'(' + re.escape(query) + r')(?![^<]*>)',
         r'<mark>\1</mark>',
         text,
         flags=re.IGNORECASE,

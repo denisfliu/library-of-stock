@@ -8,21 +8,18 @@ Broken URLs are cleared from cache so fix_images.py can re-find them.
 Respects Wikimedia Retry-After headers per rate limit policy.
 
 Usage:
-    python lib/verify_images.py          # default 2s delay
-    python lib/verify_images.py 1        # 1s delay (faster)
+    python lib/images/verify_images.py          # default 2s delay
+    python lib/images/verify_images.py 1        # 1s delay (faster)
 """
-import requests, json, time, sys
+import json, time, sys
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
-CACHE_FILE = ROOT / 'cache' / 'image_urls.json'
+ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(ROOT))
 
-session = requests.Session()
-# Wikimedia User-Agent policy: BotName/version (URL; contact email)
-session.headers['User-Agent'] = (
-    'StockQB/1.0 (https://github.com/denisfliu/library-of-stock; '
-    'denisfliu@gmail.com)'
-)
+from lib.images.images import CACHE_FILE, _get_session
+
+session = _get_session()
 
 
 def check_url(url, delay, retries=2):
@@ -45,7 +42,7 @@ def check_url(url, delay, retries=2):
                 continue
             else:
                 return False  # 404, 403, etc = broken
-        except:
+        except Exception:
             if attempt < retries - 1:
                 time.sleep(delay * 2)
     return None  # couldn't determine
@@ -133,9 +130,9 @@ def main():
     print(f'Files modified: {len(files_modified)}', flush=True)
 
     if broken_urls:
-        print(f'\nRun `python lib/fix_images.py` to re-find cleared images.', flush=True)
+        print(f'\nRun `python lib/images/fix_images.py` to re-find cleared images.', flush=True)
     if rate_limited:
-        print(f'Re-run `python lib/verify_images.py` later to check remaining {rate_limited} URLs.', flush=True)
+        print(f'Re-run `python lib/images/verify_images.py` later to check remaining {rate_limited} URLs.', flush=True)
 
 
 if __name__ == '__main__':

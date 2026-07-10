@@ -14,6 +14,11 @@ Usage:
   python lib/queue/scan_redo.py --min-questions 15  # adjust threshold
   python lib/queue/scan_redo.py --json           # JSON output
 """
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
+import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+
 import json, sys, re
 from pathlib import Path
 

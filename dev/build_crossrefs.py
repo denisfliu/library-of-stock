@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 """Generate dev/crossrefs_data.json for the crossref graph visualization."""
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+
 
 import json
 import glob
@@ -26,7 +31,7 @@ def main():
         slug = os.path.basename(os.path.dirname(f))
         topic = d.get('topic', slug)
         category = d.get('category', 'Unknown')
-        refs = [r for r in d.get('cross_refs', []) if r.get('exists') and r.get('target_slug')]
+        refs = [r for r in d.get('cross_refs', []) if r.get('exists') and r.get('slug')]
 
         nodes[slug] = {
             'id': slug,
@@ -38,7 +43,7 @@ def main():
             in_degree[slug] = 0
 
         for r in refs:
-            target = r['target_slug']
+            target = r['slug']
             links.append({'source': slug, 'target': target})
             in_degree[target] = in_degree.get(target, 0) + 1
 

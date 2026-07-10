@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 """Generate dev/stats_data.json for the stats visualization page."""
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
+import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+
 
 import json
 import glob

@@ -11,6 +11,11 @@ Steps:
   3. Print ready-to-use Sonnet agent prompt (for semantic links the script can't catch)
   4. After Sonnet finishes, run: ./build.sh
 """
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent))
+import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+
 
 import json
 import re

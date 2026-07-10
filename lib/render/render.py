@@ -4,16 +4,18 @@ render.py — Generate HTML study guide from analysis data.
 Takes a structured analysis dict and renders it as a self-contained HTML file.
 """
 
-import hashlib, json, re
+import hashlib, json, re, sys
 from pathlib import Path
 from html import escape
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from lib.common import TOPIC_INDEX_FILE
 
 
 def _load_crossref_index():
     """Load the topic index for inline linking."""
-    idx_path = Path(__file__).parent.parent / 'output' / 'topic_index.json'
-    if idx_path.exists():
-        with open(idx_path, encoding='utf-8') as f:
+    if TOPIC_INDEX_FILE.exists():
+        with open(TOPIC_INDEX_FILE, encoding='utf-8') as f:
             return json.load(f)
     return {}
 
@@ -46,16 +48,16 @@ def _linkify(text, cross_refs, self_topic, escaped=True):
         pattern = r'(?<![/>])(\b' + re.escape(name_escaped) + r'\b)(?![^<]*>)'
 
         if ref.get('exists'):
-            slug = ref.get('slug') or ref.get('target_slug', '')
+            slug = ref.get('slug', '')
             href = f"../{slug}/stock.html"
             # If linking to a specific work within a page, add anchor
-            target_work = ref.get('target_work') or ref.get('work')
+            target_work = ref.get('work')
             if target_work:
                 anchor = re.sub(r'[^a-z0-9]+', '-', target_work.lower()).strip('-')
                 href += f"#{anchor}"
             replacement = f'<a href="{href}" class="crossref-inline">{name_escaped}</a>'
         else:
-            target = escape(ref.get('target_topic') or ref.get('topic') or name)
+            target = escape(ref.get('topic') or name)
             replacement = f'<span class="crossref-inline-red" title="No page yet: {target}">{name_escaped}</span>'
 
         new_text, count = re.subn(pattern, replacement, text, count=1, flags=re.IGNORECASE)
@@ -137,7 +139,9 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
 
     def _score_clip_html(clip: dict) -> str:
         """Render a single score clip as an inline block."""
-        abc_json = json.dumps(clip.get("abc", ""))
+        # html.escape preserves newlines, so dataset.abc yields real ABC
+        # line breaks (same as the JSON path in render_cards.py).
+        abc_attr = escape(clip.get("abc", ""))
         mp3 = clip.get("mp3", "")
         review_badge = ' <span class="review-badge" title="ABC needs review">⚠</span>' if clip.get("needs_review") else ""
         audio_el = ""
@@ -146,7 +150,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
             v = hashlib.md5(mp3_path.read_bytes()).hexdigest()[:8] if mp3_path.exists() else 0
             mp3_src = f"{escape(mp3)}?v={v}"
             audio_el = f'<audio controls preload="none" src="{mp3_src}" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio>'
-        return (f'<div class="score-clip" data-abc={abc_json}>'
+        return (f'<div class="score-clip" data-abc="{abc_attr}">'
                 f'<div class="score-clip-header">'
                 f'<span class="score-clip-label">Score clip{review_badge}</span>{audio_el}'
                 f'</div>'
@@ -178,7 +182,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                 unmatched_clips.append(clip)
 
         clues_html = ""
-        for clue in clue_list:
+        for ci, clue in enumerate(clue_list):
             freq = clue.get("frequency", 1)
             # Old schema uses string frequencies ("very common", "common")
             freq_display = f"{freq}x" if isinstance(freq, int) else str(freq)
@@ -203,7 +207,6 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                 tooltip_text = " | ".join(escape(ex) for ex in examples[:3])
                 ex_html = f'<span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">{tooltip_text}</span></span>'
 
-            ci = clue_list.index(clue)
             inline_clips = "".join(_score_clip_html(c) for c in clip_for_clue.get(ci, []))
             clues_html += f"""
             <tr class="clue-row">
@@ -261,14 +264,14 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         for ref in cross_refs:
             ref_name = ref.get('name', '')
             if ref.get('exists') and ref_name and ref_name.lower() in work_name_lower:
-                slug = ref.get('slug') or ref.get('target_slug', '')
+                slug = ref.get('slug', '')
                 href = f"../{slug}/stock.html"
                 # If the ref points to a work (not the topic itself), add anchor
-                target_work = ref.get('target_work')
+                target_work = ref.get('work')
                 if target_work:
                     anchor = re.sub(r'[^a-z0-9]+', '-', target_work.lower()).strip('-')
                     href += f"#{anchor}"
-                work_link_btn = f' <a href="{href}" class="work-link-btn" title="Go to {escape(ref.get("target_topic", ""))}">&rarr;</a>'
+                work_link_btn = f' <a href="{href}" class="work-link-btn" title="Go to {escape(ref.get("topic", ""))}">&rarr;</a>'
                 break
         # If no cross_ref match, check topic index directly for section names like
         # "Robert Henri (leader)" or "George Bellows" that have their own pages.
@@ -339,7 +342,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         </section>
         """
 
-    abcjs_script = '<script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.4.3/abcjs-basic-min.js"></script>' if has_score_clips else ""
+    abcjs_script = '<script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.4/dist/abcjs-basic-min.js"></script>' if has_score_clips else ""
 
     html = f"""<!DOCTYPE html>
 <html lang="en">

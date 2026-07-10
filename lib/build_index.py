@@ -1,18 +1,21 @@
 """
 build_index.py — Generate a static index.html for GitHub Pages.
 
-Scans output/ for *_stock.html files and creates an index page
-with search and category filtering. Run this before committing new guides.
+Scans output/*/stock.html and creates an index page with search and
+category filtering. Run this before committing new guides.
 
 Usage:
-    python build_index.py
+    python lib/build_index.py
 """
 
 import json
+import sys
 from datetime import datetime
+from html import escape
 from pathlib import Path
 
-OUTPUT_DIR = Path("output")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.common import ROOT, OUTPUT_DIR, QUEUE_DIR
 
 INDEX_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -174,7 +177,7 @@ h1 {
     outline: none;
     font-family: inherit;
 }
-.dropdown-search::placeholder {{ color: #555; }}
+.dropdown-search::placeholder { color: #555; }
 .dropdown-list {
     max-height: 250px;
     overflow-y: auto;
@@ -485,8 +488,22 @@ let selectedTags = new Set();
 let activeSort = 'alpha';
 
 // --- Helpers ---
+const escHtml = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const categories = [...new Set(guides.map(g => g.category).filter(Boolean))].sort();
 const allTags = [...new Set(guides.flatMap(g => g.tags || []))].sort();
+
+// Tag chips toggle via event delegation (inline onclick breaks on quotes in tag names)
+list.addEventListener('click', e => {
+    const tagEl = e.target.closest('.guide-tag');
+    if (!tagEl) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const t = tagEl.dataset.tag;
+    if (selectedTags.has(t)) selectedTags.delete(t); else selectedTags.add(t);
+    updateTagBtn();
+    buildTagList('');
+    update();
+});
 
 function setupDropdown(wrapId, btnId, panelId, searchId) {
     const wrap = document.getElementById(wrapId);
@@ -739,17 +756,17 @@ function render() {
         else if (g.continent) meta += ' &middot; ' + g.continent;
         const tagsHtml = (g.tags || []).map(t => {
             const isActive = selectedTags.has(t);
-            return `<span class="guide-tag${isActive ? ' active' : ''}" onclick="event.preventDefault();event.stopPropagation();if(selectedTags.has('${t}'))selectedTags.delete('${t}');else selectedTags.add('${t}');updateTagBtn();buildTagList('');update();">${t}</span>`;
+            return `<span class="guide-tag${isActive ? ' active' : ''}" data-tag="${escHtml(t)}">${escHtml(t)}</span>`;
         }).join('');
         return `
         <li class="guide-item">
-            <a href="${g.path}">
+            <a href="${escHtml(g.path)}">
                 <div class="guide-info">
-                    ${g.name}
+                    ${escHtml(g.name)}
                     <div class="guide-meta">${meta}</div>
                     <div class="guide-tags">${tagsHtml}</div>
                 </div>
-                <span class="guide-cat">${subLabel}</span>
+                <span class="guide-cat">${escHtml(subLabel)}</span>
             </a>
         </li>`;
     }).join('');
@@ -912,8 +929,8 @@ function showTimeline(label, guideList) {
         return `<div class="timeline-entry">
             <span class="timeline-year">${yearStr}</span>
             <span class="timeline-dot"></span>
-            <a href="${g.path}" class="timeline-link">${g.name}</a>
-            <span class="timeline-cat">${catLabel}${countryLabel}</span>
+            <a href="${escHtml(g.path)}" class="timeline-link">${escHtml(g.name)}</a>
+            <span class="timeline-cat">${escHtml(catLabel)}${countryLabel}</span>
         </div>`;
     }).join('');
 }
@@ -962,8 +979,8 @@ def build():
                     tags = data.get("tags", [])
                     if data.get("topic"):
                         name = data["topic"]
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"WARNING: could not read {analysis_json}: {e}", file=sys.stderr)
 
         mtime = datetime.fromtimestamp(f.stat().st_mtime).strftime("%Y-%m-%d")
         guide = {
@@ -983,27 +1000,33 @@ def build():
         guides.append(guide)
 
     # Queue data for index page
-    queue_first = json.loads(Path("queue/queue_first_pass.json").read_text(encoding='utf-8')) if Path("queue/queue_first_pass.json").exists() else {"queue": []}
-    queue_second = json.loads(Path("queue/queue_second_pass.json").read_text(encoding='utf-8')) if Path("queue/queue_second_pass.json").exists() else {"queue": []}
-    queue_redo = json.loads(Path("queue/queue_redo_first.json").read_text(encoding='utf-8')) if Path("queue/queue_redo_first.json").exists() else {"queue": []}
-    first_count = len(queue_first["queue"])
-    second_count = len(queue_second["queue"])
-    redo_count = len(queue_redo["queue"])
+    def _load_queue(name):
+        path = QUEUE_DIR / name
+        if not path.exists():
+            return []
+        return json.loads(path.read_text(encoding='utf-8')).get("queue", [])
+
+    queue_first = _load_queue("queue_first_pass.json")
+    queue_second = _load_queue("queue_second_pass.json")
+    queue_redo = _load_queue("queue_redo_first.json")
+    first_count = len(queue_first)
+    second_count = len(queue_second)
+    redo_count = len(queue_redo)
     total_count = first_count + second_count + redo_count
-    first_list = "".join(f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{item["topic"]}</li>' for item in queue_first["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
+    first_list = "".join(f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{escape(item["topic"])}</li>' for item in queue_first) or '<li style="color:#555;font-style:italic">Empty</li>'
 
     def _second_li(item):
         slug = item.get("slug", "")
-        topic = item["topic"]
+        topic = escape(item["topic"])
         if slug:
             return f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25"><a href="output/{slug}/stock.html" style="color:#9aa0a7;text-decoration:none;" onmouseover="this.style.color=\'#6b9eff\'" onmouseout="this.style.color=\'#9aa0a7\'">{topic}</a></li>'
         return f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{topic}</li>'
-    second_list = "".join(_second_li(item) for item in queue_second["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
+    second_list = "".join(_second_li(item) for item in queue_second) or '<li style="color:#555;font-style:italic">Empty</li>'
 
     tier_colors = {"definite": "#ff6b6b", "likely": "#ffa94d", "maybe": "#999"}
     def _redo_li(item):
         slug = item.get("slug", "")
-        topic = item["topic"]
+        topic = escape(item["topic"])
         tier = item.get("tier", "maybe")
         color = tier_colors.get(tier, "#999")
         stats = f'{item.get("works_before","?")}w / {item.get("questions_available","?")}Q'
@@ -1012,7 +1035,7 @@ def build():
         if slug:
             return f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25"><a href="output/{slug}/stock.html" style="color:#9aa0a7;text-decoration:none;" onmouseover="this.style.color=\'#6b9eff\'" onmouseout="this.style.color=\'#9aa0a7\'">{topic}</a>{badge}{detail}</li>'
         return f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{topic}{badge}{detail}</li>'
-    redo_list = "".join(_redo_li(item) for item in queue_redo["queue"]) or '<li style="color:#555;font-style:italic">Empty</li>'
+    redo_list = "".join(_redo_li(item) for item in queue_redo) or '<li style="color:#555;font-style:italic">Empty</li>'
 
     # Write shared guides data file for search_nav.js
     guides_js_path = OUTPUT_DIR / "guides_data.js"
@@ -1030,7 +1053,7 @@ def build():
     html = html.replace("SECOND_PASS_LIST", second_list)
     html = html.replace("REDO_PASS_LIST", redo_list)
 
-    out_path = Path("index.html")
+    out_path = ROOT / "index.html"
     with open(out_path, "w", encoding='utf-8') as f:
         f.write(html)
 

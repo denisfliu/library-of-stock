@@ -8,11 +8,12 @@ Usage:
 
 import hashlib
 import json
+import sys
 from html import escape
 from pathlib import Path
 
-OUTPUT_DIR = Path("output")
-DEV_DIR = Path("dev")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from lib.common import OUTPUT_DIR, DEV_DIR
 OUT_FILE = DEV_DIR / "score_clues_review.html"
 
 
