@@ -27,9 +27,39 @@ python lib/queues/batch_worker.py init "batch-$(date +%Y%m%d)" --first N --secon
 ```
 Adjust `--first` and `--second` counts based on the queue summary and the count given in $ARGUMENTS. This pops items from the global queues into `queue/current_batch.json`.
 
-## Step 3: Spawn Analysis Agents
+## Step 3: Spawn Analysis Agents (structured fan-out)
 
-For each agent slot (up to the agent count given in $ARGUMENTS, default 3, in parallel), spawn a sub-agent using the Agent tool. Each agent processes **one topic** then exits.
+Preferred: orchestrate with the **Workflow tool** so every topic gets a machine-checked self-verdict and shallow analyses are caught at run time, not by `scan_redo.py` afterwards. One agent per topic; agents claim work themselves via the locked queue, so over-provisioning slots is safe.
+
+```javascript
+export const meta = {
+  name: 'stock-batch',
+  description: 'Analyze queued topics; audit each self-check verdict',
+  phases: [{ title: 'Analyze' }, { title: 'Redo' }],
+}
+const SELF_CHECK = { type: 'object', required: ['topic', 'slug', 'status', 'works', 'cards', 'issues'],
+  properties: { topic: {type:'string'}, slug: {type:'string'},
+    status: {type:'string', enum:['done','empty_queue','failed']},
+    works: {type:'number'}, cards: {type:'number'},
+    issues: {type:'array', items:{type:'string'}} } }
+// args = { slots: N, passType: 'first'|'second', category: '...' }
+const prompt = `Follow the /${args.passType}-pass skill. Pop ONE topic with:
+python lib/queues/batch_worker.py pop ${args.passType} --category "${args.category}"
+If EMPTY, return status=empty_queue. Process the topic fully (fetch, analyze,
+cards to cards.json, render, mark complete), then return your self-check:
+works = work-section count, cards = card count, issues = any self-check
+failures you could not fix.`
+const results = (await parallel(Array.from({length: args.slots}, () => () =>
+  agent(prompt, { schema: SELF_CHECK, phase: 'Analyze' })))).filter(Boolean)
+const shallow = results.filter(r => r.status === 'done' && (r.works <= 1 || r.cards === 0 || r.issues.length))
+const redone = await parallel(shallow.map(s => () =>
+  agent(`The analysis for "${s.topic}" (output/${s.slug}/) is shallow: ${s.issues.join('; ') || 'works<=1 or cards=0'}.
+Follow the /second-pass skill to deepen it, then return the same self-check.`,
+    { schema: SELF_CHECK, phase: 'Redo' })))
+return { analyzed: results, redone }
+```
+
+Re-invoke the workflow (or add slots) until agents return `empty_queue`. Fallback if the Workflow tool is unavailable: spawn sub-agents with the Agent tool, one topic each, using the prompts below.
 
 **For each topic**, determine whether it's a first-pass or second-pass item (from the batch queue), then instruct the agent to follow the corresponding skill:
 
@@ -65,7 +95,10 @@ When an agent finishes, check the queue. If topics remain, spawn a replacement. 
 
 ## Step 4: Monitor
 
-Open `progress.html` (via `./serve.sh`) — auto-refreshes every 5s.
+```bash
+python lib/queues/batch_worker.py status
+```
+(With the Workflow orchestration, /workflows shows live per-agent progress too.)
 
 ## Step 5: Post-Batch
 
