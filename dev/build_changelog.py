@@ -25,8 +25,8 @@ OUTPUT = ROOT / 'dev' / 'changelog_data.json'
 
 # Commits that mass-modify analysis.json for non-content reasons
 SKIP_HASHES = {
-    '643630af',  # fixed cross ref links — touched 545 files
-    '0c294ad2',  # cross_refs schema migration (target_* -> slug/topic/work) — 663 files
+    'f8ad8558',  # fixed cross ref links — touched 545 files
+    '5dae2c78',  # cross_refs schema migration (target_* -> slug/topic/work) — 663 files
 }
 
 
@@ -48,7 +48,7 @@ def main():
     # One git call for the whole history: commit header lines followed by
     # per-file name-status lines for each commit.
     try:
-        raw = run(['git', 'log', '--format=%h|%ad', '--date=short',
+        raw = run(['git', 'log', '--format=%H|%ad', '--date=short',
                    '--name-status', '--', 'output/*/analysis.json'])
     except (subprocess.CalledProcessError, OSError) as e:
         print(f'WARNING: git log failed ({e}); leaving changelog unchanged')
