@@ -4,12 +4,13 @@ render.py — Generate HTML study guide from analysis data.
 Takes a structured analysis dict and renders it as a self-contained HTML file.
 """
 
-import hashlib, json, re, sys
+import json, re, sys
 from pathlib import Path
 from html import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from lib.common import TOPIC_INDEX_FILE
+from lib.common import TOPIC_INDEX_FILE, anchor_slug
+from lib.render.theme import ABCJS_SCRIPT_TAG, mp3_cache_buster
 
 
 def _load_crossref_index():
@@ -53,7 +54,7 @@ def _linkify(text, cross_refs, self_topic, escaped=True):
             # If linking to a specific work within a page, add anchor
             target_work = ref.get('work')
             if target_work:
-                anchor = re.sub(r'[^a-z0-9]+', '-', target_work.lower()).strip('-')
+                anchor = anchor_slug(target_work)
                 href += f"#{anchor}"
             replacement = f'<a href="{href}" class="crossref-inline">{name_escaped}</a>'
         else:
@@ -147,8 +148,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         audio_el = ""
         if mp3:
             mp3_path = output_path.parent / mp3
-            v = hashlib.md5(mp3_path.read_bytes()).hexdigest()[:8] if mp3_path.exists() else 0
-            mp3_src = f"{escape(mp3)}?v={v}"
+            mp3_src = f"{escape(mp3)}?v={mp3_cache_buster(mp3_path)}"
             audio_el = f'<audio controls preload="none" src="{mp3_src}" style="height:24px;vertical-align:middle;margin-left:0.4rem;"></audio>'
         return (f'<div class="score-clip" data-abc="{abc_attr}">'
                 f'<div class="score-clip-header">'
@@ -269,7 +269,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                 # If the ref points to a work (not the topic itself), add anchor
                 target_work = ref.get('work')
                 if target_work:
-                    anchor = re.sub(r'[^a-z0-9]+', '-', target_work.lower()).strip('-')
+                    anchor = anchor_slug(target_work)
                     href += f"#{anchor}"
                 work_link_btn = f' <a href="{href}" class="work-link-btn" title="Go to {escape(ref.get("topic", ""))}">&rarr;</a>'
                 break
@@ -292,7 +292,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                         break
 
         # Generate anchor ID from work name
-        anchor_id = re.sub(r'[^a-z0-9]+', '-', work_name_raw.lower()).strip('-')
+        anchor_id = anchor_slug(work_name_raw)
 
         works_html += f"""
         <details class="work" id="{anchor_id}" open>
@@ -342,7 +342,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         </section>
         """
 
-    abcjs_script = '<script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.4/dist/abcjs-basic-min.js"></script>' if has_score_clips else ""
+    abcjs_script = ABCJS_SCRIPT_TAG if has_score_clips else ""
 
     html = f"""<!DOCTYPE html>
 <html lang="en">

@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from lib.common import OUTPUT_DIR, TOPIC_INDEX_FILE
+from lib.common import TOPIC_INDEX_FILE, iter_analyses
 
 # Build CANONICAL-only search set:
 # - For topics: only include if name == entry['topic'] (exact canonical name)
@@ -219,11 +219,9 @@ def main():
 
     # Find all topics missing cross_refs
     missing_files = []
-    for f in sorted(OUTPUT_DIR.glob('*/analysis.json')):
-        with open(f, encoding='utf-8') as fh:
-            d = json.load(fh)
+    for _slug, path, d in iter_analyses():
         if not d.get('cross_refs'):
-            missing_files.append((f, d))
+            missing_files.append((path, d))
 
     print(f'Found {len(missing_files)} topics missing cross_refs')
     print()

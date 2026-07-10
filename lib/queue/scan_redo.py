@@ -17,7 +17,7 @@ Usage:
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
-import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.common import iter_analyses
 
 import json, sys, re
 from pathlib import Path
@@ -101,10 +101,7 @@ def scan(min_questions=10, max_works=3):
     """Scan all topics and return ranked redo candidates."""
     candidates = []
 
-    for analysis_path in sorted(OUTPUT.glob('*/analysis.json')):
-        slug = analysis_path.parent.name
-        with open(analysis_path, encoding='utf-8') as f:
-            data = json.load(f)
+    for slug, analysis_path, data in iter_analyses():
 
         topic = data.get('topic', slug)
         works = data.get('works', [])

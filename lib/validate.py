@@ -30,7 +30,6 @@ def run_checks() -> list[str]:
             continue
 
         topic = analysis.get("topic", f.parent.name)
-        topic_key = f.parent.name
 
         # 1. Missing summary
         if not analysis.get("summary", "").strip():
@@ -48,7 +47,6 @@ def run_checks() -> list[str]:
             isinstance(w.get("image"), dict) and w["image"].get("url")
             for w in analysis.get("works", [])
         )
-        has_image_card = any(c.get("type") == "image" for c in cards)
         # After Tier 1, render_cards.py synthesizes these at render time — not a JSON-level issue.
         # Only flag if the cards.html is also missing (meaning render failed entirely).
         cards_html = f.parent / "cards.html"

@@ -34,3 +34,44 @@ def file_lock(path: Path) -> FileLock:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     return FileLock(str(path))
+
+
+# Work-section names that are groupings rather than real works. Used when
+# counting "real" works and when deciding which sections to skip in
+# image lookup / crossref indexing.
+SKIP_WORK_NAME_FRAGMENTS = ("General", "Biographical", "Other Works", "Other ")
+
+
+def is_real_work(work: dict) -> bool:
+    """True if a work section is an actual work, not a catch-all grouping."""
+    name = work.get("name", "")
+    return not any(fragment in name for fragment in SKIP_WORK_NAME_FRAGMENTS)
+
+
+def anchor_slug(name: str) -> str:
+    """Anchor id for a work section, as used in stock.html links."""
+    import re
+    return re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+
+
+def topic_slug(topic: str) -> str:
+    """Directory slug for a topic: full canonical name, lowercased,
+    spaces to underscores (accents preserved)."""
+    return topic.strip().lower().replace(' ', '_')
+
+
+def iter_analyses(warn=True):
+    """Yield (slug, json_path, data) for every output/*/analysis.json.
+
+    Corrupt files are skipped with a warning instead of aborting the run.
+    """
+    import json
+    for json_path in sorted(OUTPUT_DIR.glob('*/analysis.json')):
+        try:
+            with open(json_path, encoding='utf-8') as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            if warn:
+                print(f'WARNING: skipping {json_path}: {e}', file=sys.stderr)
+            continue
+        yield json_path.parent.name, json_path, data

@@ -3,11 +3,10 @@
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
-import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.common import iter_analyses
 
 
 import json
-import glob
 import os
 from collections import defaultdict
 
@@ -15,8 +14,8 @@ OUTPUT_DIR = os.path.join(os.path.dirname(__file__), '..', 'output')
 OUT_FILE = os.path.join(os.path.dirname(__file__), 'stats_data.json')
 
 def main():
-    files = sorted(glob.glob(os.path.join(OUTPUT_DIR, '*/analysis.json')))
-    print(f"Reading {len(files)} analysis.json files...")
+    analyses = list(iter_analyses())
+    print(f"Reading {len(analyses)} analysis.json files...")
 
     summary = {
         'total_topics': 0,
@@ -41,14 +40,8 @@ def main():
 
     score_clue_rows = []
 
-    for f in files:
-        with open(f, encoding='utf-8') as fp:
-            try:
-                d = json.load(fp)
-            except json.JSONDecodeError:
-                continue
+    for slug, _path, d in analyses:
 
-        slug = os.path.basename(os.path.dirname(f))
         cat = d.get('category') or 'Unknown'
         subcat = d.get('subcategory') or '(none)'
         works = d.get('works', [])

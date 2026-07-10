@@ -103,7 +103,6 @@ def main():
           flush=True)
 
     fixed = 0
-    cached = 0
     failed = 0
 
     for f, topic, work_name in needs_fix:

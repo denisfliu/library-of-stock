@@ -12,9 +12,9 @@ Usage:
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
-import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.common import iter_analyses
 
-import json, re, sys
+import json, re
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent.parent
@@ -25,10 +25,7 @@ def rebuild_index():
     """Rebuild topic_index.json from all analysis JSONs."""
     index = {}
 
-    for f in sorted((ROOT / 'output').glob('*/analysis.json')):
-        with open(f, encoding='utf-8') as fh:
-            data = json.load(fh)
-        slug = f.parent.name
+    for slug, _path, data in iter_analyses():
         topic = data.get('topic', '')
         cat = data.get('category', '')
 

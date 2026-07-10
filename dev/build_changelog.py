@@ -26,6 +26,7 @@ OUTPUT = ROOT / 'dev' / 'changelog_data.json'
 # Commits that mass-modify analysis.json for non-content reasons
 SKIP_HASHES = {
     '643630af',  # fixed cross ref links — touched 545 files
+    '0c294ad2',  # cross_refs schema migration (target_* -> slug/topic/work) — 663 files
 }
 
 

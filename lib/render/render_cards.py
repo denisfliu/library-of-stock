@@ -8,7 +8,6 @@ Usage:
     python render_cards.py <analysis_json>    # build one
 """
 
-import hashlib
 import json
 import sys
 from html import escape
@@ -16,6 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import OUTPUT_DIR
+from lib.render.theme import ABCJS_SCRIPT_TAG, mp3_cache_buster
 
 
 def _synthesize_image_cards(analysis: dict, cards: list) -> list:
@@ -100,12 +100,13 @@ def _synthesize_audio_cards(analysis: dict, cards: list) -> list:
     return cards + extra
 
 
-def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
+def render_cards_html(analysis: dict, output_path: str | Path, cards: list | None = None) -> Path:
     output_path = Path(output_path)
     topic = analysis.get("topic", "Unknown")
-    cards = _synthesize_audio_cards(
-        analysis, _synthesize_image_cards(analysis, analysis.get("cards", []))
-    )
+    if cards is None:
+        cards = _synthesize_audio_cards(
+            analysis, _synthesize_image_cards(analysis, analysis.get("cards", []))
+        )
     stock_link = "stock.html"
 
     # Build recommended tags from analysis metadata
@@ -117,7 +118,7 @@ def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
     rec_tags = list(dict.fromkeys(rec_tags))  # dedupe, preserve order
 
     has_score_clips = bool(analysis.get("score_clues"))
-    abcjs_script = '<script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.4/dist/abcjs-basic-min.js"></script>' if has_score_clips else ''
+    abcjs_script = ABCJS_SCRIPT_TAG if has_score_clips else ''
 
     # Add mp3_v (mtime-based cache buster) to each score clip so JS can use it
     score_clues_with_v = []
@@ -125,7 +126,7 @@ def render_cards_html(analysis: dict, output_path: str | Path) -> Path:
         clue = dict(clue)
         if clue.get("mp3"):
             mp3_path = output_path.parent / clue["mp3"]
-            clue["mp3_v"] = hashlib.md5(mp3_path.read_bytes()).hexdigest()[:8] if mp3_path.exists() else 0
+            clue["mp3_v"] = mp3_cache_buster(mp3_path)
         score_clues_with_v.append(clue)
 
     html = f"""<!DOCTYPE html>
@@ -1249,11 +1250,11 @@ def build_all(force: bool = False):
         has_clips = bool(analysis.get("score_clues"))
         if not analysis.get("cards") and not has_images and not has_clips:
             continue
-        render_cards_html(analysis, out_path)
-        cards_total = len(_synthesize_audio_cards(
+        cards = _synthesize_audio_cards(
             analysis, _synthesize_image_cards(analysis, analysis.get("cards", []))
-        ))
-        print(f"  {analysis.get('topic', '?')}: {cards_total} cards -> {out_path}")
+        )
+        render_cards_html(analysis, out_path, cards=cards)
+        print(f"  {analysis.get('topic', '?')}: {len(cards)} cards -> {out_path}")
         count += 1
     print(f"Built {count} card editor pages" + (f" ({skipped} up-to-date)" if skipped else ""))
 

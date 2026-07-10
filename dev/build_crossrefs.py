@@ -3,32 +3,24 @@
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
-import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.common import iter_analyses
 
 
 import json
-import glob
 import os
 
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), '..', 'output')
 OUT_FILE = os.path.join(os.path.dirname(__file__), 'crossrefs_data.json')
 
 def main():
-    files = sorted(glob.glob(os.path.join(OUTPUT_DIR, '*/analysis.json')))
-    print(f"Reading {len(files)} analysis.json files...")
+    analyses = list(iter_analyses())
+    print(f"Reading {len(analyses)} analysis.json files...")
 
     nodes = {}  # slug -> {id, label, category, out_degree}
     links = []  # {source, target}
     in_degree = {}  # slug -> count
 
-    for f in files:
-        with open(f, encoding='utf-8') as fp:
-            try:
-                d = json.load(fp)
-            except json.JSONDecodeError:
-                continue
-
-        slug = os.path.basename(os.path.dirname(f))
+    for slug, _path, d in analyses:
         topic = d.get('topic', slug)
         category = d.get('category', 'Unknown')
         refs = [r for r in d.get('cross_refs', []) if r.get('exists') and r.get('slug')]
@@ -47,8 +39,7 @@ def main():
             links.append({'source': slug, 'target': target})
             in_degree[target] = in_degree.get(target, 0) + 1
 
-    # Attach in_degree and filter to nodes that appear in the graph
-    active_slugs = set(n['id'] for n in nodes.values())
+    # Attach in_degree to nodes that appear in the graph
     # Also ensure target nodes that aren't source nodes get added (shouldn't happen if all exist, but just in case)
     for slug, count in in_degree.items():
         if slug not in nodes:

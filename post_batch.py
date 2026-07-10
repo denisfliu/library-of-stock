@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib.common import ROOT, OUTPUT_DIR, QUEUE_DIR
+from lib.common import ROOT, QUEUE_DIR, iter_analyses
 
 BATCH_FILE = QUEUE_DIR / 'current_batch.json'
 CARD_BATCH_SIZE = 4  # 3-5 topics per card agent
@@ -34,10 +34,7 @@ def resolve_completed_topics(completed):
     so match against every analysis.json by name and slug.
     """
     index = {}  # normalized name -> (canonical_topic, slug)
-    for json_path in OUTPUT_DIR.glob('*/analysis.json'):
-        slug = json_path.parent.name
-        with open(json_path, encoding='utf-8') as f:
-            data = json.load(f)
+    for slug, _path, data in iter_analyses():
         canonical = data.get('topic', '')
         index[canonical.lower()] = (canonical, slug)
         index[slug.replace('_', ' ')] = (canonical, slug)

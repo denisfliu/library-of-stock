@@ -6,14 +6,14 @@ Usage:
     # Output: dev/score_clues_review.html
 """
 
-import hashlib
 import json
 import sys
 from html import escape
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from lib.common import OUTPUT_DIR, DEV_DIR
+from lib.common import OUTPUT_DIR, DEV_DIR, iter_analyses
+from lib.render.theme import ABCJS_SCRIPT_TAG, mp3_cache_buster
 OUT_FILE = DEV_DIR / "score_clues_review.html"
 
 
@@ -21,10 +21,8 @@ def collect_clues():
     """Collect all score clues with ABC notation, deduplicating by abc content."""
     seen_abc = set()
     clues = []
-    for f in sorted(OUTPUT_DIR.glob("*/analysis.json")):
-        data = json.load(open(f, encoding='utf-8'))
+    for slug, _path, data in iter_analyses():
         topic = data.get("topic", "")
-        slug = f.parent.name
         for i, c in enumerate(data.get("score_clues", [])):
             abc = c.get("abc")
             if not abc:
@@ -37,7 +35,9 @@ def collect_clues():
             # mp3 is relative to topic dir (e.g. "audio/0.mp3")
             # dev/ pages need: ../output/{slug}/audio/0.mp3
             mp3_abs = OUTPUT_DIR / slug / mp3 if mp3 else None
-            mtime = hashlib.md5(mp3_abs.read_bytes()).hexdigest()[:8] if mp3_abs and mp3_abs.exists() else 0
+            # Empty string when the file is missing so the `if c["mp3_v"]`
+            # check below skips emitting a broken <audio> element.
+            mtime = mp3_cache_buster(mp3_abs) if mp3_abs and mp3_abs.exists() else ''
             mp3_rel = f"../output/{slug}/{mp3}" if mp3 else ""
             clues.append({
                 "topic": topic,
@@ -107,7 +107,7 @@ def render(clues):
 <head>
 <meta charset="utf-8">
 <title>Score Clues Review</title>
-<script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.4/dist/abcjs-basic-min.js"></script>
+{ABCJS_SCRIPT_TAG}
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f6; color: #1a1a2e; }}

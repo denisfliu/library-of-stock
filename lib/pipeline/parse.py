@@ -5,9 +5,7 @@ Takes the cached JSON from fetch.py and extracts individual clues with
 metadata, preparing structured input for analysis.
 """
 
-import json
 import re
-from pathlib import Path
 
 
 def _strip_html(text: str) -> str:
