@@ -23,6 +23,16 @@ python lib/queue/batch_worker.py status    # current batch progress
 python post_batch.py                       # after a batch: rebuild index + print agent prompts
 ```
 
+## Deferred improvements (roadmap for future sessions)
+
+- **Template consolidation**: the renderers embed large HTML/CSS strings; shared CSS lives in `lib/render/theme.py`. Long-term, move page templates to Jinja2 files.
+- **`getCardImages` is triplicated** — `lib/render/render_cards.py` (Python `_synthesize_image_cards`), its embedded JS, and `lib/js/anki_export.js`. Any card-image schema change needs all three.
+- **Tests + CI**: zero tests exist. Start with a golden-file render test (render a fixture topic, diff against a committed snapshot) and a GitHub Action running `./build.sh && python lib/validate.py --strict`.
+- **Single-load `build.py` orchestrator**: `build.sh` runs ~10 processes that each re-parse all analysis JSONs (~4x redundant parsing). Worth doing when the corpus outgrows the current ~23s forced build.
+- **Wikimedia batching**: `lib/images/` fetches thumbnails one filename at a time; the Commons API accepts pipe-joined `titles=`.
+- **qbreader pagination**: `fetch.py` retrieves only the first 25 results per query — big topics (Beethoven, Shakespeare) silently lose clues. Add pagination or raise `maxReturnLength`.
+- **Next-button ordering**: currently chronological-by-year within subcategory; science/philosophy concepts have no year. When yearless topics grow, switch to tag-based clustering so related concepts are adjacent.
+
 ## Universal Rules
 
 ### Analysis Quality

@@ -10,7 +10,7 @@ from html import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import TOPIC_INDEX_FILE, anchor_slug
-from lib.render.theme import ABCJS_SCRIPT_TAG, mp3_cache_buster
+from lib.render.theme import ABCJS_SCRIPT_TAG, base_css, mp3_cache_buster
 
 
 def _load_crossref_index():
@@ -352,28 +352,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
 {abcjs_script}
 <title>Stock: {topic}</title>
 <style>
-* {{ margin: 0; padding: 0; box-sizing: border-box; }}
-body {{
-    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    background: #101418;
-    color: #c8ccd1;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 1.5rem 1.5rem;
-    line-height: 1.5;
-    font-size: 14px;
-}}
-a {{ color: #6b9eff; }}
-a:hover {{ text-decoration: underline; }}
-h1 {{
-    font-family: 'Linux Libertine', Georgia, serif;
-    font-size: 1.8rem;
-    font-weight: normal;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0.25rem;
-    margin-bottom: 0.5rem;
-    color: #e0e0e0;
-}}
+{base_css()}
 .summary {{
     background: #1a1f25;
     border: 1px solid #3a3f47;

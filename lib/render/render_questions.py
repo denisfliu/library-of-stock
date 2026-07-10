@@ -15,6 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.render.theme import base_css
 
 
 def _sanitize(name: str) -> str:
@@ -160,28 +161,7 @@ def render_questions_html(cache_sources: "list[dict] | dict", output_path: str |
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Questions: {escape(topic)}</title>
 <style>
-* {{ margin: 0; padding: 0; box-sizing: border-box; }}
-body {{
-    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    background: #101418;
-    color: #c8ccd1;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 1.5rem 1.5rem;
-    line-height: 1.5;
-    font-size: 14px;
-}}
-a {{ color: #6b9eff; }}
-a:hover {{ text-decoration: underline; }}
-h1 {{
-    font-family: 'Linux Libertine', Georgia, serif;
-    font-size: 1.8rem;
-    font-weight: normal;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0.25rem;
-    margin-bottom: 0.5rem;
-    color: #e0e0e0;
-}}
+{base_css()}
 .back-link {{
     display: inline-block;
     margin-bottom: 1rem;

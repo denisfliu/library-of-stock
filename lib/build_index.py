@@ -16,6 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from lib.common import ROOT, OUTPUT_DIR, QUEUE_DIR
+from lib.render.theme import base_css
 
 INDEX_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -24,24 +25,7 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Stock Knowledge Guides</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
-    background: #101418;
-    color: #c8ccd1;
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem;
-}
-h1 {
-    font-family: 'Linux Libertine', Georgia, serif;
-    font-weight: normal;
-    font-size: 1.6rem;
-    color: #e0e0e0;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0.3rem;
-    margin-bottom: 1rem;
-}
+BASE_CSS
 .search {
     width: 100%;
     padding: 0.5rem 0.8rem;
@@ -1044,7 +1028,11 @@ def build():
         json.dump(guides, gf, ensure_ascii=False)
         gf.write(";\n")
 
-    html = INDEX_TEMPLATE.replace("GUIDE_DATA", json.dumps(guides))
+    html = INDEX_TEMPLATE.replace("BASE_CSS", base_css(
+        max_width='700px', body_padding='2rem 1.5rem',
+        type_scale=False, h1_size='1.6rem', h1_pad='0.3rem',
+        h1_margin='1rem', global_links=False))
+    html = html.replace("GUIDE_DATA", json.dumps(guides))
     html = html.replace("QUEUE_TOTAL", str(total_count))
     html = html.replace("FIRST_COUNT", str(first_count))
     html = html.replace("SECOND_COUNT", str(second_count))

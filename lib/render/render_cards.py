@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import OUTPUT_DIR
-from lib.render.theme import ABCJS_SCRIPT_TAG, mp3_cache_buster
+from lib.render.theme import ABCJS_SCRIPT_TAG, base_css, mp3_cache_buster
 
 
 def _synthesize_image_cards(analysis: dict, cards: list) -> list:
@@ -137,28 +137,7 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
 <title>Cards: {escape(topic)}</title>
 {abcjs_script}
 <style>
-* {{ margin: 0; padding: 0; box-sizing: border-box; }}
-body {{
-    font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
-    background: #101418;
-    color: #c8ccd1;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 1.5rem;
-    font-size: 14px;
-    line-height: 1.5;
-}}
-a {{ color: #6b9eff; text-decoration: none; }}
-a:hover {{ text-decoration: underline; }}
-h1 {{
-    font-family: 'Linux Libertine', Georgia, serif;
-    font-size: 1.6rem;
-    font-weight: normal;
-    color: #e0e0e0;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0.25rem;
-    margin-bottom: 0.5rem;
-}}
+{base_css(max_width='1100px', body_padding='1.5rem', h1_size='1.6rem', links_plain=True)}
 .toolbar {{
     display: flex;
     flex-wrap: wrap;

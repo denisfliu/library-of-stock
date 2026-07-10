@@ -1,8 +1,0 @@
-- [user_quizbowl.md](user_quizbowl.md) — Quizbowl player building a study tool, prefers interactive design collaboration; on Claude Max
-- [feedback_analysis_approach.md](feedback_analysis_approach.md) — How to run the stock analysis pipeline end-to-end; user is on Claude Max, I am the LLM
-- [feedback_card_quality.md](feedback_card_quality.md) — Card generation rules: use Artist not Painter, never leak answer on front, skip vague/circular clues
-- [feedback_post_batch.md](feedback_post_batch.md) — CRITICAL: run `post_batch.py` + Sonnet crossref agent after every batch; never skip; use post_batch.py to get topic list + prompt automatically
-- [feedback_image_pipeline.md](feedback_image_pipeline.md) — CRITICAL: Never guess URLs; use lib/images.py with three-way validation + LLM review; no images in parallel agents
-- [feedback_agent_batching.md](feedback_agent_batching.md) — Keep agent batches to 10 topics max (first pass), 5 (second pass); two-phase pipeline; mandatory self-check
-- [feedback_card_indicator_back.md](feedback_card_indicator_back.md) — Card back must name what the indicator describes; agents default to creator name too often
-- [project_next_button_ordering.md](project_next_button_ordering.md) — Next button orders by year (v1); needs tag-based clustering when science topics grow

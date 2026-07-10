@@ -26,6 +26,44 @@ PALETTE = {
 }
 
 
+def base_css(max_width='960px', body_padding='1.5rem 1.5rem',
+             type_scale=True, h1_size='1.8rem',
+             h1_pad='0.25rem', h1_margin='0.5rem',
+             links_plain=False, global_links=True) -> str:
+    """Shared page-header CSS: reset, body, links, h1.
+
+    Parameters cover the deliberate per-page differences (page width,
+    heading size, link underline style); everything else — palette, font
+    stacks, reset — is defined once here. Colors come from PALETTE.
+    """
+    p = PALETTE
+    type_rules = "\n    line-height: 1.5;\n    font-size: 14px;" if type_scale else ""
+    if global_links:
+        link_deco = " text-decoration: none;" if links_plain else ""
+        links = (f"a {{ color: {p['link']};{link_deco} }}\n"
+                 "a:hover { text-decoration: underline; }\n")
+    else:
+        links = ""
+    return f"""* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+body {{
+    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    background: {p['bg']};
+    color: {p['text']};
+    max-width: {max_width};
+    margin: 0 auto;
+    padding: {body_padding};{type_rules}
+}}
+{links}h1 {{
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: {h1_size};
+    font-weight: normal;
+    border-bottom: 1px solid {p['border']};
+    padding-bottom: {h1_pad};
+    margin-bottom: {h1_margin};
+    color: {p['text_bright']};
+}}"""
+
+
 def mp3_cache_buster(mp3_path: Path) -> str:
     """Short content hash for cache-busting audio URLs ('0' if missing)."""
     mp3_path = Path(mp3_path)

@@ -253,11 +253,11 @@ def main():
     with open(out_path, "w", encoding='utf-8') as f:
         f.write(output)
 
+    # Print only the header summary — agents read the saved file, so echoing
+    # the full clue text to stdout would double their token cost.
     print(f"\nClue output saved to {out_path}")
     print(f"({len(output)} characters, ~{len(output)//4} tokens)")
-
-    # Also print to stdout
-    print("\n" + output)
+    print("\n" + "\n".join(output.splitlines()[:4]))
 
 
 if __name__ == "__main__":
