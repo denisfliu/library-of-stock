@@ -1,16 +1,15 @@
 ---
 name: second-pass
 description: Enrich an existing analysis with additional data — fetch more clues, merge, audit cards, and re-render.
-arguments:
-  - name: topic
-    description: "Topic name (e.g., \"Smetana\", \"Emily Carr\")"
-  - name: category
-    description: "Optional category override. Auto-detected from existing analysis if omitted."
 ---
+
+**Arguments** (passed free-form after the skill name):
+- `topic` — Topic name (e.g., "Smetana", "Emily Carr")
+- `category` — Optional category override. Auto-detected from existing analysis if omitted.
 
 # Second Pass Enrichment
 
-You are **enriching an existing analysis** for "$ARGUMENTS.topic". The analysis JSON already exists — your job is to deepen it.
+You are **enriching an existing analysis** for the topic named in $ARGUMENTS. The analysis JSON already exists — your job is to deepen it.
 
 ## Step 1: Load Existing Analysis
 

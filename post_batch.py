@@ -6,16 +6,13 @@ Usage:
     python post_batch.py
 
 Steps:
-  1. Rebuild cross-ref index
-  2. Run lib/backfill_crossrefs.py (deterministic pass — catches mechanical name matches)
-  3. Print ready-to-use Sonnet agent prompt (for semantic links the script can't catch)
-  4. After Sonnet finishes, run: ./build.sh
-"""
-import sys as _sys
-from pathlib import Path as _Path
-_sys.path.insert(0, str(_Path(__file__).resolve().parent))
-import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+  1. Rebuild cross-ref index (lib/crossref/crossref.py)
+  2. Deterministic crossref backfill (lib/crossref/backfill_crossrefs.py)
+  3. Print card-agent prompts (chunked topics; agents follow the /cards skill)
+  4. Print the crossref-agent prompt (follows the /crossref skill)
 
+After BOTH agent kinds finish, run: ./build.sh
+"""
 
 import json
 import re
@@ -23,16 +20,52 @@ import subprocess
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
-from lib.pipeline.prompt_builder import build_card_prompt_batch
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.common import ROOT, OUTPUT_DIR, QUEUE_DIR
 
-ROOT = Path(__file__).parent
-BATCH_FILE = ROOT / 'queue' / 'current_batch.json'
+BATCH_FILE = QUEUE_DIR / 'current_batch.json'
+CARD_BATCH_SIZE = 4  # 3-5 topics per card agent
+
+
+def resolve_completed_topics(completed):
+    """Map completed batch items to (canonical topic, slug) via analysis JSONs.
+
+    Batch 'topic' strings may be mangled (short names, accents stripped),
+    so match against every analysis.json by name and slug.
+    """
+    index = {}  # normalized name -> (canonical_topic, slug)
+    for json_path in OUTPUT_DIR.glob('*/analysis.json'):
+        slug = json_path.parent.name
+        with open(json_path, encoding='utf-8') as f:
+            data = json.load(f)
+        canonical = data.get('topic', '')
+        index[canonical.lower()] = (canonical, slug)
+        index[slug.replace('_', ' ')] = (canonical, slug)
+
+    def substr_match(needle):
+        for key, val in index.items():
+            if needle in key or key in needle:
+                return val
+        return None
+
+    seen_slugs = set()
+    resolved = []
+    for item in completed:
+        raw_lower = item['topic'].strip().lower()
+        slug_clean = re.sub(r'[^a-z0-9]+', '_', raw_lower).strip('_')
+        match = (index.get(raw_lower)
+                 or index.get(slug_clean.replace('_', ' '))
+                 or substr_match(raw_lower))
+        if match and match[1] not in seen_slugs:
+            resolved.append(match)
+            seen_slugs.add(match[1])
+        # No match: mangled duplicate with no corresponding JSON — skip.
+    return resolved
 
 
 def main():
     if not BATCH_FILE.exists():
-        print("ERROR: queue/current_batch.json not found.")
+        print('ERROR: queue/current_batch.json not found.')
         sys.exit(1)
 
     with open(BATCH_FILE, encoding='utf-8') as f:
@@ -42,131 +75,70 @@ def main():
     in_progress = batch.get('in_progress', [])
 
     if in_progress:
-        print(f"WARNING: {len(in_progress)} topics still in progress:")
+        print(f'WARNING: {len(in_progress)} topics still in progress:')
         for item in in_progress:
-            print(f"  - {item['topic']}")
+            print(f'  - {item["topic"]}')
         print()
 
-    # Build a lookup from all analysis JSONs: normalized topic name -> (topic, slug)
-    output_dir = ROOT / 'output'
-    index = {}  # normalized name -> (canonical_topic, slug)
-    for json_path in output_dir.glob('*/analysis.json'):
-        slug = json_path.parent.name
-        with open(json_path, encoding='utf-8') as f:
-            data = json.load(f)
-        canonical = data.get('topic', '')
-        # Index by canonical name and by slug-derived name (handles accents, punctuation)
-        index[canonical.lower()] = (canonical, slug)
-        index[slug.replace('_', ' ')] = (canonical, slug)
-
-    # Resolve completed items to canonical topic names, deduplicate by slug
-    seen_slugs = set()
-    topics = []
-    for item in completed:
-        raw = item['topic']
-        # Try exact match, then slug-based match, then strip non-alpha match
-        raw_lower = raw.strip().lower()
-        slug_guess = raw_lower.replace(' ', '_')  # matches pipeline slug logic
-        slug_clean = re.sub(r'[^a-z0-9]+', '_', raw_lower).strip('_')
-
-        # Substring fallback: "Strange Loop" matches "A Strange Loop"
-        def _substr_match(needle):
-            for key, val in index.items():
-                if needle in key or key in needle:
-                    return val
-            return None
-
-        match = (index.get(raw_lower)
-                 or index.get(slug_guess.replace('_', ' '))
-                 or index.get(slug_clean.replace('_', ' '))
-                 or _substr_match(raw_lower))
-        if match:
-            canonical, slug = match
-            if slug not in seen_slugs:
-                topics.append(canonical)
-                seen_slugs.add(slug)
-        # If no match found, skip (mangled duplicate with no corresponding JSON)
-
+    topics = resolve_completed_topics(completed)
     if not topics:
-        print("No completed topics found in current batch.")
+        print('No completed topics found in current batch.')
         sys.exit(0)
 
-    # Infer single category if batch is homogeneous (enables supplement injection)
-    categories = {item.get('category') for item in completed if item.get('category')}
-    batch_category = categories.pop() if len(categories) == 1 else None
-
-    print(f"Batch: {batch.get('name', 'unknown')}")
-    print(f"Completed topics: {len(topics)}")
+    print(f'Batch: {batch.get("name", "unknown")}')
+    print(f'Completed topics: {len(topics)}')
 
     # Step 1: Rebuild cross-ref index
-    print("\n[1/4] Rebuilding cross-reference index...")
-    result = subprocess.run("python lib/crossref/crossref.py", shell=True, cwd=ROOT)
+    print('\n[1/4] Rebuilding cross-reference index...')
+    result = subprocess.run([sys.executable, 'lib/crossref/crossref.py'], cwd=ROOT)
     if result.returncode != 0:
-        print("ERROR: crossref rebuild failed")
+        print('ERROR: crossref rebuild failed')
         sys.exit(1)
 
     # Step 2: Deterministic backfill (fast, no LLM needed)
-    print("\n[2/4] Running deterministic crossref backfill (lib/crossref/backfill_crossrefs.py)...")
-    result = subprocess.run("python lib/crossref/backfill_crossrefs.py", shell=True, cwd=ROOT)
+    print('\n[2/4] Running deterministic crossref backfill...')
+    result = subprocess.run([sys.executable, 'lib/crossref/backfill_crossrefs.py'], cwd=ROOT)
     if result.returncode != 0:
-        print("ERROR: backfill_crossrefs.py failed")
+        print('ERROR: backfill_crossrefs.py failed')
         sys.exit(1)
 
-    topic_list_str = "\n".join(f"- {t}" for t in topics)
+    # Step 3: Card agent prompts (run in parallel with the crossref agent)
+    chunks = [topics[i:i + CARD_BATCH_SIZE]
+              for i in range(0, len(topics), CARD_BATCH_SIZE)]
+    print(f'\n[3/4] Launch {len(chunks)} card agent(s) '
+          f'({CARD_BATCH_SIZE} topics each) in parallel with the crossref agent:\n')
+    for idx, chunk in enumerate(chunks, 1):
+        topic_list = '\n'.join(f'- {name} -> output/{slug}/analysis.json'
+                               for name, slug in chunk)
+        print(f'--- Card agent {idx}/{len(chunks)} ({len(chunk)} topics) ---')
+        print('=' * 60)
+        print(f"""Follow the /cards skill for each of these {len(chunk)} topics, in order
+(working directory: {ROOT}):
 
-    # Step 3: Print card agent prompts (3–5 topics each) in parallel with crossref agent
-    CARD_BATCH_SIZE = 4  # 3–5 topics per card agent
+{topic_list}
 
-    # Resolve per-topic category and slug for batch grouping
-    topic_entries = []
-    for topic in topics:
-        slug = topic.lower().replace(' ', '_')
-        topic_category = batch_category
-        if not topic_category:
-            json_path = ROOT / 'output' / slug / 'analysis.json'
-            if json_path.exists():
-                with open(json_path, encoding='utf-8') as f:
-                    topic_category = json.load(f).get('category')
-        topic_entries.append({'topic': topic, 'slug': slug, 'category': topic_category})
-
-    # Chunk into groups of CARD_BATCH_SIZE
-    batches = [topic_entries[i:i + CARD_BATCH_SIZE]
-               for i in range(0, len(topic_entries), CARD_BATCH_SIZE)]
-
-    n_agents = len(batches)
-    print(f"\n[3/4] Launch {n_agents} card agent(s) ({CARD_BATCH_SIZE} topics each) "
-          f"in parallel with the crossref agent:\n")
-    for idx, batch in enumerate(batches, 1):
-        # Infer shared category if all topics in the chunk agree
-        chunk_cats = {e['category'] for e in batch if e.get('category')}
-        chunk_category = chunk_cats.pop() if len(chunk_cats) == 1 else None
-        print(f"--- Card agent {idx}/{n_agents} ({len(batch)} topics) ---")
-        print("=" * 60)
-        print(build_card_prompt_batch(batch, category=chunk_category))
-        print("=" * 60)
+Finish all topics before rendering. After the last topic:
+    python lib/render/render_cards.py
+Do NOT ask for confirmation.""")
+        print('=' * 60)
         print()
 
-    # Step 4: Print Sonnet crossref agent prompt
-    print("\n[4/4] Launch this Sonnet crossref backfill agent for richer semantic links:\n")
-    print("=" * 60)
+    # Step 4: Crossref agent prompt
+    topic_names = '\n'.join(f'- {name}' for name, _ in topics)
+    print('\n[4/4] Launch this crossref backfill agent for richer semantic links:\n')
+    print('=' * 60)
     print(f"""Follow the /crossref skill for full instructions.
 
-Add cross_refs to these topics (working directory: /home/laufey/code/stock):
-{topic_list_str}
+Add cross_refs to these topics (working directory: {ROOT}):
+{topic_names}
 
-For each topic:
-1. Read output/{{slug}}/analysis.json
-2. Read output/topic_index.json
-3. Scan all text fields for mentions of indexed topics/works
-4. Add cross_refs array
-5. Save the JSON
-
-Important: Don't modify any field except cross_refs. Don't add refs for the topic itself.
-Do not run any render scripts — the controller will run ./build.sh after you finish.""")
-    print("=" * 60)
+Important: Don't modify any field except cross_refs. Don't add refs for the
+topic itself. Do not run any render scripts — the controller runs ./build.sh
+after you finish.""")
+    print('=' * 60)
     print()
-    print("After BOTH agents finish, run:")
-    print("  ./build.sh")
+    print('After BOTH agents finish, run:')
+    print('  ./build.sh')
 
 
 if __name__ == '__main__':

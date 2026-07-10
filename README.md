@@ -34,10 +34,10 @@ library-of-stock/
 │   ├── build_index.py        # Generates index.html
 │   ├── rerender.py           # Re-render all stock.html from analysis.json
 │   ├── validate.py           # Post-build health checks
+│   ├── common.py             # Shared paths, UTF-8 stdio, portable file locking
 │   ├── pipeline/
 │   │   ├── fetch.py          # qbreader API client (rate-limited, cached)
-│   │   ├── parse.py          # Clue extraction from cached API JSON
-│   │   └── prompt_builder.py # Legacy prompt assembly (pre-skills; see docs_backup/)
+│   │   └── parse.py          # Clue extraction from cached API JSON
 │   ├── queue/
 │   │   ├── topic_queue.py    # Global first/second-pass queue management
 │   │   ├── batch_worker.py   # Batch queue pop/complete with file locking
@@ -61,7 +61,6 @@ library-of-stock/
 │
 ├── dev/                      # Dashboard data generators (stats, changelog, crossref graph)
 ├── queue/                    # Queue state (first pass, second pass, redo, current batch)
-├── docs_backup/              # Pre-skills-migration agent docs (historical reference)
 ├── output/                   # Generated content — one directory per topic (see below)
 └── cache/                    # Cached qbreader API responses (gitignored)
 ```

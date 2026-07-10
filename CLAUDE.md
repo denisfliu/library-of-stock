@@ -9,8 +9,8 @@ Quizbowl study guide generator. Fetches clues from qbreader, analyzes them, gene
 - Pipeline: `lib/pipeline/fetch.py` (qbreader API, cached) → `lib/pipeline/parse.py` (clue extraction) → `lib/run.py` (CLI wrapper producing `clues.txt`).
 - Queues: `lib/queue/topic_queue.py` (global first/second-pass queues), `lib/queue/batch_worker.py` (per-batch claim/complete). State lives in `queue/*.json`.
 - Cross-refs: `lib/crossref/crossref.py` rebuilds `output/topic_index.json`; `lib/crossref/backfill_crossrefs.py` adds mechanical links; the `/crossref` skill adds semantic ones.
-- Agent workflows live in `.claude/skills/` (`batch`, `first-pass`, `second-pass`, `cards`, `crossref` + category supplements). `docs_backup/` is the pre-skills version, kept for reference only.
-- `lib/pipeline/prompt_builder.py` predates the skills migration and reads from the deleted `docs/` directory — do not rely on it without fixing that.
+- Agent workflows are skills in `.claude/skills/<name>/SKILL.md`: `/batch`, `/first-pass`, `/second-pass`, `/cards`, `/crossref`, plus category supplements (`/literature`, `/vfa`, `/afa`, `/philosophy`, `/science`). These are the single source of truth for agent instructions.
+- `lib/common.py` provides `ROOT`/`OUTPUT_DIR`/`QUEUE_DIR`/etc., UTF-8 stdio, and `file_lock`. Every entry script imports it — new scripts should too.
 
 ## Common commands
 

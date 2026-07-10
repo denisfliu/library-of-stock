@@ -1,14 +1,14 @@
 ---
 name: cards
 description: Generate or audit Anki cards for a topic's analysis.json.
-arguments:
-  - name: topic
-    description: "Topic name or slug (e.g., \"Smetana\", \"emily_carr\")"
 ---
+
+**Arguments** (passed free-form after the skill name):
+- `topic` — Topic name or slug (e.g., "Smetana", "emily_carr")
 
 # Card Generation
 
-Generate or regenerate the `cards` array for "$ARGUMENTS.topic".
+Generate or regenerate the `cards` array for the topic named in $ARGUMENTS.
 
 ## Step 1: Read Analysis
 

@@ -1,20 +1,19 @@
 ---
 name: first-pass
 description: Run a first-pass analysis on a quizbowl topic — fetch clues, analyze, generate cards, and render.
-arguments:
-  - name: topic
-    description: "Topic name (e.g., \"Smetana\", \"The Oxbow\")"
-  - name: category
-    description: "Optional category override. Auto-detected from queue if omitted."
 ---
+
+**Arguments** (passed free-form after the skill name):
+- `topic` — Topic name (e.g., "Smetana", "The Oxbow")
+- `category` — Optional category override. Auto-detected from queue if omitted.
 
 # First Pass Analysis
 
-You are creating a **new analysis from scratch** for the topic "$ARGUMENTS.topic".
+You are creating a **new analysis from scratch** for the topic named in $ARGUMENTS.
 
 ## Step 1: Determine Category
 
-If a category was provided ("$ARGUMENTS.category"), use it. Otherwise, check the queue:
+If a category was provided in $ARGUMENTS, use it. Otherwise, check the queue:
 ```bash
 python lib/queue/topic_queue.py summary
 ```

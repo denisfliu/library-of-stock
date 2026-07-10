@@ -1,14 +1,12 @@
 ---
 name: batch
 description: Full autopilot batch run — init queues, spawn analysis agents, post-batch, crossref, cards, build.
-arguments:
-  - name: agents
-    description: "Number of parallel agents to run (default: 3)"
-  - name: category
-    description: "Optional: scope to one category (e.g., \"Literature\", \"Fine Arts\")"
-  - name: count
-    description: "Optional: number of topics to pull from queue"
 ---
+
+**Arguments** (passed free-form after the skill name):
+- `agents` — Number of parallel agents to run (default: 3)
+- `category` — Optional: scope to one category (e.g., "Literature", "Fine Arts")
+- `count` — Optional: number of topics to pull from queue
 
 # Batch Guide Generation
 
@@ -27,11 +25,11 @@ Determine which topics are queued for first pass vs. second pass. A batch can in
 ```bash
 python lib/queue/batch_worker.py init "batch-$(date +%Y%m%d)" --first N --second M --category CATEGORY
 ```
-Adjust `--first` and `--second` counts based on the queue summary and `$ARGUMENTS.count`. This pops items from the global queues into `queue/current_batch.json`.
+Adjust `--first` and `--second` counts based on the queue summary and the count given in $ARGUMENTS. This pops items from the global queues into `queue/current_batch.json`.
 
 ## Step 3: Spawn Analysis Agents
 
-For each agent slot (up to $ARGUMENTS.agents parallel), spawn a sub-agent using the Agent tool. Each agent processes **one topic** then exits.
+For each agent slot (up to the agent count given in $ARGUMENTS, default 3, in parallel), spawn a sub-agent using the Agent tool. Each agent processes **one topic** then exits.
 
 **For each topic**, determine whether it's a first-pass or second-pass item (from the batch queue), then instruct the agent to follow the corresponding skill:
 
@@ -117,7 +115,7 @@ for f in sorted(Path('output').glob('*/analysis.json')):
     cards = len(data.get('cards', []))
     desc_ok = all(len(w.get('description','')) > 50 for w in data.get('works',[]) if 'General' not in w.get('name',''))
     if works <= 1 or cards == 0 or not desc_ok:
-        print(f'NEEDS REVIEW: {data.get(\"topic\",\"?\")} ({works}w, {cards}c, desc={desc_ok})')
+        print(f'NEEDS REVIEW: {data.get("topic","?")} ({works}w, {cards}c, desc={desc_ok})')
 "
 ```
 

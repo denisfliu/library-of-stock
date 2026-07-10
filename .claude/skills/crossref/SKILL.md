@@ -1,10 +1,10 @@
 ---
 name: crossref
 description: Run cross-reference backfill — add hyperlinks between related topics.
-arguments:
-  - name: topics
-    description: "Optional: comma-separated topic names or slugs to process. If omitted, processes all topics missing cross_refs."
 ---
+
+**Arguments** (passed free-form after the skill name):
+- `topics` — Optional: comma-separated topic names or slugs to process. If omitted, processes all topics missing cross_refs.
 
 # Cross-Reference Backfill
 
