@@ -27,7 +27,7 @@ python post_batch.py                       # after a batch: rebuild index + prin
 
 - **Template consolidation**: the renderers embed large HTML/CSS strings; shared CSS lives in `lib/render/theme.py`. Long-term, move page templates to Jinja2 files.
 - **`getCardImages` is triplicated** — `lib/render/render_cards.py` (Python `_synthesize_image_cards`), its embedded JS, and `lib/js/anki_export.js`. Any card-image schema change needs all three.
-- **Tests + CI**: zero tests exist. Start with a golden-file render test (render a fixture topic, diff against a committed snapshot) and a GitHub Action running `./build.sh && python lib/validate.py --strict`.
+- **Tests + CI**: zero tests exist. `.github/workflows/deploy.yml` now runs `./build.sh` (incl. `validate.py`) on every push and deploys to GitHub Pages — next step is a golden-file render test (render a fixture topic, diff against a committed snapshot).
 - **Single-load `build.py` orchestrator**: `build.sh` runs ~10 processes that each re-parse all analysis JSONs (~4x redundant parsing). Worth doing when the corpus outgrows the current ~23s forced build.
 - **Wikimedia batching**: `lib/images/` fetches thumbnails one filename at a time; the Commons API accepts pipe-joined `titles=`.
 - **qbreader pagination**: `fetch.py` retrieves only the first 25 results per query — big topics (Beethoven, Shakespeare) silently lose clues. Add pagination or raise `maxReturnLength`.

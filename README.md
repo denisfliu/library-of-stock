@@ -131,7 +131,15 @@ python lib/queues/scan_redo.py            # find shallow analyses worth redoing
 
 ## Browsing
 
-Open `index.html` directly in a browser, or serve the repo root with any static file server (e.g. `python -m http.server 8000`). All pages are self-contained (inline CSS/JS; external CDN scripts for abcjs/sql.js/JSZip only).
+Open `index.html` directly in a browser, or serve the repo root with any static file server (e.g. `python -m http.server 8000`). Pages inline their CSS and page-specific JS (shared scripts load from `lib/js/`; abcjs/sql.js/JSZip come from CDNs).
+
+Generated files (`index.html`, `output/**/*.html`, `output/guides_data.js`, `dev/*_data.json`, `dev/score_clues_review.html`) are **not committed** — on a fresh clone, run `./build.sh` once to produce them.
+
+## Deployment
+
+Every push to `main` triggers `.github/workflows/deploy.yml`, which runs `./build.sh` (including `validate.py` as a gate) and publishes the rendered site to GitHub Pages at <https://denisfliu.github.io/library-of-stock/>. Only `analysis.json`/`cards.json` and the other source data get committed; the HTML is built in CI.
+
+MP3 audio clips stay committed (they need fluidsynth + a soundfont to regenerate, which CI doesn't install); `render_audio.py` skips them gracefully during the CI build.
 
 ## Requirements
 
