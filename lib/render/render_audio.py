@@ -127,10 +127,10 @@ def abc_to_mp3(abc_text: str, output_path: Path, soundfont: Path) -> bool:
 
 
 def build_all(force: bool = False) -> None:
+    # Only require the audio toolchain when there is actually something to
+    # convert — MP3s are committed, so most runs have no pending work.
     soundfont = _find_soundfont()
-    if not soundfont:
-        print("ERROR: No GM soundfont found. Install fluid-soundfont-gm (apt/dnf) or fluidsynth (brew).")
-        return
+    warned_missing_toolchain = False
 
     count = 0
     skipped = 0
@@ -166,6 +166,14 @@ def build_all(force: bool = False) -> None:
                         clue["mp3"] = mp3_rel
                         changed = True
                     continue
+
+            if not soundfont:
+                if not warned_missing_toolchain:
+                    print("WARNING: score clips need conversion but no GM soundfont "
+                          "found — install fluidsynth + a soundfont to render audio.")
+                    warned_missing_toolchain = True
+                errors += 1
+                continue
 
             work = clue.get("work", "?")
             print(f"  {topic_name} / {work}")

@@ -30,14 +30,13 @@ SKIP_HASHES = {
 }
 
 
-def run(cmd):
-    return subprocess.check_output(cmd, shell=True, cwd=ROOT, text=True).strip()
+def run(args):
+    return subprocess.check_output(args, cwd=ROOT, text=True, encoding='utf-8').strip()
 
 
 def main():
     # Build slug → canonical name mapping from topic_index.json
     slug_to_name = {}
-    slug_to_category = {}
     index_path = ROOT / 'output' / 'topic_index.json'
     if index_path.exists():
         with open(index_path, encoding='utf-8') as f:
@@ -45,46 +44,43 @@ def main():
         for val in idx.values():
             if val.get('type') == 'topic':
                 slug_to_name[val['slug']] = val['topic']
-                slug_to_category[val['slug']] = val.get('category', '')
 
-    # Get all commits that touched analysis.json
-    log_lines = run(
-        'git log --format="%h|%ad|%s" --date=short -- "output/*/analysis.json"'
-    ).splitlines()
+    # One git call for the whole history: commit header lines followed by
+    # per-file name-status lines for each commit.
+    try:
+        raw = run(['git', 'log', '--format=%h|%ad', '--date=short',
+                   '--name-status', '--', 'output/*/analysis.json'])
+    except (subprocess.CalledProcessError, OSError) as e:
+        print(f'WARNING: git log failed ({e}); leaving changelog unchanged')
+        return
 
     days = defaultdict(lambda: {'added': set(), 'updated': set()})
+    current_date = None
+    skip_commit = False
 
-    for line in log_lines:
-        parts = line.split('|', 2)
-        if len(parts) != 3:
+    for line in raw.splitlines():
+        line = line.rstrip()
+        if not line:
             continue
-        h, date, msg = [p.strip() for p in parts]
-
-        if h[:8] in SKIP_HASHES:
+        if '|' in line and '\t' not in line:
+            h, current_date = line.split('|', 1)
+            skip_commit = h[:8] in SKIP_HASHES
             continue
-
-        # Single diff-tree call with --name-status gives A/M status per file
-        raw = run(
-            f'git diff-tree --no-commit-id -r --name-status {h} '
-            f'-- "output/*/analysis.json"'
-        )
-
-        for diff_line in raw.splitlines():
-            diff_line = diff_line.strip()
-            if not diff_line:
-                continue
-            # Format: "A\toutput/slug/analysis.json" or "M\t..."
-            status, path = diff_line.split('\t', 1)
-            m = re.match(r'output/(.+)/analysis\.json', path)
-            if not m:
-                continue
-            slug = m.group(1)
-            name = slug_to_name.get(slug, slug.replace('_', ' ').title())
-
-            if status == 'A':
-                days[date]['added'].add(name)
-            elif status == 'M':
-                days[date]['updated'].add(name)
+        if skip_commit or current_date is None or '\t' not in line:
+            continue
+        # "A\tpath", "M\tpath", or "R100\toldpath\tnewpath" (renames are
+        # detected by default in git log; count them at the new path like
+        # the old diff-tree plumbing counted an A).
+        fields = line.split('\t')
+        status, path = fields[0], fields[-1]
+        m = re.match(r'output/(.+)/analysis\.json', path)
+        if not m:
+            continue
+        name = slug_to_name.get(m.group(1), m.group(1).replace('_', ' ').title())
+        if status.startswith(('A', 'R', 'C')):
+            days[current_date]['added'].add(name)
+        elif status == 'M':
+            days[current_date]['updated'].add(name)
 
     # Build result — don't double-count (added > updated for same day)
     result = []
