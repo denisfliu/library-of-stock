@@ -1,6 +1,6 @@
 ---
 name: cards
-description: Generate or audit Anki cards for a topic's analysis.json.
+description: Generate or audit Anki cards for a topic (output/{slug}/cards.json).
 ---
 
 **Arguments** (passed free-form after the skill name):
@@ -12,7 +12,7 @@ Generate or regenerate the `cards` array for the topic named in $ARGUMENTS.
 
 ## Step 1: Read Analysis
 
-Read `output/{slug}/analysis.json`. Study all work sections, clues, and any existing cards.
+Read `output/{slug}/analysis.json` for the work sections and clues, and `output/{slug}/cards.json` for any existing cards (may not exist yet).
 
 Determine the category and read the appropriate supplement skill for indicator guidance:
 - Literature -> `/literature`
@@ -69,7 +69,7 @@ Use the **broadest label that still uniquely identifies the type**:
 
 ## Step 3: Write Back
 
-Replace ONLY the `cards` field in `output/{slug}/analysis.json`. Do not modify any other field.
+Write the cards array to `output/{slug}/cards.json` (a bare JSON array). NEVER touch `analysis.json` — cards live in their own file.
 
 ## Step 4: Render
 

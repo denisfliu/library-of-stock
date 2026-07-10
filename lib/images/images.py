@@ -274,11 +274,13 @@ def _search_and_validate(work_name, artist_name, cache_key, cache):
     return None
 
 
-def set_work_image(data, work_name, url):
-    """Set the image URL for a work and sync to its cards.
+def set_work_image(data, work_name, url, cards=None):
+    """Set the image URL for a work and sync to its cards (if given).
 
     Only call this with a URL returned by find_image() — never with
-    a manually constructed URL.
+    a manually constructed URL. Pass the topic's cards list (from
+    lib.common.load_cards) to sync explicit card images; the render-time
+    synthesizer picks up work images either way.
     """
     for w in data.get('works', []):
         if w['name'] == work_name:
@@ -288,8 +290,7 @@ def set_work_image(data, work_name, url):
                 w['images'] = [{'url': url, 'caption': work_name}]
             break
 
-    # Sync to cards
-    for c in data.get('cards', []):
+    for c in cards or []:
         if c.get('work') == work_name:
             for ci in c.get('images', []):
                 if not ci.get('url'):

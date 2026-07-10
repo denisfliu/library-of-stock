@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from lib.common import TOPIC_INDEX_FILE, iter_analyses
+from lib.common import TOPIC_INDEX_FILE, iter_analyses, load_cards
 
 # Build CANONICAL-only search set:
 # - For topics: only include if name == entry['topic'] (exact canonical name)
@@ -108,8 +108,8 @@ def build_searchable(index):
     return searchable
 
 
-def get_text_fields(d):
-    """Extract all searchable text from an analysis dict."""
+def get_text_fields(d, cards):
+    """Extract all searchable text from an analysis dict + its cards."""
     texts = []
     if d.get('summary'):
         texts.append(d['summary'])
@@ -120,7 +120,7 @@ def get_text_fields(d):
             texts.append(work['name'])
         if work.get('description'):
             texts.append(work['description'])
-    for card in d.get('cards', []):
+    for card in cards:
         if card.get('clue'):
             texts.append(card['clue'])
         if card.get('answer'):
@@ -151,7 +151,7 @@ def _is_part_of_longer_name(masked_text, m):
 
 def find_cross_refs(d, topic_name, topic_slug, searchable, search_names):
     """Find all cross-refs for a given analysis dict."""
-    full_text = get_text_fields(d)
+    full_text = get_text_fields(d, load_cards(topic_slug))
     # We'll mask matched spans with spaces to prevent shorter names from matching
     # within already-matched longer names
     masked_text = full_text

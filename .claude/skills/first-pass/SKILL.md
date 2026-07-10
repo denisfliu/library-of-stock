@@ -84,7 +84,7 @@ For each work/subtopic:
 
 Create `output/{slug}/analysis.json`.
 
-Required fields: `topic`, `summary`, `works`, `comprehensive_summary`, `cards`, `category`, `subcategory`, `genre`, `year`, `continent`, `country`, `tags`, `links`, `recursive_suggestions`.
+Required fields: `topic`, `summary`, `works`, `comprehensive_summary`, `category`, `subcategory`, `genre`, `year`, `continent`, `country`, `tags`, `links`, `recursive_suggestions`. (Cards are NOT part of analysis.json — they go in their own file, next step.)
 
 For `recursive_suggestions`: identify works/subtopics that deserve their own deep dive. Flag ambiguous names and recommend category filters.
 
@@ -92,7 +92,7 @@ Reference `output/emily_carr/analysis.json` for formatting if needed.
 
 ## Step 7: Generate Cards
 
-Follow `/cards` skill rules to generate the `cards` array inline. Every clue with specific learnable content gets a card.
+Follow `/cards` skill rules to generate the cards array and save it to `output/{slug}/cards.json` (bare JSON array). Every clue with specific learnable content gets a card.
 
 ## Step 8: Self-Check (MANDATORY)
 

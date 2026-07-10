@@ -60,6 +60,29 @@ def topic_slug(topic: str) -> str:
     return topic.strip().lower().replace(' ', '_')
 
 
+def load_cards(slug: str) -> list:
+    """Load a topic's cards from output/{slug}/cards.json ([] if absent).
+
+    Cards live in their own file so agents that only need the analysis
+    (second-pass, crossref) don't pay to read them, and card agents can't
+    accidentally clobber analysis fields.
+    """
+    import json
+    path = OUTPUT_DIR / slug / 'cards.json'
+    if not path.exists():
+        return []
+    with open(path, encoding='utf-8') as f:
+        return json.load(f)
+
+
+def save_cards(slug: str, cards: list) -> None:
+    """Write a topic's cards to output/{slug}/cards.json."""
+    import json
+    path = OUTPUT_DIR / slug / 'cards.json'
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(cards, f, indent=2, ensure_ascii=False)
+
+
 def iter_analyses(warn=True):
     """Yield (slug, json_path, data) for every output/*/analysis.json.
 

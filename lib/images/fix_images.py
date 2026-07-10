@@ -14,7 +14,7 @@ import json, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.common import load_cards, save_cards
 from lib.images.images import find_image, set_work_image, API_DELAY, CACHE_FILE
 import lib.images.images as img_module
 
@@ -104,14 +104,18 @@ def main():
             print(f'  MISS: {topic} / {work_name}', flush=True)
             continue
 
-        # Load fresh, update, save
+        # Load fresh, update, save (cards live in their own file)
         with open(f, encoding='utf-8') as fh:
             data = json.load(fh)
+        topic_slug = f.parent.name
+        cards = load_cards(topic_slug)
 
-        set_work_image(data, work_name, url)
+        set_work_image(data, work_name, url, cards=cards)
 
         with open(f, 'w', encoding='utf-8') as fh:
             json.dump(data, fh, indent=2, ensure_ascii=False)
+        if cards:
+            save_cards(topic_slug, cards)
 
         fixed += 1
         print(f'  OK: {topic} / {work_name}', flush=True)

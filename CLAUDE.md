@@ -59,6 +59,7 @@ python post_batch.py                       # after a batch: rebuild index + prin
 
 ## Key Paths
 - `output/{slug}/analysis.json` — per-topic analysis data
+- `output/{slug}/cards.json` — the topic's Anki cards (separate file; card agents write ONLY this)
 - `output/{slug}/stock.html` — rendered study page
 - `output/topic_index.json` — master index of all topics/works
 - `queue/` — all queue JSON files (never `lib/queues/`)

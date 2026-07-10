@@ -3,7 +3,7 @@
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
-from lib.common import iter_analyses
+from lib.common import iter_analyses, load_cards
 
 
 import json
@@ -45,7 +45,7 @@ def main():
         cat = d.get('category') or 'Unknown'
         subcat = d.get('subcategory') or '(none)'
         works = d.get('works', [])
-        cards = d.get('cards', [])
+        cards = load_cards(slug)
         score_clues = d.get('score_clues', [])
         has_images = any(w.get('images') for w in works)
         second_pass = bool(d.get('second_pass'))

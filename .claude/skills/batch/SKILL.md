@@ -80,7 +80,7 @@ This rebuilds the cross-ref index and prints agent prompts for the next steps.
 
 Launch ALL of these at the same time — they write to different fields and don't conflict:
 
-1. **Card agents**: Spawn agents following `/cards` skill. Each agent handles 3-5 topics — read analysis.json, generate cards, write back.
+1. **Card agents**: Spawn agents following `/cards` skill. Each agent handles 3-5 topics — read analysis.json + cards.json, generate cards, write cards.json.
 2. **Crossref agent** (use Sonnet): Spawn an agent following `/crossref` skill — deterministic backfill first, then LLM-based enrichment.
 
 ## Step 7: Build
@@ -112,7 +112,8 @@ for f in sorted(Path('output').glob('*/analysis.json')):
     with open(f) as fh:
         data = json.load(fh)
     works = len(data.get('works', []))
-    cards = len(data.get('cards', []))
+    cards_f = Path(f).parent / 'cards.json'
+    cards = len(json.load(open(cards_f, encoding='utf-8'))) if cards_f.exists() else 0
     desc_ok = all(len(w.get('description','')) > 50 for w in data.get('works',[]) if 'General' not in w.get('name',''))
     if works <= 1 or cards == 0 or not desc_ok:
         print(f'NEEDS REVIEW: {data.get("topic","?")} ({works}w, {cards}c, desc={desc_ok})')

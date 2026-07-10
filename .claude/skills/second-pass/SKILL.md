@@ -15,7 +15,7 @@ You are **enriching an existing analysis** for the topic named in $ARGUMENTS. Th
 
 Read `output/{slug}/analysis.json`. Note:
 - How many work sections exist
-- How many cards exist
+- How many cards exist (read `output/{slug}/cards.json`)
 - Which works have thin clue coverage
 - What the comprehensive summary covers
 - The category/subcategory (for auto-detection)
@@ -92,7 +92,7 @@ Do NOT remove or rewrite cards that are substantively correct — only fix struc
 
 ## Step 6: Generate New Cards
 
-Generate cards for any new clues added during this pass. Append to existing `cards` array. Follow `/cards` skill rules.
+Generate cards for any new clues added during this pass. Append to the array in `output/{slug}/cards.json`. Follow `/cards` skill rules.
 
 ## Step 7: Self-Check (MANDATORY)
 

@@ -17,6 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT))
 
+from lib.common import load_cards, save_cards
 from lib.images.images import CACHE_FILE, _get_session
 
 session = _get_session()
@@ -101,23 +102,29 @@ def main():
         with open(f, encoding='utf-8') as fh:
             data = json.load(fh)
 
+        slug = f.parent.name
+        cards = load_cards(slug)
         changed = False
+        cards_changed = False
         for w in data.get('works', []):
             for img in w.get('images', []):
                 if img.get('url') in broken_urls:
                     img['url'] = ''
                     changed = True
                     # Clear matching card images
-                    for c in data.get('cards', []):
+                    for c in cards:
                         if c.get('work') == w['name']:
                             for ci in c.get('images', []):
                                 if ci.get('url') in broken_urls:
                                     ci['url'] = ''
+                                    cards_changed = True
 
         if changed:
             with open(f, 'w', encoding='utf-8') as fh:
                 json.dump(data, fh, indent=2, ensure_ascii=False)
-            files_modified.add(f.name)
+            files_modified.add(f.parent.name)
+        if cards_changed:
+            save_cards(slug, cards)
 
     with open(CACHE_FILE, 'w', encoding='utf-8') as f:
         json.dump(cache, f, indent=2, ensure_ascii=False)

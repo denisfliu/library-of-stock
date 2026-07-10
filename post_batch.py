@@ -105,7 +105,7 @@ def main():
     print(f'\n[3/4] Launch {len(chunks)} card agent(s) '
           f'({CARD_BATCH_SIZE} topics each) in parallel with the crossref agent:\n')
     for idx, chunk in enumerate(chunks, 1):
-        topic_list = '\n'.join(f'- {name} -> output/{slug}/analysis.json'
+        topic_list = '\n'.join(f'- {name} -> output/{slug}/cards.json'
                                for name, slug in chunk)
         print(f'--- Card agent {idx}/{len(chunks)} ({len(chunk)} topics) ---')
         print('=' * 60)

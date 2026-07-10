@@ -362,7 +362,7 @@ def build_all(force: bool = False):
         # Collect all cache files in the topic directory
         # Sort: non-mentions first (alphabetically), then mentions
         all_jsons = [f for f in analysis_file.parent.glob("*.json")
-                     if f.name != "analysis.json"]
+                     if f.name not in ("analysis.json", "cards.json")]
         non_mentions = sorted(f for f in all_jsons if "_mentions" not in f.name)
         mentions = sorted(f for f in all_jsons if "_mentions" in f.name)
         cache_files = non_mentions + mentions

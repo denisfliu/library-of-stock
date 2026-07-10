@@ -112,7 +112,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     topic_key = output_path.parent.name
     questions_file = "questions.html"
     cards_file = "cards.html"
-    has_cards = bool(analysis.get("cards"))
+    has_cards = (output_path.parent / "cards.json").exists()
     cards_secondary = f'<a href="{cards_file}">Make cards</a>' if has_cards else ""
     nav_html = (
         f'<div class="nav-bar">'

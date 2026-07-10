@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from lib.common import OUTPUT_DIR, CACHE_DIR
+from lib.common import OUTPUT_DIR, CACHE_DIR, load_cards
 
 
 def run_checks() -> list[str]:
@@ -36,7 +36,7 @@ def run_checks() -> list[str]:
             issues.append(f"[EMPTY SUMMARY] {topic}")
 
         # 2. No cards
-        cards = analysis.get("cards", [])
+        cards = load_cards(f.parent.name)
         if not cards:
             issues.append(f"[NO CARDS] {topic}")
 

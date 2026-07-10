@@ -69,7 +69,8 @@ library-of-stock/
 
 ```
 output/{slug}/
-├── analysis.json    # Source of truth: summary, works, clues, cards, metadata, cross_refs
+├── analysis.json    # Source of truth: summary, works, clues, metadata, cross_refs
+├── cards.json       # Anki cards (own file so card agents can't clobber the analysis)
 ├── stock.html       # Study guide page
 ├── cards.html       # Card editor page
 ├── questions.html   # Source question viewer

@@ -14,7 +14,7 @@ from html import escape
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from lib.common import OUTPUT_DIR
+from lib.common import OUTPUT_DIR, load_cards
 from lib.render.theme import ABCJS_SCRIPT_TAG, base_css, mp3_cache_buster
 
 
@@ -105,7 +105,7 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
     topic = analysis.get("topic", "Unknown")
     if cards is None:
         cards = _synthesize_audio_cards(
-            analysis, _synthesize_image_cards(analysis, analysis.get("cards", []))
+            analysis, _synthesize_image_cards(analysis, load_cards(output_path.parent.name))
         )
     stock_link = "stock.html"
 
@@ -1215,22 +1215,26 @@ def build_all(force: bool = False):
         out_path = f.parent / "cards.html"
 
         # Incremental: skip if cards HTML is newer than JSON (unless --force)
-        if not force and out_path.exists() and out_path.stat().st_mtime >= f.stat().st_mtime:
+        cards_json = f.parent / "cards.json"
+        src_mtime = max(f.stat().st_mtime,
+                        cards_json.stat().st_mtime if cards_json.exists() else 0)
+        if not force and out_path.exists() and out_path.stat().st_mtime >= src_mtime:
             skipped += 1
             continue
 
         with open(f, encoding='utf-8') as fh:
             analysis = json.load(fh)
+        raw_cards = load_cards(f.parent.name)
         # Render if there are cards, images, or score clips to show
         has_images = any(
             w.get("images") and w["images"][0].get("url")
             for w in analysis.get("works", [])
         )
         has_clips = bool(analysis.get("score_clues"))
-        if not analysis.get("cards") and not has_images and not has_clips:
+        if not raw_cards and not has_images and not has_clips:
             continue
         cards = _synthesize_audio_cards(
-            analysis, _synthesize_image_cards(analysis, analysis.get("cards", []))
+            analysis, _synthesize_image_cards(analysis, raw_cards)
         )
         render_cards_html(analysis, out_path, cards=cards)
         print(f"  {analysis.get('topic', '?')}: {len(cards)} cards -> {out_path}")
