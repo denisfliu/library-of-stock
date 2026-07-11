@@ -89,6 +89,29 @@ def save_cards(slug: str, cards: list) -> None:
         json.dump(cards, f, indent=2, ensure_ascii=False)
 
 
+def write_json_if_changed(path: Path, data) -> bool:
+    """Write JSON only when the serialized content differs from what's
+    on disk. Returns True if the file was written.
+
+    Keeping mtimes stable when nothing changed matters: incremental
+    renderers (e.g. build_overviews.py vs topic_index.json) and git
+    status both key off it.
+    """
+    import json
+    path = Path(path)
+    text = json.dumps(data, indent=2, ensure_ascii=False)
+    if path.exists():
+        try:
+            if path.read_text(encoding='utf-8') == text:
+                return False
+        except OSError:
+            pass
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(text)
+    return True
+
+
 def iter_analyses(warn=True):
     """Yield (slug, json_path, data) for every output/*/analysis.json.
 

@@ -29,17 +29,29 @@ from collections import Counter
 from pathlib import Path as _Path
 
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
-from lib.common import SETS_DIR, topic_slug
+from lib.common import SETS_DIR, topic_slug, write_json_if_changed
 from lib.sweep.answerlines import clean_answerline, normalize
 from lib.sweep.matcher import TopicMatcher
 
 REGISTRY_FILE = SETS_DIR / 'sets.json'
 
+_write_json = write_json_if_changed
 
-def _write_json(path, data):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+
+def _write_report(path, report):
+    """Write report.json, keeping the old ``generated`` stamp when the
+    substance is unchanged — otherwise every rematch run would churn a
+    committed file just by re-dating it."""
+    if path.exists():
+        try:
+            with open(path, encoding='utf-8') as f:
+                old = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            old = None
+        if old is not None and \
+                {**old, 'generated': ''} == {**report, 'generated': ''}:
+            return
+    _write_json(path, report)
 
 
 def extract_questions(set_data: dict) -> list[dict]:
@@ -216,7 +228,7 @@ def build_set(set_name: str, rematch_only: bool = False,
 
     _write_json(set_file, data)
     report = build_report(set_slug, rows, matcher=matcher)
-    _write_json(set_dir / 'report.json', report)
+    _write_report(set_dir / 'report.json', report)
 
     statuses = Counter(r['match']['status'] for r in rows)
     linked = sum(1 for r in rows if r['match']['slug'])

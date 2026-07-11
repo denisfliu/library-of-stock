@@ -12,7 +12,7 @@ Usage:
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
-from lib.common import iter_analyses
+from lib.common import iter_analyses, write_json_if_changed
 
 import json, re
 from pathlib import Path
@@ -63,11 +63,11 @@ def rebuild_index():
                 if len(first_part) > 3:
                     index.setdefault(first_part, work_entry)
 
-    with open(INDEX_FILE, 'w', encoding='utf-8') as f:
-        json.dump(index, f, indent=2, ensure_ascii=False)
+    wrote = write_json_if_changed(INDEX_FILE, index)
 
     topics_count = len(set(v['slug'] for v in index.values()))
-    print(f'Index rebuilt: {len(index)} entries across {topics_count} topics', flush=True)
+    state = 'rebuilt' if wrote else 'unchanged'
+    print(f'Index {state}: {len(index)} entries across {topics_count} topics', flush=True)
     return index
 
 
