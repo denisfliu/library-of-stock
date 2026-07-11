@@ -3,7 +3,7 @@
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent))
-from lib.common import iter_analyses, load_cards
+from lib.common import load_cards, resolve_analyses
 
 
 import json
@@ -13,8 +13,8 @@ from collections import defaultdict
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), '..', 'output')
 OUT_FILE = os.path.join(os.path.dirname(__file__), 'stats_data.json')
 
-def main():
-    analyses = list(iter_analyses())
+def main(analyses=None):
+    analyses = resolve_analyses(analyses)
     print(f"Reading {len(analyses)} analysis.json files...")
 
     summary = {

@@ -131,3 +131,31 @@ def iter_analyses(warn=True):
                 print(f'WARNING: skipping {json_path}: {e}', file=sys.stderr)
             continue
         yield json_path.parent.name, json_path, data
+
+
+def load_corpus():
+    """Parse every analysis.json exactly once, for build.py.
+
+    Returns (analyses, errors): analyses is [(slug, json_path, data)] and
+    errors is [(json_path, message)] for files that failed to parse —
+    validate.py turns those into [BROKEN JSON] issues.
+    """
+    import json
+    analyses, errors = [], []
+    for json_path in sorted(OUTPUT_DIR.glob('*/analysis.json')):
+        try:
+            with open(json_path, encoding='utf-8') as f:
+                analyses.append((json_path.parent.name, json_path, json.load(f)))
+        except (json.JSONDecodeError, OSError) as e:
+            errors.append((json_path, str(e)))
+    return analyses, errors
+
+
+def resolve_analyses(analyses=None, warn=True):
+    """Stage-function helper: return the given corpus, or load it.
+
+    Every build stage takes ``analyses=None`` and calls this, so the stage
+    works standalone (loads its own corpus) and under build.py (shares the
+    single load) with the same code path.
+    """
+    return list(iter_analyses(warn=warn)) if analyses is None else analyses

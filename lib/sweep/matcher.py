@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path as _Path
 
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
-from lib.common import OVERRIDES_FILE, TOPIC_INDEX_FILE, iter_analyses
+from lib.common import OVERRIDES_FILE, TOPIC_INDEX_FILE, resolve_analyses
 from lib.sweep.answerlines import normalize
 
 
@@ -43,22 +43,23 @@ def load_overrides() -> dict:
 
 
 class TopicMatcher:
-    def __init__(self, rebuild_index: bool = False):
+    def __init__(self, rebuild_index: bool = False, analyses=None):
         """Build lookup tables from the corpus.
 
-        rebuild_index=True refreshes topic_index.json first (build.sh
-        already runs crossref.py before the sweep step, so the default
-        trusts the file on disk).
+        rebuild_index=True refreshes topic_index.json first (the build
+        runs crossref.py before the sweep step, so the default trusts
+        the file on disk). analyses is the pre-parsed corpus from
+        build.py; standalone use loads it here.
         """
         if rebuild_index or not TOPIC_INDEX_FILE.exists():
-            from lib.crossref.crossref import rebuild_index
-            rebuild_index()
+            from lib.crossref.crossref import rebuild_index as _rebuild
+            _rebuild(analyses=analyses)
 
         self.overrides = load_overrides()
 
         # Exact tier: normalized analysis topic (and slug-as-name) -> (topic, slug)
         self.exact: dict[str, tuple[str, str]] = {}
-        for slug, _path, data in iter_analyses(warn=False):
+        for slug, _path, data in resolve_analyses(analyses, warn=False):
             topic = data.get('topic', '') or slug
             self.exact.setdefault(normalize(topic), (topic, slug))
             self.exact.setdefault(normalize(slug.replace('_', ' ')), (topic, slug))

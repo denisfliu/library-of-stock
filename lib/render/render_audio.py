@@ -27,7 +27,7 @@ Usage:
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
-import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.common import resolve_analyses
 
 
 import json
@@ -35,8 +35,6 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-
-OUTPUT_DIR = Path("output")
 
 # Common soundfont search paths across distros / macOS
 _SOUNDFONT_CANDIDATES = [
@@ -126,7 +124,7 @@ def abc_to_mp3(abc_text: str, output_path: Path, soundfont: Path) -> bool:
         return True
 
 
-def build_all(force: bool = False) -> None:
+def build_all(force: bool = False, analyses=None) -> None:
     # Only require the audio toolchain when there is actually something to
     # convert — MP3s are committed, so most runs have no pending work.
     soundfont = _find_soundfont()
@@ -136,12 +134,7 @@ def build_all(force: bool = False) -> None:
     skipped = 0
     errors = 0
 
-    for analysis_file in sorted(OUTPUT_DIR.glob("*/analysis.json")):
-        topic_key = analysis_file.parent.name
-
-        with open(analysis_file, encoding='utf-8') as f:
-            analysis = json.load(f)
-
+    for topic_key, analysis_file, analysis in resolve_analyses(analyses):
         score_clues = analysis.get("score_clues", [])
         if not score_clues:
             continue

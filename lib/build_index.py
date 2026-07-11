@@ -15,7 +15,7 @@ from html import escape
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from lib.common import ROOT, OUTPUT_DIR, QUEUE_DIR, CATEGORIES_DIR, SETS_DIR
+from lib.common import ROOT, OUTPUT_DIR, QUEUE_DIR, CATEGORIES_DIR, SETS_DIR, resolve_analyses
 from lib.render.theme import base_css
 
 INDEX_TEMPLATE = """<!DOCTYPE html>
@@ -931,15 +931,14 @@ function closeTimeline() {
 
 
 
-def build():
+def build(analyses=None):
+    by_slug = {slug: data for slug, _path, data in resolve_analyses(analyses)}
     guides = []
     for f in sorted(OUTPUT_DIR.glob("*/stock.html")):
         # Slug is the parent directory name
         slug = f.parent.name
         name = slug.replace("_", " ").title()
 
-        # Load metadata from analysis JSON (in same directory)
-        analysis_json = f.parent / "analysis.json"
         works_count = "?"
         category = ""
         subcategory = ""
@@ -948,24 +947,20 @@ def build():
         continent = ""
         country = ""
         tags = []
-        if analysis_json.exists():
-            try:
-                with open(analysis_json, encoding='utf-8') as af:
-                    data = json.load(af)
-                    works_count = str(sum(1 for w in data.get("works", [])
-                        if not any(x in w.get("name", "") for x in
-                        ["General", "Biographical", "Other Works", "Other "])))
-                    category = data.get("category", "")
-                    subcategory = data.get("subcategory", "")
-                    genre = data.get("genre", "")
-                    year = data.get("year")
-                    continent = data.get("continent", "")
-                    country = data.get("country", "")
-                    tags = data.get("tags", [])
-                    if data.get("topic"):
-                        name = data["topic"]
-            except Exception as e:
-                print(f"WARNING: could not read {analysis_json}: {e}", file=sys.stderr)
+        data = by_slug.get(slug)
+        if data is not None:
+            works_count = str(sum(1 for w in data.get("works", [])
+                if not any(x in w.get("name", "") for x in
+                ["General", "Biographical", "Other Works", "Other "])))
+            category = data.get("category", "")
+            subcategory = data.get("subcategory", "")
+            genre = data.get("genre", "")
+            year = data.get("year")
+            continent = data.get("continent", "")
+            country = data.get("country", "")
+            tags = data.get("tags", [])
+            if data.get("topic"):
+                name = data["topic"]
 
         mtime = datetime.fromtimestamp(f.stat().st_mtime).strftime("%Y-%m-%d")
         guide = {

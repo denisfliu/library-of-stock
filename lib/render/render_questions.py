@@ -14,7 +14,7 @@ from html import escape
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.common import CACHE_DIR, resolve_analyses
 from lib.render.theme import base_css
 
 
@@ -273,7 +273,7 @@ def find_cache_for_topic(topic_key: str, topic_name: str = "") -> Path | None:
        like "du Maurier" → prefix "du_maurier".
     5. Substring fallback.
     """
-    cache_dir = Path("cache")
+    cache_dir = CACHE_DIR
 
     name_lower = topic_name.lower() if topic_name else ""
 
@@ -346,17 +346,11 @@ def find_cache_for_topic(topic_key: str, topic_name: str = "") -> Path | None:
     return None
 
 
-def build_all(force: bool = False):
+def build_all(force: bool = False, analyses=None):
     """Generate question pages for all topics that have both cache and analysis data."""
-    output_dir = Path("output")
     count = 0
     skipped = 0
-    for analysis_file in sorted(output_dir.glob("*/analysis.json")):
-        topic_key = analysis_file.parent.name
-
-        # Load topic display name
-        with open(analysis_file, encoding='utf-8') as f:
-            analysis = json.load(f)
+    for topic_key, analysis_file, analysis in resolve_analyses(analyses):
         topic_display = analysis.get("topic", topic_key.replace("_", " ").title())
 
         # Collect all cache files in the topic directory
@@ -379,7 +373,7 @@ def build_all(force: bool = False):
             if recorded:
                 candidate = analysis_file.parent / recorded
                 if not candidate.exists():
-                    candidate = Path("cache") / recorded
+                    candidate = CACHE_DIR / recorded
                 if candidate.exists():
                     cache_files = [candidate]
             if not cache_files:

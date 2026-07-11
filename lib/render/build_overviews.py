@@ -18,7 +18,8 @@ from lib.render.render_overview import render_overview
 from lib.sweep.matcher import TopicMatcher
 
 
-def build(force: bool = False, only_unit: str | None = None) -> None:
+def build(force: bool = False, only_unit: str | None = None,
+          matcher: TopicMatcher | None = None) -> None:
     overview_files = sorted(CATEGORIES_DIR.glob('*/overview.json'))
     if only_unit:
         overview_files = [p for p in overview_files
@@ -40,7 +41,6 @@ def build(force: bool = False, only_unit: str | None = None) -> None:
         with open(stats_path, encoding='utf-8') as f:
             stats = json.load(f)
 
-    matcher = None
     rendered = skipped = 0
     for json_path in overview_files:
         out_path = json_path.parent / 'overview.html'

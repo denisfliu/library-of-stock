@@ -9,31 +9,25 @@ Usage:
     python lib/rerender.py [--force]
 """
 
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from lib.common import OUTPUT_DIR
+from lib.common import OUTPUT_DIR, resolve_analyses
 from lib.render.render import render_html
 
 
-def main():
-    force = "--force" in sys.argv
-
+def render_all(force: bool = False, analyses=None):
     count = 0
     skipped_up_to_date = 0
     skipped_orphan = 0
-    for json_path in sorted(OUTPUT_DIR.glob("*/analysis.json")):
+    for slug, json_path, analysis in resolve_analyses(analyses):
         stock_path = json_path.parent / "stock.html"
 
         # Incremental: skip if HTML is newer than JSON (unless --force)
         if not force and stock_path.exists() and stock_path.stat().st_mtime >= json_path.stat().st_mtime:
             skipped_up_to_date += 1
             continue
-
-        with open(json_path, encoding='utf-8') as f:
-            analysis = json.load(f)
 
         total_clues = sum(len(w.get("clues", [])) for w in analysis.get("works", []))
         total_images = sum(len(w.get("images", [])) for w in analysis.get("works", []))
@@ -56,6 +50,10 @@ def main():
     if skipped_orphan:
         parts.append(f"{skipped_orphan} orphaned HTML")
     print(f"\nDone! {', '.join(parts)}.")
+
+
+def main():
+    render_all(force="--force" in sys.argv)
 
 
 if __name__ == "__main__":

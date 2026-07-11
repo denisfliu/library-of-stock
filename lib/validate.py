@@ -9,27 +9,22 @@ Usage:
     python lib/validate.py --strict  # exit with code 1 if any issues found
 """
 
-import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from lib.common import OUTPUT_DIR, CACHE_DIR, load_cards
+from lib.common import CACHE_DIR, load_cards, load_corpus
 
 
-def run_checks() -> list[str]:
-    issues = []
+def run_checks(analyses=None, parse_errors=None) -> list[str]:
+    if analyses is None:
+        analyses, parse_errors = load_corpus()
 
-    analysis_files = sorted(OUTPUT_DIR.glob("*/analysis.json"))
+    issues = [f"[BROKEN JSON] {p.parent.name}/analysis.json: {msg}"
+              for p, msg in (parse_errors or [])]
 
-    for f in analysis_files:
-        try:
-            analysis = json.load(open(f, encoding='utf-8'))
-        except json.JSONDecodeError as e:
-            issues.append(f"[BROKEN JSON] {f.parent.name}/analysis.json: {e}")
-            continue
-
-        topic = analysis.get("topic", f.parent.name)
+    for slug, f, analysis in analyses:
+        topic = analysis.get("topic", slug)
 
         # 1. Missing summary
         if not analysis.get("summary", "").strip():
@@ -89,9 +84,9 @@ def run_checks() -> list[str]:
     return issues
 
 
-def main():
+def main(analyses=None, parse_errors=None):
     strict = "--strict" in sys.argv
-    issues = run_checks()
+    issues = run_checks(analyses, parse_errors)
 
     if not issues:
         print("Validation OK — no issues found.")

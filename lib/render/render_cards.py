@@ -14,7 +14,7 @@ from html import escape
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from lib.common import OUTPUT_DIR, load_cards
+from lib.common import OUTPUT_DIR, load_cards, resolve_analyses
 from lib.render.theme import ABCJS_SCRIPT_TAG, base_css, mp3_cache_buster
 
 
@@ -1208,10 +1208,10 @@ async function exportApkgBtn() {{
     return output_path
 
 
-def build_all(force: bool = False):
+def build_all(force: bool = False, analyses=None):
     count = 0
     skipped = 0
-    for f in sorted(OUTPUT_DIR.glob("*/analysis.json")):
+    for slug, f, analysis in resolve_analyses(analyses):
         out_path = f.parent / "cards.html"
 
         # Incremental: skip if cards HTML is newer than JSON (unless --force)
@@ -1222,9 +1222,7 @@ def build_all(force: bool = False):
             skipped += 1
             continue
 
-        with open(f, encoding='utf-8') as fh:
-            analysis = json.load(fh)
-        raw_cards = load_cards(f.parent.name)
+        raw_cards = load_cards(slug)
         # Render if there are cards, images, or score clips to show
         has_images = any(
             w.get("images") and w["images"][0].get("url")

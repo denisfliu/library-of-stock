@@ -12,16 +12,16 @@ from html import escape
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from lib.common import OUTPUT_DIR, DEV_DIR, iter_analyses
+from lib.common import OUTPUT_DIR, DEV_DIR, resolve_analyses
 from lib.render.theme import ABCJS_SCRIPT_TAG, mp3_cache_buster
 OUT_FILE = DEV_DIR / "score_clues_review.html"
 
 
-def collect_clues():
+def collect_clues(analyses=None):
     """Collect all score clues with ABC notation, deduplicating by abc content."""
     seen_abc = set()
     clues = []
-    for slug, _path, data in iter_analyses():
+    for slug, _path, data in resolve_analyses(analyses):
         topic = data.get("topic", "")
         for i, c in enumerate(data.get("score_clues", [])):
             abc = c.get("abc")
@@ -178,9 +178,13 @@ CLUES.forEach(c => {{
 </html>"""
 
 
-if __name__ == "__main__":
+def main(analyses=None):
     DEV_DIR.mkdir(exist_ok=True)
-    clues = collect_clues()
+    clues = collect_clues(analyses)
     html = render(clues)
     OUT_FILE.write_text(html, encoding="utf-8")
     print(f"Written {OUT_FILE} ({len(clues)} unique clues)")
+
+
+if __name__ == "__main__":
+    main()

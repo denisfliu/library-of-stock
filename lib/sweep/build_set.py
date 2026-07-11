@@ -243,6 +243,21 @@ def build_set(set_name: str, rematch_only: bool = False,
     return data
 
 
+def rematch_all(matcher: TopicMatcher | None = None) -> None:
+    """Re-match + re-render every registered set without fetching.
+
+    The build's no-network sweep step; red links self-heal to blue as
+    topics gain pages."""
+    registry = load_registry()
+    if not registry:
+        print('No sweep sets registered.')
+        return
+    if matcher is None:
+        matcher = TopicMatcher()
+    for entry in registry:
+        build_set(entry['set_name'], rematch_only=True, matcher=matcher)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('set_name', nargs='?')
