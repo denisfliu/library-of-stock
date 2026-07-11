@@ -12,13 +12,10 @@ Usage:
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
+from lib.common import TOPIC_INDEX_FILE as INDEX_FILE
 from lib.common import iter_analyses, write_json_if_changed
 
 import json, re
-from pathlib import Path
-
-ROOT = Path(__file__).parent.parent.parent
-INDEX_FILE = ROOT / 'output' / 'topic_index.json'
 
 
 def rebuild_index():

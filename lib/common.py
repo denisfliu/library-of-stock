@@ -5,6 +5,7 @@ hand-rolling ``Path(__file__).parent.parent...`` chains or cwd-relative
 paths. ``file_lock`` is the portable (Windows + POSIX) replacement for
 the old ``fcntl.flock`` usage.
 """
+import os
 import sys
 from pathlib import Path
 
@@ -17,7 +18,10 @@ for _stream in (sys.stdout, sys.stderr):
     if _stream is not None and hasattr(_stream, 'reconfigure'):
         _stream.reconfigure(encoding='utf-8', errors='replace')
 
-ROOT = Path(__file__).resolve().parent.parent
+# STOCK_ROOT points the whole pipeline at an alternate tree; the golden
+# render test (tests/golden/) uses it to run renderers against a fixture
+# corpus in a sandbox. Unset (the normal case) means the repo root.
+ROOT = Path(os.environ.get('STOCK_ROOT') or Path(__file__).resolve().parent.parent).resolve()
 OUTPUT_DIR = ROOT / 'output'
 QUEUE_DIR = ROOT / 'queue'
 CACHE_DIR = ROOT / 'cache'
