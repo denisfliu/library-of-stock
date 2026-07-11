@@ -15,7 +15,7 @@ from html import escape
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from lib.common import ROOT, OUTPUT_DIR, QUEUE_DIR
+from lib.common import ROOT, OUTPUT_DIR, QUEUE_DIR, CATEGORIES_DIR, SETS_DIR
 from lib.render.theme import base_css
 
 INDEX_TEMPLATE = """<!DOCTYPE html>
@@ -406,6 +406,7 @@ BASE_CSS
     </div>
   </div>
 </div>
+EXPLORE_STRIP
 <div class="view-toggle">
     <button class="view-btn active" data-view="list">All</button>
     <button class="view-btn" data-view="location">Location</button>
@@ -1021,6 +1022,59 @@ def build():
         return f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{topic}{badge}{detail}</li>'
     redo_list = "".join(_redo_li(item) for item in queue_redo) or '<li style="color:#555;font-style:italic">Empty</li>'
 
+    # Explore strip: links to unit overview pages and sweep sets.
+    def _explore_strip() -> str:
+        overview_links = []
+        stats_path = CATEGORIES_DIR / 'stats.json'
+        if stats_path.exists():
+            stats = json.loads(stats_path.read_text(encoding='utf-8'))
+            for unit, s in sorted(stats.items(), key=lambda kv: kv[1].get('title', kv[0])):
+                title = s.get('title') or unit
+                have, tot = s.get('have', 0), s.get('total', 0)
+                pct = f'{round(100 * have / tot)}%' if tot else '—'
+                overview_links.append(
+                    f'<a class="explore-link" href="output/_categories/{unit}/overview.html">'
+                    f'{escape(title)} <span class="explore-cov">{pct}</span></a>')
+
+        set_links = []
+        sets_path = SETS_DIR / 'sets.json'
+        if sets_path.exists():
+            for e in json.loads(sets_path.read_text(encoding='utf-8')):
+                tot = e.get('total', 0)
+                pct = f'{round(100 * e.get("linked", 0) / tot)}%' if tot else '—'
+                set_links.append(
+                    f'<a class="explore-link" href="output/_sets/{e["set_slug"]}/sweep.html">'
+                    f'{escape(e["set_name"])} <span class="explore-cov">{pct}</span></a>')
+
+        if not overview_links and not set_links:
+            return ''
+        rows = ''
+        if overview_links:
+            rows += ('<div class="explore-row"><span class="explore-label">Overviews</span>'
+                     + ''.join(overview_links) + '</div>')
+        if set_links:
+            rows += ('<div class="explore-row"><span class="explore-label">Sweep sets</span>'
+                     + ''.join(set_links) + '</div>')
+        return f"""<style>
+.explore-strip {{ margin-bottom: 0.9rem; }}
+.explore-row {{
+    display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
+    margin-bottom: 0.35rem;
+}}
+.explore-label {{
+    color: #808790; font-size: 0.75rem; text-transform: uppercase;
+    letter-spacing: 0.04em; margin-right: 0.25rem; white-space: nowrap;
+}}
+.explore-link {{
+    background: #1a2535; border: 1px solid #2a4060; border-radius: 12px;
+    color: #6b9eff; font-size: 0.78rem; padding: 0.15rem 0.65rem;
+    text-decoration: none; white-space: nowrap;
+}}
+.explore-link:hover {{ background: #223050; }}
+.explore-cov {{ color: #808790; font-size: 0.7rem; margin-left: 0.2rem; }}
+</style>
+<div class="explore-strip">{rows}</div>"""
+
     # Write shared guides data file for search_nav.js
     guides_js_path = OUTPUT_DIR / "guides_data.js"
     with open(guides_js_path, "w", encoding='utf-8') as gf:
@@ -1032,6 +1086,7 @@ def build():
         max_width='700px', body_padding='2rem 1.5rem',
         type_scale=False, h1_size='1.6rem', h1_pad='0.3rem',
         h1_margin='1rem', global_links=False))
+    html = html.replace("EXPLORE_STRIP", _explore_strip())
     html = html.replace("GUIDE_DATA", json.dumps(guides))
     html = html.replace("QUEUE_TOTAL", str(total_count))
     html = html.replace("FIRST_COUNT", str(first_count))

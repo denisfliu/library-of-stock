@@ -12,6 +12,14 @@ from pathlib import Path
 # render_score_review.py must all use this tag.
 ABCJS_SCRIPT_TAG = '<script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.4/dist/abcjs-basic-min.js"></script>'
 
+# One Leaflet version everywhere. Any page mounting the shared map view
+# (lib/js/map_view.js) must include these tags before it.
+LEAFLET_TAGS = (
+    '<link rel="stylesheet" '
+    'href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">\n'
+    '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
+)
+
 # Dark theme palette (matches the CSS embedded in the renderers).
 PALETTE = {
     'bg': '#101418',

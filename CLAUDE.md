@@ -10,7 +10,11 @@ Quizbowl study guide generator. Fetches clues from qbreader, analyzes them, gene
 - Queues: `lib/queues/topic_queue.py` (global first/second-pass queues), `lib/queues/batch_worker.py` (per-batch claim/complete). State lives in `queue/*.json`.
 - Cross-refs: `lib/crossref/crossref.py` rebuilds `output/topic_index.json`; `lib/crossref/backfill_crossrefs.py` adds mechanical links; the `/crossref` skill adds semantic ones.
 - Agent workflows are skills in `.claude/skills/<name>/SKILL.md`: `/batch`, `/first-pass`, `/second-pass`, `/cards`, `/crossref`, plus category supplements (`/literature`, `/vfa`, `/afa`, `/philosophy`, `/science`). These are the single source of truth for agent instructions.
-- `lib/common.py` provides `ROOT`/`OUTPUT_DIR`/`QUEUE_DIR`/etc., UTF-8 stdio, and `file_lock`. Every entry script imports it — new scripts should too.
+- `lib/common.py` provides `ROOT`/`OUTPUT_DIR`/`QUEUE_DIR`/`CATEGORIES_DIR`/`SETS_DIR`/`OVERRIDES_FILE`, UTF-8 stdio, and `file_lock`. Every entry script imports it — new scripts should too.
+- **Unit overview pages** (`output/_categories/{unit}/`, one per `lib/units.py` unit): agent-authored `sections.txt` + `intro.txt` are assembled into `overview.json` by `lib/sweep/author.py` (scaffold/assemble; format documented in its docstring — `> ` blurbs, `- ` nesting, `=` variant merge, `->` canonical topic). `lib/sweep/capture_questions.py` captures the unit's full question set → per-entry expandable question panels; `soundbites.json` (curated via `lib/audio/soundbites.py`, Wikimedia Commons recordings) powers ♪ audio players. Rendered by `lib/render/build_overviews.py`. Notes style: 10-20 words, relations + key works, no editorializing; consult questions.json for ambiguous/common-link answerlines.
+- **Sweep sets** (`output/_sets/{set_slug}/`): `lib/sweep/build_set.py "2022 ACF Winter"` fetches a whole tournament, matches every tossup/bonus-part answerline via `lib/sweep/matcher.py` (override → exact → alias tiers, category-gated; overrides in `output/answerline_overrides.json`, keys from `lib/sweep/answerlines.normalize`), writes `set.json` + reviewable `report.json`, renders interactive `sweep.html`. `--all --rematch-only` re-matches without network (red links self-heal to blue as topics get pages).
+- **Shared map** (`lib/js/map_view.js`): any page mounts it (theme.LEAFLET_TAGS + `initMapView`); one pin per location (country centroids), click → panel grouped by category / year-sorted, facet chips for group + era filtering. Live on overview + sweep pages.
+- `lib/units.py` is the canonical unit registry (40 units) + `SUBCATEGORY_ALIASES` drift map; classify guides via `unit_for_guide()`, never raw subcategory strings.
 
 ## Common commands
 
@@ -21,6 +25,13 @@ python lib/validate.py                     # health check on all analysis JSONs
 python lib/queues/topic_queue.py summary    # queue counts by category
 python lib/queues/batch_worker.py status    # current batch progress
 python post_batch.py                       # after a batch: rebuild index + print agent prompts
+python lib/sweep/freq.py UNIT               # frequency table + match status for a unit
+python lib/sweep/author.py scaffold UNIT    # prep/refresh overview authoring (re-entrant)
+python lib/sweep/author.py assemble UNIT    # sections.txt + intro.txt -> overview.json
+python lib/sweep/capture_questions.py UNIT  # capture unit's questions for the page
+python lib/render/build_overviews.py        # render overview pages (--force, --unit)
+python lib/sweep/build_set.py --list-sets   # find exact qbreader set names
+python lib/audio/soundbites.py search "..." # find Commons audio for soundbites.json
 ```
 
 ## Deferred improvements (roadmap for future sessions)
@@ -30,7 +41,10 @@ python post_batch.py                       # after a batch: rebuild index + prin
 - **Tests + CI**: zero tests exist. `.github/workflows/deploy.yml` now runs `./build.sh` (incl. `validate.py`) on every push and deploys to GitHub Pages — next step is a golden-file render test (render a fixture topic, diff against a committed snapshot).
 - **Single-load `build.py` orchestrator**: `build.sh` runs ~10 processes that each re-parse all analysis JSONs (~4x redundant parsing). Worth doing when the corpus outgrows the current ~23s forced build.
 - **Wikimedia batching**: `lib/images/` fetches thumbnails one filename at a time; the Commons API accepts pipe-joined `titles=`.
-- **qbreader pagination**: `fetch.py` retrieves only the first 25 results per query — big topics (Beethoven, Shakespeare) silently lose clues. Add pagination or raise `maxReturnLength`.
+- **Shared question store**: question text is now cached in three shapes — per-topic caches (`output/{slug}/*.json`), per-set packet caches (`cache/sets/`), and per-unit sweeps (`cache/unit_questions/`, `output/_categories/{unit}/questions.json`). The same question can be stored 3+ times. Build a single question store keyed by qbreader `_id` with the other artifacts referencing into it.
+- **Map v2**: real `coordinates` metadata — pins currently sit at country centroids (`lib/js/map_view.js`; country click-panel and category/era facets exist). With real coords, add city-level spread and pass `coords` per item (component already supports it).
+- **AFA soundbites**: extend the Commons soundbites (done for opera) to Auditory Fine Arts when that unit is authored. First add API pacing to `lib/audio/soundbites.py` searches (mirror `lib/images/` `API_DELAY`) — a curation agent burst got 429-throttled by Wikimedia in July 2026.
+- **Score-clue synthesis quality**: the ABC→MP3 synthesizations behind `score_clues` are correct when they faithfully transcribe the specific clued passage, but many currently don't (56 clips across 35 topics; the 56 `[NEEDS_ABC_REVIEW]` validate warnings are related) — audit/fix the transcriptions. Once trustworthy, they're ALSO worth surfacing on AFA overview pages attached to work entries (they demonstrate the actual clued passage), alongside — not instead of — the Commons famous-excerpt soundbites (`lib/audio/soundbites.py`).
 - **Next-button ordering**: currently chronological-by-year within subcategory; science/philosophy concepts have no year. When yearless topics grow, switch to tag-based clustering so related concepts are adjacent.
 
 ## Universal Rules

@@ -23,6 +23,12 @@ QUEUE_DIR = ROOT / 'queue'
 CACHE_DIR = ROOT / 'cache'
 DEV_DIR = ROOT / 'dev'
 TOPIC_INDEX_FILE = OUTPUT_DIR / 'topic_index.json'
+# Non-topic namespaces under output/. The leading underscore keeps them
+# disjoint from topic slugs (topic_slug never emits one) and out of the
+# depth-1 */analysis.json and */stock.html globs.
+CATEGORIES_DIR = OUTPUT_DIR / '_categories'
+SETS_DIR = OUTPUT_DIR / '_sets'
+OVERRIDES_FILE = OUTPUT_DIR / 'answerline_overrides.json'
 
 
 def file_lock(path: Path) -> FileLock:

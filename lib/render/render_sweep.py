@@ -1,0 +1,465 @@
+"""render_sweep.py — Render a tournament sweep page from set.json.
+
+A sweep page lists every tossup and bonus-part answerline of one set,
+linked to existing topic pages (blue) or flagged as gaps (red). The
+page is interactive client-side: filter by category, hide already-
+covered answerlines, switch between packet order / category grouping /
+a map view (shared lib/js/map_view.js), and expand any row to read the
+actual question text. Question data is inlined as JSON.
+
+Called by lib/sweep/build_set.py — not usually run directly.
+"""
+import json
+import sys as _sys
+from html import escape
+from pathlib import Path as _Path
+
+_sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
+from lib.render.theme import LEAFLET_TAGS, base_css
+
+
+def render_sweep(set_data: dict, out_path: str | _Path) -> _Path:
+    out_path = _Path(out_path)
+    set_name = escape(set_data.get('set_name', 'Unknown set'))
+
+    rows = [
+        {
+            'p': q['packet'],
+            'n': q.get('number'),
+            't': q['type'],
+            'part': q.get('part'),
+            'a': q['answer_clean'],
+            'text': q.get('text', ''),
+            'cat': q.get('category', ''),
+            'sub': q.get('subcategory', ''),
+            'slug': q['match'].get('slug'),
+            'topic': q['match'].get('topic'),
+        }
+        for q in set_data.get('questions', [])
+    ]
+    # </script> guard for inline JSON
+    data_json = json.dumps(rows, ensure_ascii=False).replace('</', '<\\/')
+
+    total = len(rows)
+    linked = sum(1 for r in rows if r['slug'])
+    pct = round(100 * linked / total) if total else 0
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{LEAFLET_TAGS}
+<title>Sweep: {set_name}</title>
+<style>
+{base_css(max_width='900px')}
+.nav-bar {{
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}}
+.nav-links {{ display: flex; gap: 0.3rem; align-items: center; }}
+.coverage-bar {{
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    padding: 0.5rem 0.9rem;
+    margin-bottom: 0.9rem;
+    font-size: 0.82rem;
+    color: #9aa0a7;
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+}}
+.coverage-bar b {{ color: #e0e0e0; }}
+.controls {{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}}
+.cat-chip {{
+    background: #1a2535;
+    border: 1px solid #2a4060;
+    border-radius: 12px;
+    color: #6b9eff;
+    font-size: 0.78rem;
+    padding: 0.15rem 0.65rem;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}}
+.cat-chip .chip-count {{ color: #808790; font-size: 0.7rem; margin-left: 0.25rem; }}
+.cat-chip.off {{
+    background: #15191e;
+    border-color: #3a3f47;
+    color: #555;
+    text-decoration: line-through;
+}}
+.cat-chip.off .chip-count {{ color: #444; }}
+.toggle-btn {{
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 3px;
+    color: #9aa0a7;
+    font-size: 0.78rem;
+    padding: 0.2rem 0.6rem;
+    cursor: pointer;
+    user-select: none;
+}}
+.toggle-btn.on {{
+    border-color: #6b9eff;
+    color: #6b9eff;
+    background: #1a2535;
+}}
+.controls-sep {{ color: #3a3f47; margin: 0 0.2rem; }}
+h2.group-head {{
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.2rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.1rem;
+    margin: 1.1rem 0 0.35rem;
+    color: #e0e0e0;
+}}
+h3.subgroup-head {{
+    font-size: 0.9rem;
+    margin: 0.6rem 0 0.2rem;
+    color: #9aa0a7;
+    font-weight: bold;
+}}
+.q-table {{ width: 100%; border-collapse: collapse; font-size: 0.85rem; }}
+.q-table td {{
+    padding: 0.16rem 0.4rem;
+    border-top: 1px solid #22272e;
+    vertical-align: baseline;
+}}
+.q-label {{
+    width: 2.6rem;
+    white-space: nowrap;
+    color: #808790;
+    font-size: 0.72rem;
+    font-weight: bold;
+}}
+.q-cat {{
+    text-align: right;
+    white-space: nowrap;
+    color: #808790;
+    font-size: 0.72rem;
+}}
+.q-answer a {{
+    color: #6b9eff;
+    text-decoration: none;
+    border-bottom: 1px dotted #6b9eff;
+}}
+.q-answer a:hover {{ border-bottom-style: solid; }}
+.q-answer .no-page {{
+    color: #cc6666;
+    border-bottom: 1px dotted #cc6666;
+}}
+.q-answer .via-topic {{
+    color: #808790;
+    font-size: 0.75rem;
+    margin-left: 0.35rem;
+}}
+.qtext-btn {{
+    background: none;
+    border: 1px solid #2a2f37;
+    border-radius: 3px;
+    color: #808790;
+    font-size: 0.65rem;
+    padding: 0 0.35rem;
+    margin-left: 0.4rem;
+    cursor: pointer;
+    vertical-align: middle;
+}}
+.qtext-btn:hover {{ color: #6b9eff; border-color: #6b9eff; }}
+.qtext-row td {{
+    background: #15191e;
+    color: #9aa0a7;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    padding: 0.45rem 0.7rem;
+}}
+.map-box {{
+    border: 1px solid #3a3f47;
+    margin-bottom: 0.6rem;
+}}
+.map-note {{
+    color: #555;
+    font-size: 0.78rem;
+    font-style: italic;
+    margin-bottom: 1rem;
+}}
+.empty-note {{
+    color: #555;
+    font-style: italic;
+    font-size: 0.85rem;
+    padding: 1rem 0;
+}}
+.leaflet-container {{ background: #101418; }}
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {{
+    background: #1a1f25; color: #c8ccd1;
+    border: 1px solid #3a3f47;
+}}
+.leaflet-popup-content a {{ color: #6b9eff; text-decoration: none; }}
+/* search nav (house style) */
+.search-nav {{ display: inline-block; }}
+.search-nav-row {{ display: flex; gap: 0.3rem; align-items: center; }}
+.search-nav-input-wrap {{ position: relative; }}
+.search-nav-input {{
+    width: 160px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+    background: #15191e; color: #c8ccd1;
+    border: 1px solid #3a3f47; border-radius: 3px;
+    outline: none; font-family: inherit;
+}}
+.search-nav-input:focus {{ border-color: #6b9eff; width: 220px; }}
+.search-nav-input::placeholder {{ color: #555; }}
+.search-nav-dropdown {{
+    display: none; position: absolute; top: 100%; right: 0;
+    margin-top: 0.2rem; background: #1a1f25;
+    border: 1px solid #3a3f47; border-radius: 4px;
+    min-width: 280px; max-height: 350px; overflow-y: auto;
+    z-index: 1200; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}}
+.search-nav-dropdown.open {{ display: block; }}
+.search-nav-result {{
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 0.4rem 0.6rem; color: #c8ccd1; text-decoration: none;
+    font-size: 0.85rem; border-bottom: 1px solid #2a2f37;
+}}
+.search-nav-result:last-child {{ border-bottom: none; }}
+.search-nav-result:hover, .search-nav-result.active {{ background: #262d37; }}
+.search-nav-result-name {{ color: #6b9eff; }}
+.search-nav-result-cat {{
+    font-size: 0.72rem; color: #808790;
+    margin-left: 0.5rem; white-space: nowrap;
+}}
+.search-nav-empty {{ padding: 0.6rem; color: #555; font-size: 0.82rem; font-style: italic; }}
+.search-nav-random {{
+    background: #1a1f25; border: 1px solid #3a3f47; border-radius: 3px;
+    color: #9aa0a7; font-size: 0.85rem; cursor: pointer;
+    padding: 0.2rem 0.4rem; line-height: 1;
+}}
+.search-nav-random:hover {{ background: #262d37; color: #c8ccd1; border-color: #6b9eff; }}
+</style>
+</head>
+<body>
+<h1>{set_name}</h1>
+<div class="nav-bar">
+<div class="nav-links"><a href="../../../index.html" class="nav-home">&larr; Home</a></div>
+<div class="nav-search"></div>
+</div>
+<div class="coverage-bar" id="coverage-bar">
+<span><b>{total}</b> answerlines</span>
+<span><b>{linked}</b> with study pages ({pct}%)</span>
+<span id="visible-count"></span>
+</div>
+<div class="controls" id="cat-chips"></div>
+<div class="controls">
+<button class="toggle-btn" id="gaps-toggle">Show gaps only</button>
+<span class="controls-sep">|</span>
+<button class="toggle-btn on" data-view="packet">By packet</button>
+<button class="toggle-btn" data-view="category">By category</button>
+<button class="toggle-btn" data-view="map">Map</button>
+</div>
+<div id="map-wrap" style="display:none">
+    <div class="map-box" id="map-box"></div>
+    <div class="map-note" id="map-note"></div>
+</div>
+<div id="body"></div>
+<script>
+const QUESTIONS = {data_json};
+</script>
+<script src="../../guides_data.js"></script>
+<script src="../../../lib/js/search_nav.js"></script>
+<script src="../../../lib/js/map_view.js"></script>
+<script>
+initSearchNav('.nav-search', {{ prefix: '../../../' }});
+
+const offCats = new Set();
+let gapsOnly = false;
+let view = 'packet';
+let mapCtl = null;
+
+const CAT_ORDER = [...new Set(QUESTIONS.map(q => q.cat))].sort();
+
+function qLabel(q) {{
+    if (q.t === 'tossup') return 'T' + q.n;
+    return 'B' + q.n + 'abc'[q.part ?? 0];
+}}
+
+function esc(s) {{
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}}
+
+function answerHtml(q) {{
+    if (q.slug) {{
+        const via = (q.topic && q.topic.toLowerCase() !== q.a.toLowerCase())
+            ? `<span class="via-topic">&rarr; ${{esc(q.topic)}}</span>` : '';
+        return `<a href="../../${{encodeURIComponent(q.slug)}}/stock.html">${{esc(q.a)}}</a>${{via}}`;
+    }}
+    return `<span class="no-page" title="No page yet">${{esc(q.a)}}</span>`;
+}}
+
+function visibleQuestions() {{
+    return QUESTIONS.filter(q =>
+        !offCats.has(q.cat) && (!gapsOnly || !q.slug));
+}}
+
+function rowHtml(q, showCat) {{
+    const cat = showCat
+        ? `<td class="q-cat">${{esc(q.sub && q.sub !== q.cat ? q.sub : q.cat)}}</td>`
+        : '';
+    const qbtn = q.text
+        ? `<button class="qtext-btn" data-qi="${{QUESTIONS.indexOf(q)}}" title="Show question">?</button>`
+        : '';
+    return `<tr><td class="q-label">${{qLabel(q)}}</td>` +
+           `<td class="q-answer">${{answerHtml(q)}}${{qbtn}}</td>${{cat}}</tr>`;
+}}
+
+function renderBody() {{
+    const qs = visibleQuestions();
+    const body = document.getElementById('body');
+    const mapWrap = document.getElementById('map-wrap');
+    document.getElementById('visible-count').textContent =
+        (qs.length === QUESTIONS.length) ? '' : `showing ${{qs.length}}`;
+
+    if (view === 'map') {{
+        body.innerHTML = '';
+        mapWrap.style.display = '';
+        renderMap(qs);
+        return;
+    }}
+    mapWrap.style.display = 'none';
+
+    if (!qs.length) {{
+        body.innerHTML = '<div class="empty-note">Nothing matches the current filters.</div>';
+        return;
+    }}
+    let html = '';
+    if (view === 'packet') {{
+        const packets = [...new Set(qs.map(q => q.p))].sort((a, b) => a - b);
+        for (const p of packets) {{
+            const inPacket = qs.filter(q => q.p === p).sort((a, b) =>
+                (a.t === b.t ? (a.n - b.n || (a.part ?? -1) - (b.part ?? -1))
+                             : (a.t === 'tossup' ? -1 : 1)));
+            html += `<h2 class="group-head">Packet ${{p}}</h2>` +
+                `<table class="q-table">${{inPacket.map(q => rowHtml(q, true)).join('')}}</table>`;
+        }}
+    }} else {{
+        for (const cat of CAT_ORDER) {{
+            const inCat = qs.filter(q => q.cat === cat);
+            if (!inCat.length) continue;
+            html += `<h2 class="group-head">${{esc(cat)}}</h2>`;
+            const subs = [...new Set(inCat.map(q => q.sub))].sort();
+            for (const sub of subs) {{
+                const inSub = inCat.filter(q => q.sub === sub)
+                    .sort((a, b) => a.a.localeCompare(b.a));
+                if (subs.length > 1 || sub !== cat) {{
+                    html += `<h3 class="subgroup-head">${{esc(sub)}}</h3>`;
+                }}
+                html += `<table class="q-table">${{inSub.map(q => rowHtml(q, false)).join('')}}</table>`;
+            }}
+        }}
+    }}
+    body.innerHTML = html;
+}}
+
+function renderMap(qs) {{
+    // One map item per distinct linked topic among visible rows.
+    const bySlug = new Map();
+    let unlinked = 0;
+    for (const q of qs) {{
+        if (!q.slug) {{ unlinked++; continue; }}
+        if (!bySlug.has(q.slug)) {{
+            bySlug.set(q.slug, {{
+                name: q.topic || q.a,
+                country: guideCountry(q.slug),
+                year: guideYear(q.slug),
+                group: q.cat,
+                href: '../../' + encodeURIComponent(q.slug) + '/stock.html',
+                meta: q.sub && q.sub !== q.cat ? q.sub : '',
+            }});
+        }}
+    }}
+    const items = [...bySlug.values()];
+    const note = document.getElementById('map-note');
+    const setNote = (unlocated) => {{
+        const parts = [];
+        if (unlinked) parts.push(`${{unlinked}} answerlines without pages are not mapped`);
+        if (unlocated.length) parts.push(`${{unlocated.length}} topics have no location`);
+        note.textContent = parts.join(' · ');
+    }};
+    if (!mapCtl) {{
+        mapCtl = initMapView(document.getElementById('map-box'), items,
+                             {{ height: '440px', onUnlocated: setNote }});
+    }} else {{
+        mapCtl.refresh(items);
+        setTimeout(() => mapCtl.map.invalidateSize(), 0);
+    }}
+}}
+
+function renderChips() {{
+    const box = document.getElementById('cat-chips');
+    box.innerHTML = CAT_ORDER.map(cat => {{
+        const inCat = QUESTIONS.filter(q => q.cat === cat);
+        const have = inCat.filter(q => q.slug).length;
+        const off = offCats.has(cat) ? ' off' : '';
+        return `<span class="cat-chip${{off}}" data-cat="${{esc(cat)}}">${{esc(cat)}}` +
+               `<span class="chip-count">${{have}}/${{inCat.length}}</span></span>`;
+    }}).join('');
+    box.querySelectorAll('.cat-chip').forEach(chip => {{
+        chip.addEventListener('click', () => {{
+            const cat = chip.dataset.cat;
+            if (offCats.has(cat)) offCats.delete(cat); else offCats.add(cat);
+            renderChips();
+            renderBody();
+        }});
+    }});
+}}
+
+document.getElementById('gaps-toggle').addEventListener('click', function () {{
+    gapsOnly = !gapsOnly;
+    this.classList.toggle('on', gapsOnly);
+    renderBody();
+}});
+document.querySelectorAll('.toggle-btn[data-view]').forEach(btn => {{
+    btn.addEventListener('click', () => {{
+        view = btn.dataset.view;
+        document.querySelectorAll('.toggle-btn[data-view]').forEach(b =>
+            b.classList.toggle('on', b === btn));
+        renderBody();
+    }});
+}});
+
+// Question-text expansion (event delegation over re-rendered tables).
+document.getElementById('body').addEventListener('click', e => {{
+    const btn = e.target.closest('.qtext-btn');
+    if (!btn) return;
+    const tr = btn.closest('tr');
+    if (tr.nextElementSibling && tr.nextElementSibling.classList.contains('qtext-row')) {{
+        tr.nextElementSibling.remove();
+        return;
+    }}
+    const q = QUESTIONS[parseInt(btn.dataset.qi)];
+    const cols = tr.children.length;
+    const row = document.createElement('tr');
+    row.className = 'qtext-row';
+    row.innerHTML = `<td colspan="${{cols}}">${{esc(q.text)}}</td>`;
+    tr.after(row);
+}});
+
+renderChips();
+renderBody();
+</script>
+</body>
+</html>"""
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(html, encoding='utf-8')
+    return out_path
