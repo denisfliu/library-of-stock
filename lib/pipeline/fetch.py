@@ -9,14 +9,18 @@ Default behavior: single page (25 results), year >= 2012.
 
 import json
 import re
+import sys as _sys
 import time
 from pathlib import Path
 
 import requests
 
+_sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from lib.common import CACHE_DIR
+
 API_BASE = "https://www.qbreader.org/api"
 RATE_LIMIT = 20  # max requests per second
-DEFAULT_CACHE_DIR = Path("cache")
+DEFAULT_CACHE_DIR = CACHE_DIR
 DEFAULT_MIN_YEAR = 2012
 # qbreader returns at most maxReturnLength results with no pagination.
 # 500 covers the biggest canon topics (Beethoven: 107 tossups / 111

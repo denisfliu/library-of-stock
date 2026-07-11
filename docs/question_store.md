@@ -56,10 +56,11 @@ network-avoidance layer only).
 output/_questions/{set_slug}.json     # one shard per qbreader set
 ```
 
-Sharded **by set**, not by id-prefix: a tournament's questions land in one
-file, new fetches touch few shards, diffs stay local, and sweep pages read
-exactly their shard. Shard file = `{_id: doc}` map, keys sorted, written
-via `write_json_if_changed` (no churn).
+Sharded **by set** (decided, Denis, July 2026), not by id-prefix: a
+tournament's questions land in one file, new fetches touch few shards,
+diffs stay local, and sweep pages read exactly their shard. Shard file =
+`{_id: doc}` map, keys sorted, written via `write_json_if_changed`
+(no churn).
 
 Question doc — qbreader fields minus redundancy:
 

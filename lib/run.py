@@ -16,10 +16,11 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.common import CACHE_DIR, OUTPUT_DIR
 from lib.pipeline.digest import format_digest
 from lib.pipeline.fetch import fetch_topic, fetch_text_mentions
 from lib.pipeline.parse import parse_answer_clues, parse_text_mention_clues
+from lib.questions_store import record_fetch
 
 
 def format_clues_for_analysis(parsed: dict) -> str:
@@ -219,22 +220,26 @@ def main():
     else:
         # No outdir — derive directory from search term (legacy/work-subquery behavior)
         safe_name = topic.strip().lower().replace(" ", "_")
-        topic_dir = Path("output") / safe_name
+        topic_dir = OUTPUT_DIR / safe_name
         topic_dir.mkdir(parents=True, exist_ok=True)
         clue_filename = f"{safe_name}_mentions_clues.txt" if mentions_mode else f"{safe_name}_clues.txt"
 
+    # Raw API responses cache to gitignored cache/topics/; the committed
+    # record is the question store + the topic's questions_ref.json.
+    fetch_cache = CACHE_DIR / "topics"
     if mentions_mode:
         # Text mention search
         data = fetch_text_mentions(topic, difficulties=diffs, categories=categories,
-                                   min_year=min_year, cache_dir=topic_dir)
+                                   min_year=min_year, cache_dir=fetch_cache)
         parsed = parse_text_mention_clues(data)
         output = format_text_mentions_for_analysis(parsed)
     else:
         # Standard answerline search
         data = fetch_topic(topic, difficulties=diffs, categories=categories,
-                           min_year=min_year, cache_dir=topic_dir)
+                           min_year=min_year, cache_dir=fetch_cache)
         parsed = parse_answer_clues(data)
         output = format_clues_for_analysis(parsed)
+    record_fetch(topic_dir, data, mentions=mentions_mode)
 
     out_path = topic_dir / clue_filename
     with open(out_path, "w", encoding='utf-8') as f:

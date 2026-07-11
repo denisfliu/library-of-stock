@@ -9,14 +9,16 @@ Usage:
     python lib/validate.py --strict  # exit with code 1 if any issues found
 """
 
+import json
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from lib.common import CACHE_DIR, load_cards, load_corpus
+from lib.common import load_cards, load_corpus
+from lib.questions_store import load_store
 
 
-def run_checks(analyses=None, parse_errors=None) -> list[str]:
+def run_checks(analyses=None, parse_errors=None, store=None) -> list[str]:
     if analyses is None:
         analyses, parse_errors = load_corpus()
 
@@ -67,13 +69,25 @@ def run_checks(analyses=None, parse_errors=None) -> list[str]:
                 and topic not in _OFA_NO_GENRE_OK):
             issues.append(f"[EMPTY GENRE] {topic} (Fine Arts / Other Fine Arts)")
 
-        # 7. Stale recorded cache_file (file no longer exists in topic dir or cache/)
-        recorded_cache = analysis.get("cache_file")
-        if recorded_cache:
-            topic_cache = f.parent / recorded_cache
-            fallback_cache = CACHE_DIR / recorded_cache
-            if not topic_cache.exists() and not fallback_cache.exists():
-                issues.append(f"[STALE CACHE_FILE] {topic}: '{recorded_cache}' not found")
+        # 7. Question refs: the topic should have a questions_ref.json and
+        # every referenced id must resolve in the question store.
+        ref_path = f.parent / "questions_ref.json"
+        if not ref_path.exists():
+            issues.append(f"[NO QUESTIONS REF] {topic}")
+        else:
+            if store is None:
+                store = load_store()
+            try:
+                refs = json.load(open(ref_path, encoding='utf-8'))
+            except json.JSONDecodeError as e:
+                issues.append(f"[BROKEN JSON] {slug}/questions_ref.json: {e}")
+                refs = []
+            dangling = sum(1 for entry in refs
+                           for kind in ("tossups", "bonuses")
+                           for qid in entry.get(kind, []) if qid not in store)
+            if dangling:
+                issues.append(f"[DANGLING QUESTION REF] {topic}: "
+                              f"{dangling} ids not in output/_questions/")
 
         # 8. Score clues flagged for ABC notation review
         for clue in analysis.get("score_clues", []):
@@ -84,9 +98,9 @@ def run_checks(analyses=None, parse_errors=None) -> list[str]:
     return issues
 
 
-def main(analyses=None, parse_errors=None):
+def main(analyses=None, parse_errors=None, store=None):
     strict = "--strict" in sys.argv
-    issues = run_checks(analyses, parse_errors)
+    issues = run_checks(analyses, parse_errors, store=store)
 
     if not issues:
         print("Validation OK — no issues found.")

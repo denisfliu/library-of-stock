@@ -1,10 +1,13 @@
 """
-render_questions.py — Generate HTML page displaying raw tossups and bonuses
-for a topic from cached API data.
+render_questions.py — Generate HTML pages of raw tossups and bonuses.
+
+Each topic's page renders from output/{slug}/questions_ref.json — ordered
+qbreader _id lists per query — resolved against the shared question store
+(lib/questions_store.py, output/_questions/).
 
 Usage:
-    python render_questions.py <cache_file> <output_file>
-    python render_questions.py cache/smetana_d7_8_9_10_y2012.json output/smetana_questions.html
+    python lib/render/render_questions.py [--force]      # all topics
+    python lib/render/render_questions.py <cache_file> <output_file>
 """
 
 import json
@@ -14,13 +17,8 @@ from html import escape
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from lib.common import CACHE_DIR, resolve_analyses
+from lib.common import resolve_analyses
 from lib.render.theme import base_css
-
-
-def _sanitize(name: str) -> str:
-    """Same normalization fetch.py uses for cache filenames."""
-    return re.sub(r'[^\w\-]', '_', name.strip().lower())
 
 
 def _tab_label(cache_data: dict, is_mentions: bool) -> str:
@@ -258,144 +256,56 @@ function showTab(i) {{
     return output_path
 
 
-def find_cache_for_topic(topic_key: str, topic_name: str = "") -> Path | None:
-    """Find the cache file matching a topic key (from analysis filename).
+def build_all(force: bool = False, analyses=None, store=None):
+    """Generate question pages for every topic with a questions_ref.json.
 
-    Agents often search by last name (e.g. 'kafka' for Franz Kafka), so the
-    cache file slug won't match the full-name analysis slug.  Strategy:
-
-    1. Exact prefix match on topic_key.
-    2. If topic_name provided, apply fetch.py's _sanitize() to get the
-       canonical cache slug (handles dots, special chars) and try that.
-    3. Try each word component from last to first as a prefix — catches the
-       common last-name-search pattern.
-    4. Try adjacent word pairs from the end — catches compound names
-       like "du Maurier" → prefix "du_maurier".
-    5. Substring fallback.
+    Refs hold ordered qbreader _id lists per query; the text lives once in
+    output/_questions/ (lib/questions_store.py). Note the incremental check
+    keys off the ref + analysis mtimes only — a store-shard refresh that
+    changes question text needs --force to propagate.
     """
-    cache_dir = CACHE_DIR
-
-    name_lower = topic_name.lower() if topic_name else ""
-
-    def _first_non_mention(pattern: str) -> Path | None:
-        for f in sorted(cache_dir.glob(pattern)):
-            if "_mentions" not in f.name:
-                return f
-        return None
-
-    def _validated(pattern: str) -> Path | None:
-        """Like _first_non_mention but also checks that the cache's
-        query_string is actually a word in the topic name.  This prevents
-        e.g. 'smith_d7...' (about Adam Smith) from being served to a
-        different topic whose only match is the surname 'Smith'."""
-        for f in sorted(cache_dir.glob(pattern)):
-            if "_mentions" in f.name:
-                continue
-            if not name_lower:
-                return f  # no topic_name to validate against, accept blindly
-            try:
-                qs = json.load(open(f, encoding='utf-8')).get("query_string", "").lower()
-            except Exception:
-                continue
-            if qs and qs in name_lower:
-                return f
-        return None
-
-    # 1. Exact prefix match (always trusted — no validation needed)
-    result = _first_non_mention(f"{topic_key}_*.json")
-    if result:
-        return result
-
-    # 2. Sanitized topic_name (matches fetch.py's cache key convention)
-    if topic_name:
-        sanitized = _sanitize(topic_name)
-        if sanitized != topic_key:
-            result = _first_non_mention(f"{sanitized}_*.json")
-            if result:
-                return result
-
-    # 3. Each word component from last to first (min 3 chars) — validated.
-    # Use components from both the topic_key and the sanitized topic_name so
-    # that apostrophes/special chars in names like "O'Connor" resolve correctly
-    # (analysis slug: flannery_oconnor, sanitized: flannery_o_connor → 'connor').
-    sanitized_name = _sanitize(topic_name) if topic_name else topic_key
-    all_components = dict.fromkeys(
-        p for source in (topic_key, sanitized_name)
-        for p in source.replace(".", "").split("_")
-        if len(p) >= 3
-    )
-    for part in reversed(list(all_components)):
-        result = _validated(f"{part}_*.json")
-        if result:
-            return result
-
-    # 4. Adjacent word pairs from the end — validated (compound last names).
-    # Use sanitized name so O'Connor → ['o', 'connor'] → pair 'o_connor'.
-    for source_key in dict.fromkeys([sanitized_name, topic_key.replace(".", "")]):
-        raw_parts = [p for p in source_key.split("_") if p]
-        for i in range(len(raw_parts) - 1, 0, -1):
-            pair = "_".join(raw_parts[i - 1:i + 1])
-            result = _validated(f"{pair}_*.json")
-            if result:
-                return result
-
-    # 5. Substring fallback
-    for f in sorted(cache_dir.glob("*.json")):
-        if "_mentions" not in f.name and topic_key in f.name:
-            return f
-    return None
-
-
-def build_all(force: bool = False, analyses=None):
-    """Generate question pages for all topics that have both cache and analysis data."""
     count = 0
     skipped = 0
+    missing_ids = 0
     for topic_key, analysis_file, analysis in resolve_analyses(analyses):
         topic_display = analysis.get("topic", topic_key.replace("_", " ").title())
 
-        # Collect all cache files in the topic directory
-        # Sort: non-mentions first (alphabetically), then mentions
-        all_jsons = [f for f in analysis_file.parent.glob("*.json")
-                     if f.name not in ("analysis.json", "cards.json")]
-        non_mentions = sorted(f for f in all_jsons if "_mentions" not in f.name)
-        mentions = sorted(f for f in all_jsons if "_mentions" in f.name)
-        cache_files = non_mentions + mentions
-
-        # If nothing in topic dir, fall back to fuzzy match in cache/
-        if not cache_files:
-            fallback = find_cache_for_topic(topic_key, topic_name=topic_display)
-            if fallback:
-                cache_files = [fallback]
-
-        if not cache_files:
-            # Check recorded cache_file as last resort
-            recorded = analysis.get("cache_file")
-            if recorded:
-                candidate = analysis_file.parent / recorded
-                if not candidate.exists():
-                    candidate = CACHE_DIR / recorded
-                if candidate.exists():
-                    cache_files = [candidate]
-            if not cache_files:
-                print(f"  Skipping {topic_key}: no cache file found")
-                continue
+        ref_path = analysis_file.parent / "questions_ref.json"
+        if not ref_path.exists():
+            print(f"  Skipping {topic_key}: no questions_ref.json")
+            continue
 
         questions_path = analysis_file.parent / "questions.html"
-
-        # Incremental: skip if questions.html is newer than all cache files and analysis
         if not force and questions_path.exists():
             html_mtime = questions_path.stat().st_mtime
             if (html_mtime >= analysis_file.stat().st_mtime
-                    and all(html_mtime >= cf.stat().st_mtime for cf in cache_files)):
+                    and html_mtime >= ref_path.stat().st_mtime):
                 skipped += 1
                 continue
 
+        if store is None:
+            from lib.questions_store import load_store
+            store = load_store()
+
+        with open(ref_path, encoding='utf-8') as f:
+            refs = json.load(f)
+
         sources = []
         is_mentions_flags = []
-        for cf in cache_files:
-            with open(cf, encoding='utf-8') as f:
-                sources.append(json.load(f))
-            is_mentions_flags.append("_mentions" in cf.name)
+        for entry in refs:
+            docs = {}
+            for kind in ("tossups", "bonuses"):
+                ids = entry.get(kind, [])
+                docs[kind] = [store[i] for i in ids if i in store]
+                missing_ids += sum(1 for i in ids if i not in store)
+            key = "text_mentions" if entry.get("mentions") else "answer_matches"
+            sources.append({
+                "query_string": entry.get("query_string", ""),
+                "difficulties": entry.get("difficulties"),
+                "min_year": entry.get("min_year"),
+                key: docs,
+            })
+            is_mentions_flags.append(bool(entry.get("mentions")))
 
         stock_link = "stock.html"
         render_questions_html(sources, questions_path,
@@ -409,6 +319,9 @@ def build_all(force: bool = False, analyses=None):
         total_b = sum(_counts(s)[1] for s in sources)
         print(f"  {topic_display}: {len(sources)} source(s), {total_t}T {total_b}B -> {questions_path}")
         count += 1
+    if missing_ids:
+        print(f"  WARNING: {missing_ids} referenced question ids missing "
+              f"from output/_questions/", file=sys.stderr)
     print(f"Built {count} question pages" + (f" ({skipped} up-to-date)" if skipped else ""))
 
 

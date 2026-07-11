@@ -23,6 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib.common import load_corpus
+from lib.questions_store import load_store
 from lib.crossref.crossref import rebuild_index
 from lib.rerender import render_all
 from lib.render import render_audio, render_cards, render_questions, render_score_review
@@ -41,12 +42,14 @@ def main() -> None:
     analyses, parse_errors = load_corpus()
     for path, msg in parse_errors:
         print(f"WARNING: skipping {path}: {msg}", file=sys.stderr)
-    print(f"Loaded {len(analyses)} analyses in {time.time() - t0:.1f}s")
+    store = load_store()
+    print(f"Loaded {len(analyses)} analyses + {len(store)} stored questions "
+          f"in {time.time() - t0:.1f}s")
 
     rebuild_index(analyses=analyses)
     render_all(force=force, analyses=analyses)
     render_cards.build_all(force=force, analyses=analyses)
-    render_questions.build_all(force=force, analyses=analyses)
+    render_questions.build_all(force=force, analyses=analyses, store=store)
     render_audio.build_all(force=force, analyses=analyses)
     render_score_review.main(analyses=analyses)
 
@@ -60,7 +63,7 @@ def main() -> None:
     build_overviews(force=force, matcher=matcher)
 
     build_index(analyses=analyses)
-    validate.main(analyses=analyses, parse_errors=parse_errors)
+    validate.main(analyses=analyses, parse_errors=parse_errors, store=store)
     print("Done.")
 
 
