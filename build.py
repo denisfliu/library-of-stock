@@ -59,8 +59,8 @@ def main() -> None:
 
     # One matcher serves both the sweep rematch and overview rendering.
     matcher = TopicMatcher(analyses=analyses)
-    rematch_all(matcher=matcher)
-    build_overviews(force=force, matcher=matcher)
+    rematch_all(matcher=matcher, store=store)
+    build_overviews(force=force, matcher=matcher, store=store)
 
     build_index(analyses=analyses)
     validate.main(analyses=analyses, parse_errors=parse_errors, store=store)

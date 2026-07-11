@@ -55,7 +55,10 @@ def _write_report(path, report):
 
 
 def extract_questions(set_data: dict) -> list[dict]:
-    """Flatten a fetched set into answerline rows (no matching yet)."""
+    """Flatten a fetched set into answerline rows (no matching yet).
+
+    Rows carry the question's store id instead of its text; render_sweep
+    resolves text from the question store."""
     rows = []
     for i, packet in enumerate(set_data['packets'], start=1):
         for t in packet.get('tossups', []):
@@ -65,27 +68,24 @@ def extract_questions(set_data: dict) -> list[dict]:
                 'number': t.get('number'),
                 'type': 'tossup',
                 'part': None,
+                'id': t.get('_id'),
                 'answer_raw': raw,
                 'answer_clean': clean_answerline(raw),
-                'text': t.get('question_sanitized', ''),
                 'category': t.get('category', ''),
                 'subcategory': t.get('subcategory', ''),
                 'alternate_subcategory': t.get('alternate_subcategory') or '',
             })
         for b in packet.get('bonuses', []):
             answers = b.get('answers_sanitized') or b.get('answers', [])
-            parts = b.get('parts_sanitized', [])
-            leadin = b.get('leadin_sanitized', '')
             for j, raw in enumerate(answers):
-                part = parts[j] if j < len(parts) else ''
                 rows.append({
                     'packet': i,
                     'number': b.get('number'),
                     'type': 'bonus',
                     'part': j,
+                    'id': b.get('_id'),
                     'answer_raw': raw,
                     'answer_clean': clean_answerline(raw),
-                    'text': f'{leadin} {part}'.strip(),
                     'category': b.get('category', ''),
                     'subcategory': b.get('subcategory', ''),
                     'alternate_subcategory': b.get('alternate_subcategory') or '',
@@ -197,8 +197,11 @@ def register_set(set_name: str, set_slug: str,
 
 
 def build_set(set_name: str, rematch_only: bool = False,
-              matcher: TopicMatcher | None = None) -> dict:
+              matcher: TopicMatcher | None = None,
+              store: dict | None = None) -> dict:
     """Build or refresh one sweep set. Returns the set data dict."""
+    from lib.questions_store import load_store, upsert
+
     set_slug = topic_slug(set_name)
     set_dir = SETS_DIR / set_slug
     set_file = set_dir / 'set.json'
@@ -213,6 +216,10 @@ def build_set(set_name: str, rematch_only: bool = False,
     else:
         from lib.pipeline.fetch import fetch_set
         fetched = fetch_set(set_name)
+        for packet in fetched['packets']:
+            upsert([dict(q, type='tossup') for q in packet.get('tossups', [])]
+                   + [dict(q, type='bonus') for q in packet.get('bonuses', [])])
+        store = None  # reload below: the upsert may have added docs
         rows = extract_questions(fetched)
         data = {
             'set_name': set_name,
@@ -234,8 +241,10 @@ def build_set(set_name: str, rematch_only: bool = False,
     linked = sum(1 for r in rows if r['match']['slug'])
     register_set(data['set_name'], set_slug, linked=linked, total=len(rows))
 
+    if store is None:
+        store = load_store()
     from lib.render.render_sweep import render_sweep
-    render_sweep(data, set_dir / 'sweep.html')
+    render_sweep(data, set_dir / 'sweep.html', store=store)
     print(f"{data['set_name']}: {len(rows)} answerlines, {linked} linked "
           f"({', '.join(f'{k}={v}' for k, v in sorted(statuses.items()))})")
     print(f"  report: {len(report['alias_matches'])} alias matches to verify, "
@@ -243,7 +252,8 @@ def build_set(set_name: str, rematch_only: bool = False,
     return data
 
 
-def rematch_all(matcher: TopicMatcher | None = None) -> None:
+def rematch_all(matcher: TopicMatcher | None = None,
+                store: dict | None = None) -> None:
     """Re-match + re-render every registered set without fetching.
 
     The build's no-network sweep step; red links self-heal to blue as
@@ -254,8 +264,12 @@ def rematch_all(matcher: TopicMatcher | None = None) -> None:
         return
     if matcher is None:
         matcher = TopicMatcher()
+    if store is None:
+        from lib.questions_store import load_store
+        store = load_store()
     for entry in registry:
-        build_set(entry['set_name'], rematch_only=True, matcher=matcher)
+        build_set(entry['set_name'], rematch_only=True, matcher=matcher,
+                  store=store)
 
 
 def main():

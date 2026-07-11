@@ -18,7 +18,25 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
 from lib.render.theme import LEAFLET_TAGS, base_css
 
 
-def render_sweep(set_data: dict, out_path: str | _Path) -> _Path:
+def _row_text(q: dict, store: dict) -> str:
+    """Resolve a row's display text from the question store: the tossup
+    question, or leadin + the referenced bonus part."""
+    doc = store.get(q.get('id') or '')
+    if not doc:
+        return q.get('text', '')  # pre-store set.json rows embedded text
+    if q['type'] == 'bonus':
+        parts = doc.get('parts_sanitized', [])
+        j = q.get('part') or 0
+        part = parts[j] if j < len(parts) else ''
+        return f"{doc.get('leadin_sanitized', '')} {part}".strip()
+    return doc.get('question_sanitized', '')
+
+
+def render_sweep(set_data: dict, out_path: str | _Path,
+                 store: dict | None = None) -> _Path:
+    if store is None:
+        from lib.questions_store import load_store
+        store = load_store()
     out_path = _Path(out_path)
     set_name = escape(set_data.get('set_name', 'Unknown set'))
 
@@ -29,7 +47,7 @@ def render_sweep(set_data: dict, out_path: str | _Path) -> _Path:
             't': q['type'],
             'part': q.get('part'),
             'a': q['answer_clean'],
-            'text': q.get('text', ''),
+            'text': _row_text(q, store),
             'cat': q.get('category', ''),
             'sub': q.get('subcategory', ''),
             'slug': q['match'].get('slug'),
