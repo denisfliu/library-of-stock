@@ -18,13 +18,15 @@ review of what the change did to real pages.
 ## What the fixtures exercise
 
 - `amos_tutuola`, `christopher_okigbo` — frozen copies of two real small
-  topics (analysis + cards + question cache; no audio, no score clues, so
-  no mtime-based cache busters can flap).
+  topics (analysis + cards + `questions_ref.json` resolving into the
+  fixture question store `output/_questions/`; no audio, no score clues,
+  so no mtime-based cache busters can flap).
 - `_categories/fixture_lit` — overview page with nesting, blurbs, a work
   entry, and an entry with no topic page (red-link/`no-page` path).
 - `_sets/fixture_set` — sweep set hitting every matcher tier: exact,
   last-name alias, work alias, unmatched, and an alias blocked by the
-  category gate.
+  category gate. One row resolves its text through the question store
+  (`id`), the rest exercise the embedded-text fallback.
 - `topic_index.json` and the rematched `set.json` are snapshotted too;
   `report.json` is not (it embeds a generation date).
 

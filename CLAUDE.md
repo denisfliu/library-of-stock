@@ -40,7 +40,7 @@ python lib/audio/soundbites.py search "..." # find Commons audio for soundbites.
 - **`getCardImages` is triplicated** — `lib/render/render_cards.py` (Python `_synthesize_image_cards`), its embedded JS, and `lib/js/anki_export.js`. Any card-image schema change needs all three.
 - **Broaden the golden render test**: `tests/golden/` (run in CI before every deploy) covers stock/cards/questions/overview/sweep/topic_index. Not yet covered: `index.html` (embeds stock.html mtimes — needs date normalization) and the dev dashboards.
 - **Wikimedia batching**: `lib/images/` fetches thumbnails one filename at a time; the Commons API accepts pipe-joined `titles=`.
-- **Shared question store**: design proposal at `docs/question_store.md` (measured duplication, per-set shards keyed by qbreader `_id`, 3-phase migration) — awaiting Denis's decisions; should land before the ~38-unit overview scale-out.
+- ~~Shared question store~~: **done July 2026** — `lib/questions_store.py`, per-set shards in `output/_questions/` keyed by qbreader `_id`; topic `questions_ref.json` / sweep row ids / unit `{answerline: [{id, part}]}` refs resolve into it. Design + final shapes: `docs/question_store.md`.
 - **Map v2**: real `coordinates` metadata — pins currently sit at country centroids (`lib/js/map_view.js`; country click-panel and category/era facets exist). With real coords, add city-level spread and pass `coords` per item (component already supports it).
 - **AFA soundbites**: extend the Commons soundbites (done for opera) to Auditory Fine Arts when that unit is authored. First add API pacing to `lib/audio/soundbites.py` searches (mirror `lib/images/` `API_DELAY`) — a curation agent burst got 429-throttled by Wikimedia in July 2026.
 - **Score-clue synthesis quality**: the ABC→MP3 synthesizations behind `score_clues` are correct when they faithfully transcribe the specific clued passage, but many currently don't (56 clips across 35 topics; the 56 `[NEEDS_ABC_REVIEW]` validate warnings are related) — audit/fix the transcriptions. Once trustworthy, they're ALSO worth surfacing on AFA overview pages attached to work entries (they demonstrate the actual clued passage), alongside — not instead of — the Commons famous-excerpt soundbites (`lib/audio/soundbites.py`).
@@ -77,6 +77,8 @@ python lib/audio/soundbites.py search "..." # find Commons audio for soundbites.
 ## Key Paths
 - `output/{slug}/analysis.json` — per-topic analysis data
 - `output/{slug}/cards.json` — the topic's Anki cards (separate file; card agents write ONLY this)
+- `output/{slug}/questions_ref.json` — qbreader `_id` refs backing the topic's questions.html
+- `output/_questions/{set}.json` — the shared question store (one shard per qbreader set; see `lib/questions_store.py` + `docs/question_store.md`)
 - `output/{slug}/stock.html` — rendered study page
 - `output/topic_index.json` — master index of all topics/works
 - `queue/` — all queue JSON files (never `lib/queues/`)
