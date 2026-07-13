@@ -25,6 +25,7 @@ ROOT = Path(os.environ.get('STOCK_ROOT') or Path(__file__).resolve().parent.pare
 OUTPUT_DIR = ROOT / 'output'
 QUEUE_DIR = ROOT / 'queue'
 CACHE_DIR = ROOT / 'cache'
+MIRROR_DIR = ROOT / 'mirror'
 DEV_DIR = ROOT / 'dev'
 TOPIC_INDEX_FILE = OUTPUT_DIR / 'topic_index.json'
 # Non-topic namespaces under output/. The leading underscore keeps them
