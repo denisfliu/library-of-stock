@@ -376,6 +376,7 @@ BASE_CSS
 <div style="display:flex;justify-content:space-between;align-items:baseline;">
 <h1>Stock Knowledge Guides</h1>
 <div style="display:flex;gap:0.5rem;align-items:center;">
+<a href="reader.html" style="background:#1a1f25;color:#6b9eff;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.7rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;">Reader &#x1f6ce;</a>
 <div style="position:relative;" id="dev-menu">
   <button style="background:#1a1f25;color:#9aa0a7;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.7rem;font-size:0.78rem;cursor:pointer;white-space:nowrap;" onclick="var p=document.getElementById('dev-panel');p.style.display=p.style.display==='none'?'flex':'none'">Dev ▾</button>
   <div id="dev-panel" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#15191e;border:1px solid #2a2f37;border-radius:6px;padding:0.4rem;flex-direction:column;gap:0.3rem;z-index:100;min-width:160px;">

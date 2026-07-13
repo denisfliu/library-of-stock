@@ -30,6 +30,7 @@ from lib.render.build_overviews import build as build_overviews
 from lib.sweep.build_set import rematch_all
 from lib.sweep.matcher import TopicMatcher
 from lib.build_index import build as build_index
+from lib.render.build_reader import build as build_reader
 from lib import validate
 from dev import build_changelog, build_crossrefs, build_stats
 
@@ -60,6 +61,7 @@ def main() -> None:
     build_overviews(force=force, matcher=matcher)
 
     build_index(analyses=analyses)
+    build_reader()
     validate.main(analyses=analyses, parse_errors=parse_errors)
     print("Done.")
 
