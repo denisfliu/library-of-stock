@@ -1,5 +1,16 @@
 # Design: shared question store
 
+**Status: RETIRED (July 2026, ~2 weeks after landing).** The committed
+store (`output/_questions/` shards) was superseded by the qbreader
+mirror + R2 data plane (`docs/mirror.md`): question text lives in the
+gitignored SQLite mirror, site pages fetch it at view time from R2
+(`topic_questions/`, `unit_questions/`, `sets/` artifacts), and the
+dangling-ref check moved to publish time. What survives from this
+design: the per-topic `questions_ref.json` refs, the sweep row
+`id`/`part` refs, the unit `{answerline: [{id, part}]}` refs, and
+`shard_slug` — all still committed and load-bearing. This document is
+kept as history.
+
 **Status: IMPLEMENTED (July 2026).** Denis decisions: shard by set;
 keep both text variants (raw markup is load-bearing — parse.py power
 detection and questions.html formatting read it; sanitized feeds

@@ -57,8 +57,8 @@ def _write_report(path, report):
 def extract_questions(set_data: dict) -> list[dict]:
     """Flatten a fetched set into answerline rows (no matching yet).
 
-    Rows carry the question's store id instead of its text; render_sweep
-    resolves text from the question store."""
+    Rows carry the question's qbreader id instead of its text; the sweep
+    page resolves text at view time from the set's R2 shard."""
     rows = []
     for i, packet in enumerate(set_data['packets'], start=1):
         for t in packet.get('tossups', []):
@@ -215,8 +215,6 @@ def _r2_set_slug(set_name: str) -> str:
 def build_set(set_name: str, rematch_only: bool = False,
               matcher: TopicMatcher | None = None) -> dict:
     """Build or refresh one sweep set. Returns the set data dict."""
-    from lib.questions_store import upsert
-
     set_slug = topic_slug(set_name)
     set_dir = SETS_DIR / set_slug
     set_file = set_dir / 'set.json'
@@ -231,9 +229,6 @@ def build_set(set_name: str, rematch_only: bool = False,
     else:
         from lib.pipeline.fetch import fetch_set
         fetched = fetch_set(set_name)
-        for packet in fetched['packets']:
-            upsert([dict(q, type='tossup') for q in packet.get('tossups', [])]
-                   + [dict(q, type='bonus') for q in packet.get('bonuses', [])])
         rows = extract_questions(fetched)
         data = {
             'set_name': set_name,

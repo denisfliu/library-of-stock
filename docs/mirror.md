@@ -53,9 +53,12 @@ up sets added since the backup date.
   cutover, one tossup had been re-categorized two days after the backup.
   Remedies: `--refresh "Set Name"` for targeted fixes, or re-seed from
   the next published backup (qbreader posts one every month or two).
-- The committed store (`output/_questions/`, see `question_store.md`)
-  is unchanged: still the curated, CI-visible subset that renderers
-  read. The mirror sits behind fetch.py, upstream of it.
+- The committed store (`output/_questions/`) is RETIRED (July 2026):
+  renderers ship id refs only and pages fetch text at view time from
+  the R2 artifacts, so nothing in CI needs question text anymore.
+  Committed refs are validated against the mirror at publish time
+  (publish aborts on a dangling id). After content work, run
+  `publish --upload` or new pages' panels stay "not yet published".
 
 ## Published website artifacts (the reader's data plane)
 

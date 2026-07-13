@@ -224,8 +224,8 @@ def main():
         topic_dir.mkdir(parents=True, exist_ok=True)
         clue_filename = f"{safe_name}_mentions_clues.txt" if mentions_mode else f"{safe_name}_clues.txt"
 
-    # Raw API responses cache to gitignored cache/topics/; the committed
-    # record is the question store + the topic's questions_ref.json.
+    # Query results cache to gitignored cache/topics/; the committed
+    # record is the topic's questions_ref.json (text stays in the mirror).
     fetch_cache = CACHE_DIR / "topics"
     if mentions_mode:
         # Text mention search

@@ -136,6 +136,8 @@ after you finish.""")
     print()
     print('After BOTH agents finish, run:')
     print('  ./build.sh')
+    print('  python lib/mirror/publish.py --upload   # new topics\' question '
+          'panels stay "not yet published" until this runs')
 
 
 if __name__ == '__main__':

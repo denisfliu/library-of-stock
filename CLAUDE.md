@@ -43,8 +43,8 @@ python lib/audio/soundbites.py search "..." # find Commons audio for soundbites.
 - **`getCardImages` is triplicated** — `lib/render/render_cards.py` (Python `_synthesize_image_cards`), its embedded JS, and `lib/js/anki_export.js`. Any card-image schema change needs all three.
 - **Broaden the golden render test**: `tests/golden/` (run in CI before every deploy) covers stock/cards/questions/overview/sweep/topic_index. Not yet covered: `index.html` (embeds stock.html mtimes — needs date normalization) and the dev dashboards.
 - **Wikimedia batching**: `lib/images/` fetches thumbnails one filename at a time; the Commons API accepts pipe-joined `titles=`.
-- ~~Shared question store~~: **done July 2026** — `lib/questions_store.py`, per-set shards in `output/_questions/` keyed by qbreader `_id`; topic `questions_ref.json` / sweep row ids / unit `{answerline: [{id, part}]}` refs resolve into it. Design + final shapes: `docs/question_store.md`.
-- ~~Full qbreader mirror~~: **done July 2026** — `mirror/qbreader.sqlite` + `lib/mirror/` (importer, sync, local query engine); fetch.py is mirror-backed, API used only for new-set sync. See `docs/mirror.md`.
+- ~~Shared question store~~: built July 2026, then **retired later that month** — question text now lives only in the mirror; committed refs (`questions_ref.json`, sweep row ids, unit `{answerline: [{id, part}]}`) resolve at publish time. History: `docs/question_store.md`.
+- ~~Full qbreader mirror~~: **done July 2026** — `mirror/qbreader.sqlite` + `lib/mirror/` (importer, sync, local query engine, R2 publisher); fetch.py is mirror-backed, API used only for new-set sync. Site pages fetch question text from R2 at view time. See `docs/mirror.md`.
 - **Custom question reader**: planned; will read the mirror (local-first v1, offline-capable; online hosting deferred — R2 leading candidate). Denis will supply specs.
 - **Map v2**: real `coordinates` metadata — pins currently sit at country centroids (`lib/js/map_view.js`; country click-panel and category/era facets exist). With real coords, add city-level spread and pass `coords` per item (component already supports it).
 - **AFA soundbites**: extend the Commons soundbites (done for opera) to Auditory Fine Arts when that unit is authored. First add API pacing to `lib/audio/soundbites.py` searches (mirror `lib/images/` `API_DELAY`) — a curation agent burst got 429-throttled by Wikimedia in July 2026.
@@ -84,7 +84,7 @@ python lib/audio/soundbites.py search "..." # find Commons audio for soundbites.
 - `output/{slug}/analysis.json` — per-topic analysis data
 - `output/{slug}/cards.json` — the topic's Anki cards (separate file; card agents write ONLY this)
 - `output/{slug}/questions_ref.json` — qbreader `_id` refs backing the topic's questions.html
-- `output/_questions/{set}.json` — the shared question store (one shard per qbreader set; see `lib/questions_store.py` + `docs/question_store.md`)
+- `mirror/qbreader.sqlite` — full local qbreader mirror (gitignored; all question text; see `docs/mirror.md`)
 - `output/{slug}/stock.html` — rendered study page
 - `output/topic_index.json` — master index of all topics/works
 - `queue/` — all queue JSON files (never `lib/queues/`)

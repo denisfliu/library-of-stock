@@ -1,14 +1,15 @@
 """capture_questions.py — Capture a unit's actual questions for its
 overview page.
 
-Fetches every tossup/bonus in the unit's taxonomy slice, upserts the
-questions into the shared store (output/_questions/), and writes
+Fetches every tossup/bonus in the unit's taxonomy slice (from the local
+qbreader mirror) and writes
 
     output/_categories/{unit}/questions.json
 
 as {normalized answerline: [{id, part}, ...]} refs — part indexes a
-bonus part, null means a tossup. The page's questions_data.js payload
-is generated from these refs at render time by build_overviews.py.
+bonus part, null means a tossup. The refs resolve to text at publish
+time (unit_questions/{unit}.json on R2, fetched by the overview page's
+question panels).
 
 The overview page shows a per-entry "N q" button when the entry's
 normalized answerline has captured questions (see render_overview.py).
@@ -28,7 +29,6 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
 from lib.common import CATEGORIES_DIR, write_json_if_changed
 from lib.pipeline.fetch import fetch_unit_questions
-from lib.questions_store import load_store, upsert
 from lib.sweep.answerlines import clean_answerline, normalize
 from lib.units import UNITS_BY_SLUG
 
@@ -59,8 +59,6 @@ def capture(unit_slug: str, refresh: bool = False) -> None:
         raise SystemExit(f'Unknown unit {unit_slug!r}')
 
     data = fetch_unit_questions(unit.freq_params, use_cache=not refresh)
-    upsert([dict(q, type='tossup') for q in data['tossups']]
-           + [dict(q, type='bonus') for q in data['bonuses']])
 
     grouped: dict[str, list] = {}
 
@@ -83,7 +81,7 @@ def capture(unit_slug: str, refresh: bool = False) -> None:
             add(ans, f'{leadin} {part}', b, j)
 
     # Newest sets first within each answerline; the sort key is dropped
-    # from the committed refs (it lives in the store).
+    # from the committed refs (it lives in the mirror).
     for qs in grouped.values():
         qs.sort(key=lambda r: r['_set'], reverse=True)
         for r in qs:
@@ -108,7 +106,17 @@ def show(unit_slug: str, answerline: str) -> None:
     refs = grouped.get(key)
     if not refs:
         raise SystemExit(f'No captured questions for answerline {key!r}')
-    store = load_store()
+    # Resolve the refs against the mirror (API-shaped docs carry the
+    # same field names ref_text reads).
+    from lib.mirror import db as mirror_db
+    from lib.mirror import query as mirror_query
+    from lib.mirror.publish import _docs_by_id
+    conn = mirror_db.open_db()
+    try:
+        store = _docs_by_id(conn, mirror_query._Catalog(conn),
+                            {r['id'] for r in refs if r.get('id')})
+    finally:
+        conn.close()
     print(f'{key}: {len(refs)} question(s)')
     for ref in refs:
         q = ref_text(ref, store)
