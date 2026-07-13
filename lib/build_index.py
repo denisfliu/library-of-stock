@@ -251,6 +251,101 @@ BASE_CSS
 }
 .view-btn:hover { background: #262d37; color: #c8ccd1; }
 .view-btn.active { background: #2a3545; color: #6b9eff; border-color: #6b9eff; }
+.view-intro {
+    color: #9aa0a7;
+    font-size: 0.85rem;
+    line-height: 1.55;
+    margin-bottom: 1rem;
+    max-width: 46rem;
+}
+.ov-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.7rem;
+    margin-bottom: 1.6rem;
+}
+.ov-card {
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.ov-card > summary, .ov-card-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    color: inherit;
+    text-decoration: none;
+}
+.ov-card > summary::-webkit-details-marker { display: none; }
+.ov-card > summary:hover, .ov-card-link:hover { background: #222b36; }
+.ov-cat-name {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.15rem;
+    color: #e0e0e0;
+}
+.ov-cat-meta {
+    font-size: 0.72rem;
+    color: #808790;
+    margin-top: 0.15rem;
+}
+.ov-card > summary > span:first-child,
+.ov-card-link > span:first-child { display: flex; flex-direction: column; }
+.ov-arrow {
+    margin-left: auto;
+    color: #6b9eff;
+    font-size: 0.9rem;
+    transition: transform 0.15s;
+}
+.ov-card[open] > summary .ov-arrow { transform: rotate(180deg); }
+.ov-sublist {
+    border-top: 1px solid #2a2f37;
+    display: flex;
+    flex-direction: column;
+}
+.ov-sub {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #15191e;
+    text-decoration: none;
+    color: #6b9eff;
+}
+.ov-sub:last-child { border-bottom: none; }
+.ov-sub:hover { background: #222b36; }
+.ov-sub-name { font-size: 0.9rem; }
+.ov-sub-meta { font-size: 0.7rem; color: #808790; margin-top: 0.1rem; }
+.ov-draft {
+    font-size: 0.6rem;
+    color: #e8b04a;
+    border: 1px solid #8a6a2f;
+    border-radius: 3px;
+    padding: 0 0.25rem;
+    margin-left: 0.4rem;
+    vertical-align: 1px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.ov-section-head {
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-weight: normal;
+    font-size: 1.1rem;
+    color: #e0e0e0;
+    border-bottom: 1px solid #2a2f37;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.6rem;
+}
+.ov-sweep-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.explore-link {
+    background: #1a2535; border: 1px solid #2a4060; border-radius: 12px;
+    color: #6b9eff; font-size: 0.78rem; padding: 0.15rem 0.65rem;
+    text-decoration: none; white-space: nowrap;
+}
+.explore-link:hover { background: #223050; }
+.explore-cov { color: #808790; font-size: 0.7rem; margin-left: 0.2rem; }
 .map-grid {
     display: flex;
     flex-direction: column;
@@ -389,7 +484,7 @@ BASE_CSS
     <a href="dev/crossrefs.html" style="display:block;background:transparent;color:#9aa0a7;border:1px solid #2a2f37;border-radius:4px;padding:0.3rem 0.7rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;" onmouseover="this.style.background='#1a1f25'" onmouseout="this.style.background='transparent'">Cross-refs</a>
   </div>
 </div>
-<button style="background:#1a1f25;color:#9aa0a7;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.6rem;font-size:0.85rem;cursor:pointer;line-height:1;" title="Random guide" onclick="const g=guides[Math.floor(Math.random()*guides.length)];if(g)window.location.href=g.path;">&#x1f3b2;</button>
+<button style="background:#1a1f25;color:#9aa0a7;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.6rem;font-size:0.85rem;cursor:pointer;line-height:1;" title="Random page" onclick="const g=guides[Math.floor(Math.random()*guides.length)];if(g)window.location.href=g.path;">&#x1f3b2;</button>
 </div>
 </div>
 <div id="queue-panel" style="display:none;background:#15191e;border:1px solid #2a2f37;border-radius:4px;padding:0.8rem 1rem;margin-bottom:0.8rem;font-size:0.82rem;max-height:50vh;overflow-y:auto;">
@@ -408,12 +503,17 @@ BASE_CSS
     </div>
   </div>
 </div>
-EXPLORE_STRIP
 <div class="view-toggle">
-    <button class="view-btn active" data-view="list">All</button>
+    <button class="view-btn active" data-view="overviews">Overviews</button>
+    <button class="view-btn" data-view="list">Pages</button>
     <button class="view-btn" data-view="location">Location</button>
 </div>
-<input class="search" type="text" placeholder="Search guides..." autofocus>
+<div id="overviews-view">
+<p class="view-intro">Browse by category. Each overview maps a subcategory's canon — the answerlines that recur, grouped by era and school — and links to the study page for every topic that has one.</p>
+OVERVIEWS_SECTION
+</div>
+<div id="list-view" style="display:none;">
+<input class="search" type="text" placeholder="Search pages..." autocomplete="off">
 <div class="control-bar">
     <div class="control-group">
         <span class="sort-label">Category:</span>
@@ -425,8 +525,6 @@ EXPLORE_STRIP
             </div>
         </div>
     </div>
-</div>
-<div class="control-bar">
     <div class="control-group">
         <span class="sort-label">Tags:</span>
         <div class="dropdown-wrap" id="tag-wrap">
@@ -438,7 +536,6 @@ EXPLORE_STRIP
         </div>
     </div>
 </div>
-<div id="list-view">
 <div class="control-bar">
     <div class="control-group">
         <span class="sort-label">Sort:</span>
@@ -730,9 +827,9 @@ function render() {
         return matchesText && matchesCat && matchesTag;
     });
     filtered.sort(sortFns[activeSort] || sortFns.alpha);
-    countEl.textContent = filtered.length + ' guide' + (filtered.length !== 1 ? 's' : '');
+    countEl.textContent = filtered.length + ' page' + (filtered.length !== 1 ? 's' : '');
     if (filtered.length === 0) {
-        list.innerHTML = '<li class="empty">No guides found.</li>';
+        list.innerHTML = '<li class="empty">No pages found.</li>';
         return;
     }
     list.innerHTML = filtered.map(g => {
@@ -776,7 +873,7 @@ document.querySelectorAll('.filter-btn[data-sort]').forEach(btn => {
     });
 });
 
-let currentView = 'list';
+let currentView = 'overviews';
 function isLocationActive() {
     return currentView === 'location';
 }
@@ -793,8 +890,10 @@ document.querySelectorAll('.view-btn').forEach(btn => {
         document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         currentView = btn.dataset.view;
+        document.getElementById('overviews-view').style.display = currentView === 'overviews' ? '' : 'none';
         document.getElementById('list-view').style.display = currentView === 'list' ? '' : 'none';
         document.getElementById('continent-view').style.display = currentView === 'location' ? '' : 'none';
+        if (currentView === 'list') search.focus();
         if (currentView === 'location') buildLocationView();
     });
 });
@@ -832,7 +931,7 @@ function buildLocationView() {
     });
 
     if (sortedContinents.length === 0) {
-        grid.innerHTML = '<div class="empty">No guides match current filters.</div>';
+        grid.innerHTML = '<div class="empty">No pages match current filters.</div>';
         return;
     }
 
@@ -1019,58 +1118,102 @@ def build(analyses=None):
         return f'<li style="padding:0.2rem 0;border-bottom:1px solid #1a1f25">{topic}{badge}{detail}</li>'
     redo_list = "".join(_redo_li(item) for item in queue_redo) or '<li style="color:#555;font-style:italic">Empty</li>'
 
-    # Explore strip: links to unit overview pages and sweep sets.
-    def _explore_strip() -> str:
-        overview_links = []
-        stats_path = CATEGORIES_DIR / 'stats.json'
-        if stats_path.exists():
-            stats = json.loads(stats_path.read_text(encoding='utf-8'))
-            for unit, s in sorted(stats.items(), key=lambda kv: kv[1].get('title', kv[0])):
-                title = s.get('title') or unit
-                have, tot = s.get('have', 0), s.get('total', 0)
-                pct = f'{round(100 * have / tot)}%' if tot else '—'
-                overview_links.append(
-                    f'<a class="explore-link" href="output/_categories/{unit}/overview.html">'
-                    f'{escape(title)} <span class="explore-cov">{pct}</span></a>')
+    # Overviews view: main-category cards that open to their subcategory
+    # overview pages, plus a sweep-sets block. Rendered server-side —
+    # everything is known at build time and <details> gives native
+    # accordion behavior with no JS.
+    from lib.units import UNITS, unit_for_guide
 
-        set_links = []
+    CATEGORY_ORDER = ['Literature', 'History', 'Science', 'Fine Arts',
+                      'Social Science', 'Philosophy', 'Religion',
+                      'Mythology', 'Geography']
+
+    def _overviews_section() -> str:
+        stats_path = CATEGORIES_DIR / 'stats.json'
+        stats = (json.loads(stats_path.read_text(encoding='utf-8'))
+                 if stats_path.exists() else {})
+
+        # Page counts per unit, from the guides bucketed by their canonical unit.
+        page_counts = {}
+        for g in guides:
+            u = unit_for_guide(g.get('category', ''), g.get('subcategory', ''),
+                               g.get('genre', ''))
+            if u:
+                page_counts[u.slug] = page_counts.get(u.slug, 0) + 1
+
+        # Group units by main category (only those with an overview page).
+        by_cat = {}
+        for u in UNITS:
+            ov_path = CATEGORIES_DIR / u.slug / 'overview.json'
+            if not ov_path.exists():
+                continue
+            draft = False
+            try:
+                draft = bool(json.loads(ov_path.read_text(encoding='utf-8'))
+                             .get('draft'))
+            except (OSError, json.JSONDecodeError):
+                pass
+            s = stats.get(u.slug, {})
+            by_cat.setdefault(u.category, []).append({
+                'slug': u.slug, 'title': u.title,
+                'have': s.get('have', 0), 'total': s.get('total', 0),
+                'pages': page_counts.get(u.slug, 0), 'draft': draft,
+            })
+
+        def _cov(have, total):
+            return f'{round(100 * have / total)}%' if total else '—'
+
+        def _unit_row(us) -> str:
+            draft = ('<span class="ov-draft" title="AI draft — pending review">'
+                     'draft</span>' if us['draft'] else '')
+            return (
+                f'<a class="ov-sub" href="output/_categories/{us["slug"]}/overview.html">'
+                f'<span class="ov-sub-name">{escape(us["title"])}{draft}</span>'
+                f'<span class="ov-sub-meta">{us["pages"]} page'
+                f'{"" if us["pages"] == 1 else "s"} · {_cov(us["have"], us["total"])} covered'
+                f'</span></a>')
+
+        cards = ''
+        ordered = ([c for c in CATEGORY_ORDER if c in by_cat]
+                   + [c for c in by_cat if c not in CATEGORY_ORDER])
+        for cat in ordered:
+            units = sorted(by_cat[cat], key=lambda u: u['title'])
+            n_pages = sum(u['pages'] for u in units)
+            sub_label = (f'{len(units)} subcategories'
+                         if len(units) > 1 else '1 area')
+            head = (f'<span class="ov-cat-name">{escape(cat)}</span>'
+                    f'<span class="ov-cat-meta">{sub_label} · '
+                    f'{n_pages} pages</span>')
+            if len(units) == 1:
+                u = units[0]
+                cards += (
+                    f'<a class="ov-card ov-card-link" '
+                    f'href="output/_categories/{u["slug"]}/overview.html">'
+                    f'{head}<span class="ov-arrow">&rarr;</span></a>')
+            else:
+                rows = ''.join(_unit_row(u) for u in units)
+                cards += (
+                    f'<details class="ov-card">'
+                    f'<summary>{head}<span class="ov-arrow">&#9662;</span></summary>'
+                    f'<div class="ov-sublist">{rows}</div></details>')
+
+        # Sweep sets block.
+        sweep_html = ''
         sets_path = SETS_DIR / 'sets.json'
         if sets_path.exists():
+            set_links = []
             for e in json.loads(sets_path.read_text(encoding='utf-8')):
                 tot = e.get('total', 0)
                 pct = f'{round(100 * e.get("linked", 0) / tot)}%' if tot else '—'
                 set_links.append(
                     f'<a class="explore-link" href="output/_sets/{e["set_slug"]}/sweep.html">'
                     f'{escape(e["set_name"])} <span class="explore-cov">{pct}</span></a>')
+            if set_links:
+                sweep_html = (
+                    '<div class="ov-sweep"><h2 class="ov-section-head">Tournament sweeps</h2>'
+                    '<div class="ov-sweep-row">' + ''.join(set_links) + '</div></div>')
 
-        if not overview_links and not set_links:
-            return ''
-        rows = ''
-        if overview_links:
-            rows += ('<div class="explore-row"><span class="explore-label">Overviews</span>'
-                     + ''.join(overview_links) + '</div>')
-        if set_links:
-            rows += ('<div class="explore-row"><span class="explore-label">Sweep sets</span>'
-                     + ''.join(set_links) + '</div>')
-        return f"""<style>
-.explore-strip {{ margin-bottom: 0.9rem; }}
-.explore-row {{
-    display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;
-    margin-bottom: 0.35rem;
-}}
-.explore-label {{
-    color: #808790; font-size: 0.75rem; text-transform: uppercase;
-    letter-spacing: 0.04em; margin-right: 0.25rem; white-space: nowrap;
-}}
-.explore-link {{
-    background: #1a2535; border: 1px solid #2a4060; border-radius: 12px;
-    color: #6b9eff; font-size: 0.78rem; padding: 0.15rem 0.65rem;
-    text-decoration: none; white-space: nowrap;
-}}
-.explore-link:hover {{ background: #223050; }}
-.explore-cov {{ color: #808790; font-size: 0.7rem; margin-left: 0.2rem; }}
-</style>
-<div class="explore-strip">{rows}</div>"""
+        return (f'<div class="ov-grid">{cards}</div>{sweep_html}')
 
     # Write shared guides data file for search_nav.js
     guides_js_path = OUTPUT_DIR / "guides_data.js"
@@ -1083,7 +1226,7 @@ def build(analyses=None):
         max_width='700px', body_padding='2rem 1.5rem',
         type_scale=False, h1_size='1.6rem', h1_pad='0.3rem',
         h1_margin='1rem', global_links=False))
-    html = html.replace("EXPLORE_STRIP", _explore_strip())
+    html = html.replace("OVERVIEWS_SECTION", _overviews_section())
     html = html.replace("GUIDE_DATA", json.dumps(guides))
     html = html.replace("QUEUE_TOTAL", str(total_count))
     html = html.replace("FIRST_COUNT", str(first_count))
