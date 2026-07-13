@@ -223,10 +223,18 @@ def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
     nav_html = (
         '<div class="nav-bar">'
         '<div class="nav-links">'
-        '<a href="../../../index.html" class="nav-home">&larr; Home</a>'
+        '<a href="../../../wiki.html" class="nav-home">&larr; Wiki</a>'
         '</div>'
         '<div class="nav-search"></div>'
         '</div>')
+
+    draft_html = ''
+    if overview.get('draft'):
+        draft_html = (
+            '<div class="draft-banner">&#9888;&#65039; <b>AI draft</b> — '
+            'answerlines and grouping are machine-collected; the notes are '
+            'AI-written from outside knowledge and have not been reviewed. '
+            'This page is pending a human/agent editing pass.</div>')
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -248,6 +256,16 @@ def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
     margin-bottom: 0.7rem;
     color: #c8ccd1;
 }}
+.draft-banner {{
+    background: #2a2410;
+    border: 1px solid #8a6a2f;
+    border-radius: 4px;
+    color: #e8b04a;
+    font-size: 0.85rem;
+    padding: 0.5rem 0.9rem;
+    margin: 0.7rem 0;
+}}
+.draft-banner b {{ color: #f0c46a; }}
 .coverage-bar {{
     background: #1a1f25;
     border: 1px solid #3a3f47;
@@ -520,6 +538,7 @@ a.entry-name:hover {{ text-decoration: none; border-bottom-style: solid; }}
 <div class="breadcrumb">{category}</div>
 <h1>{title}</h1>
 {nav_html}
+{draft_html}
 <div class="intro">{intro_html}</div>
 <div class="coverage-bar">
 <span><b>{total}</b> core answerlines (frequency &ge; {fs.get('threshold', '?')})</span>

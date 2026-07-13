@@ -117,7 +117,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     nav_html = (
         f'<div class="nav-bar">'
         f'<div class="nav-links">'
-        f'<a href="../../index.html" class="nav-home">&larr; Home</a>'
+        f'<a href="../../wiki.html" class="nav-home">&larr; Wiki</a>'
         f'<div class="nav-overflow-wrap">'
         f'<button class="nav-overflow-btn" title="More">&#9776;</button>'
         f'<div class="nav-secondary">'

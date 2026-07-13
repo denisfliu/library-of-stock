@@ -117,7 +117,7 @@ def render_questions_html(refs: list[dict], output_path: str | Path,
 
     back_link = ""
     if stock_link:
-        back_link = f'<div class="back-link"><a href="../../index.html">&larr; Home</a> · <a href="{escape(stock_link)}">Study guide</a></div>'
+        back_link = f'<div class="back-link"><a href="../../wiki.html">&larr; Wiki</a> · <a href="{escape(stock_link)}">Study guide</a></div>'
 
     tabs_html = ""
     panels_html = ""

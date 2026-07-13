@@ -257,7 +257,7 @@ h3.subgroup-head {{
 <body>
 <h1>{set_name}</h1>
 <div class="nav-bar">
-<div class="nav-links"><a href="../../../index.html" class="nav-home">&larr; Home</a></div>
+<div class="nav-links"><a href="../../../wiki.html" class="nav-home">&larr; Wiki</a></div>
 <div class="nav-search"></div>
 </div>
 <div class="coverage-bar" id="coverage-bar">

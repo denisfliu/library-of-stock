@@ -475,7 +475,7 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
 </style>
 </head>
 <body>
-<div class="back-link"><a href="../../index.html">&larr; Home</a> · <a href="{stock_link}">Study guide</a></div>
+<div class="back-link"><a href="../../wiki.html">&larr; Wiki</a> · <a href="{stock_link}">Study guide</a></div>
 <h1>Cards: {escape(topic)}</h1>
 
 <div class="toolbar">

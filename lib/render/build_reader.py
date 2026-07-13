@@ -208,11 +208,11 @@ table.acc td.name .sub {{ color: var(--faint); font-size: 0.78rem; }}
 </head>
 <body>
 <header>
-  <h1>Library of Stock <span class="lede">/ Reader</span></h1>
+  <h1><a href="index.html" style="color:inherit">Library of Stock</a> <span class="lede">/ Reader</span></h1>
   <nav class="viewtabs">
     <button id="tab-play" class="on">Reader</button>
     <button id="tab-stats">My stats</button>
-    <a class="tab" href="index.html">Wiki &nearr;</a>
+    <a class="tab" href="wiki.html">Wiki &nearr;</a>
   </nav>
 </header>
 

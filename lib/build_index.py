@@ -1,5 +1,5 @@
 """
-build_index.py — Generate a static index.html for GitHub Pages.
+build_index.py — Generate wiki.html (the wiki browse page) for GitHub Pages.
 
 Scans output/*/stock.html and creates an index page with search and
 category filtering. Run this before committing new guides.
@@ -23,7 +23,7 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Stock Knowledge Guides</title>
+<title>Wiki — Library of Stock</title>
 <style>
 BASE_CSS
 .search {
@@ -373,8 +373,9 @@ BASE_CSS
 </style>
 </head>
 <body>
+<a href="index.html" style="display:inline-block;color:#808790;font-size:0.78rem;text-decoration:none;margin-bottom:0.15rem;">&larr; Library of Stock</a>
 <div style="display:flex;justify-content:space-between;align-items:baseline;">
-<h1>Stock Knowledge Guides</h1>
+<h1>Wiki</h1>
 <div style="display:flex;gap:0.5rem;align-items:center;">
 <a href="reader.html" style="background:#1a1f25;color:#6b9eff;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.7rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;">Reader &#x1f6ce;</a>
 <div style="position:relative;" id="dev-menu">
@@ -1092,7 +1093,7 @@ def build(analyses=None):
     html = html.replace("SECOND_PASS_LIST", second_list)
     html = html.replace("REDO_PASS_LIST", redo_list)
 
-    out_path = ROOT / "index.html"
+    out_path = ROOT / "wiki.html"
     with open(out_path, "w", encoding='utf-8') as f:
         f.write(html)
 
@@ -1102,7 +1103,7 @@ def build(analyses=None):
         c = g["category"] or "Unknown"
         cat_counts[c] = cat_counts.get(c, 0) + 1
 
-    print(f"Built index.html with {len(guides)} guides")
+    print(f"Built wiki.html with {len(guides)} guides")
     for cat, cnt in sorted(cat_counts.items()):
         print(f"  {cat}: {cnt}")
 
