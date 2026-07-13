@@ -196,11 +196,26 @@ def register_set(set_name: str, set_slug: str,
     _write_json(REGISTRY_FILE, registry)
 
 
+def _r2_set_slug(set_name: str) -> str:
+    """The published R2 file slug for a set (sets/{slug}.json). Uses the
+    same collision-suffixed map as lib/mirror/publish.py, which needs
+    the mirror's set list — available here because non-rematch builds
+    always run on the machine with the mirror. Kept in set.json so CI
+    rematch/render never needs the mirror."""
+    from lib.mirror import db as mirror_db
+    from lib.mirror import query as mirror_query
+    from lib.mirror.publish import _unique_slugs
+    conn = mirror_db.open_db()
+    try:
+        return _unique_slugs(mirror_query.set_list(conn=conn))[set_name]
+    finally:
+        conn.close()
+
+
 def build_set(set_name: str, rematch_only: bool = False,
-              matcher: TopicMatcher | None = None,
-              store: dict | None = None) -> dict:
+              matcher: TopicMatcher | None = None) -> dict:
     """Build or refresh one sweep set. Returns the set data dict."""
-    from lib.questions_store import load_store, upsert
+    from lib.questions_store import upsert
 
     set_slug = topic_slug(set_name)
     set_dir = SETS_DIR / set_slug
@@ -219,11 +234,11 @@ def build_set(set_name: str, rematch_only: bool = False,
         for packet in fetched['packets']:
             upsert([dict(q, type='tossup') for q in packet.get('tossups', [])]
                    + [dict(q, type='bonus') for q in packet.get('bonuses', [])])
-        store = None  # reload below: the upsert may have added docs
         rows = extract_questions(fetched)
         data = {
             'set_name': set_name,
             'set_slug': set_slug,
+            'r2_set': _r2_set_slug(set_name),
             'fetched': time.strftime('%Y-%m-%d'),
             'num_packets': fetched['num_packets'],
             'questions': rows,
@@ -241,10 +256,8 @@ def build_set(set_name: str, rematch_only: bool = False,
     linked = sum(1 for r in rows if r['match']['slug'])
     register_set(data['set_name'], set_slug, linked=linked, total=len(rows))
 
-    if store is None:
-        store = load_store()
     from lib.render.render_sweep import render_sweep
-    render_sweep(data, set_dir / 'sweep.html', store=store)
+    render_sweep(data, set_dir / 'sweep.html')
     print(f"{data['set_name']}: {len(rows)} answerlines, {linked} linked "
           f"({', '.join(f'{k}={v}' for k, v in sorted(statuses.items()))})")
     print(f"  report: {len(report['alias_matches'])} alias matches to verify, "
@@ -252,8 +265,7 @@ def build_set(set_name: str, rematch_only: bool = False,
     return data
 
 
-def rematch_all(matcher: TopicMatcher | None = None,
-                store: dict | None = None) -> None:
+def rematch_all(matcher: TopicMatcher | None = None) -> None:
     """Re-match + re-render every registered set without fetching.
 
     The build's no-network sweep step; red links self-heal to blue as
@@ -264,12 +276,8 @@ def rematch_all(matcher: TopicMatcher | None = None,
         return
     if matcher is None:
         matcher = TopicMatcher()
-    if store is None:
-        from lib.questions_store import load_store
-        store = load_store()
     for entry in registry:
-        build_set(entry['set_name'], rematch_only=True, matcher=matcher,
-                  store=store)
+        build_set(entry['set_name'], rematch_only=True, matcher=matcher)
 
 
 def main():

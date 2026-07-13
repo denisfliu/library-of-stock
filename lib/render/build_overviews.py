@@ -18,30 +18,8 @@ from lib.render.render_overview import render_overview
 from lib.sweep.matcher import TopicMatcher
 
 
-def _write_questions_data(ref_path, out_path, store: dict) -> None:
-    """Generate the page's questions_data.js payload from the unit's
-    questions.json refs + the question store. Gitignored: rebuilt by
-    every build, shipped by the deploy rsync's *_data.js rule."""
-    from lib.sweep.capture_questions import ref_text
-    with open(ref_path, encoding='utf-8') as f:
-        grouped = json.load(f)
-    data = {}
-    for key, refs in grouped.items():
-        items = [q for q in (ref_text(r, store) for r in refs) if q]
-        if items:
-            data[key] = items
-    text = ('const QUESTIONS_DATA = '
-            + json.dumps(data, ensure_ascii=False).replace('</', '<\\/')
-            + ';\n')
-    if out_path.exists() and out_path.read_text(encoding='utf-8') == text:
-        return
-    out_path.write_text(text, encoding='utf-8')
-    print(f'  wrote {out_path}')
-
-
 def build(force: bool = False, only_unit: str | None = None,
-          matcher: TopicMatcher | None = None,
-          store: dict | None = None) -> None:
+          matcher: TopicMatcher | None = None) -> None:
     overview_files = sorted(CATEGORIES_DIR.glob('*/overview.json'))
     if only_unit:
         overview_files = [p for p in overview_files
@@ -65,18 +43,20 @@ def build(force: bool = False, only_unit: str | None = None,
 
     rendered = skipped = 0
     for json_path in overview_files:
-        ref_path = json_path.parent / 'questions.json'
-        if ref_path.exists():
-            if store is None:
-                from lib.questions_store import load_store
-                store = load_store()
-            _write_questions_data(ref_path,
-                                  json_path.parent / 'questions_data.js',
-                                  store)
+        # Legacy build artifact — panels now fetch unit_questions/{unit}
+        # from R2 at view time; remove stragglers so deploy stops
+        # shipping them via the *_data.js rule.
+        legacy_js = json_path.parent / 'questions_data.js'
+        if legacy_js.exists():
+            legacy_js.unlink()
+            print(f'  removed legacy {legacy_js}')
         out_path = json_path.parent / 'overview.html'
+        ref_path = json_path.parent / 'questions.json'
+        ref_mtime = ref_path.stat().st_mtime if ref_path.exists() else 0
         if (not force and out_path.exists()
                 and out_path.stat().st_mtime >= json_path.stat().st_mtime
-                and out_path.stat().st_mtime >= index_mtime):
+                and out_path.stat().st_mtime >= index_mtime
+                and out_path.stat().st_mtime >= ref_mtime):
             skipped += 1
             continue
         with open(json_path, encoding='utf-8') as f:

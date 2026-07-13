@@ -5,7 +5,8 @@ linked to existing topic pages (blue) or flagged as gaps (red). The
 page is interactive client-side: filter by category, hide already-
 covered answerlines, switch between packet order / category grouping /
 a map view (shared lib/js/map_view.js), and expand any row to read the
-actual question text. Question data is inlined as JSON.
+actual question text. Rows carry qbreader ids only; text is fetched on
+first expand from the set's R2 shard (lib/js/qdata.js).
 
 Called by lib/sweep/build_set.py — not usually run directly.
 """
@@ -15,30 +16,16 @@ from html import escape
 from pathlib import Path as _Path
 
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
+from lib.questions_store import shard_slug
 from lib.render.theme import LEAFLET_TAGS, base_css
 
 
-def _row_text(q: dict, store: dict) -> str:
-    """Resolve a row's display text from the question store: the tossup
-    question, or leadin + the referenced bonus part."""
-    doc = store.get(q.get('id') or '')
-    if not doc:
-        return q.get('text', '')  # pre-store set.json rows embedded text
-    if q['type'] == 'bonus':
-        parts = doc.get('parts_sanitized', [])
-        j = q.get('part') or 0
-        part = parts[j] if j < len(parts) else ''
-        return f"{doc.get('leadin_sanitized', '')} {part}".strip()
-    return doc.get('question_sanitized', '')
-
-
-def render_sweep(set_data: dict, out_path: str | _Path,
-                 store: dict | None = None) -> _Path:
-    if store is None:
-        from lib.questions_store import load_store
-        store = load_store()
+def render_sweep(set_data: dict, out_path: str | _Path) -> _Path:
     out_path = _Path(out_path)
     set_name = escape(set_data.get('set_name', 'Unknown set'))
+    # The published R2 file for this set; stamped by build_set on fetch,
+    # derived for older set.json files (correct absent slug collisions).
+    r2_set = set_data.get('r2_set') or shard_slug(set_data.get('set_name', ''))
 
     rows = [
         {
@@ -46,8 +33,8 @@ def render_sweep(set_data: dict, out_path: str | _Path,
             'n': q.get('number'),
             't': q['type'],
             'part': q.get('part'),
+            'id': q.get('id'),
             'a': q['answer_clean'],
-            'text': _row_text(q, store),
             'cat': q.get('category', ''),
             'sub': q.get('subcategory', ''),
             'slug': q['match'].get('slug'),
@@ -203,6 +190,7 @@ h3.subgroup-head {{
     line-height: 1.45;
     padding: 0.45rem 0.7rem;
 }}
+.qdata-error a {{ color: #6b9eff; }}
 .map-box {{
     border: 1px solid #3a3f47;
     margin-bottom: 0.6rem;
@@ -292,8 +280,10 @@ h3.subgroup-head {{
 <div id="body"></div>
 <script>
 const QUESTIONS = {data_json};
+const R2_SET = {json.dumps(r2_set)};
 </script>
 <script src="../../guides_data.js"></script>
+<script src="../../../lib/js/qdata.js"></script>
 <script src="../../../lib/js/search_nav.js"></script>
 <script src="../../../lib/js/map_view.js"></script>
 <script>
@@ -333,7 +323,7 @@ function rowHtml(q, showCat) {{
     const cat = showCat
         ? `<td class="q-cat">${{esc(q.sub && q.sub !== q.cat ? q.sub : q.cat)}}</td>`
         : '';
-    const qbtn = q.text
+    const qbtn = q.id
         ? `<button class="qtext-btn" data-qi="${{QUESTIONS.indexOf(q)}}" title="Show question">?</button>`
         : '';
     return `<tr><td class="q-label">${{qLabel(q)}}</td>` +
@@ -456,6 +446,29 @@ document.querySelectorAll('.toggle-btn[data-view]').forEach(btn => {{
 }});
 
 // Question-text expansion (event delegation over re-rendered tables).
+// Text lives in the set's R2 shard; fetched once on first expand.
+let qDocs = null;
+function loadQDocs() {{
+    return qdataFetch('sets/' + R2_SET + '.json').then(set => {{
+        if (!qDocs) {{
+            qDocs = new Map();
+            for (const p of set.packets || []) {{
+                for (const t of p.tossups || []) qDocs.set(t._id, t);
+                for (const b of p.bonuses || []) qDocs.set(b._id, b);
+            }}
+        }}
+        return qDocs;
+    }});
+}}
+function rowText(q, docs) {{
+    const doc = docs.get(q.id);
+    if (!doc) return '';
+    if (q.t === 'bonus') {{
+        const parts = doc.parts_sanitized || [];
+        return ((doc.leadin_sanitized || '') + ' ' + (parts[q.part ?? 0] || '')).trim();
+    }}
+    return doc.question_sanitized || '';
+}}
 document.getElementById('body').addEventListener('click', e => {{
     const btn = e.target.closest('.qtext-btn');
     if (!btn) return;
@@ -465,11 +478,15 @@ document.getElementById('body').addEventListener('click', e => {{
         return;
     }}
     const q = QUESTIONS[parseInt(btn.dataset.qi)];
-    const cols = tr.children.length;
     const row = document.createElement('tr');
     row.className = 'qtext-row';
-    row.innerHTML = `<td colspan="${{cols}}">${{esc(q.text)}}</td>`;
+    row.innerHTML = `<td colspan="${{tr.children.length}}">Loading…</td>`;
     tr.after(row);
+    loadQDocs().then(docs => {{
+        row.firstElementChild.innerHTML = esc(rowText(q, docs) || 'Question text unavailable.');
+    }}).catch(err => {{
+        row.firstElementChild.innerHTML = qdataErrorHtml(err);
+    }});
 }});
 
 renderChips();

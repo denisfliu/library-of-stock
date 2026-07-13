@@ -49,7 +49,7 @@ def main() -> None:
     rebuild_index(analyses=analyses)
     render_all(force=force, analyses=analyses)
     render_cards.build_all(force=force, analyses=analyses)
-    render_questions.build_all(force=force, analyses=analyses, store=store)
+    render_questions.build_all(force=force, analyses=analyses)
     render_audio.build_all(force=force, analyses=analyses)
     render_score_review.main(analyses=analyses)
 
@@ -59,8 +59,8 @@ def main() -> None:
 
     # One matcher serves both the sweep rematch and overview rendering.
     matcher = TopicMatcher(analyses=analyses)
-    rematch_all(matcher=matcher, store=store)
-    build_overviews(force=force, matcher=matcher, store=store)
+    rematch_all(matcher=matcher)
+    build_overviews(force=force, matcher=matcher)
 
     build_index(analyses=analyses)
     validate.main(analyses=analyses, parse_errors=parse_errors, store=store)

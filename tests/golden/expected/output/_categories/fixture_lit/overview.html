@@ -112,6 +112,7 @@ h1 {
 }
 .q-toggle:hover { color: #6b9eff; border-color: #6b9eff; }
 .q-toggle.open { color: #6b9eff; border-color: #2a4060; background: #1a2535; }
+.qdata-error a { color: #6b9eff; }
 .q-panel {
     margin: 0.3rem 0 0.4rem 2.6rem;
     border: 1px solid #2a2f37;
@@ -373,27 +374,37 @@ document.querySelectorAll('.clip-toggle').forEach(btn => {
     });
 });
 </script>
-<script src="questions_data.js"></script>
+<script src="../../../lib/js/qdata.js"></script>
 <script>
-// Question panels: enabled only when questions_data.js loaded above.
-if (typeof QUESTIONS_DATA !== 'undefined') {
+// Question panels: buttons carry build-time ref counts; the text is
+// fetched once per page from the unit's R2 artifact on first open.
+const UNIT_SLUG = "fixture_lit";
+{
     const escQ = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const panelBody = qs => qs.map(q => `
+                    <div class="q-item">
+                        <div class="q-item-meta"><b>${escQ(q.set)}</b> · ${q.type} · diff ${q.diff}</div>
+                        ${escQ(q.text)}
+                    </div>`).join('');
     document.querySelectorAll('.q-toggle').forEach(btn => {
-        const qs = QUESTIONS_DATA[btn.dataset.qkey];
-        if (!qs || !qs.length) return;
-        btn.textContent = qs.length + ' q';
-        btn.style.display = '';
+        if (btn.style.display === 'none') return;
         const panel = btn.parentElement.querySelector('.q-panel');
         btn.addEventListener('click', () => {
             const open = panel.style.display !== 'none';
             panel.style.display = open ? 'none' : '';
             btn.classList.toggle('open', !open);
             if (!open && !panel.innerHTML) {
-                panel.innerHTML = qs.map(q => `
-                    <div class="q-item">
-                        <div class="q-item-meta"><b>${escQ(q.set)}</b> · ${q.type} · diff ${q.diff}</div>
-                        ${escQ(q.text)}
-                    </div>`).join('');
+                panel.innerHTML = '<div class="q-item">Loading…</div>';
+                qdataFetch('unit_questions/' + UNIT_SLUG + '.json').then(data => {
+                    const qs = data[btn.dataset.qkey];
+                    panel.innerHTML = (qs && qs.length) ? panelBody(qs)
+                        : '<div class="q-item">No questions available.</div>';
+                    if (qs && qs.length) btn.textContent = qs.length + ' q';
+                }).catch(err => {
+                    panel.innerHTML = '';
+                    panel.appendChild(Object.assign(document.createElement('div'),
+                        {className: 'q-item', innerHTML: qdataErrorHtml(err)}));
+                });
             }
         });
     });

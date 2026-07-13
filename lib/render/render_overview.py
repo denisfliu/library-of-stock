@@ -25,9 +25,9 @@ nests answerlines that belong under a parent topic (Leaves of Grass
 under Walt Whitman) one level deep. Entries render in authored order —
 frequency is a badge, not the sort key.
 
-If output/_categories/{unit}/questions_data.js exists (built by
-lib/sweep/capture_questions.py), each entry with captured questions
-gets an expandable panel showing its actual tossups/bonus parts.
+Entries with captured questions (output/_categories/{unit}/questions.json
+refs) get an expandable panel; the panel text is fetched at view time
+from unit_questions/{unit}.json on the R2 data plane (lib/js/qdata.js).
 """
 import json
 import sys as _sys
@@ -46,6 +46,12 @@ UNPLACED_TITLE = 'Uncategorized'
 # (Wikimedia Commons recordings — NOT the synthesized score-clue MP3s,
 # which stay on topic pages for score-identification study.)
 _soundbites: dict[str, list] = {}
+
+# Question-panel counts of the unit currently being rendered:
+# normalize(answerline) -> ref count from questions.json. Buttons render
+# visible with these counts; the text itself is fetched at view time
+# from unit_questions/{unit}.json on R2 (lib/js/qdata.js).
+_question_counts: dict[str, int] = {}
 
 
 def _flatten(entries: list[dict]):
@@ -69,8 +75,11 @@ def _entry_html(entry: dict, matcher, category: str, nested: bool = False) -> st
     note = entry.get('note', '')
     note_html = f' <span class="entry-note">{escape(note)}</span>' if note else ''
     qkey = normalize(entry.get('answerline', '') or name)
+    n_q = _question_counts.get(qkey, 0)
     qbtn = (f' <button class="q-toggle" data-qkey="{escape(qkey)}" '
-            f'style="display:none">questions</button>')
+            f'style="display:none">questions</button>' if not n_q else
+            f' <button class="q-toggle" data-qkey="{escape(qkey)}">'
+            f'{n_q} q</button>')
     clips = _soundbites.get(qkey, [])
     clip_btn = clip_panel = ''
     if clips:
@@ -118,13 +127,19 @@ def _coverage(entries: list[dict], matcher, category: str) -> tuple[int, int]:
 def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
     """Render the page and return coverage stats
     {unit, title, have, total} for index aggregation."""
-    global _soundbites
+    global _soundbites, _question_counts
     out_path = _Path(out_path)
     sb_path = out_path.parent / 'soundbites.json'
     _soundbites = {}
     if sb_path.exists():
         with open(sb_path, encoding='utf-8') as f:
             _soundbites = json.load(f)
+    q_path = out_path.parent / 'questions.json'
+    _question_counts = {}
+    if q_path.exists():
+        with open(q_path, encoding='utf-8') as f:
+            _question_counts = {k: len(v) for k, v in json.load(f).items() if v}
+    unit_slug_json = json.dumps(overview.get('unit', out_path.parent.name))
     title = escape(overview.get('title', overview.get('unit', 'Unknown')))
     category = escape(overview.get('category', ''))
     fs = overview.get('freq_source', {})
@@ -305,6 +320,7 @@ def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
 }}
 .q-toggle:hover {{ color: #6b9eff; border-color: #6b9eff; }}
 .q-toggle.open {{ color: #6b9eff; border-color: #2a4060; background: #1a2535; }}
+.qdata-error a {{ color: #6b9eff; }}
 .q-panel {{
     margin: 0.3rem 0 0.4rem 2.6rem;
     border: 1px solid #2a2f37;
@@ -566,27 +582,37 @@ document.querySelectorAll('.clip-toggle').forEach(btn => {{
     }});
 }});
 </script>
-<script src="questions_data.js"></script>
+<script src="../../../lib/js/qdata.js"></script>
 <script>
-// Question panels: enabled only when questions_data.js loaded above.
-if (typeof QUESTIONS_DATA !== 'undefined') {{
+// Question panels: buttons carry build-time ref counts; the text is
+// fetched once per page from the unit's R2 artifact on first open.
+const UNIT_SLUG = {unit_slug_json};
+{{
     const escQ = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const panelBody = qs => qs.map(q => `
+                    <div class="q-item">
+                        <div class="q-item-meta"><b>${{escQ(q.set)}}</b> · ${{q.type}} · diff ${{q.diff}}</div>
+                        ${{escQ(q.text)}}
+                    </div>`).join('');
     document.querySelectorAll('.q-toggle').forEach(btn => {{
-        const qs = QUESTIONS_DATA[btn.dataset.qkey];
-        if (!qs || !qs.length) return;
-        btn.textContent = qs.length + ' q';
-        btn.style.display = '';
+        if (btn.style.display === 'none') return;
         const panel = btn.parentElement.querySelector('.q-panel');
         btn.addEventListener('click', () => {{
             const open = panel.style.display !== 'none';
             panel.style.display = open ? 'none' : '';
             btn.classList.toggle('open', !open);
             if (!open && !panel.innerHTML) {{
-                panel.innerHTML = qs.map(q => `
-                    <div class="q-item">
-                        <div class="q-item-meta"><b>${{escQ(q.set)}}</b> · ${{q.type}} · diff ${{q.diff}}</div>
-                        ${{escQ(q.text)}}
-                    </div>`).join('');
+                panel.innerHTML = '<div class="q-item">Loading…</div>';
+                qdataFetch('unit_questions/' + UNIT_SLUG + '.json').then(data => {{
+                    const qs = data[btn.dataset.qkey];
+                    panel.innerHTML = (qs && qs.length) ? panelBody(qs)
+                        : '<div class="q-item">No questions available.</div>';
+                    if (qs && qs.length) btn.textContent = qs.length + ' q';
+                }}).catch(err => {{
+                    panel.innerHTML = '';
+                    panel.appendChild(Object.assign(document.createElement('div'),
+                        {{className: 'q-item', innerHTML: qdataErrorHtml(err)}}));
+                }});
             }}
         }});
     }});

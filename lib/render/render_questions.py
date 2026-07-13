@@ -1,17 +1,18 @@
 """
 render_questions.py — Generate HTML pages of raw tossups and bonuses.
 
-Each topic's page renders from output/{slug}/questions_ref.json — ordered
-qbreader _id lists per query — resolved against the shared question store
-(lib/questions_store.py, output/_questions/).
+Each topic's page is built from output/{slug}/questions_ref.json (ordered
+qbreader _id lists per query) but ships WITHOUT question text: the page
+fetches topic_questions/{slug}.json from the R2 data plane at view time
+(lib/js/qdata.js; artifacts published by lib/mirror/publish.py) and
+renders the cards client-side. Tab labels and counts come from the refs,
+so the chrome is complete before the fetch resolves.
 
 Usage:
     python lib/render/render_questions.py [--force]      # all topics
-    python lib/render/render_questions.py <cache_file> <output_file>
 """
 
 import json
-import re
 import sys
 from html import escape
 from pathlib import Path
@@ -21,136 +22,115 @@ from lib.common import resolve_analyses
 from lib.render.theme import base_css
 
 
-def _tab_label(cache_data: dict, is_mentions: bool) -> str:
-    """Short human-readable label for a cache file tab."""
-    query = cache_data.get("query_string", "?")
-    diffs = cache_data.get("difficulties") or []
+def _tab_label(entry: dict) -> str:
+    """Short human-readable label for a query tab (from its ref entry)."""
+    query = entry.get("query_string", "?")
+    diffs = entry.get("difficulties") or []
     if diffs:
         label = f"{query} (d{min(diffs)}–{max(diffs)})"
     else:
         label = query
-    if is_mentions:
+    if entry.get("mentions"):
         label += " mentions"
     return label
 
 
-def _highlight_query(text: str, query: str) -> str:
-    """Wrap all case-insensitive occurrences of query in <mark> tags.
+# Client-side renderer: mirrors the DOM the old build-time renderer
+# produced (.question/.q-header/.q-text/.q-answer, bonus .b-part rows;
+# raw qbreader markup inserted unescaped by design; <mark> highlighting
+# on mentions tabs, kept out of tag internals by the lookahead).
+_PAGE_JS = """
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-    ``text`` is qbreader's HTML question text (it carries <b>/<i> power
-    markup by design, so it must NOT be escaped here). The lookahead
-    keeps matches out of tag internals, mirroring render.py's _linkify.
-    """
-    if not query:
-        return text
-    return re.sub(
-        r'(' + re.escape(query) + r')(?![^<]*>)',
-        r'<mark>\1</mark>',
-        text,
-        flags=re.IGNORECASE,
-    )
+function highlight(text, query) {
+    if (!query) return text;
+    const re = new RegExp('(' + query.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&') + ')(?![^<]*>)', 'gi');
+    return String(text).replace(re, '<mark>$1</mark>');
+}
 
-
-def _questions_html_for_cache(cache_data: dict, tab_idx: int, is_mentions: bool = False) -> str:
-    """Render tossups + bonuses for one cache source into HTML."""
-    # Mentions files store results under 'text_mentions'; answer files use 'answer_matches'
-    matches = cache_data.get("answer_matches") or cache_data.get("text_mentions") or {}
-    tossups = matches.get("tossups", [])
-    bonuses = matches.get("bonuses", [])
-    query = cache_data.get("query_string", "") if is_mentions else ""
-
-    tossups_html = ""
-    for i, t in enumerate(tossups, 1):
-        set_name = t.get("set", {}).get("name", "")
-        year = t.get("set", {}).get("year", "")
-        diff = t.get("difficulty", "")
-        cat = t.get("category", "")
-        question = _highlight_query(t.get("question", ""), query)
-        answer = t.get("answer", "")
-        tossups_html += f"""
-        <div class="question">
+function header(prefix, i, q) {
+    const set = (q.set || {});
+    return `
             <div class="q-header">
-                <span class="q-num">T{i}</span>
-                <span class="q-source">{escape(str(set_name))} ({year})</span>
-                <span class="q-meta">Diff {diff} &middot; {escape(str(cat))}</span>
-            </div>
-            <div class="q-text">{question}</div>
-            <div class="q-answer">ANSWER: {answer}</div>
-        </div>"""
+                <span class="q-num">${prefix}${i}</span>
+                <span class="q-source">${esc(set.name || '')} (${set.year ?? ''})</span>
+                <span class="q-meta">Diff ${q.difficulty ?? ''} &middot; ${esc(q.category || '')}</span>
+            </div>`;
+}
 
-    bonuses_html = ""
-    for i, b in enumerate(bonuses, 1):
-        set_name = b.get("set", {}).get("name", "")
-        year = b.get("set", {}).get("year", "")
-        diff = b.get("difficulty", "")
-        cat = b.get("category", "")
-        leadin = _highlight_query(b.get("leadin", ""), query)
-        parts = b.get("parts", [])
-        answers = b.get("answers", [])
-        parts_html = ""
-        for part, ans in zip(parts, answers):
-            part = _highlight_query(part, query)
-            parts_html += f"""
+function panelHtml(entry) {
+    const query = entry.mentions ? entry.query_string : '';
+    const tossups = entry.tossups.map((t, i) => `
+        <div class="question">${header('T', i + 1, t)}
+            <div class="q-text">${highlight(t.question || '', query)}</div>
+            <div class="q-answer">ANSWER: ${t.answer || ''}</div>
+        </div>`).join('');
+    const bonuses = entry.bonuses.map((b, i) => {
+        const parts = (b.parts || []).map((part, j) => `
             <div class="b-part">
-                <div class="b-part-text">[10] {part}</div>
-                <div class="q-answer">ANSWER: {ans}</div>
-            </div>"""
-        bonuses_html += f"""
-        <div class="question">
-            <div class="q-header">
-                <span class="q-num">B{i}</span>
-                <span class="q-source">{escape(str(set_name))} ({year})</span>
-                <span class="q-meta">Diff {diff} &middot; {escape(str(cat))}</span>
-            </div>
-            <div class="q-text">{leadin}</div>
-            {parts_html}
-        </div>"""
-
-    stats = f"{len(tossups)} tossup{'s' if len(tossups) != 1 else ''} &middot; {len(bonuses)} bonus{'es' if len(bonuses) != 1 else ''}"
-    empty_msg = '<p style="color:#808790;font-style:italic;padding:0.5rem 0;">No questions.</p>'
-
-    return f"""
-<div class="tab-stats">{stats}</div>
+                <div class="b-part-text">[10] ${highlight(part, query)}</div>
+                <div class="q-answer">ANSWER: ${(b.answers || [])[j] || ''}</div>
+            </div>`).join('');
+        return `
+        <div class="question">${header('B', i + 1, b)}
+            <div class="q-text">${highlight(b.leadin || '', query)}</div>
+            ${parts}
+        </div>`;
+    }).join('');
+    const nt = entry.tossups.length, nb = entry.bonuses.length;
+    const stats = `${nt} tossup${nt !== 1 ? 's' : ''} &middot; ${nb} bonus${nb !== 1 ? 'es' : ''}`;
+    const empty = '<p style="color:#808790;font-style:italic;padding:0.5rem 0;">No questions.</p>';
+    return `
+<div class="tab-stats">${stats}</div>
 <h2>Tossups</h2>
-{tossups_html or empty_msg}
+${tossups || empty}
 <h2>Bonuses</h2>
-{bonuses_html or empty_msg}"""
+${bonuses || empty}`;
+}
+
+qdataFetch('topic_questions/' + TOPIC_SLUG + '.json').then(entries => {
+    entries.forEach((entry, i) => {
+        const panel = document.getElementById('tab-' + i);
+        if (panel) panel.innerHTML = panelHtml(entry);
+    });
+}).catch(err => {
+    document.querySelectorAll('.tab-panel').forEach(p => {
+        p.innerHTML = qdataErrorHtml(err);
+    });
+});
+
+function showTab(i) {
+    document.querySelectorAll('.tab-panel').forEach((p, j) => p.style.display = j === i ? 'block' : 'none');
+    document.querySelectorAll('.tab-btn').forEach((b, j) => b.classList.toggle('active', j === i));
+}
+"""
 
 
-def render_questions_html(cache_sources: "list[dict] | dict", output_path: str | Path,
-                          topic_display: str = "", stock_link: str = "",
-                          is_mentions: "list[bool] | None" = None) -> Path:
-    """
-    Render cached API data into an HTML page with one tab per cache source.
-    cache_sources: list of cache dicts (one per query), or a single dict for back-compat.
-    is_mentions: parallel list of bools indicating which sources are mention searches.
-    """
+def render_questions_html(refs: list[dict], output_path: str | Path,
+                          topic_slug: str, topic_display: str = "",
+                          stock_link: str = "") -> Path:
+    """Render the questions page chrome for one topic; text arrives at
+    view time from topic_questions/{slug}.json."""
     output_path = Path(output_path)
-
-    # Back-compat: accept a single dict
-    if isinstance(cache_sources, dict):
-        cache_sources = [cache_sources]
-        is_mentions = [False]
-    if is_mentions is None:
-        is_mentions = [False] * len(cache_sources)
-
-    topic = topic_display or cache_sources[0].get("query_string", "Unknown")
+    topic = topic_display or (refs[0].get("query_string", "Unknown") if refs
+                              else "Unknown")
 
     back_link = ""
     if stock_link:
         back_link = f'<div class="back-link"><a href="../../index.html">&larr; Home</a> · <a href="{escape(stock_link)}">Study guide</a></div>'
 
-    # Build tab headers and panels
     tabs_html = ""
     panels_html = ""
-    for i, (data, mentions) in enumerate(zip(cache_sources, is_mentions)):
-        label = escape(_tab_label(data, mentions))
+    for i, entry in enumerate(refs):
+        label = escape(_tab_label(entry))
         active_cls = " active" if i == 0 else ""
         tabs_html += f'<button class="tab-btn{active_cls}" onclick="showTab({i})">{label}</button>\n'
         display = "block" if i == 0 else "none"
-        panels_html += f'<div class="tab-panel" id="tab-{i}" style="display:{display}">{_questions_html_for_cache(data, i, is_mentions=mentions)}</div>\n'
+        panels_html += (f'<div class="tab-panel" id="tab-{i}" '
+                        f'style="display:{display}">'
+                        f'<p class="q-loading">Loading questions…</p></div>\n')
 
-    single = len(cache_sources) == 1
+    single = len(refs) == 1
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -196,6 +176,13 @@ def render_questions_html(cache_sources: "list[dict] | dict", output_path: str |
     color: #808790;
     margin: 0.6rem 0 1rem;
 }}
+.q-loading, .qdata-error {{
+    color: #808790;
+    font-style: italic;
+    padding: 0.8rem 0;
+    font-size: 0.9rem;
+}}
+.qdata-error a {{ color: #6b9eff; }}
 h2 {{
     font-family: 'Linux Libertine', Georgia, serif;
     font-size: 1.3rem;
@@ -241,12 +228,10 @@ mark {{ background: #5a4a00; color: #ffd54f; border-radius: 2px; padding: 0 2px;
 <div class="tab-bar">
 {tabs_html}</div>
 {panels_html}
+<script src="../../lib/js/qdata.js"></script>
 <script>
-function showTab(i) {{
-    document.querySelectorAll('.tab-panel').forEach((p, j) => p.style.display = j === i ? 'block' : 'none');
-    document.querySelectorAll('.tab-btn').forEach((b, j) => b.classList.toggle('active', j === i));
-}}
-</script>
+const TOPIC_SLUG = {json.dumps(topic_slug)};
+{_PAGE_JS}</script>
 </body>
 </html>"""
 
@@ -256,17 +241,15 @@ function showTab(i) {{
     return output_path
 
 
-def build_all(force: bool = False, analyses=None, store=None):
+def build_all(force: bool = False, analyses=None):
     """Generate question pages for every topic with a questions_ref.json.
 
-    Refs hold ordered qbreader _id lists per query; the text lives once in
-    output/_questions/ (lib/questions_store.py). Note the incremental check
-    keys off the ref + analysis mtimes only — a store-shard refresh that
-    changes question text needs --force to propagate.
+    Pages carry only the refs-derived chrome; question text is fetched at
+    view time from the R2 data plane, so a text refresh needs a publish,
+    not a rebuild.
     """
     count = 0
     skipped = 0
-    missing_ids = 0
     for topic_key, analysis_file, analysis in resolve_analyses(analyses):
         topic_display = analysis.get("topic", topic_key.replace("_", " ").title())
 
@@ -283,57 +266,19 @@ def build_all(force: bool = False, analyses=None, store=None):
                 skipped += 1
                 continue
 
-        if store is None:
-            from lib.questions_store import load_store
-            store = load_store()
-
         with open(ref_path, encoding='utf-8') as f:
             refs = json.load(f)
 
-        sources = []
-        is_mentions_flags = []
-        for entry in refs:
-            docs = {}
-            for kind in ("tossups", "bonuses"):
-                ids = entry.get(kind, [])
-                docs[kind] = [store[i] for i in ids if i in store]
-                missing_ids += sum(1 for i in ids if i not in store)
-            key = "text_mentions" if entry.get("mentions") else "answer_matches"
-            sources.append({
-                "query_string": entry.get("query_string", ""),
-                "difficulties": entry.get("difficulties"),
-                "min_year": entry.get("min_year"),
-                key: docs,
-            })
-            is_mentions_flags.append(bool(entry.get("mentions")))
-
-        stock_link = "stock.html"
-        render_questions_html(sources, questions_path,
+        render_questions_html(refs, questions_path,
+                              topic_slug=topic_key,
                               topic_display=topic_display,
-                              stock_link=stock_link,
-                              is_mentions=is_mentions_flags)
-        def _counts(s):
-            m = s.get("answer_matches") or s.get("text_mentions") or {}
-            return len(m.get("tossups", [])), len(m.get("bonuses", []))
-        total_t = sum(_counts(s)[0] for s in sources)
-        total_b = sum(_counts(s)[1] for s in sources)
-        print(f"  {topic_display}: {len(sources)} source(s), {total_t}T {total_b}B -> {questions_path}")
+                              stock_link="stock.html")
+        total_t = sum(len(e.get("tossups", [])) for e in refs)
+        total_b = sum(len(e.get("bonuses", [])) for e in refs)
+        print(f"  {topic_display}: {len(refs)} source(s), {total_t}T {total_b}B -> {questions_path}")
         count += 1
-    if missing_ids:
-        print(f"  WARNING: {missing_ids} referenced question ids missing "
-              f"from output/_questions/", file=sys.stderr)
     print(f"Built {count} question pages" + (f" ({skipped} up-to-date)" if skipped else ""))
 
 
 if __name__ == "__main__":
-    force = "--force" in sys.argv
-    remaining = [a for a in sys.argv[1:] if a != "--force"]
-    if len(remaining) == 2:
-        cache_path = remaining[0]
-        output_path = sys.argv[2]
-        with open(cache_path, encoding='utf-8') as f:
-            data = json.load(f)
-        render_questions_html(data, output_path)
-        print(f"Rendered to {output_path}")
-    else:
-        build_all(force=force)
+    build_all(force="--force" in sys.argv)
