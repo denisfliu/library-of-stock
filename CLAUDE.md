@@ -9,7 +9,7 @@ Quizbowl study guide generator. Fetches clues from qbreader, analyzes them, gene
 - Pipeline: `lib/pipeline/fetch.py` (reads the local qbreader mirror) → `lib/pipeline/parse.py` (clue extraction) → `lib/run.py` (CLI wrapper producing `clues.txt`).
 - **qbreader mirror** (`mirror/qbreader.sqlite`, gitignored, ~860 MB): the ENTIRE qbreader database, local. All fetch.py queries run against it offline — the live API is used only by `lib/mirror/sync.py` to pull newly added sets. Seed/re-seed from official backups via `lib/mirror/import_backup.py`. Design + freshness model: `docs/mirror.md`.
 - Queues: `lib/queues/topic_queue.py` (global first/second-pass queues), `lib/queues/batch_worker.py` (per-batch claim/complete). State lives in `queue/*.json`.
-- Cross-refs: `lib/crossref/crossref.py` rebuilds `output/topic_index.json`; `lib/crossref/backfill_crossrefs.py` adds mechanical links; the `/crossref` skill adds semantic ones.
+- Cross-refs: `lib/crossref/crossref.py` rebuilds `output/topic_index.json`; `lib/crossref/relink.py` re-derives mechanical links for ALL topics (tiered `lib/crossref/linker.py`; ambiguous surfaces queue in `dev/crossref_candidates.json`); the `/crossref` skill only ADJUDICATES those into `output/crossref_overrides.json`; `lib/crossref/infer.py` builds question-text co-mention `related.json` (the Related strip). Refs carry `source` provenance. Methodology: `docs/crossref.md`.
 - Agent workflows are skills in `.claude/skills/<name>/SKILL.md`: `/batch`, `/first-pass`, `/second-pass`, `/cards`, `/crossref`, plus category supplements (`/literature`, `/vfa`, `/afa`, `/philosophy`, `/science`). These are the single source of truth for agent instructions.
 - `lib/common.py` provides `ROOT`/`OUTPUT_DIR`/`QUEUE_DIR`/`CATEGORIES_DIR`/`SETS_DIR`/`OVERRIDES_FILE`, UTF-8 stdio, and `file_lock`. Every entry script imports it — new scripts should too.
 - **Unit overview pages** (`output/_categories/{unit}/`, one per `lib/units.py` unit): agent-authored `sections.txt` + `intro.txt` are assembled into `overview.json` by `lib/sweep/author.py` (scaffold/assemble; format documented in its docstring — `> ` blurbs, `- ` nesting, `=` variant merge, `->` canonical topic). `lib/sweep/capture_questions.py` captures the unit's full question set → per-entry expandable question panels; `soundbites.json` (curated via `lib/audio/soundbites.py`, Wikimedia Commons recordings) powers ♪ audio players. Rendered by `lib/render/build_overviews.py`. Notes style: 10-20 words, relations + key works, no editorializing; consult questions.json for ambiguous/common-link answerlines.
@@ -34,6 +34,8 @@ python lib/render/build_overviews.py        # render overview pages (--force, --
 python lib/sweep/build_set.py --list-sets   # find exact qbreader set names
 python lib/mirror/sync.py                   # pull new sets from qbreader into the mirror
 python lib/mirror/publish.py --upload       # export + upload reader data artifacts to R2
+python lib/crossref/relink.py               # re-derive mechanical cross_refs (+ candidates queue)
+python lib/crossref/infer.py                # related-topics from question co-mentions (mirror)
 python lib/audio/soundbites.py search "..." # find Commons audio for soundbites.json
 ```
 

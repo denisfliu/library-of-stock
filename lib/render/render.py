@@ -324,7 +324,29 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         </section>
         """
 
-    # cross_refs are used for inline linking only (no separate section)
+    # cross_refs are used for inline linking only (no separate section).
+    # Mirror-inferred neighbors (lib/crossref/infer.py) get the Related
+    # strip instead — topics co-mentioned in this topic's source
+    # questions that aren't already linked in the prose.
+    related_html = ""
+    related_path = Path(output_path).parent / "related.json"
+    if related_path.exists():
+        try:
+            related = json.loads(related_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            related = []
+        if related:
+            chips = "".join(
+                f'<a class="related-chip" href="../{r["slug"]}/stock.html" '
+                f'title="co-mentioned {r["score"]}× in source questions">'
+                f'{escape(r.get("topic", r["slug"]))}</a>'
+                for r in related)
+            related_html = f"""
+        <section class="related">
+            <h2>Related topics</h2>
+            <div class="related-chips">{chips}</div>
+        </section>
+        """
 
     links_html = ""
     if links or suggestions:
@@ -559,6 +581,28 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     border-bottom: 1px dotted #cc6666;
     cursor: default;
 }}
+.related {{ margin-top: 1.2rem; }}
+.related h2 {{
+    font-family: 'Linux Libertine', Georgia, serif;
+    font-size: 1.15rem;
+    font-weight: normal;
+    border-bottom: 1px solid #3a3f47;
+    padding-bottom: 0.15rem;
+    margin-bottom: 0.6rem;
+    color: #e0e0e0;
+}}
+.related-chips {{ display: flex; flex-wrap: wrap; gap: 0.4rem; }}
+.related-chip {{
+    background: #1a2535;
+    border: 1px solid #2a4060;
+    border-radius: 12px;
+    color: #6b9eff;
+    font-size: 0.82rem;
+    padding: 0.18rem 0.7rem;
+    text-decoration: none;
+    white-space: nowrap;
+}}
+.related-chip:hover {{ border-color: #6b9eff; background: #22304a; }}
 .comp-summary {{
     margin-top: 1.2rem;
     background: #1a1f25;
@@ -827,6 +871,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
 <div class="summary">{summary}</div>
 {works_html}
 {comp_summary_html}
+{related_html}
 {links_html}
 <script src="../../output/guides_data.js"></script>
 <script src="../../lib/js/search_nav.js"></script>

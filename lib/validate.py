@@ -24,6 +24,9 @@ def run_checks(analyses=None, parse_errors=None) -> list[str]:
     issues = [f"[BROKEN JSON] {p.parent.name}/analysis.json: {msg}"
               for p, msg in (parse_errors or [])]
 
+    all_slugs = {s for s, _, _ in analyses}
+    _REF_SOURCES = {"backfill", "override", "agent"}
+
     for slug, f, analysis in analyses:
         topic = analysis.get("topic", slug)
 
@@ -81,7 +84,30 @@ def run_checks(analyses=None, parse_errors=None) -> list[str]:
             except json.JSONDecodeError as e:
                 issues.append(f"[BROKEN JSON] {slug}/questions_ref.json: {e}")
 
-        # 8. Score clues flagged for ABC notation review
+        # 8. cross_refs hygiene: targets resolve, exists/slug agree, no
+        # self-refs or dupes, known provenance.
+        seen_ref_targets = set()
+        for ref in analysis.get("cross_refs") or []:
+            rslug, rtopic = ref.get("slug") or "", ref.get("topic") or ""
+            label = f"{topic} -> {ref.get('name')!r}"
+            if ref.get("exists"):
+                if not rslug:
+                    issues.append(f"[CROSSREF NO SLUG] {label}")
+                elif rslug not in all_slugs:
+                    issues.append(f"[CROSSREF DANGLING] {label} ({rslug})")
+            elif rslug:
+                issues.append(f"[CROSSREF RED WITH SLUG] {label} ({rslug})")
+            if rslug == slug or rtopic == topic:
+                issues.append(f"[CROSSREF SELF] {label}")
+            key = (rtopic, ref.get("work"))
+            if key in seen_ref_targets:
+                issues.append(f"[CROSSREF DUPE] {label}")
+            seen_ref_targets.add(key)
+            src = ref.get("source")
+            if src is not None and src not in _REF_SOURCES:
+                issues.append(f"[CROSSREF BAD SOURCE] {label} ({src})")
+
+        # 9. Score clues flagged for ABC notation review
         for clue in analysis.get("score_clues", []):
             if clue.get("needs_review") and clue.get("abc"):
                 work = clue.get("work", "?")

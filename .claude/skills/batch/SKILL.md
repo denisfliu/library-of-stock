@@ -114,7 +114,7 @@ This rebuilds the cross-ref index and prints agent prompts for the next steps.
 Launch ALL of these at the same time — they write to different fields and don't conflict:
 
 1. **Card agents**: Spawn agents following `/cards` skill. Each agent handles 3-5 topics — read analysis.json + cards.json, generate cards, write cards.json.
-2. **Crossref agent** (use Sonnet): Spawn an agent following `/crossref` skill — deterministic backfill first, then LLM-based enrichment.
+2. **Crossref agent** (use Sonnet, ONLY if post_batch reported open candidates): Spawn an agent following `/crossref` skill — it adjudicates the ambiguous surfaces in `dev/crossref_candidates.json` into `output/crossref_overrides.json`, then reruns `lib/crossref/relink.py`. If post_batch printed "No open cross-ref candidates", skip this agent.
 
 ## Step 7: Build
 

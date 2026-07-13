@@ -24,8 +24,14 @@ def render_all(force: bool = False, analyses=None):
     for slug, json_path, analysis in resolve_analyses(analyses):
         stock_path = json_path.parent / "stock.html"
 
-        # Incremental: skip if HTML is newer than JSON (unless --force)
-        if not force and stock_path.exists() and stock_path.stat().st_mtime >= json_path.stat().st_mtime:
+        # Incremental: skip if HTML is newer than JSON and the topic's
+        # related.json (the Related strip renders from it), unless --force
+        related_path = json_path.parent / "related.json"
+        related_mtime = (related_path.stat().st_mtime
+                         if related_path.exists() else 0)
+        if (not force and stock_path.exists()
+                and stock_path.stat().st_mtime >= json_path.stat().st_mtime
+                and stock_path.stat().st_mtime >= related_mtime):
             skipped_up_to_date += 1
             continue
 

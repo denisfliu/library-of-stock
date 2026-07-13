@@ -92,11 +92,18 @@ def main():
         print('ERROR: crossref rebuild failed')
         sys.exit(1)
 
-    # Step 2: Deterministic backfill (fast, no LLM needed)
-    print('\n[2/4] Running deterministic crossref backfill...')
-    result = subprocess.run([sys.executable, 'lib/crossref/backfill_crossrefs.py'], cwd=ROOT)
+    # Step 2: Deterministic relink (fast, no LLM; regenerates machine
+    # refs for ALL topics and queues ambiguous surfaces for the
+    # adjudication agent), then related-topics inference (reads the
+    # mirror; excludes freshly cross-ref'd targets, hence the order).
+    print('\n[2/4] Running deterministic crossref relink + inference...')
+    result = subprocess.run([sys.executable, 'lib/crossref/relink.py'], cwd=ROOT)
     if result.returncode != 0:
-        print('ERROR: backfill_crossrefs.py failed')
+        print('ERROR: relink.py failed')
+        sys.exit(1)
+    result = subprocess.run([sys.executable, 'lib/crossref/infer.py'], cwd=ROOT)
+    if result.returncode != 0:
+        print('ERROR: infer.py failed')
         sys.exit(1)
 
     # Step 3: Card agent prompts (run in parallel with the crossref agent)
@@ -120,20 +127,29 @@ Do NOT ask for confirmation.""")
         print('=' * 60)
         print()
 
-    # Step 4: Crossref agent prompt
-    topic_names = '\n'.join(f'- {name}' for name, _ in topics)
-    print('\n[4/4] Launch this crossref backfill agent for richer semantic links:\n')
-    print('=' * 60)
-    print(f"""Follow the /crossref skill for full instructions.
+    # Step 4: Crossref adjudication agent (only when relink queued
+    # unresolved ambiguous surfaces)
+    candidates_file = ROOT / 'dev' / 'crossref_candidates.json'
+    n_candidates = 0
+    if candidates_file.exists():
+        with open(candidates_file, encoding='utf-8') as f:
+            n_candidates = json.load(f).get('count', 0)
+    if n_candidates:
+        print(f'\n[4/4] {n_candidates} ambiguous cross-ref surface(s) need '
+              f'adjudication — launch this agent:\n')
+        print('=' * 60)
+        print(f"""Follow the /crossref skill for full instructions.
 
-Add cross_refs to these topics (working directory: {ROOT}):
-{topic_names}
-
-Important: Don't modify any field except cross_refs. Don't add refs for the
-topic itself. Do not run any render scripts — the controller runs ./build.sh
-after you finish.""")
-    print('=' * 60)
-    print()
+Adjudicate the candidates in dev/crossref_candidates.json (working
+directory: {ROOT}). Write decisions into output/crossref_overrides.json
+only, then rerun lib/crossref/relink.py to apply them. Do not modify
+analysis.json directly and do not run any render scripts — the
+controller runs ./build.sh after you finish.""")
+        print('=' * 60)
+        print()
+    else:
+        print('\n[4/4] No open cross-ref candidates — no crossref agent needed.')
+        print()
     print('After BOTH agents finish, run:')
     print('  ./build.sh')
     print('  python lib/mirror/publish.py --upload   # new topics\' question '

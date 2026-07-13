@@ -303,6 +303,11 @@ def stage_topics() -> int:
             if unit:
                 entry["unit"] = unit.slug
 
+        related_path = ref_path.parent / "related.json"
+        if related_path.exists():
+            entry["related"] = json.loads(
+                related_path.read_text(encoding="utf-8"))
+
         refs = json.loads(ref_path.read_text(encoding="utf-8"))
         for key, mentions in (("tossups", False), ("bonuses", False),
                               ("mention_tossups", True),

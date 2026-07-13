@@ -34,6 +34,7 @@ TOPIC_INDEX_FILE = OUTPUT_DIR / 'topic_index.json'
 CATEGORIES_DIR = OUTPUT_DIR / '_categories'
 SETS_DIR = OUTPUT_DIR / '_sets'
 OVERRIDES_FILE = OUTPUT_DIR / 'answerline_overrides.json'
+CROSSREF_OVERRIDES_FILE = OUTPUT_DIR / 'crossref_overrides.json'
 
 
 def file_lock(path: Path) -> FileLock:

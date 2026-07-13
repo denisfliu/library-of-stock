@@ -90,6 +90,8 @@ Required fields: `topic`, `summary`, `works`, `comprehensive_summary`, `category
 
 For `recursive_suggestions`: identify works/subtopics that deserve their own deep dive. Flag ambiguous names and recommend category filters.
 
+**Prose naming rule (cross-refs depend on it):** in `summary`, `comprehensive_summary`, and work descriptions, refer to other people and works by their **full canonical name on first mention** ("Henry Miller", not "Miller"; "The Waste Land", not "the poem"). The deterministic linker auto-links canonical names; bare last names can't be resolved mechanically and just queue adjudication work. Do NOT write `cross_refs` yourself — they are generated after the batch (see docs/crossref.md).
+
 Reference `output/emily_carr/analysis.json` for formatting if needed.
 
 ## Step 7: Generate Cards

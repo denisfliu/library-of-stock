@@ -61,6 +61,7 @@ Read ALL new clue files and merge following these rules:
 - If subitem queries reveal enough new material, expand descriptions
 - If text mentions reveal works/themes not previously covered, add new sections (only if 3+ mentions)
 - Rewrite `comprehensive_summary` to incorporate all information
+- In all prose you write or rewrite, refer to other people/works by their **full canonical name on first mention** — the deterministic cross-ref linker depends on it (bare last names queue adjudication work; see docs/crossref.md)
 
 **Fix the summary blurb:**
 - Check `"summary"` — if empty, missing, or low quality, write/rewrite it
