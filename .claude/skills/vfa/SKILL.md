@@ -69,6 +69,13 @@ The link must point to the specific work's article, not the artist's general pag
 For works not on Commons (most 20th/21st century art): `{"url": "", "link": "https://en.wikipedia.org/wiki/...", "caption": "Work Name"}`
 Links must point to the specific work's article, not the artist's general page.
 
+## Film Topics (Other Fine Arts / genre "Film")
+
+Single-film and director topics route through this supplement. Differences from painter topics:
+- Section thematically (structure/plot, production, reception/notoriety) or by film for directors; indicator `Film:` for works, `Director:` for people.
+- No `images` array — film stills are copyrighted; use Wikipedia links only (see `output/barry_lyndon/analysis.json` as the structural precedent).
+- Many "film" answerlines are actually clues inside broader tossups (a country, an actor) — check the answerline is the film itself before counting coverage; sparse topics are legitimate but keep them honest (no outside-knowledge padding).
+
 ## Common Pitfalls
 
 - Many artists share subjects (Crucifixion, Annunciation, Saint George) — verify the image is the right artist's version

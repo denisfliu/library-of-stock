@@ -17,8 +17,9 @@ import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
 import lib.common  # noqa: F401  (utf-8 stdio + shared paths)
+from lib.common import topic_slug
 
-import json, sys, re
+import json, sys
 from pathlib import Path
 from datetime import date
 
@@ -38,10 +39,6 @@ def _save(path, data):
     path.parent.mkdir(exist_ok=True)
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
-
-
-def _slugify(name):
-    return re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_')
 
 
 def add_first(topic, category='', difficulties='7,8,9,10', notes=''):
@@ -64,7 +61,7 @@ def add_first(topic, category='', difficulties='7,8,9,10', notes=''):
 
 def add_second(topic, reason='', difficulties='7,8,9,10'):
     data = _load(SECOND_PASS)
-    slug = _slugify(topic)
+    slug = topic_slug(topic)
     # Check for duplicates
     if any(item['topic'].lower() == topic.lower() for item in data['queue']):
         print(f'Already in second pass queue: {topic}')

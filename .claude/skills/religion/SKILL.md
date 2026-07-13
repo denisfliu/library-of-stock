@@ -16,6 +16,8 @@ Organize by the distinct kinds of things clued:
 - **Doctrines** — named beliefs, creeds, theological concepts
 - **Denominations and schools** — branches, sects, movements within the religion
 - "General / Giveaway Identifiers" for the standard closers
+- **Tightly-coupled thin entities** (paired rituals, paired reform sects) that individually miss the 3+ threshold: combine into one joint section ("Samayika and Pratikraman") rather than fragmenting into one-clue sections
+- **Figure classes vs. individuals** (Tirthankaras, Sikh Gurus, prophets): give the class its own section for class-level facts; individuals get their own sections when they clear 3+ mentions or carry specific clues — cross-link between them
 
 ## Indicators
 
@@ -25,6 +27,9 @@ Organize by the distinct kinds of things clued:
 - `Holiday:` for festivals and holy days
 - `Doctrine:` for named beliefs and theological concepts
 - `Denomination:` for branches, sects, and schools
+- `Religion:` for the General/Giveaway section when the topic IS a religion
+- Mantras/prayers/hymns: `Text:` when they have fixed quotable content, `Practice:` when clued through their performance
+- Adherent-community clues (merchants, diaspora, demographics): fold into General unless heavy enough for their own section
 
 ## Cards
 
@@ -37,7 +42,7 @@ Organize by the distinct kinds of things clued:
 ## Metadata
 
 - `group` (optional, NEW): the religion — "Buddhism", "Islam", "Judaism", "Christianity", "Hinduism", "Sikhism", etc.
-- `year`: only when well-defined — a founder's birth year or a text's composition/publication date. Omit for practices, holidays, and most doctrines. Negative for BCE.
+- `year`: only when well-defined — a founder's birth year or a text's composition/publication date. When the topic is a religion itself, use the most recent human founder's traditional birth year (Jainism → Mahavira, -599); omit if there is no meaningful founder date. Omit for practices, holidays, and most doctrines. Negative for BCE.
 - `continent`/`country`: where the topic originated or is primarily associated.
 - `tags`: recognized movements/schools only (e.g., `["Zen"]`, `["Hasidism"]`) — not the religion itself, which belongs in `group`.
 
