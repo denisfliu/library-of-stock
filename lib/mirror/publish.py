@@ -150,11 +150,15 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
                                 "subcategory", "alternate_subcategory",
                                 "difficulty", "section")}
         answers = []
-        answer_col = ("answer_sanitized" if table == "tossups"
-                      else "answers_sanitized")
+        # sanitized text for the aligned answerlines array (client display);
+        # the raw (marked-up) answer feeds the section join, which reads the
+        # bold-underline core.
+        san_col = "answer_sanitized" if table == "tossups" else "answers_sanitized"
+        raw_col = "answer" if table == "tossups" else "answers"
         rows = conn.execute(
             f"SELECT id, set_name, packet_number, number, category, "
-            f"subcategory, alternate_subcategory, difficulty, {answer_col} "
+            f"subcategory, alternate_subcategory, difficulty, "
+            f"{san_col} AS ans_san, {raw_col} AS ans_raw "
             f"FROM {table}").fetchall()
         rows.sort(key=lambda r: (set_index.get(r["set_name"], 1 << 30),
                                  r["packet_number"] or 0, r["number"] or 0,
@@ -170,19 +174,18 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
                 enum_id("alternate_subcategory", r["alternate_subcategory"]))
             cols["difficulty"].append(r["difficulty"])
             if table == "tossups":
-                text = r["answer_sanitized"] or ""
-                answers.append(text)
-                # bonus parts are sectioned individually below; tossups here
+                answers.append(r["ans_san"] or "")
+                # section join reads the raw (marked-up) answer
                 cols["section"].append(section_id(
                     r["category"], r["subcategory"],
-                    r["alternate_subcategory"], text))
+                    r["alternate_subcategory"], r["ans_raw"] or ""))
             else:
-                parts = json.loads(r["answers_sanitized"] or "[]")
-                answers.append(parts)
+                answers.append(json.loads(r["ans_san"] or "[]"))
+                raw_parts = json.loads(r["ans_raw"] or "[]")
                 cols["section"].append([
                     section_id(r["category"], r["subcategory"],
                                r["alternate_subcategory"], p or "")
-                    for p in parts])
+                    for p in raw_parts])
         catalog[table] = cols
         answerlines[table] = answers
         counts[table] = len(rows)

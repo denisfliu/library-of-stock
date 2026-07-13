@@ -33,6 +33,19 @@ from lib.units import unit_for_guide
 _ALT_SPLIT = re.compile(r'[;,]| or ')
 _LEAD = re.compile(r'^(?:or|accept|and|also accept)\s+', re.I)
 _SKIP = re.compile(r'^(?:do not|reject|antiprompt|prompt)\b', re.I)
+_PAREN = re.compile(r'\([^)]*\)')   # optional-name / pronunciation groups
+_TAG = re.compile(r'<[^>]+>')
+_BOLD = re.compile(r'<b><u>(.*?)</u></b>', re.S)
+
+
+def bold_core(raw: str) -> str | None:
+    """The qbreader bold-underline span = the minimal accepted answer
+    (e.g. 'Georgia Totto <b><u>O'Keeffe</u></b>' -> 'O'Keeffe'). Returns
+    None when the raw answer carries no markup."""
+    if not raw:
+        return None
+    m = _BOLD.search(raw)
+    return _TAG.sub('', m.group(1)) if m else None
 
 
 def candidate_keys(answer: str) -> list[str]:
@@ -44,12 +57,15 @@ def candidate_keys(answer: str) -> list[str]:
     seen = set()
 
     def add(s: str):
-        k = normalize(s)
+        # Drop parenthetical groups (optional given names like "(Paul)",
+        # pronunciation guides) rather than truncating at the first "(",
+        # which would blank a leading-parenthetical answer.
+        k = normalize(_PAREN.sub(' ', s))
         if k and k not in seen:
             seen.add(k)
             keys.append(k)
 
-    primary = answer.split('[')[0].split('(')[0]
+    primary = answer.split('[')[0]
     if primary.strip():
         add(primary)
     for seg_group in re.findall(r'\[([^\]]*)\]', answer):
@@ -67,6 +83,10 @@ class SectionIndex:
     def __init__(self, categories_dir: _Path = CATEGORIES_DIR):
         # unit_slug -> {normalized answerline: section name}
         self._by_unit: dict[str, dict[str, str]] = {}
+        # unit_slug -> {last token: section} — only tokens that map to a
+        # single section within the unit (ambiguous surnames excluded), so
+        # "Georgia Totto O'Keeffe" reaches O'Keeffe's section via "keeffe".
+        self._lasttok: dict[str, dict[str, str]] = {}
         for ov_path in sorted(categories_dir.glob('*/overview.json')):
             try:
                 ov = json.loads(ov_path.read_text(encoding='utf-8'))
@@ -82,7 +102,19 @@ class SectionIndex:
                     for work in entry.get('works', []):
                         self._add_entry(sm, work, name)
             if sm:
-                self._by_unit[ov_path.parent.name] = sm
+                slug = ov_path.parent.name
+                self._by_unit[slug] = sm
+                self._lasttok[slug] = self._last_token_index(sm)
+
+    @staticmethod
+    def _last_token_index(sm: dict[str, str]) -> dict[str, str]:
+        by_tok: dict[str, set[str]] = {}
+        for key, section in sm.items():
+            toks = key.split()
+            if len(toks) >= 2:
+                by_tok.setdefault(toks[-1], set()).add(section)
+        return {tok: next(iter(secs)) for tok, secs in by_tok.items()
+                if len(secs) == 1}
 
     @staticmethod
     def _add_entry(sm: dict, entry: dict, section: str) -> None:
@@ -99,17 +131,39 @@ class SectionIndex:
 
     def section_for(self, category: str, subcategory: str,
                     alternate_subcategory: str, answer: str):
-        """Return (unit_slug, section_name) or None."""
+        """Return (unit_slug, section_name) or None. `answer` may carry
+        qbreader bold-underline markup; the bold core is used as an extra
+        candidate."""
         slug = self.unit_slug(category, subcategory, alternate_subcategory)
         if slug is None:
             return None
         sm = self._by_unit.get(slug)
         if not sm:
             return None
-        for key in candidate_keys(answer):
+        # Candidate keys: sanitized answerline (primary + accepted alts),
+        # plus the bold-underline core if the raw answer carries markup.
+        keys = candidate_keys(_TAG.sub('', answer))
+        core = bold_core(answer)
+        if core:
+            for k in candidate_keys(core):
+                if k not in keys:
+                    keys.append(k)
+        for key in keys:
             section = sm.get(key)
             if section is not None:
                 return (slug, section)
+        # Last-token fallback: an unambiguous surname/last word. A
+        # multi-word candidate contributes its last token (full birth name
+        # -> surname); a single-word candidate (e.g. a bold core "Pollock")
+        # IS its own surname.
+        lt = self._lasttok.get(slug, {})
+        for key in keys:
+            toks = key.split()
+            surname = toks[-1] if toks else None
+            if surname:
+                section = lt.get(surname)
+                if section is not None:
+                    return (slug, section)
         return None
 
     def stats(self) -> dict:
