@@ -228,6 +228,8 @@ table.acc td.name .sub {{ color: var(--faint); font-size: 0.78rem; }}
       <div class="chips" id="f-tags"></div>
       <div class="subhead" id="eras-head" style="display:none">Era</div>
       <div class="chips" id="f-eras"></div>
+      <div class="subhead" id="groups-head" style="display:none">Group <span style="text-transform:none;letter-spacing:0">(overview sections)</span></div>
+      <div class="chips" id="f-groups"></div>
       <div class="subhead">Difficulty</div>
       <div class="chips" id="f-diffs"></div>
       <div class="clearrow"><button class="linkbtn" id="clearfilters">Reset scope</button></div>

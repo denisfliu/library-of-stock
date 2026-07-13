@@ -39,6 +39,7 @@ from lib.common import CATEGORIES_DIR, MIRROR_DIR, OUTPUT_DIR
 from lib.mirror import db as mirror_db
 from lib.mirror import query as mirror_query
 from lib.questions_store import shard_slug
+from lib.sweep.section_index import SectionIndex
 from lib.units import unit_for_guide
 
 PUBLISH_DIR = MIRROR_DIR / "publish"
@@ -99,6 +100,23 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
         "SELECT set_name, COUNT(*) FROM packets GROUP BY set_name"))
     set_index = {name: i for i, name in enumerate(set_names)}
 
+    # Overview-section lookup, rebuilt fresh each publish (no stale state):
+    # newly synced sets and edited overviews are sectioned automatically.
+    section_index = SectionIndex()
+    section_values: list[list[str]] = []   # [unit_slug, section_name] pairs
+    section_ids: dict[tuple, int] = {}
+
+    def section_id(category, subcategory, alt, answer):
+        hit = section_index.section_for(category, subcategory, alt, answer)
+        if hit is None:
+            return -1
+        idx = section_ids.get(hit)
+        if idx is None:
+            idx = len(section_values)
+            section_values.append([hit[0], hit[1]])
+            section_ids[hit] = idx
+        return idx
+
     enums: dict[str, list] = {"category": [], "subcategory": [],
                               "alternate_subcategory": []}
     enum_index: dict[str, dict] = {k: {} for k in enums}
@@ -130,7 +148,7 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
     for table in ("tossups", "bonuses"):
         cols = {k: [] for k in ("id", "set", "packet", "number", "category",
                                 "subcategory", "alternate_subcategory",
-                                "difficulty")}
+                                "difficulty", "section")}
         answers = []
         answer_col = ("answer_sanitized" if table == "tossups"
                       else "answers_sanitized")
@@ -152,15 +170,26 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
                 enum_id("alternate_subcategory", r["alternate_subcategory"]))
             cols["difficulty"].append(r["difficulty"])
             if table == "tossups":
-                answers.append(r["answer_sanitized"] or "")
+                text = r["answer_sanitized"] or ""
+                answers.append(text)
+                # bonus parts are sectioned individually below; tossups here
+                cols["section"].append(section_id(
+                    r["category"], r["subcategory"],
+                    r["alternate_subcategory"], text))
             else:
-                answers.append(json.loads(r["answers_sanitized"] or "[]"))
+                parts = json.loads(r["answers_sanitized"] or "[]")
+                answers.append(parts)
+                cols["section"].append([
+                    section_id(r["category"], r["subcategory"],
+                               r["alternate_subcategory"], p or "")
+                    for p in parts])
         catalog[table] = cols
         answerlines[table] = answers
         counts[table] = len(rows)
 
     for col, values in enums.items():
         catalog[col + "_values"] = values
+    catalog["section_values"] = section_values
 
     for name, data in (("catalog.json", catalog),
                        ("answerlines.json", answerlines)):
