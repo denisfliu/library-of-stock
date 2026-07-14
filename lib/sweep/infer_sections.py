@@ -22,6 +22,7 @@ section. Re-derivable and incremental.
     python lib/sweep/infer_sections.py --all
 """
 import argparse
+import json
 import re
 import sys as _sys
 from collections import Counter, defaultdict
@@ -29,6 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path as _Path
 
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
+from lib.common import CATEGORIES_DIR
 from lib.pipeline.fetch import fetch_unit_questions
 from lib.sweep.answerline_kb import (_primary_key, clean_answerline, collect,
                                      load_kb, save_kb)
@@ -80,6 +82,28 @@ _STOP = {normalize(w) for w in (
     'rome', 'greece', 'the roman empire')}
 
 
+def _load_keywords(unit_slug):
+    """Compiled keyword->section matcher for units with an authored
+    section_keywords.json (science units). Returns (regex, {kw: section})
+    or None."""
+    p = CATEGORIES_DIR / unit_slug / 'section_keywords.json'
+    if not p.exists():
+        return None
+    try:
+        m = json.loads(p.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return None
+    kw2sec = {}
+    for section, kws in m.items():
+        for k in kws:
+            kw2sec.setdefault(k.lower(), section)
+    if not kw2sec:
+        return None
+    # longest keyword first so multi-word phrases win over their tokens
+    alt = '|'.join(re.escape(k) for k in sorted(kw2sec, key=len, reverse=True))
+    return re.compile(r'\b(' + alt + r')\b'), kw2sec
+
+
 def _period_section(year, unit_slug):
     for lo, hi, name in PERIOD_TABLES.get(unit_slug, []):
         if lo <= year < hi:
@@ -118,8 +142,17 @@ def _build_lexicon(unit_slug, idx, kb):
     return lex
 
 
-def _infer_one(texts, lex, unit_slug):
+def _infer_one(display, texts, lex, unit_slug, kw=None):
     votes = Counter()
+    # keyword votes (science concepts): a subfield term in the answerline's
+    # own name is strong; in the body, weaker context.
+    if kw:
+        pat, kw2sec = kw
+        for hit in pat.findall((display or '').lower()):
+            votes[kw2sec[hit]] += 4.0
+        for t in texts:
+            for hit in set(pat.findall(t.lower())):
+                votes[kw2sec[hit]] += 1.0
     # co-mention votes
     for t in texts:
         seen = set()
@@ -170,6 +203,7 @@ def infer(unit_slug, min_weight=MIN_WEIGHT):
     idx = SectionIndex()
     kb = load_kb(unit_slug)
     lex = _build_lexicon(unit_slug, idx, kb)
+    kw = _load_keywords(unit_slug)
 
     # gather question bodies per answerline, for blanks only
     sectioned = set(idx._by_unit.get(unit_slug, {}))
@@ -198,7 +232,7 @@ def infer(unit_slug, min_weight=MIN_WEIGHT):
     for key, texts in bodies.items():
         if key in kb:      # blanks only
             continue
-        section = _infer_one(texts, lex, unit_slug)
+        section = _infer_one(disp.get(key, key), texts, lex, unit_slug, kw)
         if section:
             kb[key] = {
                 'display': disp.get(key, key), 'type': None,
