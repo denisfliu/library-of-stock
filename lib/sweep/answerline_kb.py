@@ -146,11 +146,18 @@ each output file once, do NOT re-read or re-verify — a script validates.
 
 For every batch_NN.jsonl here, write batch_NN.out.jsonl: one JSON object
 per input line, SAME ORDER, echoing the input "id" exactly. Input lines:
-  {{"id": <int>, "answer": "<display>", "freq": <n>, "clue": "<giveaway>"}}
-The clue is one sentence from a real question — use it to disambiguate
-(e.g. which "Vincent"). Output objects:
-  {{"id": <int>, "type": "...", "section": "...", "movement": [...],
-    "era": "...", "country": "...", "creator": "..."}}
+  {{"id": <int>, "answer": "<display>", "freq": <n>, "clue"?: "...",
+    "wd"?: {{"type","era","country","movement"}}}}
+- "clue" (present only for short/ambiguous answerlines) is one sentence
+  from a real question — use it to disambiguate (e.g. which "Vincent").
+- "wd" (present when Wikidata already resolved the entity) gives KNOWN,
+  correct facts. When "wd" is present, output ONLY:
+      {{"id": <int>, "section": "..."}}
+  — do not repeat type/era/country/movement (we keep Wikidata's), and
+  add "type" only if you disagree with wd.type.
+- When "wd" is ABSENT, output the full object:
+      {{"id": <int>, "type": "...", "section": "...", "movement": [...],
+        "era": "...", "country": "...", "creator": "..."}}
 
 Fields (leave "" / [] when genuinely unsure — a blank beats a wrong guess):
 - type: one of {types}. Use "common-link" for thematic "what is depicted
@@ -159,16 +166,40 @@ Fields (leave "" / [] when genuinely unsure — a blank beats a wrong guess):
 - section: the ONE best-fitting section from this unit's list below, or
   "" if it is a common-link / does not fit any:
 {sections}
-- movement: art movement(s) / school(s) / style(s), e.g. ["Surrealism"];
-  [] if none apply.
-- era: one of {eras}, by the work's creation or the person's floruit; ""
-  if timeless/unknown.
+- movement: movement(s) / school(s) / style(s), e.g. ["Surrealism"];
+  [] if none.
+- era: one of {eras}, by creation or the person's floruit; "" if unknown.
 - country: the primary country of origin/association; "" if none.
-- creator: for a "work", the artist/creator's common name; else "".
+- creator: for a "work", the creator's common name; else "".
 
 Accuracy over coverage. Do not invent. Echo ids exactly; never drop,
 merge, add, or reorder lines.
 """
+
+
+def _load_wd_cache(unit_slug: str) -> dict:
+    """Wikidata-resolved records for a unit, keyed by normalized answerline
+    (only non-null matches). Lets prep pre-fill known facts so the LLM
+    outputs just the section for already-resolved entities."""
+    from lib.sweep.wikidata import CACHE_PATH
+    try:
+        cache = json.loads(_Path(CACHE_PATH).read_text(encoding='utf-8'))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    pref = unit_slug + '␟'
+    return {k[len(pref):]: v for k, v in cache.items()
+            if k.startswith(pref) and v}
+
+
+def _wd_hint(rec: dict) -> dict:
+    """Compact non-null fact hint from a Wikidata record."""
+    hint = {}
+    for f in ('type', 'era', 'country'):
+        if rec.get(f):
+            hint[f] = rec[f]
+    if rec.get('movement'):
+        hint['movement'] = rec['movement']
+    return hint
 
 
 def prep(unit_slug: str, limit: int | None = None) -> None:
@@ -177,6 +208,7 @@ def prep(unit_slug: str, limit: int | None = None) -> None:
         raise SystemExit(f'Unknown unit {unit_slug!r}')
     agg = collect(unit_slug)
     kb = load_kb(unit_slug)
+    wd = _load_wd_cache(unit_slug)
 
     # Target the answerlines that need enrichment: not already in the store
     # (incremental) and not already sectioned by the mechanical index. The
@@ -202,10 +234,17 @@ def prep(unit_slug: str, limit: int | None = None) -> None:
         for i, (key, rec) in enumerate(todo[start:start + BATCH_SIZE]):
             gid = start + i
             id_map[gid] = key
-            lines.append(json.dumps({
-                'id': gid, 'answer': rec['display'],
-                'freq': rec['freq'], 'clue': rec['clue'],
-            }, ensure_ascii=False))
+            entry = {'id': gid, 'answer': rec['display'], 'freq': rec['freq']}
+            # clue only for short/ambiguous answerlines (long titles and
+            # full names self-identify) — saves input tokens.
+            if rec['clue'] and len(rec['display'].split()) <= 3:
+                entry['clue'] = rec['clue']
+            wdrec = wd.get(key)
+            if wdrec:
+                hint = _wd_hint(wdrec)
+                if hint:
+                    entry['wd'] = hint
+            lines.append(json.dumps(entry, ensure_ascii=False))
         (wdir / f'batch_{n_batches:02d}.jsonl').write_text(
             '\n'.join(lines) + '\n', encoding='utf-8')
 
@@ -244,12 +283,34 @@ def _clean(rec: dict) -> dict:
     return out
 
 
+def _merge_wd(llm: dict, wd: dict) -> dict:
+    """Merge a Wikidata record's facts with the LLM's section (and any
+    field the LLM overrode). Wikidata is authoritative for type/era/
+    country/movement/creator; the LLM supplies the section."""
+    section = (llm.get('section') or '').strip() or None
+    ltype = (llm.get('type') or '').strip()
+    out = {
+        'type': (ltype if ltype in TYPES else None) or wd.get('type'),
+        'section': section,
+        'movement': wd.get('movement') or [m for m in (llm.get('movement') or []) if m],
+        'era': wd.get('era'),
+        'country': wd.get('country'),
+        'creator': wd.get('creator'),
+    }
+    if wd.get('coord'):
+        out['coord'] = wd['coord']
+    if wd.get('qid'):
+        out['qid'] = wd['qid']
+    return out
+
+
 def compose(unit_slug: str) -> None:
     from datetime import datetime, timezone
     wdir = WORK_DIR / unit_slug
     id_map = json.loads((wdir / 'id_map.json').read_text(encoding='utf-8'))
     agg = collect(unit_slug)
     key_display = {k: v['display'] for k, v in agg.items()}
+    wd = _load_wd_cache(unit_slug)
 
     kb = load_kb(unit_slug)
     ts = datetime.now(timezone.utc).strftime('%Y-%m-%d')
@@ -268,9 +329,14 @@ def compose(unit_slug: str) -> None:
             if not key or key in kb:
                 bad += 1 if not key else 0
                 continue
-            entry = _clean(rec)
+            wdrec = wd.get(key)
+            if wdrec:
+                entry = _merge_wd(rec, wdrec)
+                entry['source'] = 'llm+wikidata'
+            else:
+                entry = _clean(rec)
+                entry['source'] = 'llm'
             entry['display'] = key_display.get(key, key)
-            entry['source'] = 'llm'
             entry['ts'] = ts
             kb[key] = entry
             added += 1
