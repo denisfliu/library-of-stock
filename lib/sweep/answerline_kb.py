@@ -301,11 +301,59 @@ class KBLookup:
         return bool(self._by_unit)
 
 
+def wikidata(unit_slug: str) -> None:
+    """Free pre-LLM enrichment: resolve the unit's uncovered answerlines
+    against Wikidata and commit the ones we can section (works via their
+    creator, places by kind). Sectionless hits are left for the LLM,
+    which enriches them fully. Cached, so re-runs never re-query."""
+    from datetime import datetime, timezone
+    from lib.sweep.wikidata import WikidataResolver
+    if UNITS_BY_SLUG.get(unit_slug) is None:
+        raise SystemExit(f'Unknown unit {unit_slug!r}')
+    agg = collect(unit_slug)
+    kb = load_kb(unit_slug)
+    todo = [(k, v) for k, v in agg.items()
+            if k not in kb and v['section'] is None]
+    todo.sort(key=lambda kv: -kv[1]['freq'])
+    labels = [v['display'] for _, v in todo]
+
+    resolver = WikidataResolver()
+    resolved = resolver.resolve(unit_slug, labels)
+
+    ts = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    committed = matched = 0
+    for key, v in todo:
+        rec = resolved.get(key)
+        if not rec:
+            continue
+        matched += 1
+        if not rec.get('section'):
+            continue   # leave for the LLM to section + enrich
+        entry = {
+            'display': v['display'], 'type': rec.get('type'),
+            'section': rec['section'], 'movement': rec.get('movement') or [],
+            'era': rec.get('era'), 'country': rec.get('country'),
+            'creator': rec.get('creator'),
+        }
+        if rec.get('coord'):
+            entry['coord'] = rec['coord']
+        if rec.get('qid'):
+            entry['qid'] = rec['qid']
+        entry['source'] = 'wikidata'
+        entry['ts'] = ts
+        kb[key] = entry
+        committed += 1
+    save_kb(unit_slug, kb)
+    print(f'Wikidata {unit_slug}: {matched}/{len(todo)} answerlines matched, '
+          f'{committed} sectioned + committed ({len(kb)} total in store)')
+
+
 def status() -> None:
     for unit in UNITS:
         kb = load_kb(unit.slug)
         secd = sum(1 for v in kb.values() if v.get('section'))
-        print(f'{len(kb):6} enriched ({secd} sectioned)  {unit.slug}')
+        wd = sum(1 for v in kb.values() if v.get('source') == 'wikidata')
+        print(f'{len(kb):6} enriched ({secd} sectioned, {wd} wikidata)  {unit.slug}')
 
 
 def main():
@@ -313,11 +361,14 @@ def main():
     sub = ap.add_subparsers(dest='cmd', required=True)
     pr = sub.add_parser('prep'); pr.add_argument('unit')
     pr.add_argument('--limit', type=int, default=None)
+    wd = sub.add_parser('wikidata'); wd.add_argument('unit')
     co = sub.add_parser('compose'); co.add_argument('unit')
     sub.add_parser('status')
     args = ap.parse_args()
     if args.cmd == 'prep':
         prep(args.unit, limit=args.limit)
+    elif args.cmd == 'wikidata':
+        wikidata(args.unit)
     elif args.cmd == 'compose':
         compose(args.unit)
     else:
