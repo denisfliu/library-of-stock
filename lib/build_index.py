@@ -318,6 +318,18 @@ BASE_CSS
 .ov-sub:hover { background: #222b36; }
 .ov-sub-name { font-size: 0.9rem; }
 .ov-sub-meta { font-size: 0.7rem; color: #808790; margin-top: 0.1rem; }
+.ov-subgroup { border-bottom: 1px solid #15191e; }
+.ov-subgroup:last-child { border-bottom: none; }
+.ov-subgroup > summary {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 1rem; cursor: pointer; list-style: none; color: #e0e0e0;
+}
+.ov-subgroup > summary::-webkit-details-marker { display: none; }
+.ov-subgroup > summary:hover { background: #222b36; }
+.ov-subgroup > summary > span:first-child { display: flex; flex-direction: column; }
+.ov-subgroup[open] > summary .ov-arrow { transform: rotate(180deg); }
+.ov-sublist-nested { border-top: 1px solid #2a2f37; background: #171b21; }
+.ov-sublist-nested .ov-sub { padding-left: 1.9rem; }
 .ov-draft {
     font-size: 0.6rem;
     color: #e8b04a;
@@ -1156,6 +1168,7 @@ def build(analyses=None):
             s = stats.get(u.slug, {})
             by_cat.setdefault(u.category, []).append({
                 'slug': u.slug, 'title': u.title,
+                'subcategory': u.subcategory, 'genre': u.genre,
                 'have': s.get('have', 0), 'total': s.get('total', 0),
                 'pages': page_counts.get(u.slug, 0), 'draft': draft,
             })
@@ -1173,13 +1186,46 @@ def build(analyses=None):
                 f'{"" if us["pages"] == 1 else "s"} · {_cov(us["have"], us["total"])} covered'
                 f'</span></a>')
 
+        def _umbrella_group(sub, gunits) -> str:
+            # An umbrella subcategory (Other Science, Other Fine Arts) — its
+            # genre units nest one level deeper, revealed on click.
+            pages = sum(u['pages'] for u in gunits)
+            rows = ''.join(_unit_row(u) for u in sorted(gunits, key=lambda u: u['title']))
+            return (
+                f'<details class="ov-subgroup">'
+                f'<summary><span>'
+                f'<span class="ov-sub-name">{escape(sub)}</span>'
+                f'<span class="ov-sub-meta">{len(gunits)} areas · {pages} page'
+                f'{"" if pages == 1 else "s"}</span></span>'
+                f'<span class="ov-arrow">&#9662;</span></summary>'
+                f'<div class="ov-sublist ov-sublist-nested">{rows}</div></details>')
+
+        def _category_body(cat, units) -> str:
+            # Group a category's units by subcategory; a subcategory with
+            # several genre units (Other Science) becomes a nested group,
+            # everything else is a direct row. Direct rows first, umbrellas
+            # last.
+            subs = {}
+            for u in units:
+                subs.setdefault(u['subcategory'], []).append(u)
+            directs, umbrellas = [], []
+            for sub, gunits in subs.items():
+                if sub == cat or (len(gunits) == 1 and not gunits[0]['genre']):
+                    directs.extend(gunits)          # flat rows (Biology, Social Science genres)
+                else:
+                    umbrellas.append((sub, gunits))  # Other Science / Other Fine Arts
+            directs.sort(key=lambda u: u['title'])
+            umbrellas.sort(key=lambda x: x[0])
+            return (''.join(_unit_row(u) for u in directs)
+                    + ''.join(_umbrella_group(sub, g) for sub, g in umbrellas))
+
         cards = ''
         ordered = ([c for c in CATEGORY_ORDER if c in by_cat]
                    + [c for c in by_cat if c not in CATEGORY_ORDER])
         for cat in ordered:
             units = sorted(by_cat[cat], key=lambda u: u['title'])
             n_pages = sum(u['pages'] for u in units)
-            sub_label = (f'{len(units)} subcategories'
+            sub_label = (f'{len(units)} overviews'
                          if len(units) > 1 else '1 area')
             head = (f'<span class="ov-cat-name">{escape(cat)}</span>'
                     f'<span class="ov-cat-meta">{sub_label} · '
@@ -1191,11 +1237,10 @@ def build(analyses=None):
                     f'href="output/_categories/{u["slug"]}/overview.html">'
                     f'{head}<span class="ov-arrow">&rarr;</span></a>')
             else:
-                rows = ''.join(_unit_row(u) for u in units)
                 cards += (
                     f'<details class="ov-card">'
                     f'<summary>{head}<span class="ov-arrow">&#9662;</span></summary>'
-                    f'<div class="ov-sublist">{rows}</div></details>')
+                    f'<div class="ov-sublist">{_category_body(cat, units)}</div></details>')
 
         # Sweep sets block.
         sweep_html = ''
