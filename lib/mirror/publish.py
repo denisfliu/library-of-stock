@@ -114,10 +114,15 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
         hit = section_index.section_for(category, subcategory, alt, answer)
         if hit is None and kb:
             rec = kb.record(category, subcategory, alt, answer)
-            if rec and rec.get('section'):
+            if rec:
                 u = unit_for_guide(category or '', subcategory or '', alt or '')
-                if u:
+                if u and rec.get('section'):
                     hit = (u.slug, rec['section'])
+                elif u and rec.get('type') == 'common-link':
+                    # thematic "what is depicted / what concept" answers have
+                    # no era/school home — give them a practice group of their
+                    # own rather than leaving them Unsectioned.
+                    hit = (u.slug, 'Common Links & Themes')
         if hit is None:
             return -1
         idx = section_ids.get(hit)
