@@ -39,6 +39,7 @@ from lib.common import CATEGORIES_DIR, MIRROR_DIR, OUTPUT_DIR
 from lib.mirror import db as mirror_db
 from lib.mirror import query as mirror_query
 from lib.questions_store import shard_slug
+from lib.sweep.answerline_kb import KBLookup
 from lib.sweep.section_index import SectionIndex
 from lib.units import unit_for_guide
 
@@ -102,12 +103,21 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
 
     # Overview-section lookup, rebuilt fresh each publish (no stale state):
     # newly synced sets and edited overviews are sectioned automatically.
+    # The answerline KB is the enriched fallback for answerlines the
+    # mechanical index can't place (and carries era/movement metadata).
     section_index = SectionIndex()
+    kb = KBLookup()
     section_values: list[list[str]] = []   # [unit_slug, section_name] pairs
     section_ids: dict[tuple, int] = {}
 
     def section_id(category, subcategory, alt, answer):
         hit = section_index.section_for(category, subcategory, alt, answer)
+        if hit is None and kb:
+            rec = kb.record(category, subcategory, alt, answer)
+            if rec and rec.get('section'):
+                u = unit_for_guide(category or '', subcategory or '', alt or '')
+                if u:
+                    hit = (u.slug, rec['section'])
         if hit is None:
             return -1
         idx = section_ids.get(hit)

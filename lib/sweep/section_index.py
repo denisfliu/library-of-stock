@@ -57,14 +57,16 @@ def candidate_keys(answer: str) -> list[str]:
     seen = set()
 
     def add(s: str):
-        # Drop parenthetical groups (optional given names like "(Paul)",
-        # pronunciation guides) rather than truncating at the first "(",
-        # which would blank a leading-parenthetical answer.
-        k = normalize(_PAREN.sub(' ', s))
+        # Strip any qbreader markup, then drop parenthetical groups
+        # (optional given names like "(Paul)", pronunciation guides) rather
+        # than truncating at the first "(", which would blank a leading-
+        # parenthetical answer.
+        k = normalize(_PAREN.sub(' ', _TAG.sub('', s)))
         if k and k not in seen:
             seen.add(k)
             keys.append(k)
 
+    answer = _TAG.sub('', answer)
     primary = answer.split('[')[0]
     if primary.strip():
         add(primary)
