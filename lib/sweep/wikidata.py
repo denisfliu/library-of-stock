@@ -48,16 +48,47 @@ MIN_SITELINKS = 3   # notability floor — cuts junk matches on short/odd labels
 # the figure whose section it inherits. type_section maps a place/work
 # kind keyword to an overview section name (used where the section is a
 # function of the entity kind, e.g. Geography).
+# Fine Arts sub-units all share category "Fine Arts" (subcategory "Other
+# Fine Arts" for most), so film/architecture/music-adjacent units are keyed
+# by slug/subcategory in CATEGORY_CONFIG and resolved by config_for() with
+# slug -> subcategory -> category precedence.
+_MUSIC = {
+    'person_kw': ['composer', 'musician', 'conductor', 'pianist',
+                  'violinist', 'songwriter', 'librettist'],
+    'work_kw': ['opera', 'symphony', 'concerto', 'musical work', 'composition',
+                'song', 'ballet', 'sonata', 'oratorio', 'suite', 'mass',
+                'musical', 'album', 'jazz'],
+    'creator_prop': 'P86',
+}
+_FILM = {
+    'person_kw': ['film director', 'filmmaker', 'director', 'screenwriter',
+                  'cinematographer', 'film producer'],
+    'work_kw': ['film', 'feature film', 'film series', 'animated film',
+                'documentary', 'silent film', 'short film'],
+    'creator_prop': 'P57',
+}
+_ARCH = {
+    'person_kw': ['architect'],
+    'work_kw': ['building', 'religious building', 'church', 'cathedral',
+                'skyscraper', 'architectural structure', 'structure',
+                'house', 'palace', 'temple', 'bridge', 'monument'],
+    'creator_prop': 'P84',
+}
+
 CATEGORY_CONFIG = {
     'Fine Arts': {
         'person_kw': ['painter', 'artist', 'sculptor', 'photographer',
-                      'printmaker', 'engraver', 'architect', 'illustrator',
+                      'printmaker', 'engraver', 'illustrator',
                       'draughtsman', 'ceramicist'],
         'work_kw': ['painting', 'sculpture', 'work of art', 'artwork',
                     'fresco', 'drawing', 'print', 'installation', 'mural',
-                    'triptych', 'altarpiece', 'statue', 'portrait'],
+                    'triptych', 'altarpiece', 'statue', 'portrait',
+                    'photograph'],
         'creator_prop': 'P170',
     },
+    'Auditory Fine Arts': _MUSIC,
+    'opera': _MUSIC, 'jazz': _MUSIC, 'musicals': _MUSIC,
+    'film': _FILM, 'architecture': _ARCH,
     'Literature': {
         'person_kw': ['writer', 'poet', 'novelist', 'playwright', 'author',
                       'dramatist', 'essayist', 'philologist'],
@@ -148,6 +179,16 @@ _REJECT_TYPES = {
     'Q13406463',  # Wikimedia list article
     'Q11266439',  # Wikimedia template
 }
+
+
+def config_for(unit):
+    """Resolution config for a unit: slug override -> subcategory ->
+    category. Lets Fine Arts sub-units (film, architecture, opera, ...)
+    diverge from the visual-art default."""
+    for key in (unit.slug, unit.subcategory, unit.category):
+        if key in CATEGORY_CONFIG:
+            return CATEGORY_CONFIG[key]
+    return None
 
 
 def _load_cache() -> dict:
@@ -314,7 +355,7 @@ class WikidataResolver:
         """labels -> {norm_label: record|None}. Cached; only uncached
         labels hit the network."""
         unit = UNITS_BY_SLUG[unit_slug]
-        cfg = CATEGORY_CONFIG.get(unit.category)
+        cfg = config_for(unit)
         result = {}
         pending = []
         for lab in labels:
