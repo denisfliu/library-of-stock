@@ -39,8 +39,8 @@ from pathlib import Path as _Path
 
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
 from lib.common import CATEGORIES_DIR, OUTPUT_DIR
-from lib.sweep.answerlines import normalize
-from lib.sweep.capture_questions import fetch_unit_questions
+from lib.pipeline.fetch import fetch_unit_questions
+from lib.sweep.answerlines import clean_answerline, normalize
 from lib.sweep.section_index import SectionIndex, candidate_keys
 from lib.units import UNITS, UNITS_BY_SLUG
 
@@ -65,16 +65,23 @@ def load_kb(unit_slug: str) -> dict:
     if p.exists():
         try:
             return json.loads(p.read_text(encoding='utf-8'))
-        except (OSError, json.JSONDecodeError):
-            pass
+        except (OSError, json.JSONDecodeError) as e:
+            # A concurrent write or corrupt shard would otherwise vanish
+            # silently — make the data loss at least visible.
+            print(f'WARNING: could not read KB shard {p}: {e}',
+                  file=_sys.stderr)
     return {}
 
 
 def save_kb(unit_slug: str, kb: dict) -> None:
     KB_DIR.mkdir(parents=True, exist_ok=True)
-    kb_path(unit_slug).write_text(
-        json.dumps(kb, indent=1, ensure_ascii=False, sort_keys=True),
-        encoding='utf-8')
+    p = kb_path(unit_slug)
+    payload = json.dumps(kb, indent=1, ensure_ascii=False, sort_keys=True)
+    # Atomic write so a concurrent reader (e.g. publish's KBLookup) never
+    # sees a truncated shard.
+    tmp = p.with_suffix('.json.tmp')
+    tmp.write_text(payload, encoding='utf-8')
+    tmp.replace(p)
 
 
 def _primary_key(answer_sanitized: str) -> str:
@@ -109,9 +116,11 @@ def collect(unit_slug: str) -> dict:
         if rec is None:
             section = idx.section_for(unit.category, unit.subcategory, '',
                                       answer_raw or answer_san)
+            # display normalizes back to `key` (both go through the same
+            # clean+normalize), so downstream lookups keyed by the display
+            # (e.g. WikidataResolver) line up with the KB key.
             rec = agg[key] = {
-                'display': (answer_san.split('[')[0].split('(')[0].strip()
-                            or answer_san),
+                'display': clean_answerline(answer_san) or answer_san,
                 'freq': 0, 'clue': _giveaway(question),
                 'section': section[1] if section else None,
             }
@@ -223,8 +232,9 @@ def prep(unit_slug: str, limit: int | None = None) -> None:
 def _clean(rec: dict) -> dict:
     section = (rec.get('section') or '').strip() or None
     era = (rec.get('era') or '').strip()
+    rtype = (rec.get('type') or '').strip()
     out = {
-        'type': (rec.get('type') or '').strip() or None,
+        'type': rtype if rtype in TYPES else None,
         'section': section,
         'movement': [m for m in (rec.get('movement') or []) if m],
         'era': era if era in ERA_BUCKETS else None,

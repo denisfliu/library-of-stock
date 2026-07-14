@@ -327,7 +327,9 @@ class WikidataResolver:
                     p['movements'].add(v)
             for src, dst in (('countryLabel', 'country'), ('p17Label', 'country')):
                 if src in b and 'country' not in p:
-                    p['country'] = b[src]['value']
+                    v = b[src]['value']
+                    if not v.startswith('http'):   # no-label fallback URI
+                        p['country'] = v
             for src, dst in (('by', 'year'), ('iy', 'year')):
                 if src in b and 'year' not in p:
                     p['year'] = b[src]['value']
@@ -375,12 +377,17 @@ class WikidataResolver:
 
         for i in range(0, len(pending), BATCH):
             chunk = pending[i:i + BATCH]
+            # A network/timeout failure must NOT be cached as a permanent
+            # negative match — skip the chunk and retry it on a later run.
             try:
                 best = self._candidates(chunk, cfg)
+                qids = {v[0] for v in best.values()}
+                props = self._properties(qids, cfg) if qids else {}
             except Exception:
-                best = {}
-            qids = {v[0] for v in best.values()}
-            props = self._properties(qids, cfg) if qids else {}
+                for lab in chunk:              # leave uncached for retry
+                    result[normalize(lab)] = None
+                time.sleep(DELAY)
+                continue
             time.sleep(DELAY)
             for lab in chunk:
                 nlab = normalize(lab)
@@ -406,5 +413,5 @@ class WikidataResolver:
                     }
                 self._cache[ck] = rec
                 result[nlab] = rec
-        _save_cache(self._cache)
+            _save_cache(self._cache)   # persist incrementally, per chunk
         return result

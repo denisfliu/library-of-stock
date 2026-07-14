@@ -16,7 +16,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import ROOT, CATEGORIES_DIR, SETS_DIR, resolve_analyses
+from lib.render.theme import PALETTE
 from lib.units import UNITS_BY_SLUG
+
+# CSS custom properties for the neutral palette, sourced from theme.PALETTE
+# so the portal can't drift from the wiki/reader. (--accent is a semantic
+# color not yet in PALETTE and stays inline in the template.)
+_PALETTE_VARS = (
+    f"--bg: {PALETTE['bg']}; --raised: {PALETTE['bg_raised']}; "
+    f"--inset: {PALETTE['bg_input']}; --border: {PALETTE['border']};\n"
+    f"  --text: {PALETTE['text']}; --bright: {PALETTE['text_bright']}; "
+    f"--muted: {PALETTE['text_muted']}; --faint: {PALETTE['text_faint']};\n"
+    f"  --wiki: {PALETTE['link']};"
+)
 
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -27,9 +39,8 @@ TEMPLATE = """<!DOCTYPE html>
 <style>
 :root {
   color-scheme: dark;
-  --bg: #101418; --raised: #1a1f25; --inset: #15191e; --border: #3a3f47;
-  --text: #c8ccd1; --bright: #e0e0e0; --muted: #9aa0a7; --faint: #808790;
-  --wiki: #6b9eff; --accent: #e8b04a;
+  PALETTE_VARS
+  --accent: #e8b04a;
   --sans: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   --serif: 'Linux Libertine', Georgia, serif;
 }
@@ -201,6 +212,7 @@ def build(analyses=None) -> None:
     ]
 
     html = (TEMPLATE
+            .replace("PALETTE_VARS", _PALETTE_VARS)
             .replace("STATLINE", "\n  ".join(stats))
             .replace("GUIDE_COUNT", str(guide_count))
             .replace("OVERVIEW_LINKS", "\n    ".join(overview_links))

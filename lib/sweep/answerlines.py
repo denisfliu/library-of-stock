@@ -15,6 +15,7 @@ import re
 import unicodedata
 
 _TAG_RE = re.compile(r'<[^>]+>')
+_PAREN_RE = re.compile(r'\([^)]*\)')
 _WS_RE = re.compile(r'\s+')
 _PUNCT_RE = re.compile(r'[^\w\s]', re.UNICODE)
 _ARTICLE_RE = re.compile(r'^(the|a|an)\s+', re.IGNORECASE)
@@ -31,13 +32,16 @@ _TRANSLIT = str.maketrans({
 def clean_answerline(raw: str) -> str:
     """Canonical display form of a raw answerline.
 
-    Strips HTML, then cuts at the first bracketed/parenthesized clause
-    ("[accept ...]", "[or ...]", "(It was written by ...)"), which is
-    where qbreader answerlines keep their accept/prompt directives.
+    Strips HTML, cuts at the first "[accept ...]"/"[or ...]" bracket
+    (accept/prompt directives), then drops parenthetical spans —
+    pronunciation guides, optional given names ("(Joseph) Rudyard
+    Kipling"), explanatory clauses. Parentheticals are removed as spans,
+    NOT truncated at the first "(", so a leading optional name doesn't
+    collapse the whole answer to "".
     """
     s = _TAG_RE.sub('', raw or '')
     s = s.split('[', 1)[0]
-    s = s.split('(', 1)[0]
+    s = _PAREN_RE.sub(' ', s)
     s = _WS_RE.sub(' ', s).strip().strip(';,').strip()
     return s
 
