@@ -164,6 +164,16 @@ def _infer_one(display, texts, lex, unit_slug, kw=None):
                 votes[hit[0]] += hit[1]
     # date votes (chronological units)
     if unit_slug in PERIOD_TABLES:
+        # A year IN THE ANSWERLINE NAME is decisive ("...Election of 1948",
+        # "Treaty of ... (1919)"): the answer IS that dated event.
+        for y in _YEAR.findall(display or ''):
+            sec = _period_section(int(y), unit_slug)
+            if sec:
+                votes[sec] += 5.0
+        for y in _BCE.findall(display or ''):
+            sec = _period_section(-int(y), unit_slug)
+            if sec:
+                votes[sec] += 5.0
         # count each year once per question (so the topic's period year,
         # repeated across its questions, beats one-off incidental dates);
         # drop >=2005 meta/reference years (a history topic is ~never about
