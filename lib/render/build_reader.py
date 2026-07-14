@@ -242,6 +242,8 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
       <div class="chips" id="f-cats"></div>
       <div class="subhead" id="subs-head" style="display:none">Subcategory</div>
       <div class="chips" id="f-subs"></div>
+      <div class="subhead" id="subsub-head" style="display:none">Subtype</div>
+      <div class="chips" id="f-subsub"></div>
       <div class="subhead" id="tags-head" style="display:none">Focus &mdash; movements &amp; schools <span style="text-transform:none;letter-spacing:0">(from the wiki)</span></div>
       <div class="chips" id="f-tags"></div>
       <div class="subhead" id="eras-head" style="display:none">Era</div>
