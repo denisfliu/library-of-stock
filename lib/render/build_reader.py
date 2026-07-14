@@ -203,6 +203,22 @@ table.acc td.name .sub {{ color: var(--faint); font-size: 0.78rem; }}
 .sechead {{ font-family: var(--serif); font-size: 1.15rem; color: var(--bright); margin: 1.5rem 0 0.6rem; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; font-weight: normal; }}
 .playtag {{ font-size: 0.76rem; color: var(--wiki); cursor: pointer; }}
 .playtag:hover {{ text-decoration: underline; }}
+table.acc th.sorth {{ cursor: pointer; user-select: none; white-space: nowrap; }}
+table.acc th.sorth:hover {{ color: var(--bright); }}
+.dimsel {{ display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 0.6rem; }}
+.dimbtn {{
+    background: var(--inset); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 3px; padding: 0.3rem 0.8rem; font-size: 0.82rem;
+}}
+.dimbtn:hover {{ color: var(--bright); border-color: var(--faint); }}
+.dimbtn.on {{ background: var(--accent-dim); border-color: var(--accent); color: #fff; }}
+.calib {{ display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1.2rem; }}
+.calib-cell {{
+    flex: 1; min-width: 110px; background: var(--raised); border: 1px solid var(--border);
+    border-radius: 4px; padding: 0.6rem 0.8rem; text-align: center;
+}}
+.calib-cell .v {{ font-size: 1.5rem; font-variant-numeric: tabular-nums; margin: 0.15rem 0; }}
+.calib-cell .k {{ font-size: 0.7rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em; }}
 @media (prefers-reduced-motion: reduce) {{ .timerbar i {{ transition: none !important; }} }}
 </style>
 </head>
