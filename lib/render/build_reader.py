@@ -105,6 +105,8 @@ aside {{ width: 300px; flex: none; position: sticky; top: 0.8rem; }}
 .linkbtn:hover {{ text-decoration: underline; }}
 
 label.setting {{ display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 0.55rem; }}
+label.drilltoggle {{ display: flex; align-items: center; gap: 0.45rem; color: var(--bright); cursor: pointer; margin: 0.6rem 0 0.4rem; }}
+label.drilltoggle input {{ accent-color: var(--accent); width: 15px; height: 15px; }}
 label.setting .val {{ color: var(--bright); font-variant-numeric: tabular-nums; }}
 input[type=range] {{ width: 100%; accent-color: var(--accent); margin-top: 0.2rem; }}
 .seg {{ display: flex; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; margin-top: 0.25rem; }}
@@ -263,6 +265,13 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
         <button data-n="1">Last 1</button>
       </div>
       <div class="hint">Trim to the end of the question to drill giveaways and stock clues; earlier sentences stay hidden until you ask.</div>
+      <label class="setting drilltoggle"><input type="checkbox" id="drill"> Drill my weaknesses</label>
+      <div id="drillrow" style="display:none">
+        <label class="setting">Focus &mdash; <span class="val" id="focusval">balanced</span>
+          <input type="range" id="focus" min="0" max="100" value="55">
+        </label>
+        <div class="hint">Weights the queue toward your weak groups &amp; answers (from My stats), with spaced review of misses. Broad = variety; Targeted = hammer weaknesses.</div>
+      </div>
       <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>S</kbd> skip (not counted) &middot; <kbd>P</kbd> pause</div>
       <div class="hint taphint">Tap the question text to buzz; tap it again after the reveal for the next question. Skip is never counted.</div>
       <div class="hint">Note-run clues (&ldquo;E, G, B-flat&hellip;&rdquo;) read at a slower pace automatically.</div>
