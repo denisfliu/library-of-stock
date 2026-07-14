@@ -221,6 +221,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
 .scopelbl {{ font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); margin-right: 0.15rem; }}
 .scopesel {{ background: var(--inset); color: var(--bright); border: 1px solid var(--border); border-radius: 3px; padding: 0.3rem 0.5rem; font-family: var(--sans); font-size: 0.82rem; }}
 .scopesel:hover {{ border-color: var(--faint); }}
+.calibcv {{ width: 100%; max-width: 720px; height: auto; margin-bottom: 1.3rem; }}
 .calib {{ display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1.2rem; }}
 .calib-cell {{
     flex: 1; min-width: 110px; background: var(--raised); border: 1px solid var(--border);
