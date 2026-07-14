@@ -176,7 +176,10 @@ main {{ flex: 1; min-width: 0; }}
 .verdict.c {{ color: var(--good); }} .verdict.w {{ color: var(--bad); }} .verdict.p {{ color: var(--accent); }}
 .answerline {{ font-family: var(--serif); font-size: 1.05rem; color: var(--bright); }}
 .answerline b u, .answerline u b {{ color: #fff; }}
-.selfgrade {{ margin-top: 0.6rem; display: flex; gap: 0.5rem; }}
+.selfgrade {{ margin-top: 0.6rem; display: flex; gap: 0.5rem; align-items: center; }}
+.sglbl {{ font-size: 0.78rem; color: var(--faint); }}
+#sg-right.on {{ background: rgba(93, 187, 122, 0.18); border-color: var(--good); color: var(--good); font-weight: 600; }}
+#sg-wrong.on {{ background: rgba(224, 101, 95, 0.18); border-color: var(--bad); color: var(--bad); font-weight: 600; }}
 
 .wikibox {{ display: none; margin-top: 0.9rem; background: var(--raised); border: 1px solid var(--border); border-left: 3px solid var(--wiki); border-radius: 4px; padding: 0.85rem 1rem; }}
 .wikibox.show {{ display: block; }}
@@ -301,8 +304,9 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
           <div class="verdict" id="verdict"></div>
           <div class="answerline" id="answerline"></div>
           <div class="selfgrade" id="selfgrade" style="display:none">
-            <button class="btn" id="sg-right">I was right</button>
-            <button class="btn" id="sg-wrong">I was wrong</button>
+            <span class="sglbl">Override:</span>
+            <button class="btn sg" id="sg-right">Correct</button>
+            <button class="btn sg" id="sg-wrong">Incorrect</button>
           </div>
         </div>
         <div class="controls">
@@ -313,11 +317,17 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
         </div>
       </div>
       <div class="wikibox" id="wikibox">
-        <h3>From the wiki</h3>
-        <div><a class="topiclink" id="w-topic" href="#"></a></div>
-        <div class="tmeta" id="w-meta"></div>
-        <div class="chips" id="w-tags"></div>
-        <div class="chips" id="w-rel" style="margin-top:0.4rem"></div>
+        <div id="w-topicblock">
+          <h3>From the wiki</h3>
+          <div><a class="topiclink" id="w-topic" href="#"></a></div>
+          <div class="tmeta" id="w-meta"></div>
+          <div class="chips" id="w-tags"></div>
+          <div class="chips" id="w-rel" style="margin-top:0.4rem"></div>
+        </div>
+        <div id="w-practiceblock" style="display:none;margin-top:0.7rem">
+          <h3>Practice more</h3>
+          <div class="chips" id="w-practice"></div>
+        </div>
       </div>
     </section>
 
