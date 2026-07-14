@@ -80,13 +80,19 @@ def candidate_keys(answer: str) -> list[str]:
 class SectionIndex:
     """answerline -> section lookup, built from every overview.json."""
 
-    def __init__(self, categories_dir: _Path = CATEGORIES_DIR):
+    def __init__(self, categories_dir: _Path = CATEGORIES_DIR,
+                 topic_index_path: _Path | None = None):
         # unit_slug -> {normalized answerline: section name}
         self._by_unit: dict[str, dict[str, str]] = {}
         # unit_slug -> {last token: section} — only tokens that map to a
         # single section within the unit (ambiguous surnames excluded), so
         # "Georgia Totto O'Keeffe" reaches O'Keeffe's section via "keeffe".
         self._lasttok: dict[str, dict[str, str]] = {}
+        # normalized work title -> normalized creator name, from
+        # topic_index.json — lets a standalone work answerline inherit its
+        # creator's section ("The Persistence of Memory" -> Dalí -> Surrealism).
+        self._work_creator: dict[str, str] = {}
+        self._load_work_index(topic_index_path)
         for ov_path in sorted(categories_dir.glob('*/overview.json')):
             try:
                 ov = json.loads(ov_path.read_text(encoding='utf-8'))
@@ -105,6 +111,22 @@ class SectionIndex:
                 slug = ov_path.parent.name
                 self._by_unit[slug] = sm
                 self._lasttok[slug] = self._last_token_index(sm)
+
+    def _load_work_index(self, topic_index_path: _Path | None) -> None:
+        if topic_index_path is None:
+            topic_index_path = CATEGORIES_DIR.parent / 'topic_index.json'
+        try:
+            index = json.loads(_Path(topic_index_path).read_text(encoding='utf-8'))
+        except (OSError, json.JSONDecodeError):
+            return
+        for surface, meta in index.items():
+            if meta.get('type') != 'work':
+                continue
+            creator = normalize(meta.get('topic', ''))
+            if not creator:
+                continue
+            for key in candidate_keys(surface):
+                self._work_creator.setdefault(key, creator)
 
     @staticmethod
     def _last_token_index(sm: dict[str, str]) -> dict[str, str]:
@@ -164,6 +186,19 @@ class SectionIndex:
                 section = lt.get(surname)
                 if section is not None:
                     return (slug, section)
+        # Work -> creator inheritance: a standalone work answerline takes
+        # its creator's section, if that creator is sectioned in this unit.
+        for key in keys:
+            creator = self._work_creator.get(key)
+            if not creator:
+                continue
+            section = sm.get(creator)
+            if section is None:
+                ctoks = creator.split()
+                if ctoks:
+                    section = lt.get(ctoks[-1])
+            if section is not None:
+                return (slug, section)
         return None
 
     def stats(self) -> dict:
