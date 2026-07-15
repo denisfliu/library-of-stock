@@ -151,6 +151,20 @@ main {{ flex: 1; min-width: 0; }}
   padding: 0.12rem 0.6rem; margin-bottom: 0.55rem;
 }}
 .skiptoggle:hover {{ color: var(--bright); border-color: var(--faint); }}
+.reviewbar {{
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+  font-size: 0.8rem; color: var(--accent); background: var(--accent-dim);
+  border: 1px solid var(--accent); border-radius: 5px;
+  padding: 0.4rem 0.7rem; margin-bottom: 0.7rem;
+}}
+.reviewbar .rlbl {{ color: #fff; font-weight: 600; }}
+.reviewbar button {{
+  font-family: var(--sans); font-size: 0.78rem; color: #fff; background: transparent;
+  border: 1px solid rgba(255,255,255,0.4); border-radius: 4px; padding: 0.15rem 0.55rem;
+}}
+.reviewbar button:hover:not(:disabled) {{ background: rgba(255,255,255,0.15); }}
+.reviewbar button:disabled {{ opacity: 0.4; cursor: default; }}
+.reviewbar .rspacer {{ flex: 1; }}
 
 .controls {{ display: flex; gap: 0.6rem; align-items: center; padding: 0.75rem 1.1rem; border-top: 1px solid var(--border); flex-wrap: wrap; }}
 .btn {{
@@ -297,6 +311,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
           <span id="m-cat"></span>
           <span class="status" id="m-status"></span>
         </div>
+        <div class="reviewbar" id="reviewbar" style="display:none"></div>
         <div class="qtext" id="qtext"></div>
         <div class="answerrow" id="answerrow">
           <input id="answerinput" type="text" placeholder="Answer&hellip;" autocomplete="off" spellcheck="false">
@@ -314,6 +329,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
           <button class="btn primary" id="mainbtn">Start</button>
           <button class="btn" id="pausebtn" disabled>Pause</button>
           <button class="btn" id="skipbtn" disabled title="Throw this question away — not counted in stats">Skip</button>
+          <button class="btn" id="prevbtn" disabled title="Review the previous question (k)">&#9664; Prev</button>
           <div class="timerbar" aria-hidden="true"><i id="timerfill"></i></div>
         </div>
       </div>
