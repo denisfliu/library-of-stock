@@ -165,6 +165,14 @@ main {{ flex: 1; min-width: 0; }}
 .reviewbar button:hover:not(:disabled) {{ background: rgba(255,255,255,0.15); }}
 .reviewbar button:disabled {{ opacity: 0.4; cursor: default; }}
 .reviewbar .rspacer {{ flex: 1; }}
+.distpanel {{ margin-top: 0.7rem; border-top: 1px solid var(--border); padding-top: 0.6rem; }}
+.distpanel summary {{ cursor: pointer; color: var(--bright); font-size: 0.86rem; font-weight: 600; }}
+.disttoggle {{ display: flex; align-items: center; gap: 0.45rem; color: var(--bright); cursor: pointer; margin: 0.5rem 0 0.3rem; }}
+.disttoggle input {{ accent-color: var(--accent); width: 15px; height: 15px; }}
+.distgrid {{ display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 0.6rem; align-items: center; margin: 0.5rem 0; }}
+.distgrid label {{ font-size: 0.8rem; color: var(--muted); }}
+.distgrid input {{ width: 3.4rem; background: var(--inset); border: 1px solid var(--border); color: var(--bright); border-radius: 4px; padding: 0.15rem 0.35rem; font-size: 0.8rem; text-align: right; }}
+.distgrid input:disabled {{ opacity: 0.4; }}
 
 .controls {{ display: flex; gap: 0.6rem; align-items: center; padding: 0.75rem 1.1rem; border-top: 1px solid var(--border); flex-wrap: wrap; }}
 .btn {{
@@ -296,7 +304,14 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
         </label>
         <div class="hint">Weights the queue toward your weak groups &amp; answers (from My stats), with spaced review of misses. Broad = variety; Targeted = hammer weaknesses.</div>
       </div>
-      <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>S</kbd> skip (not counted) &middot; <kbd>P</kbd> pause</div>
+      <details class="distpanel" id="distpanel">
+        <summary>Category distribution</summary>
+        <label class="setting disttoggle"><input type="checkbox" id="usedist" checked> Follow distribution</label>
+        <div class="hint">Sample categories in a standard quizbowl mix (like qbreader) instead of raw corpus frequency. Set a weight to 0 to exclude a category; edit any weight to taste.</div>
+        <div class="distgrid" id="distgrid"></div>
+        <button class="linkbtn" id="distreset">Reset to standard</button>
+      </details>
+      <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
       <div class="hint taphint">Tap the question text to buzz; tap it again after the reveal for the next question. Skip is never counted.</div>
       <div class="hint">Note-run clues (&ldquo;E, G, B-flat&hellip;&rdquo;) read at a slower pace automatically.</div>
     </div>
