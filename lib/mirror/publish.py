@@ -27,10 +27,12 @@ import argparse
 import gzip
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
 import time
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -45,6 +47,47 @@ from lib.units import unit_for_guide
 
 PUBLISH_DIR = MIRROR_DIR / "publish"
 DEFAULT_BUCKET = "library-of-stock-data"
+
+_NORM_NONALNUM = re.compile(r"[^a-z0-9\s]")
+_NORM_WS = re.compile(r"\s+")
+_NORM_ARTICLE = re.compile(r"^(the|a|an) ")
+
+
+def norm_ans(s: str) -> str:
+    """Port of reader.js normAns — canonicalizes an answer string to a key.
+
+    The reader re-applies its own normAns (idempotent) so the JS normalizer
+    stays authoritative and the keys line up with each LOG entry's key.
+    """
+    s = unicodedata.normalize("NFD", s or "")
+    s = "".join(c for c in s if unicodedata.category(c) != "Mn")
+    s = _NORM_NONALNUM.sub(" ", s.lower())
+    s = _NORM_WS.sub(" ", s).strip()
+    return _NORM_ARTICLE.sub("", s)
+
+
+_U_SPAN = re.compile(r"<u>(.*?)</u>", re.I | re.S)
+_B_SPAN = re.compile(r"<b>(.*?)</b>", re.I | re.S)
+_TAG = re.compile(r"<[^>]+>")
+
+
+def answer_key(raw: str, san: str) -> str:
+    """The drill/stats answerline key — the bold-underline CORE of the raw
+    answer (not the full accept/prompt clause), so one answer unifies across
+    questions that phrase their accept clauses differently. Falls back to the
+    pre-bracket main answer when there's no markup. Mirrors reader.js
+    answerKey; deduped into catalog.answerline_values.
+    """
+    raw = raw or ""
+    cores = [_TAG.sub("", m) for m in _U_SPAN.findall(raw)]
+    if not cores:
+        cores = [_TAG.sub("", m) for m in _B_SPAN.findall(raw)]
+    cores = [c for c in cores if c.strip()]
+    if cores:
+        base = cores[0]
+    else:
+        base = re.split(r"[\[(]", _TAG.sub("", san or raw))[0]
+    return norm_ans(base)
 
 # Topic metadata fields published to topics.json (when present).
 _TOPIC_FIELDS = ("topic", "category", "subcategory", "genre", "year",
@@ -132,6 +175,23 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
             section_ids[hit] = idx
         return idx
 
+    # Deduped normalized answerlines, int-encoded per tossup row. Powers the
+    # reader's spaced-repetition drill (per-answerline mastery state) without
+    # shipping the full row-aligned answer strings.
+    answerline_values: list[str] = []
+    answerline_ids: dict[str, int] = {}
+
+    def answerline_id(raw_answer: str, sanitized_answer: str) -> int:
+        key = answer_key(raw_answer, sanitized_answer)
+        if not key:
+            return -1
+        idx = answerline_ids.get(key)
+        if idx is None:
+            idx = len(answerline_values)
+            answerline_values.append(key)
+            answerline_ids[key] = idx
+        return idx
+
     enums: dict[str, list] = {"category": [], "subcategory": [],
                               "alternate_subcategory": []}
     enum_index: dict[str, dict] = {k: {} for k in enums}
@@ -163,7 +223,7 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
     for table in ("tossups", "bonuses"):
         cols = {k: [] for k in ("id", "set", "packet", "number", "category",
                                 "subcategory", "alternate_subcategory",
-                                "difficulty", "section")}
+                                "difficulty", "section", "answerline")}
         answers = []
         # sanitized text for the aligned answerlines array (client display);
         # the raw (marked-up) answer feeds the section join, which reads the
@@ -194,6 +254,10 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
                 cols["section"].append(section_id(
                     r["category"], r["subcategory"],
                     r["alternate_subcategory"], r["ans_raw"] or ""))
+                # drill key = bold-underline core of the raw answer (matches
+                # the reader's LOG entries via the shared answerKey logic)
+                cols["answerline"].append(
+                    answerline_id(r["ans_raw"] or "", r["ans_san"] or ""))
             else:
                 answers.append(json.loads(r["ans_san"] or "[]"))
                 raw_parts = json.loads(r["ans_raw"] or "[]")
@@ -201,6 +265,7 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
                     section_id(r["category"], r["subcategory"],
                                r["alternate_subcategory"], p or "")
                     for p in raw_parts])
+                cols["answerline"].append(-1)   # tossups-only; keep rectangular
         catalog[table] = cols
         answerlines[table] = answers
         counts[table] = len(rows)
@@ -208,6 +273,7 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
     for col, values in enums.items():
         catalog[col + "_values"] = values
     catalog["section_values"] = section_values
+    catalog["answerline_values"] = answerline_values
 
     for name, data in (("catalog.json", catalog),
                        ("answerlines.json", answerlines)):
