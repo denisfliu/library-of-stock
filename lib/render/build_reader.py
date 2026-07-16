@@ -315,6 +315,10 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
       <div class="hint taphint">Tap the question text to buzz; tap it again after the reveal for the next question. Skip is never counted.</div>
       <div class="hint">Note-run clues (&ldquo;E, G, B-flat&hellip;&rdquo;) read at a slower pace automatically.</div>
     </div>
+    <div class="panel" id="syncpanel" style="display:none">
+      <h2>Sync</h2>
+      <div id="syncbody"></div>
+    </div>
   </aside>
 
   <main>
@@ -373,6 +377,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
 
 <script src="lib/js/qdata.js"></script>
 <script src="lib/js/reader.js"></script>
+<script src="lib/js/sync.js"></script>
 </body>
 </html>
 """
