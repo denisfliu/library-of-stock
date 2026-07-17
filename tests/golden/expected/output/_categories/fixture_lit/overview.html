@@ -1,8 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-layout="desktop">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function () {
+  var mq = window.matchMedia('(max-width: 700px), ((pointer: coarse) and (max-width: 1024px))');
+  function apply() {
+    var mode = mq.matches ? 'mobile' : 'desktop';
+    if (document.documentElement.dataset.layout === mode) return;
+    document.documentElement.dataset.layout = mode;
+    window.dispatchEvent(new CustomEvent('loslayout', { detail: mode }));
+  }
+  if (mq.addEventListener) mq.addEventListener('change', apply);
+  else mq.addListener(apply);
+  apply();
+})();
+</script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <title>Fixture Literature — Overview</title>
@@ -316,6 +330,37 @@ a.entry-name:hover { text-decoration: none; border-bottom-style: solid; }
     padding: 0.2rem 0.4rem; line-height: 1;
 }
 .search-nav-random:hover { background: #262d37; color: #c8ccd1; border-color: #6b9eff; }
+
+/* --- mobile core (theme.mobile_core_css) --- */
+.m-only { display: none !important; }
+html[data-layout="mobile"] .m-only { display: revert !important; }
+html[data-layout="mobile"] .d-only { display: none !important; }
+html[data-layout="mobile"] body { padding-left: 0.9rem; padding-right: 0.9rem; }
+html[data-layout="mobile"] button,
+html[data-layout="mobile"] select,
+html[data-layout="mobile"] input[type="checkbox"] + label {
+    min-height: 40px;
+}
+html[data-layout="mobile"] input[type="text"],
+html[data-layout="mobile"] input[type="search"],
+html[data-layout="mobile"] input[type="number"] {
+    font-size: 16px; /* prevents iOS focus zoom */
+}
+.tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+html[data-layout="mobile"] img { max-width: 100%; height: auto; }
+
+html[data-layout="mobile"] .toc { display: block; }
+html[data-layout="mobile"] .entry-sublist { margin-left: 1.2rem; }
+html[data-layout="mobile"] .q-panel, html[data-layout="mobile"] .clip-panel { margin-left: 0; }
+html[data-layout="mobile"] .q-toggle, html[data-layout="mobile"] .clip-toggle {
+    font-size: 0.78rem; padding: 0.2rem 0.6rem; min-height: 32px;
+}
+html[data-layout="mobile"] .clip-label { min-width: 0; }
+html[data-layout="mobile"] .clip-row { flex-wrap: wrap; }
+html[data-layout="mobile"] .search-nav-dropdown {
+    min-width: 0; width: min(320px, calc(100vw - 1.5rem));
+}
+html[data-layout="mobile"] .coverage-bar { gap: 0.4rem 1.2rem; }
 </style>
 </head>
 <body>
@@ -362,7 +407,6 @@ document.getElementById('map-toggle').addEventListener('click', function () {
             anchor: it.anchor,
         }));
         mapCtl = initMapView(document.getElementById('map-box'), items, {
-            height: '420px',
             onUnlocated: (u) => {
                 document.getElementById('map-note').textContent =
                     u.length ? `${u.length} topics have no location metadata` : '';

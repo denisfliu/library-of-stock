@@ -19,7 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import resolve_analyses
-from lib.render.theme import base_css
+from lib.render.theme import base_css, layout_switch_script, mobile_core_css
 
 
 def _tab_label(entry: dict) -> str:
@@ -133,10 +133,11 @@ def render_questions_html(refs: list[dict], output_path: str | Path,
     single = len(refs) == 1
 
     html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-layout="desktop">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{layout_switch_script()}
 <title>Questions: {escape(topic)}</title>
 <style>
 {base_css()}
@@ -220,6 +221,8 @@ h2 {{
 .b-part {{ border-top: 1px solid #2a2f37; }}
 .b-part-text {{ padding: 0.5rem 0.8rem; font-size: 0.9rem; line-height: 1.6; }}
 mark {{ background: #5a4a00; color: #ffd54f; border-radius: 2px; padding: 0 2px; }}
+{mobile_core_css()}
+html[data-layout="mobile"] .tab-btn {{ padding: 0.55rem 0.8rem; font-size: 0.88rem; }}
 </style>
 </head>
 <body>

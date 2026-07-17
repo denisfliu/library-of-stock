@@ -16,13 +16,14 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from lib.common import ROOT, OUTPUT_DIR, QUEUE_DIR, CATEGORIES_DIR, SETS_DIR, resolve_analyses
-from lib.render.theme import base_css
+from lib.render.theme import base_css, layout_switch_script, mobile_core_css
 
 INDEX_TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-layout="desktop">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+LAYOUT_SWITCH
 <title>Wiki — Library of Stock</title>
 <style>
 BASE_CSS
@@ -476,6 +477,33 @@ BASE_CSS
     margin-left: auto;
     white-space: nowrap;
     flex-shrink: 0;
+}
+MOBILE_CSS
+/* Mobile: filter rows become horizontally scrollable strips; the category
+   and tag dropdowns become fixed centered panels so they can't overflow a
+   narrow viewport. */
+html[data-layout="mobile"] .control-group {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    padding-bottom: 0.2rem;
+}
+html[data-layout="mobile"] .filter-btn,
+html[data-layout="mobile"] .dropdown-btn {
+    white-space: nowrap;
+    padding: 0.45rem 0.7rem;
+    font-size: 0.85rem;
+}
+html[data-layout="mobile"] .dropdown-panel {
+    position: fixed;
+    left: 0.6rem;
+    right: 0.6rem;
+    top: 18vh;
+    min-width: 0;
+    max-height: 60vh;
+    overflow-y: auto;
+    z-index: 250;
 }
 </style>
 </head>
@@ -1267,7 +1295,9 @@ def build(analyses=None):
         json.dump(guides, gf, ensure_ascii=False)
         gf.write(";\n")
 
-    html = INDEX_TEMPLATE.replace("BASE_CSS", base_css(
+    html = INDEX_TEMPLATE.replace("LAYOUT_SWITCH", layout_switch_script())
+    html = html.replace("MOBILE_CSS", mobile_core_css())
+    html = html.replace("BASE_CSS", base_css(
         max_width='700px', body_padding='2rem 1.5rem',
         type_scale=False, h1_size='1.6rem', h1_pad='0.3rem',
         h1_margin='1rem', global_links=False))

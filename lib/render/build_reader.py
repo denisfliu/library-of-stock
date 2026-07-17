@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import ROOT
-from lib.render.theme import PALETTE
+from lib.render.theme import PALETTE, layout_switch_script, sheet_css
 
 
 def page_html() -> str:
@@ -23,10 +23,11 @@ def page_html() -> str:
     good = '#5dbb7a'
     bad = '#e0655f'
     return f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-layout="desktop">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+{layout_switch_script()}
 <title>Library of Stock — Reader</title>
 <style>
 :root {{
@@ -69,19 +70,61 @@ header h1 .lede {{ color: var(--faint); }}
 
 .wrap {{ max-width: 1200px; margin: 0 auto; padding: 1.1rem 1.5rem 3rem; display: flex; gap: 1.4rem; align-items: flex-start; }}
 .taphint {{ display: none; }}
-@media (max-width: 900px) {{
-  .wrap {{ flex-direction: column; padding: 0.8rem 0.8rem 2.5rem; gap: 1rem; }}
-  header {{ padding: 0.85rem 0.9rem 0.5rem; }}
-  main {{ order: 1; width: 100%; }}
-  aside {{ order: 2; width: 100%; position: static; }}
-  .btn {{ padding: 0.65rem 1.25rem; font-size: 1rem; }}
-  .chip {{ padding: 0.32rem 0.85rem; font-size: 0.9rem; }}
-  .seg button {{ padding: 0.55rem 0.2rem; font-size: 0.9rem; }}
-  .qtext {{ font-size: 1.06rem; line-height: 1.7; padding: 0.95rem 1rem 1.05rem; min-height: 8.5rem; }}
-  .controls {{ position: sticky; bottom: 0; background: var(--raised); z-index: 5; }}
-  .kbdhint {{ display: none; }}
-  .taphint {{ display: block; }}
+
+/* ---------- mobile layout (html[data-layout="mobile"], set by the head
+   script from theme.layout_switch_script; MOBILE_MQ is the one breakpoint).
+   The rail panels are reparented into bottom sheets by reader.js
+   (initMobile), the desktop .controls row is replaced by the fixed bottom
+   action bar #mbar, and the timerbar node moves into the bar. ---------- */
+.mchrome, #mbar {{ display: none; }}
+html[data-layout="mobile"] .wrap {{
+  flex-direction: column; gap: 1rem;
+  padding: 0.75rem 0.8rem calc(86px + env(safe-area-inset-bottom));
 }}
+html[data-layout="mobile"] header {{ padding: 0.75rem 0.9rem 0.5rem; gap: 0.6rem; }}
+html[data-layout="mobile"] header h1 {{ font-size: 1.2rem; }}
+html[data-layout="mobile"] main {{ width: 100%; }}
+html[data-layout="mobile"] aside {{ display: none; }}
+html[data-layout="mobile"] .mchrome {{
+  display: flex; gap: 0.5rem; max-width: 1200px; margin: 0 auto;
+  padding: 0.55rem 0.9rem 0;
+}}
+.mchrome button {{
+  flex: 1; background: var(--raised); border: 1px solid var(--border);
+  color: var(--bright); border-radius: 20px; padding: 0.5rem 0.9rem;
+  font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+}}
+.mchrome .mbadge {{
+  background: var(--accent-dim); border: 1px solid var(--accent); color: #fff;
+  border-radius: 10px; font-size: 0.74rem; padding: 0 0.45rem;
+  font-variant-numeric: tabular-nums;
+}}
+html[data-layout="mobile"] .btn {{ padding: 0.65rem 1.25rem; font-size: 1rem; }}
+html[data-layout="mobile"] .chip {{ padding: 0.4rem 0.9rem; font-size: 0.92rem; }}
+html[data-layout="mobile"] .seg button {{ padding: 0.55rem 0.2rem; font-size: 0.9rem; }}
+html[data-layout="mobile"] .qtext {{ font-size: 1.06rem; line-height: 1.7; padding: 0.95rem 1rem 1.05rem; min-height: 8.5rem; }}
+html[data-layout="mobile"] .controls {{ display: none; }}
+html[data-layout="mobile"] .kbdhint {{ display: none; }}
+html[data-layout="mobile"] .taphint {{ display: block; }}
+html[data-layout="mobile"] #mbar {{
+  display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  background: var(--raised); border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom);
+}}
+#mbar-timer {{ display: flex; }}
+#mbar-timer .timerbar {{ border-radius: 0; min-width: 0; width: 100%; }}
+.mbar-btns {{ display: flex; gap: 0.5rem; padding: 0.55rem 0.7rem 0.6rem; }}
+.mbar-btns .btn {{ min-height: 48px; }}
+#m-main {{ flex: 1; font-weight: 600; }}
+/* Rail panels lose their card chrome once inside a sheet body. */
+.los-sheet-body .panel {{ border: none; background: none; padding: 0.4rem 0 0; margin: 0; }}
+.los-sheet-body .distgrid input {{ min-height: 40px; }}
+/* Stats view on a narrow screen */
+.tablewrap {{ overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }}
+html[data-layout="mobile"] .bar {{ width: 56px; }}
+html[data-layout="mobile"] table.acc td, html[data-layout="mobile"] table.acc th {{ padding-left: 0.35rem; padding-right: 0.35rem; }}
+html[data-layout="mobile"] .scopesel {{ flex: 1; min-width: 0; }}
+{sheet_css()}
 
 /* ---------- filter rail ---------- */
 aside {{ width: 300px; flex: none; position: sticky; top: 0.8rem; }}
@@ -264,9 +307,14 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
   </nav>
 </header>
 
+<div class="mchrome">
+  <button id="open-scope">Scope <span class="mbadge" id="scopebadge" style="display:none"></span></button>
+  <button id="open-reading">Reading &amp; settings</button>
+</div>
+
 <div class="wrap">
   <aside id="rail">
-    <div class="panel">
+    <div class="panel" id="panel-scope">
       <h2>Scope <span class="count" id="scopecount"></span></h2>
       <div class="subhead">Category</div>
       <div class="chips" id="f-cats"></div>
@@ -284,7 +332,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
       <div class="chips" id="f-diffs"></div>
       <div class="clearrow"><button class="linkbtn" id="clearfilters">Reset scope</button></div>
     </div>
-    <div class="panel">
+    <div class="panel" id="panel-reading">
       <h2>Reading</h2>
       <label class="setting">Speed &mdash; <span class="val" id="wpmval"></span> wpm
         <input type="range" id="wpm" min="120" max="700" step="10">
@@ -375,7 +423,27 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
   </main>
 </div>
 
+<div id="mbar">
+  <div id="mbar-timer"></div>
+  <div class="mbar-btns">
+    <button class="btn" id="m-prev" disabled title="Previous question">&#9664;</button>
+    <button class="btn" id="m-pause" disabled>Pause</button>
+    <button class="btn" id="m-skip" disabled>Skip</button>
+    <button class="btn primary" id="m-main">Start</button>
+  </div>
+</div>
+
+<div class="los-sheet" id="sheet-scope" role="dialog" aria-label="Scope">
+  <div class="los-sheet-handle"></div>
+  <div class="los-sheet-body" id="sheet-scope-body"></div>
+</div>
+<div class="los-sheet" id="sheet-reading" role="dialog" aria-label="Reading settings">
+  <div class="los-sheet-handle"></div>
+  <div class="los-sheet-body" id="sheet-reading-body"></div>
+</div>
+
 <script src="lib/js/qdata.js"></script>
+<script src="lib/js/mobile.js"></script>
 <script src="lib/js/reader.js"></script>
 <script src="lib/js/sync.js"></script>
 </body>

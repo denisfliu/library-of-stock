@@ -36,7 +36,8 @@ from pathlib import Path as _Path
 
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
 from lib.common import anchor_slug
-from lib.render.theme import LEAFLET_TAGS, base_css
+from lib.render.theme import (LEAFLET_TAGS, base_css, layout_switch_script,
+                              mobile_core_css)
 from lib.sweep.answerlines import normalize
 
 UNPLACED_TITLE = 'Uncategorized'
@@ -237,10 +238,11 @@ def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
             'This page is pending a human/agent editing pass.</div>')
 
     html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-layout="desktop">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{layout_switch_script()}
 {LEAFLET_TAGS}
 <title>{title} — Overview</title>
 <style>
@@ -532,6 +534,19 @@ a.entry-name:hover {{ text-decoration: none; border-bottom-style: solid; }}
     padding: 0.2rem 0.4rem; line-height: 1;
 }}
 .search-nav-random:hover {{ background: #262d37; color: #c8ccd1; border-color: #6b9eff; }}
+{mobile_core_css()}
+html[data-layout="mobile"] .toc {{ display: block; }}
+html[data-layout="mobile"] .entry-sublist {{ margin-left: 1.2rem; }}
+html[data-layout="mobile"] .q-panel, html[data-layout="mobile"] .clip-panel {{ margin-left: 0; }}
+html[data-layout="mobile"] .q-toggle, html[data-layout="mobile"] .clip-toggle {{
+    font-size: 0.78rem; padding: 0.2rem 0.6rem; min-height: 32px;
+}}
+html[data-layout="mobile"] .clip-label {{ min-width: 0; }}
+html[data-layout="mobile"] .clip-row {{ flex-wrap: wrap; }}
+html[data-layout="mobile"] .search-nav-dropdown {{
+    min-width: 0; width: min(320px, calc(100vw - 1.5rem));
+}}
+html[data-layout="mobile"] .coverage-bar {{ gap: 0.4rem 1.2rem; }}
 </style>
 </head>
 <body>
@@ -578,7 +593,6 @@ document.getElementById('map-toggle').addEventListener('click', function () {{
             anchor: it.anchor,
         }}));
         mapCtl = initMapView(document.getElementById('map-box'), items, {{
-            height: '420px',
             onUnlocated: (u) => {{
                 document.getElementById('map-note').textContent =
                     u.length ? `${{u.length}} topics have no location metadata` : '';

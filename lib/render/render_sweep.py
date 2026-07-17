@@ -17,7 +17,8 @@ from pathlib import Path as _Path
 
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
 from lib.questions_store import shard_slug
-from lib.render.theme import LEAFLET_TAGS, base_css
+from lib.render.theme import (LEAFLET_TAGS, base_css, layout_switch_script,
+                              mobile_core_css)
 
 
 def render_sweep(set_data: dict, out_path: str | _Path) -> _Path:
@@ -50,10 +51,11 @@ def render_sweep(set_data: dict, out_path: str | _Path) -> _Path:
     pct = round(100 * linked / total) if total else 0
 
     html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-layout="desktop">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{layout_switch_script()}
 {LEAFLET_TAGS}
 <title>Sweep: {set_name}</title>
 <style>
@@ -252,6 +254,28 @@ h3.subgroup-head {{
     padding: 0.2rem 0.4rem; line-height: 1;
 }}
 .search-nav-random:hover {{ background: #262d37; color: #c8ccd1; border-color: #6b9eff; }}
+{mobile_core_css()}
+/* Mobile: question rows stack — label + category on a faint first line,
+   the answerline full-width underneath. */
+html[data-layout="mobile"] .q-table, html[data-layout="mobile"] .q-table tbody {{ display: block; }}
+html[data-layout="mobile"] .q-table tr {{
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 0.5rem;
+    border-top: 1px solid #22272e;
+    padding: 0.3rem 0;
+}}
+html[data-layout="mobile"] .q-table td {{ display: block; border-top: none; padding: 0.05rem 0; }}
+html[data-layout="mobile"] .q-table td.q-label {{ grid-row: 1; grid-column: 1; width: auto; }}
+html[data-layout="mobile"] .q-table td.q-cat {{ grid-row: 1; grid-column: 2; text-align: right; }}
+html[data-layout="mobile"] .q-table td.q-answer {{ grid-column: 1 / -1; }}
+html[data-layout="mobile"] .qtext-row td {{ grid-column: 1 / -1; }}
+html[data-layout="mobile"] .cat-chip {{ padding: 0.35rem 0.75rem; font-size: 0.85rem; }}
+html[data-layout="mobile"] .toggle-btn {{ padding: 0.35rem 0.75rem; }}
+html[data-layout="mobile"] .qtext-btn {{ font-size: 0.75rem; padding: 0.15rem 0.5rem; min-height: 30px; }}
+html[data-layout="mobile"] .search-nav-dropdown {{
+    min-width: 0; width: min(320px, calc(100vw - 1.5rem));
+}}
 </style>
 </head>
 <body>
@@ -405,7 +429,7 @@ function renderMap(qs) {{
     }};
     if (!mapCtl) {{
         mapCtl = initMapView(document.getElementById('map-box'), items,
-                             {{ height: '440px', onUnlocated: setNote }});
+                             {{ onUnlocated: setNote }});
     }} else {{
         mapCtl.refresh(items);
         setTimeout(() => mapCtl.map.invalidateSize(), 0);

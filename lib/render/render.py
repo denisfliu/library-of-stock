@@ -10,7 +10,8 @@ from html import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import TOPIC_INDEX_FILE, anchor_slug
-from lib.render.theme import ABCJS_SCRIPT_TAG, base_css, mp3_cache_buster
+from lib.render.theme import (ABCJS_SCRIPT_TAG, base_css, layout_switch_script,
+                              mobile_core_css, mp3_cache_buster)
 
 
 def _load_crossref_index():
@@ -367,10 +368,11 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     abcjs_script = ABCJS_SCRIPT_TAG if has_score_clips else ""
 
     html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-layout="desktop">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{layout_switch_script()}
 {abcjs_script}
 <title>Stock: {topic}</title>
 <style>
@@ -679,56 +681,96 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     color: #c8ccd1;
     border-color: #6b9eff;
 }}
-@media (max-width: 600px) {{
-    .nav-overflow-btn {{
-        display: inline-flex;
-        align-items: center;
-        min-height: 36px;
-        margin-left: 0.4rem;
-    }}
-    .nav-secondary {{
-        display: none;
-        position: absolute;
-        top: calc(100% + 4px);
-        left: 0;
-        flex-direction: column;
-        align-items: flex-start;
-        background: #1a1f25;
-        border: 1px solid #3a3f47;
-        border-radius: 4px;
-        padding: 0.4rem 0;
-        z-index: 100;
-        min-width: 180px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        gap: 0;
-    }}
-    .nav-overflow-wrap.open .nav-secondary {{
-        display: flex;
-    }}
-    .nav-secondary a {{
-        padding: 0.5rem 0.8rem;
-        width: 100%;
-        box-sizing: border-box;
-    }}
-    .nav-secondary a::before {{
-        display: none;
-    }}
-    .nav-secondary a:hover {{
-        background: #262d37;
-        text-decoration: none;
-    }}
-    .search-nav-input {{
-        width: 110px;
-    }}
-    .search-nav-input:focus {{
-        width: 150px;
-    }}
-    .search-nav-random,
-    .search-nav-prev,
-    .search-nav-next {{
-        min-height: 36px;
-        padding: 0.4rem 0.6rem;
-    }}
+/* Mobile layout — keyed on html[data-layout="mobile"], set by the head
+   script from theme.layout_switch_script (MOBILE_MQ is the one breakpoint). */
+html[data-layout="mobile"] .nav-overflow-btn {{
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    margin-left: 0.4rem;
+}}
+html[data-layout="mobile"] .nav-secondary {{
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    background: #1a1f25;
+    border: 1px solid #3a3f47;
+    border-radius: 4px;
+    padding: 0.4rem 0;
+    z-index: 100;
+    min-width: 180px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    gap: 0;
+}}
+html[data-layout="mobile"] .nav-overflow-wrap.open .nav-secondary {{
+    display: flex;
+}}
+html[data-layout="mobile"] .nav-secondary a {{
+    padding: 0.5rem 0.8rem;
+    width: 100%;
+    box-sizing: border-box;
+}}
+html[data-layout="mobile"] .nav-secondary a::before {{
+    display: none;
+}}
+html[data-layout="mobile"] .nav-secondary a:hover {{
+    background: #262d37;
+    text-decoration: none;
+}}
+html[data-layout="mobile"] .search-nav-input {{
+    width: 110px;
+}}
+html[data-layout="mobile"] .search-nav-input:focus {{
+    width: 150px;
+}}
+html[data-layout="mobile"] .search-nav-random,
+html[data-layout="mobile"] .search-nav-prev,
+html[data-layout="mobile"] .search-nav-next {{
+    min-height: 40px;
+    padding: 0.4rem 0.6rem;
+}}
+html[data-layout="mobile"] .search-nav-dropdown {{
+    min-width: 0;
+    width: min(320px, calc(100vw - 1.5rem));
+}}
+/* Clue-example tooltips: hover has no meaning on touch, so a tap toggles
+   .open (lib/js/mobile.js losTapTooltips) and the tooltip becomes a small
+   fixed panel at the bottom of the viewport — anchored tooltips clip on
+   narrow screens. */
+html[data-layout="mobile"] .ex-icon {{
+    font-size: 0.9rem;
+    width: 1.6rem;
+}}
+html[data-layout="mobile"] .ex-icon:hover:not(.open) .ex-tooltip {{ display: none; }}
+html[data-layout="mobile"] .ex-icon.open .ex-tooltip {{
+    display: block;
+    position: fixed;
+    left: 0.7rem;
+    right: 0.7rem;
+    bottom: 0.7rem;
+    top: auto;
+    transform: none;
+    width: auto;
+    max-width: none;
+    max-height: 45vh;
+    overflow-y: auto;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.85rem;
+    z-index: 300;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.55);
+}}
+html[data-layout="mobile"] .clue-row td {{
+    padding: 0.3rem 0.4rem;
+}}
+html[data-layout="mobile"] .work-images img {{
+    max-width: 100%;
+}}
+html[data-layout="mobile"] .related-chip {{
+    padding: 0.35rem 0.8rem;
+    font-size: 0.88rem;
 }}
 /* search nav */
 .search-nav {{ display: inline-block; }}
@@ -863,6 +905,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     fill: #c8ccd1;
     stroke: #c8ccd1;
 }}
+{mobile_core_css()}
 </style>
 </head>
 <body>
@@ -874,8 +917,10 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
 {related_html}
 {links_html}
 <script src="../../output/guides_data.js"></script>
+<script src="../../lib/js/mobile.js"></script>
 <script src="../../lib/js/search_nav.js"></script>
-<script>initSearchNav('.nav-search', {{ prefix: '../../', currentSlug: '{topic_key}' }});</script>
+<script>initSearchNav('.nav-search', {{ prefix: '../../', currentSlug: '{topic_key}' }});
+losTapTooltips('.ex-icon');</script>
 {f'''<script>
 // Render ABC notation for all score clips
 document.querySelectorAll('.score-clip').forEach(function(clip) {{

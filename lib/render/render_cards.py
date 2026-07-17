@@ -15,7 +15,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import OUTPUT_DIR, load_cards, resolve_analyses
-from lib.render.theme import ABCJS_SCRIPT_TAG, base_css, mp3_cache_buster
+from lib.render.theme import (ABCJS_SCRIPT_TAG, base_css, layout_switch_script,
+                              mobile_core_css, table_cards_css, mp3_cache_buster)
 
 
 def _synthesize_image_cards(analysis: dict, cards: list) -> list:
@@ -130,10 +131,11 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
         score_clues_with_v.append(clue)
 
     html = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-layout="desktop">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{layout_switch_script()}
 <title>Cards: {escape(topic)}</title>
 {abcjs_script}
 <style>
@@ -472,6 +474,50 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
     letter-spacing: 0.05em;
     cursor: default;
 }}
+{mobile_core_css()}
+{table_cards_css('card-table')}
+/* Mobile: each card row becomes a small grid — freq + indicator as a faint
+   header line with the row checkbox at the right, then Front/Back/Tags
+   stacked full-width (labels via data-label from table_cards_css). */
+html[data-layout="mobile"] table.card-table tr {{
+    display: grid;
+    grid-template-columns: auto auto 1fr auto;
+    column-gap: 0.6rem;
+    align-items: center;
+}}
+html[data-layout="mobile"] table.card-table td.freq-col {{
+    grid-row: 1; grid-column: 1; padding: 0; text-align: left;
+}}
+html[data-layout="mobile"] table.card-table td:nth-child(3) {{
+    grid-row: 1; grid-column: 2; padding: 0;
+    font-size: 0.72rem; color: #808790; text-transform: uppercase; letter-spacing: 0.05em;
+}}
+html[data-layout="mobile"] table.card-table td.cb-col {{
+    grid-row: 1; grid-column: 4; padding: 0; justify-self: end;
+}}
+html[data-layout="mobile"] table.card-table td.cb-col input {{
+    width: 20px; height: 20px;
+}}
+html[data-layout="mobile"] table.card-table td:nth-child(4),
+html[data-layout="mobile"] table.card-table td:nth-child(5),
+html[data-layout="mobile"] table.card-table td:nth-child(6) {{
+    grid-column: 1 / -1;
+}}
+html[data-layout="mobile"] .card-table tr:hover td {{ background: none; }}
+html[data-layout="mobile"] .card-table tr.selected {{ border-color: #6b9eff; background: #1e2a3a; }}
+html[data-layout="mobile"] .card-table tr.selected td {{ background: none; }}
+.mobile-selectall {{ display: none; }}
+html[data-layout="mobile"] .mobile-selectall {{
+    display: flex; align-items: center; gap: 0.45rem;
+    font-size: 0.85rem; color: #9aa0a7; margin: 0.2rem 0 0.6rem;
+}}
+html[data-layout="mobile"] .mobile-selectall input {{ width: 18px; height: 18px; }}
+html[data-layout="mobile"] .modal {{
+    min-width: 0; width: calc(100vw - 2rem);
+    max-height: 85vh; max-height: 85dvh; overflow-y: auto;
+}}
+html[data-layout="mobile"] .stats {{ margin-left: 0; width: 100%; }}
+html[data-layout="mobile"] .toolbar input[type="text"] {{ width: 130px; }}
 </style>
 </head>
 <body>
@@ -522,6 +568,7 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
     {'<div id="clips-section" style="display:none;margin-top:0.6rem;border-top:1px solid #3a3f47;padding-top:0.5rem;"><div style="font-size:0.75rem;color:#808790;margin-bottom:0.4rem;">Score Clips</div><div id="clips-grid" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div></div>' if has_score_clips else ''}
 </details>
 
+<label class="mobile-selectall"><input type="checkbox" id="select-all-m" onchange="toggleAll(this.checked)"> Select all shown</label>
 <table class="card-table">
     <thead>
         <tr>
@@ -628,9 +675,9 @@ function renderTable() {{
             <td class="cb-col"><input type="checkbox" class="row-cb" data-idx="${{c._idx}}"></td>
             <td class="freq-col">${{c.frequency || ''}}x</td>
             <td>${{c.indicator || c.type || 'basic'}}</td>
-            <td>${{getImgs(c,'front')}}${{getImgs(c,'front') ? '<br>' : ''}}<div class="editable" style="display:inline" contenteditable="true" data-field="front" data-idx="${{c._idx}}">${{escHtml(c.front)}}</div></td>
-            <td><div class="editable" contenteditable="true" data-field="back" data-idx="${{c._idx}}">${{escHtml(c.back)}}</div>${{getImgs(c,'back')}}</td>
-            <td>${{(c.tags || []).map(t => `<span class="tag">${{escHtml(t)}}</span>`).join('')}}</td>
+            <td data-label="Front">${{getImgs(c,'front')}}${{getImgs(c,'front') ? '<br>' : ''}}<div class="editable" style="display:inline" contenteditable="true" data-field="front" data-idx="${{c._idx}}">${{escHtml(c.front)}}</div></td>
+            <td data-label="Back"><div class="editable" contenteditable="true" data-field="back" data-idx="${{c._idx}}">${{escHtml(c.back)}}</div>${{getImgs(c,'back')}}</td>
+            <td data-label="Tags">${{(c.tags || []).map(t => `<span class="tag">${{escHtml(t)}}</span>`).join('')}}</td>
         </tr>
     `).join('');
 

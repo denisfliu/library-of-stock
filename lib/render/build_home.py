@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import ROOT, CATEGORIES_DIR, SETS_DIR, resolve_analyses
-from lib.render.theme import PALETTE
+from lib.render.theme import PALETTE, layout_switch_script
 from lib.units import UNITS_BY_SLUG
 
 # CSS custom properties for the neutral palette, sourced from theme.PALETTE
@@ -31,10 +31,11 @@ _PALETTE_VARS = (
 )
 
 TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-layout="desktop">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+LAYOUT_SWITCH
 <title>Library of Stock</title>
 <style>
 :root {
@@ -67,7 +68,12 @@ a { text-decoration: none; }
 .statline b { color: var(--muted); font-weight: 600; }
 
 .doors { display: flex; gap: 1.2rem; width: 100%; max-width: 860px; }
-@media (max-width: 700px) { .doors { flex-direction: column; } }
+html[data-layout="mobile"] .doors { flex-direction: column; }
+html[data-layout="mobile"] .masthead { margin-top: 1.8rem; }
+html[data-layout="mobile"] .masthead h1 { font-size: 2rem; }
+html[data-layout="mobile"] .statline { gap: 0.7rem 1.4rem; }
+html[data-layout="mobile"] .door .go { padding: 0.6rem 1.3rem; }
+html[data-layout="mobile"] .quick a { padding: 0.25rem 0; }
 .door {
   flex: 1; display: block; background: var(--raised); border: 1px solid var(--border);
   border-radius: 6px; padding: 1.5rem 1.5rem 1.35rem; color: var(--text);
@@ -212,6 +218,7 @@ def build(analyses=None) -> None:
     ]
 
     html = (TEMPLATE
+            .replace("LAYOUT_SWITCH", layout_switch_script())
             .replace("PALETTE_VARS", _PALETTE_VARS)
             .replace("STATLINE", "\n  ".join(stats))
             .replace("GUIDE_COUNT", str(guide_count))
