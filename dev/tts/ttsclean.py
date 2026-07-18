@@ -63,6 +63,31 @@ QUOTED_PAREN = re.compile(r'\s*\(["“][^)]*["”]\)')      # always a guide
 PAREN = re.compile(r'\s*\(([^)]{1,40})\)')
 BRACKET = re.compile(r'(^|.)\[([^\]]{1,40})\]')
 
+# Abbreviation expansion for spoken output. Chatterbox has no lexicon, so a bare
+# "Mr." reads oddly and — worse — its trailing period makes the sentence splitter
+# cut "Mrs. Dalloway" into two chunks with a gap through the name. Expanding to the
+# spoken form fixes pronunciation AND removes the splitter-tripping period.
+# High-confidence only; ambiguous ones (Ft.=Fort/Feet) are left for the splitter
+# to protect rather than risk a wrong expansion.
+ABBREV = [
+    (re.compile(r'\bMrs\.'), 'Missus'),
+    (re.compile(r'\bMr\.'), 'Mister'),
+    (re.compile(r'\bMs\.'), 'Miss'),
+    (re.compile(r'\bDr\.'), 'Doctor'),
+    (re.compile(r'\bMt\.'), 'Mount'),
+    (re.compile(r'\bJr\.'), 'Junior'),
+    (re.compile(r'\bSr\.'), 'Senior'),
+    (re.compile(r'\bvs\.', re.I), 'versus'),
+    (re.compile(r'\bOp\.(?=\s*\d)'), 'Opus'),          # Op. 27 -> Opus 27
+    (re.compile(r'\bNo\.(?=\s*\d)'), 'Number'),        # No. 5 -> Number 5
+    (re.compile(r'\bSt\.(?=\s+[A-Z])'), 'Saint'),      # St. Louis -> Saint Louis (not "Street")
+]
+
+def expand_abbrev(text: str) -> str:
+    for rx, repl in ABBREV:
+        text = rx.sub(repl, text)
+    return text
+
 def _paren(m):
     return '' if _is_guide(m.group(1)) else m.group(0)
 
@@ -85,6 +110,7 @@ def clean(text: str) -> str:
     text = PAREN.sub(_paren, text)
     text = BRACKET.sub(_bracket, text)
     text = text.replace('(*)', ' ')
+    text = expand_abbrev(text)
     return re.sub(r'\s+', ' ', text).strip()
 
 
@@ -102,6 +128,14 @@ if __name__ == '__main__':
         ('[Note to moderator: read the answerline carefully.] The clue', 'The clue'),
         ('the county (Note to moderators: this is on a county) is large', 'the county is large'),
         ("A theme (Moderator's Note: emphasize the italics) recurs", 'A theme recurs'),
+        ('This novel opens as Mrs. Dalloway buys flowers', 'This novel opens as Missus Dalloway buys flowers'),
+        ('created by Dr. Seuss and Mr. Rochester', 'created by Doctor Seuss and Mister Rochester'),
+        ('St. Petersburg on the Neva', 'Saint Petersburg on the Neva'),
+        ('the Beethoven Op. 27 sonata', 'the Beethoven Opus 27 sonata'),
+        ('Symphony No. 5 in C minor', 'Symphony Number 5 in C minor'),
+        ('Martin Luther King Jr. spoke', 'Martin Luther King Junior spoke'),
+        ('Mt. Everest is tall', 'Mount Everest is tall'),
+        ('Ali vs. Frazier fight', 'Ali versus Frazier fight'),
     ]
     KEEP = [
         ('Henry (II) was king', 'Henry (II) was king'),

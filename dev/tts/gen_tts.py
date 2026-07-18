@@ -10,14 +10,24 @@ Sharded by the ObjectId's first 2 hex chars (256 buckets) to stay well under
 HF's per-folder file limit. Resumable: existing files are skipped, so it can
 be killed and relaunched freely.
 
-Text cleaning strips pronunciation guides ("kun-doo-REE") / SUR [sir] and
-moderator directions [emphasize]/[read slowly]/[pause] while keeping editorial
-insertions (hat[ing]->hating, "[this concept]", "[his]"). Bonuses are read
-verbatim: leadin + parts, no injected "for 10 points each".
+Text cleaning (ttsclean) strips pronunciation guides ("kun-doo-REE") / SUR [sir]
+and moderator directions [emphasize]/[read slowly]/[pause], keeps editorial
+insertions (hat[ing]->hating), and expands title abbreviations (Mrs.->Missus,
+Dr.->Doctor, St.->Saint) so they read correctly and don't trip the sentence
+splitter. Bonuses are read verbatim: leadin + parts, no "for 10 points each".
+
+Chunk 0 (the question's audible start) passes through the ttsverify ASR gate
+(whisper-tiny): a mangled first word (Chatterbox's attack-clip) or a runaway is
+re-rolled, and the final retry escalates to *priming* (synthesize with a
+sacrificial word, cut it off at the ASR word boundary) which reliably absorbs a
+stubborn attack-clip. Chunks 1+ get only the cheap duration-runaway check — whisper
+on every chunk saturates the GPU and cancels the two-stream speedup; the post-run
+whisperX pass is the exhaustive mid-question clip net.
 
 Usage (under tmux):
-  ~/venvs/chatterbox-tts/bin/python gen_tts.py            # generate all
-  ~/venvs/chatterbox-tts/bin/python gen_tts.py --limit 20 # smoke test
+  ~/venvs/chatterbox-tts/bin/python gen_tts.py             # generate all
+  ~/venvs/chatterbox-tts/bin/python gen_tts.py --shard 0/2 # one of two parallel streams
+  ~/venvs/chatterbox-tts/bin/python gen_tts.py --limit 20  # smoke test
 """
 import argparse
 import json
@@ -33,6 +43,7 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ttsclean import clean   # single source of truth for guide/note stripping
+import ttsverify            # ASR gate (shared with verify_tts.py)
 
 WORK = Path.home() / "los_tts"
 DB = WORK / "qbreader.sqlite"
@@ -48,8 +59,22 @@ RETRIES = 3         # regenerate a chunk this many times if it runs away
 # lower temperature + higher repetition_penalty cut runaway-glitch odds.
 PARAMS = dict(exaggeration=0.5, cfg_weight=0.5, temperature=0.7, repetition_penalty=1.3)
 
+# Abbreviations whose trailing period must NOT be treated as a sentence end.
+# Most name-titles (Mr./Mrs./Dr./St./Mt./Jr./Sr.) are already expanded away by
+# ttsclean, but these survive (undelimited scholarly/list abbreviations) and would
+# otherwise split a chunk mid-phrase.
+_ABBR = (r"(?:etc|al|vs|Prof|Rev|Gen|Col|Capt|Lt|Sgt|Fr|Dept|Rep|Sen|Gov|"
+         r"Ave|Blvd|Sts|Ph|cf|ca|fl| Mus|e\.g|i\.e|No|Op| Vol|Nos)")
+_ABBR_RE = re.compile(r"\b(" + _ABBR + r")\.", re.I)
+_INITIAL_RE = re.compile(r"\b([A-Z])\.")          # single-letter initials: W. H. Auden
+_SPLIT_RE = re.compile(r"(?<=[.!?])\s+(?=[\"'A-Z0-9(])")
+
 def sentences(t):
-    return [p.strip() for p in re.split(r"(?<=[.!?])\s+(?=[\"'A-Z0-9(])", t) if p.strip()]
+    # Shield abbreviation/initial periods, split, then restore. Prevents the
+    # splitter from ending a chunk on "Mrs.", "et al.", "e.g.", or "W."
+    t = _ABBR_RE.sub(lambda m: m.group(0).replace(".", "\0"), t)
+    t = _INITIAL_RE.sub(r"\1\0", t)
+    return [p.replace("\0", ".").strip() for p in _SPLIT_RE.split(t) if p.strip()]
 
 # Safe chunking: merge tiny fragments (e.g. the "H." from splitting "W. H.
 # Auden") and chunks ending in a lone initial, and split over-long sentences
@@ -125,30 +150,61 @@ def encode_opus(wav_f32, sr, path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0, help="stop after N new files (smoke test)")
+    ap.add_argument("--shard", default="", metavar="i/n",
+                    help="process a disjoint slice for parallel streams, e.g. 0/2 and 1/2")
     args = ap.parse_args()
 
+    shard_i = shard_n = None
+    if args.shard:
+        shard_i, shard_n = (int(x) for x in args.shard.split("/"))
+
     from chatterbox.tts import ChatterboxTTS
-    print("loading Chatterbox...", flush=True)
+    print("loading Chatterbox + whisper-tiny...", flush=True)
     model = ChatterboxTTS.from_pretrained(device="cuda")
     sr = model.sr
+    wm = ttsverify.load_whisper()
 
-    def gen_chunk(chunk):
-        """Generate a chunk, regenerating if it runs away (duration far past
-        what the text warrants — the runaway/babble signature). Keep the
-        shortest attempt if all exceed tolerance."""
+    def gen_chunk(chunk, use_asr):
+        """Generate a chunk, re-rolling on failure (Chatterbox's attack-clip/babble
+        is stochastic, so a fresh take usually lands clean).
+
+        use_asr=True (chunk 0 only — the question's audible start, and where the
+        reported "beginning cutoff" lives): full ttsverify gate (first word +
+        duration); the FINAL attempt escalates to *priming* (prepend a sacrificial
+        word, cut it off at the ASR word boundary) to absorb a stubborn attack-clip.
+        Gating only chunk 0 keeps whisper off the GPU for the other ~80% of chunks —
+        it saturates the GPU and cancels the two-stream speedup otherwise. Exhaustive
+        mid-question clip detection is the post-run whisperX pass's job.
+
+        use_asr=False (chunks 1+): cheap duration-runaway check only, no whisper —
+        keep the shortest of RETRIES takes if all run long (the babble signature)."""
         exp = len(chunk) / 15.0            # ~150 wpm
         tol = exp * 1.8 + 2.0
-        best, bestlen = None, 1 << 62
-        for _ in range(RETRIES):
-            w = model.generate(chunk, **PARAMS).squeeze(0).cpu().numpy()
-            if len(w) < bestlen:
-                best, bestlen = w, len(w)
-            if len(w) / sr <= tol:
-                return best
-        return best
+        best, bestscore = None, -1e9
+        for attempt in range(RETRIES):
+            primed = use_asr and attempt == RETRIES - 1
+            gtext = (ttsverify.PRIME + chunk) if primed else chunk
+            w = model.generate(gtext, **PARAMS).squeeze(0).cpu().numpy()
+            if primed:
+                cut = ttsverify.cut_prime(w, sr, wm)
+                if cut is None:            # priming word not found -> discard attempt
+                    continue
+                w = cut
+            if use_asr:
+                ok, score = ttsverify.verify_chunk(w, sr, chunk, wm, tol)
+            else:
+                ok, score = (len(w) / sr <= tol), -len(w) / sr   # duration only; shortest wins
+            if ok:
+                return w
+            if score > bestscore:
+                best, bestscore = w, score
+        return best if best is not None else w
 
     conn = sqlite3.connect(DB)
     items = worklist(conn)
+    if shard_n:                     # disjoint slice so two streams never race a file
+        items = items[shard_i::shard_n]
+        print(f"shard {shard_i}/{shard_n}: {len(items):,} items", flush=True)
     total = len(items)
     done0 = sum(1 for k, qid, _ in items if out_path(k, qid).exists())
     print(f"worklist: {total:,} items, {done0:,} already done, "
@@ -167,8 +223,8 @@ def main():
             gap = np.zeros(int(sr * GAP), dtype=np.float32)
             parts, spans, texts = [], [], []
             pos = 0   # cumulative samples, gaps included
-            for ch in chunk_text(text):
-                w = gen_chunk(ch)
+            for idx, ch in enumerate(chunk_text(text)):
+                w = gen_chunk(ch, use_asr=(idx == 0))
                 spans.append([round(pos / sr, 3), round((pos + len(w)) / sr, 3)])
                 texts.append(ch)
                 parts.append(w)

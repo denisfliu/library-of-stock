@@ -28,22 +28,52 @@ realtime there vs ~1.7x on the laptop 4070.
   ...` prefixes). KEEPS: **player/reader notes** (`[Note to players: ...]` —
   info the answerer needs), real parentheticals (`(II)`, `(1710)`,
   `(After Fragonard)`, `(log n)`), and editorial brackets (`hat[ing]`->hating,
-  `[this concept]`, `"[his]"`). Self-test: `python ttsclean.py` (21 cases).
-  Bonuses read verbatim, no injected "for 10 points each".
-- `gen_tts.py` — the generator (runs on MSL under tmux session `tts`). Reads
-  the mirror, cleans (imports ttsclean), **chunks** (merges tiny fragments like
-  the "H." from "W. H. Auden", splits >200-char sentences at clauses — both are
-  glitch magnets), synthesizes each chunk with a **runaway validator** (if a
-  chunk's duration far exceeds what its text warrants — the babble/repetition
-  signature — regenerate, up to 3x, keep shortest), encodes to Opus via ffmpeg,
-  writes `out/{tossups,bonuses}/{qid[:2]}/{qid}.opus` (sharded by ObjectId
-  prefix, 256 buckets) plus a `{qid}.json` sidecar: `{"v":1, "chunks":
-  [[start_s,end_s],...], "texts":[...]}` — exact per-chunk audio offsets +
-  chunk texts (audio time → text position; the moderator tool's buzz-position
-  source). The sidecar is written before the `.opus` lands, so a present
-  `.opus` always implies a present sidecar. Skip-existing = resumable. Sampling params in `PARAMS`
-  (settled by A/B: default voice — cloning sounded worse — exaggeration 0.5,
-  temperature 0.7, repetition_penalty 1.3).
+  `[this concept]`, `"[his]"`). Also **expands title abbreviations** for spoken
+  output (`Mrs.`->Missus, `Mr.`->Mister, `Dr.`->Doctor, `St. X`->Saint X,
+  `Mt.`->Mount, `Jr./Sr.`->Junior/Senior, `Op./No. N`->Opus/Number N,
+  `vs.`->versus) — this fixes pronunciation AND removes the trailing period that
+  otherwise splits a name like "Mrs. Dalloway" into two chunks across the gap.
+  Self-test: `python ttsclean.py` (29 cases). Bonuses read verbatim.
+- `ttsverify.py` — **ASR gate**, shared by gen_tts (inline) and verify_tts
+  (backfill). whisper-tiny transcribes each synthesized chunk (~58 ms/chunk vs
+  ~1 s to generate — a ~5% tax) and a chunk PASSES unless there's strong defect
+  evidence: nothing heard, a content word replaced by a function word, or an
+  unrelated word (far edit distance relative to length). **Deliberately
+  conservative** — free ASR can't tell a legitimate Chatterbox pronunciation
+  (Euler->"Oiler", Grignard->"Grinyard") from a clip by spelling, so it errs
+  toward keeping and leans on priming-retry + the post-run whisperX pass for the
+  rest. `cut_prime` removes a priming word at the ASR word boundary. Self-test:
+  `python ttsverify.py` (12 first-word calibration cases). Calibrated on a
+  150-file/859-chunk output scan (July 2026).
+- `gen_tts.py` — the generator (runs on MSL, **two parallel streams** under tmux
+  sessions `tts0`/`tts1` via `--shard 0/2` and `--shard 1/2` — disjoint slices,
+  ~43% more throughput; the 4090 is ~80% utilized by one stream so a 2nd adds
+  sub-linearly, a 3rd wouldn't). Reads the mirror, cleans (ttsclean), **chunks**
+  (merges tiny fragments like the "H." from "W. H. Auden", protects abbreviation
+  /initial periods from the splitter, splits >200-char sentences at clauses —
+  short chunks babble, long ones run away), synthesizes **chunk 0** through the
+  **ttsverify gate**: re-roll on a failed first-word/duration check, and the
+  final retry escalates to priming (prepend a sacrificial word, cut it off) to
+  fix a stubborn attack-clip; keep the best-scoring take if all fail. **Chunks 1+
+  get only the cheap duration-runaway check** — whisper on every chunk saturates
+  the GPU (89%) and cancels the two-stream speedup (measured: 4.8x combined with
+  full gating vs ~6.9x ungated); the post-run whisperX pass is the exhaustive
+  mid-question clip net. Encodes to
+  Opus via ffmpeg, writes `out/{tossups,bonuses}/{qid[:2]}/{qid}.opus` (sharded
+  by ObjectId prefix, 256 buckets) plus a `{qid}.json` sidecar: `{"v":1,
+  "chunks": [[start_s,end_s],...], "texts":[...]}` — exact per-chunk audio
+  offsets + chunk texts (audio time → text position; the moderator tool's
+  buzz-position source). The sidecar is written before the `.opus` lands, so a
+  present `.opus` always implies a present sidecar. Skip-existing = resumable.
+  Sampling params in `PARAMS` (settled by A/B: default voice — cloning sounded
+  worse — exaggeration 0.5, temperature 0.7, repetition_penalty 1.3).
+- `verify_tts.py` — **backfill QA** over already-generated files (MSL). Flags a
+  file for regeneration if (1) its clean+chunk text changed under the current
+  ttsclean/chunker (e.g. abbreviation expansion — deterministic, no ASR), or
+  (2) a chunk fails the ttsverify gate. `--apply` deletes the `.opus`+`.json` so
+  gen_tts's resume regenerates it; default is a `--dry-run` report. Also the
+  reusable post-run QA tool. A/B bench that settled all this: `msl_ab3.py`
+  (baseline-vs-primed, clip-rate scan, throughput probe) + `dev/tts_samples/tuning3/`.
 - `upload_hf.py` — CommitScheduler uploader (second tmux session). Reads a
   write token from `~/los_tts/.hf_token` (chmod 600, never on the cmdline),
   creates the dataset repo, commits new `*.opus` + `*.json` sidecars every
