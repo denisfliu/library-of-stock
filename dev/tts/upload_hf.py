@@ -3,7 +3,8 @@
 Reads a write token from ~/los_tts/.hf_token (chmod 600; never passed on the
 command line so it stays out of shell history), derives the account, creates
 (or reuses) the dataset repo <user>/library-of-stock-audio, and starts a
-CommitScheduler that commits new *.opus files under out/ every few minutes.
+CommitScheduler that commits new *.opus files (and their {qid}.json
+chunk-offset sidecars) under out/ every few minutes.
 Also rebuilds out/audio_index.json — the list of qids that have audio — each
 cycle, so the reader can restrict its queue to audio-backed questions.
 Resumable and idempotent: rerunning re-syncs whatever isn't uploaded yet.
@@ -32,7 +33,12 @@ def build_manifest():
     for kind in ("tossups", "bonuses"):
         d = OUT / kind
         idx[kind] = sorted(p.stem for p in d.rglob("*.opus")) if d.exists() else []
-    (OUT / "audio_index.json").write_text(json.dumps(idx, separators=(",", ":")))
+    # tmp + atomic replace: the CommitScheduler snapshots this folder on its
+    # own timer, and a plain write_text raced it — a truncated manifest got
+    # committed (July 18, 2026) and broke the reader's read-aloud mode.
+    tmp = OUT / "audio_index.json.tmp"   # .tmp matches no allow_pattern
+    tmp.write_text(json.dumps(idx, separators=(",", ":")))
+    tmp.replace(OUT / "audio_index.json")
     return sum(len(v) for v in idx.values())
 
 def main():
@@ -53,7 +59,9 @@ def main():
         repo_type="dataset",
         folder_path=str(OUT),
         every=EVERY_MIN,
-        allow_patterns=["**/*.opus", "audio_index.json"],
+        # fnmatch semantics: "**/*.json" needs a "/", so the root manifest
+        # must be listed explicitly.
+        allow_patterns=["**/*.opus", "**/*.json", "audio_index.json"],
         token=token,
         squash_history=False,
     )

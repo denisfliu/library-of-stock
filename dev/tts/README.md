@@ -37,12 +37,17 @@ realtime there vs ~1.7x on the laptop 4070.
   chunk's duration far exceeds what its text warrants — the babble/repetition
   signature — regenerate, up to 3x, keep shortest), encodes to Opus via ffmpeg,
   writes `out/{tossups,bonuses}/{qid[:2]}/{qid}.opus` (sharded by ObjectId
-  prefix, 256 buckets). Skip-existing = resumable. Sampling params in `PARAMS`
+  prefix, 256 buckets) plus a `{qid}.json` sidecar: `{"v":1, "chunks":
+  [[start_s,end_s],...], "texts":[...]}` — exact per-chunk audio offsets +
+  chunk texts (audio time → text position; the moderator tool's buzz-position
+  source). The sidecar is written before the `.opus` lands, so a present
+  `.opus` always implies a present sidecar. Skip-existing = resumable. Sampling params in `PARAMS`
   (settled by A/B: default voice — cloning sounded worse — exaggeration 0.5,
   temperature 0.7, repetition_penalty 1.3).
 - `upload_hf.py` — CommitScheduler uploader (second tmux session). Reads a
   write token from `~/los_tts/.hf_token` (chmod 600, never on the cmdline),
-  creates the dataset repo, commits new `*.opus` every 10 min. Idempotent.
+  creates the dataset repo, commits new `*.opus` + `*.json` sidecars every
+  10 min. Idempotent.
 
 ## MSL layout
 - Workdir `~/los_tts/` : `qbreader.sqlite` (mirror copy), `gen_tts.py`,
@@ -73,8 +78,15 @@ The reader (`lib/js/reader.js`) plays this audio when "Read aloud" is on:
 
 ## Still TODO
 1. Port `ttsclean.clean` into `lib/` (shared source of truth for re-gen).
-2. Optional: per-question sentence-offset manifest for sentence-accurate buzz
-   depth (generate sentence-by-sentence, record cumulative durations).
-3. New sets from `sync.py` won't have audio until a re-run; they simply won't
+2. ~~Per-question offset manifest~~ — **done July 18, 2026**: `{qid}.json`
+   chunk-offset sidecars (see gen_tts above). Reader still uses the
+   proportional `currentTime/duration` approximation until it's taught to
+   fetch sidecars.
+3. **Post-run batch alignment** (decided July 18): after the run, force-align
+   the whole dataset on the 4090 (whisperX align-only against the known
+   clean+chunk transcript; ~a day of GPU) → word-level sidecar v2, covers
+   pre-sidecar files, and flags badly-aligning (runaway/babble) files as a
+   regen worklist. Chunk sidecars serve as alignment anchors + validation.
+4. New sets from `sync.py` won't have audio until a re-run; they simply won't
    appear in audio-mode scope until then (the manifest gates them out).
-4. Extend `DIFFS` in gen_tts.py to cover more difficulties later if wanted.
+5. Extend `DIFFS` in gen_tts.py to cover more difficulties later if wanted.

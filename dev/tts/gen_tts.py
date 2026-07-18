@@ -3,6 +3,9 @@
 Reads the qbreader mirror, synthesizes every diff 7-9 tossup and bonus with
 Chatterbox, encodes to Opus 24k mono, and writes to
   out/{tossups,bonuses}/{qid[:2]}/{qid}.opus
+plus a per-question sidecar {qid}.json with per-chunk [start_s, end_s]
+audio offsets and the chunk texts (synthesis is chunk-by-chunk, so offsets
+are exact — this is what maps a buzz's audio time to a text position).
 Sharded by the ObjectId's first 2 hex chars (256 buckets) to stay well under
 HF's per-folder file limit. Resumable: existing files are skipped, so it can
 be killed and relaunched freely.
@@ -92,6 +95,18 @@ def worklist(conn):
 def out_path(kind, qid):
     return OUT / kind / qid[:2] / f"{qid}.opus"
 
+def write_sidecar(opus_path, spans, texts):
+    """{qid}.json: per-chunk [start_s, end_s] audio offsets + the chunk texts.
+    Written before the .opus lands — the .opus is the resume key, so a present
+    .opus must always imply a present sidecar."""
+    sc = opus_path.with_suffix(".json")
+    sc.parent.mkdir(parents=True, exist_ok=True)
+    tmp = sc.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps({"v": 1, "chunks": spans, "texts": texts},
+                              separators=(",", ":"), ensure_ascii=False),
+                   encoding="utf-8")
+    tmp.rename(sc)
+
 def encode_opus(wav_f32, sr, path):
     """Pipe raw float32 PCM to ffmpeg -> Opus 24k mono .opus (ogg)."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -149,13 +164,20 @@ def main():
         if not text:
             continue
         try:
-            parts = []
+            gap = np.zeros(int(sr * GAP), dtype=np.float32)
+            parts, spans, texts = [], [], []
+            pos = 0   # cumulative samples, gaps included
             for ch in chunk_text(text):
-                parts.append(gen_chunk(ch))
-                parts.append(np.zeros(int(sr * GAP), dtype=np.float32))
+                w = gen_chunk(ch)
+                spans.append([round(pos / sr, 3), round((pos + len(w)) / sr, 3)])
+                texts.append(ch)
+                parts.append(w)
+                parts.append(gap)
+                pos += len(w) + len(gap)
             if not parts:
                 continue
             full = np.concatenate(parts)
+            write_sidecar(path, spans, texts)
             encode_opus(full, sr, path)
             made += 1
             audio_secs += len(full) / sr
