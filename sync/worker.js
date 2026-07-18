@@ -199,6 +199,160 @@ async function prefsPut(request, env, user) {
   return prefsGet(env, user);
 }
 
+/* ---------- semantic clue search ----------
+   IVF-binary index staged by lib/embed/build_search_index.py and uploaded
+   under search/ in the data bucket. Pipeline: embed the query with the
+   SAME model the corpus used (Workers AI qwen3-embedding-0.6b, with the
+   Qwen3 query instruction prefix), pick NPROBE partitions by centroid dot
+   product, range-read them from the bundle objects, scan Hamming distance
+   over the 1024-bit sign codes. Clients resolve ids to question text via
+   the published sets/{slug}.json shards. */
+const SEARCH_MODEL = '@cf/qwen/qwen3-embedding-0.6b';
+const QUERY_PREFIX = 'Instruct: Given a web search query, retrieve relevant '
+  + 'passages that answer the query\nQuery: ';
+const NPROBE = 24, TOPK = 40, MAX_QUERY_CHARS = 500;
+const META_BYTES = 16, CODE_BYTES = 128;
+
+function f16One(bytes, off) {
+  const h = bytes[off] | (bytes[off + 1] << 8);
+  const s = (h & 0x8000) >> 15, e = (h & 0x7C00) >> 10, f = h & 0x3FF;
+  let v;
+  if (e === 0) v = f * Math.pow(2, -24);
+  else if (e === 31) v = f ? NaN : Infinity;
+  else v = (1 + f / 1024) * Math.pow(2, e - 15);
+  return s ? -v : v;
+}
+
+let searchIndex = null; // cached across requests in this isolate
+
+function f16ToF32(bytes) {
+  const n = bytes.length / 2;
+  const u16 = new Uint16Array(bytes.buffer, bytes.byteOffset, n);
+  const out = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const h = u16[i], s = (h & 0x8000) >> 15, e = (h & 0x7C00) >> 10, f = h & 0x3FF;
+    let v;
+    if (e === 0) v = f * Math.pow(2, -24);
+    else if (e === 31) v = f ? NaN : Infinity;
+    else v = (1 + f / 1024) * Math.pow(2, e - 15);
+    out[i] = s ? -v : v;
+  }
+  return out;
+}
+
+async function loadSearchIndex(env) {
+  if (searchIndex) return searchIndex;
+  const [mObj, cObj] = await Promise.all([
+    env.DATA.get('search/search_manifest.json'),
+    env.DATA.get('search/centroids.f16'),
+  ]);
+  if (!mObj || !cObj) throw new Error('search index not published');
+  const manifest = await mObj.json();
+  const centroids = f16ToF32(new Uint8Array(await cObj.arrayBuffer()));
+  const popcnt = new Uint8Array(256);
+  for (let i = 1; i < 256; i++) popcnt[i] = (i & 1) + popcnt[i >> 1];
+  searchIndex = { manifest, centroids, popcnt };
+  return searchIndex;
+}
+
+const HEX = '0123456789abcdef';
+function rowIdHex(bytes, off) {
+  let s = '';
+  for (let i = 0; i < 12; i++) { const b = bytes[off + i]; s += HEX[b >> 4] + HEX[b & 15]; }
+  return s;
+}
+
+async function search(url, request, env) {
+  let q = url.searchParams.get('q') || '';
+  if (request.method === 'POST') {
+    const body = await request.json().catch(() => ({}));
+    if (typeof body.q === 'string') q = body.q;
+  }
+  q = q.trim().slice(0, MAX_QUERY_CHARS);
+  if (!q) return err(env, 400, 'empty query');
+
+  let idx;
+  try { idx = await loadSearchIndex(env); }
+  catch (e) { return err(env, 503, String(e.message || e)); }
+  const { manifest, centroids, popcnt } = idx;
+  const dims = manifest.dims, k = manifest.k;
+
+  const ai = await env.AI.run(SEARCH_MODEL, { text: [QUERY_PREFIX + q] });
+  const vec = (ai.data && ai.data[0]) || ai;
+  if (!vec || vec.length !== dims) return err(env, 502, 'embedding failed');
+
+  // top-NPROBE centroids by dot product
+  const scores = new Float32Array(k);
+  for (let c = 0; c < k; c++) {
+    let dot = 0; const base = c * dims;
+    for (let d = 0; d < dims; d++) dot += centroids[base + d] * vec[d];
+    scores[c] = dot;
+  }
+  const probes = Array.from(scores.keys())
+    .sort((a, b) => scores[b] - scores[a]).slice(0, NPROBE);
+
+  // binary query code (sign bits)
+  const qbits = new Uint8Array(CODE_BYTES);
+  for (let d = 0; d < dims; d++) if (vec[d] > 0) qbits[d >> 3] |= 128 >> (d & 7);
+
+  const reads = probes
+    .map(p => manifest.parts[p])
+    .filter(part => part[2] > 0)
+    .map(part => env.DATA.get(`search/bundle_${String(part[0]).padStart(2, '0')}.bin`,
+      { range: { offset: part[1], length: part[2] } })
+      .then(o => o ? o.arrayBuffer() : null));
+  const bufs = (await Promise.all(reads)).filter(Boolean);
+
+  // Stage 1: Hamming scan over the binary codes; keep the top candidates.
+  const rowBytes = manifest.row_bytes;
+  const rerankTop = manifest.rerank_top || 200;
+  const cands = [];
+  for (const buf of bufs) {
+    const bytes = new Uint8Array(buf);
+    for (let off = 0; off + rowBytes <= bytes.length; off += rowBytes) {
+      let dist = 0;
+      for (let i = 0; i < CODE_BYTES; i++)
+        dist += popcnt[bytes[off + META_BYTES + i] ^ qbits[i]];
+      cands.push({ dist, bytes, off });
+    }
+  }
+  cands.sort((a, b) => a.dist - b.dist);
+  cands.length = Math.min(cands.length, rerankTop);
+
+  // Stage 2: rescore with the int8 rerank vector carried in each row —
+  // no extra fetches (the Workers free plan caps subrequests at 50).
+  const RD = manifest.rerank_dims || 512;
+  const q512 = new Float32Array(RD);
+  let qn = 0;
+  for (let d = 0; d < RD; d++) qn += vec[d] * vec[d];
+  qn = Math.sqrt(qn) || 1;
+  for (let d = 0; d < RD; d++) q512[d] = vec[d] / qn;
+  for (const c of cands) {
+    const scaleOff = c.off + META_BYTES + CODE_BYTES;
+    const scale = f16One(c.bytes, scaleOff);
+    let dot = 0;
+    const base = scaleOff + 2;
+    for (let d = 0; d < RD; d++) {
+      let v = c.bytes[base + d];
+      if (v > 127) v -= 256;
+      dot += v * q512[d];
+    }
+    c.score = dot * scale;
+  }
+  cands.sort((a, b) => b.score - a.score);
+
+  return json(env, {
+    q,
+    results: cands.slice(0, TOPK).map(c => ({
+      id: rowIdHex(c.bytes, c.off),
+      kind: c.bytes[c.off + 12],
+      s: c.bytes[c.off + 13],
+      set: manifest.set_slugs[c.bytes[c.off + 14] | (c.bytes[c.off + 15] << 8)] || null,
+      score: Math.round(c.score * 1000) / 1000,
+    })),
+  });
+}
+
 /* ---------- router ---------- */
 export default {
   async fetch(request, env) {
@@ -221,6 +375,9 @@ export default {
 
     if (path === '/auth/me' && request.method === 'GET') {
       return json(env, { uid: user.u, login: user.l, exp: user.exp });
+    }
+    if (path === '/search' && (request.method === 'GET' || request.method === 'POST')) {
+      return search(url, request, env);
     }
     if (path === '/sync/pull' && request.method === 'GET') return syncPull(url, env, user);
     if (path === '/sync/push' && request.method === 'POST') return syncPush(request, env, user);

@@ -156,7 +156,33 @@ input[type=range] {{ width: 100%; accent-color: var(--accent); margin-top: 0.2re
 .seg button {{ flex: 1; background: var(--inset); border: none; color: var(--muted); padding: 0.32rem 0.2rem; font-size: 0.8rem; border-left: 1px solid var(--border); }}
 .seg button:first-child {{ border-left: none; }}
 .seg button.on {{ background: var(--accent-dim); color: #fff; }}
+.seg input[type=number] {{ flex: 1; background: var(--inset); border: none; border-left: 1px solid var(--border); color: var(--muted); padding: 0.32rem 0.4rem; font-size: 0.8rem; min-width: 0; text-align: center; }}
+.seg input[type=number].on {{ background: var(--accent-dim); color: #fff; }}
+.seg input[type=number]:focus {{ outline: none; color: var(--bright); }}
 .hint {{ font-size: 0.75rem; color: var(--faint); margin-top: 0.45rem; line-height: 1.45; }}
+/* Clue lookup: tappable sentences on finished questions + result panel. */
+.clue-s {{ cursor: pointer; border-radius: 3px; }}
+.clue-s:hover {{ background: var(--inset); box-shadow: 0 0 0 2px var(--inset); }}
+#cluepanel {{ display: none; position: fixed; right: 1rem; bottom: 1rem; width: 24rem;
+  max-width: calc(100vw - 2rem); max-height: 60vh; overflow-y: auto;
+  background: var(--raised); border: 1px solid var(--border); border-radius: 6px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.45); z-index: 60; }}
+#cluepanel.show {{ display: block; }}
+.cluehead {{ display: flex; align-items: baseline; gap: 0.5rem; padding: 0.6rem 0.8rem 0.4rem;
+  border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--raised); }}
+.cluehead h3 {{ font-size: 0.85rem; margin: 0; color: var(--bright); white-space: nowrap; }}
+#cluequery {{ font-size: 0.72rem; color: var(--faint); font-style: italic; flex: 1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+#clueclose {{ background: none; border: none; color: var(--muted); font-size: 1.05rem; cursor: pointer; }}
+.clueitem {{ padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }}
+.clueitem:last-child {{ border-bottom: none; }}
+.clueans {{ font-size: 0.8rem; color: var(--bright); font-weight: 600; }}
+.clueans a {{ font-weight: normal; font-size: 0.72rem; color: var(--wiki); }}
+.cluepos {{ float: right; color: var(--faint); font-size: 0.7rem; font-weight: normal; }}
+.cluetext {{ font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; line-height: 1.45; }}
+.cluenote {{ padding: 0.7rem 0.8rem; font-size: 0.78rem; color: var(--muted); }}
+html[data-layout="mobile"] #cluepanel {{ left: 0; right: 0; bottom: 0; width: auto;
+  max-width: none; border-radius: 12px 12px 0 0; max-height: 55vh; }}
 kbd {{
   font-family: Consolas, monospace; font-size: 0.72rem; color: var(--bright);
   background: var(--inset); border: 1px solid var(--border); border-bottom-width: 2px;
@@ -340,11 +366,17 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
       <label class="setting" style="margin-bottom:0.25rem">Sentences read</label>
       <div class="seg" id="sentmode">
         <button data-n="0" class="on">Full</button>
-        <button data-n="3">Last 3</button>
-        <button data-n="2">Last 2</button>
-        <button data-n="1">Last 1</button>
+        <input type="number" id="sentn" min="1" max="99" inputmode="numeric" placeholder="last n" aria-label="read only the last n sentences">
       </div>
-      <div class="hint">Trim to the end of the question to drill giveaways and stock clues; earlier sentences stay hidden until you ask.</div>
+      <div class="hint">Type how many final sentences to read (blank = full question) to drill giveaways and stock clues; earlier sentences stay hidden until you ask.</div>
+      <label class="setting drilltoggle" id="voicetoggle"><input type="checkbox" id="voice"> Read aloud (voice)</label>
+      <div id="voicerow" style="display:none">
+        <select id="voicesel" class="scopesel" style="width:100%;margin-bottom:0.35rem"></select>
+        <label class="setting">Voice speed &mdash; <span class="val" id="vrateval"></span>
+          <input type="range" id="vrate" min="0.6" max="1.8" step="0.05">
+        </label>
+        <div class="hint">The question is spoken &mdash; its text stays hidden until the question is over, like a real moderator. Voices come from your device; the wpm slider above only affects text reveal.</div>
+      </div>
       <label class="setting drilltoggle"><input type="checkbox" id="drill"> Drill my weaknesses</label>
       <div id="drillrow" style="display:none">
         <label class="setting">Focus &mdash; <span class="val" id="focusval">balanced</span>
@@ -443,7 +475,14 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
 </div>
 
 <script src="lib/js/qdata.js"></script>
+<div id="cluepanel" aria-live="polite">
+  <div class="cluehead"><h3>Similar clues</h3><span id="cluequery"></span>
+    <button id="clueclose" aria-label="close">&times;</button></div>
+  <div id="cluebody"></div>
+</div>
+
 <script src="lib/js/mobile.js"></script>
+<script src="lib/js/answer_checker.js"></script>
 <script src="lib/js/reader.js"></script>
 <script src="lib/js/sync.js"></script>
 </body>

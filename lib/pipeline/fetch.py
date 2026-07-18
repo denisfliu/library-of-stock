@@ -59,6 +59,7 @@ def query_page(
     categories: list[str] | None = None,
     min_year: int = DEFAULT_MIN_YEAR,
     max_results: int = DEFAULT_MAX_RESULTS,
+    exact_phrase: bool = False,
 ) -> dict:
     """
     Run one query against the mirror (formerly one API page).
@@ -74,6 +75,7 @@ def query_page(
         categories=categories,
         min_year=min_year,
         max_return_length=max_results,
+        exact_phrase=exact_phrase,
         conn=_mirror(),
     )
 
@@ -110,12 +112,18 @@ def fetch_topic(
         - answer_matches: {tossups, bonuses, tossups_found, bonuses_found}
     """
     print(f"Fetching topic: '{query_string}'")
+    # exact_phrase adds \b word boundaries. Without it the API's substring
+    # match attributes foreign questions to the topic: "Hanson" ⊂ "Chanson
+    # de Roland", "Edward I" ⊂ "Charles Edward Ives" / "Edward III". Found
+    # July 2026 via spurious related.json links; repair_refs.py cleaned the
+    # committed questions_ref.json files retroactively.
     answer_data = query_page(
         query_string,
         search_type="answer",
         difficulties=difficulties,
         categories=categories,
         min_year=min_year,
+        exact_phrase=True,
     )
     return {
         "query_string": query_string,
@@ -144,6 +152,7 @@ def fetch_text_mentions(
         difficulties=difficulties,
         categories=categories,
         min_year=min_year,
+        exact_phrase=True,  # same boundary rule as fetch_topic
     )
     return {
         "query_string": query_string,

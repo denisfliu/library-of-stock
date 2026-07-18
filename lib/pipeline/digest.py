@@ -158,7 +158,7 @@ def _tidy(text: str) -> str:
     return _FTP.sub(" ", text).strip()
 
 
-def _emit_clusters(lines: list, clusters: list) -> None:
+def _emit_flat(lines: list, clusters: list) -> None:
     singletons = []
     for c in clusters:
         if c['count'] == 1:
@@ -173,6 +173,46 @@ def _emit_clusters(lines: list, clusters: list) -> None:
         if len(text) > _SINGLETON_MAX_CHARS:
             text = text[:_SINGLETON_MAX_CHARS] + "…"
         lines.append(f"  [1x] {text}")
+
+
+# Flat groups below this many fact-clusters read fine without theming;
+# above it (single-answerline History figures hit 40+) the agent had to
+# hand-cluster, which embedding themes now pre-draft.
+_THEME_MIN_CLUSTERS = 14
+
+
+def _is_giveaway_cluster(c: dict) -> bool:
+    return c['is_giveaway_count'] >= max(1, c['count'] // 2)
+
+
+def _emit_clusters(lines: list, clusters: list) -> None:
+    """Emit clusters, thematically grouped when the list is long enough
+    for a flat dump to be unreadable and the embedding stack is present."""
+    if len(clusters) >= _THEME_MIN_CLUSTERS:
+        # Giveaways pack many facts into one sentence and glue themes
+        # together — emit them separately, un-themed.
+        give = [c for c in clusters if _is_giveaway_cluster(c)]
+        rest = [c for c in clusters if not _is_giveaway_cluster(c)]
+        try:
+            from lib.embed.cluster import theme_indices
+            themes, misc = theme_indices([_tidy(c['representative'])
+                                          for c in rest])
+        except Exception:  # noqa: BLE001 — no torch/model/sidecar: flat
+            _emit_flat(lines, clusters)
+            return
+        for group in themes:
+            n_clues = sum(rest[i]['count'] for i in group)
+            lines.append(f"-- theme: {n_clues} clues (name it from the "
+                         f"content) --")
+            _emit_flat(lines, [rest[i] for i in group])
+        if misc:
+            lines.append("-- ungrouped --")
+            _emit_flat(lines, [rest[i] for i in misc])
+        if give:
+            lines.append("-- giveaway lines --")
+            _emit_flat(lines, give)
+        return
+    _emit_flat(lines, clusters)
 
 
 def format_digest(parsed: dict, bonus_parsed: dict | None = None) -> str:
@@ -204,6 +244,9 @@ def format_digest(parsed: dict, bonus_parsed: dict | None = None) -> str:
         f"{stats['bonus_questions']} bonuses ({stats['bonus_clue_parts']} parts)")
     lines.append("Grouped by answerline, then clustered; counts are computed — "
                  "use them directly as the `frequency` field. Full text: clues.txt")
+    lines.append("Long flat groups carry '-- theme --' markers: clues grouped by "
+                 "semantic similarity as SUGGESTED sections — merge/split as the "
+                 "content demands.")
     lines.append("")
     lines.append("--- TOSSUP CLUES BY ANSWERLINE ---")
 

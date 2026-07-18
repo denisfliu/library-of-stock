@@ -7,9 +7,17 @@ single-word gambling. Scores are occurrence counts, forward + reverse.
 
 Per topic, the top neighbors that are NOT already cross-ref'd land in
 output/{slug}/related.json (machine-owned file, cards.json precedent):
-    [{slug, topic, score, fwd, rev}]
+    [{slug, topic, score, fwd, rev, source: 'comention'}]
 rendered as the "Related topics" strip on stock.html and shipped in the
 R2 topics.json overlay.
+
+When mirror/embeddings.sqlite has topic vectors (lib/embed/), the strip
+is topped up to --top with embedding nearest-neighbors above
+MIN_EMBED_SIM, appended after the co-mention entries as
+    {slug, topic, score: <cosine sim>, source: 'embedding'}.
+Co-mentions rank first: an explicit mention in question text is stronger
+evidence than corpus-summary similarity. Missing sidecar or deps degrade
+to co-mention-only.
 
 Local-only: resolves question ids against the mirror. Run after relink
 (it excludes cross-ref'd targets) — post_batch does both.
@@ -32,6 +40,25 @@ from lib.mirror.publish import _docs_by_id
 
 DEFAULT_TOP = 8
 DEFAULT_MIN_SCORE = 2
+# Below ~0.5 cosine, Qwen3-0.6B topic-summary neighbors drift from "same
+# scene" to "same country/era" (July 2026 pilot: alhambra → generic
+# modern architects at 0.46-0.48).
+MIN_EMBED_SIM = 0.50
+
+
+def _load_topic_vectors():
+    """(slugs, matrix) from the embeddings sidecar, or None if the
+    sidecar/deps are absent — infer then runs co-mention-only."""
+    try:
+        from lib.embed.model import MODEL_ID
+        from lib.embed.store import EmbeddingStore
+        keys, mat = EmbeddingStore().load_matrix('topic', MODEL_ID)
+        if not keys:
+            return None
+        return [k for k, _ in keys], mat
+    except Exception as e:  # noqa: BLE001 — any failure means "no vectors"
+        print(f'  (embedding neighbors unavailable: {e})')
+        return None
 
 
 def _question_text(doc: dict) -> str:
@@ -103,6 +130,13 @@ def main():
     print('Scanning question text for co-mentions (this reads the mirror)...')
     fwd = build_mention_graph(analyses, linker)
 
+    vectors = _load_topic_vectors()
+    if vectors is not None:
+        vec_slugs, vec_mat = vectors
+        vec_index = {s: i for i, s in enumerate(vec_slugs)}
+        print(f'  topping up with embedding neighbors '
+              f'({len(vec_slugs)} topic vectors, sim >= {MIN_EMBED_SIM})')
+
     written = 0
     for slug, _path, d in analyses:
         already = {r.get('slug') for r in d.get('cross_refs') or []}
@@ -121,8 +155,23 @@ def main():
         ranked = sorted(scores.items(),
                         key=lambda kv: (-kv[1][0], kv[0]))[:args.top]
         related = [{'slug': o, 'topic': by_slug[o].get('topic', o),
-                    'score': s, 'fwd': f, 'rev': r}
+                    'score': s, 'fwd': f, 'rev': r, 'source': 'comention'}
                    for o, (s, f, r) in ranked]
+
+        if vectors is not None and slug in vec_index:
+            import numpy as np
+            sims = vec_mat @ vec_mat[vec_index[slug]]
+            taken = {r['slug'] for r in related} | already | {slug}
+            for j in np.argsort(-sims):
+                if len(related) >= args.top or sims[j] < MIN_EMBED_SIM:
+                    break
+                other = vec_slugs[j]
+                if other in taken or other not in by_slug:
+                    continue
+                related.append({'slug': other,
+                                'topic': by_slug[other].get('topic', other),
+                                'score': round(float(sims[j]), 3),
+                                'source': 'embedding'})
         path = OUTPUT_DIR / slug / 'related.json'
         if related:
             written += write_json_if_changed(path, related)

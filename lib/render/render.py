@@ -337,9 +337,13 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         except json.JSONDecodeError:
             related = []
         if related:
+            def chip_title(r):
+                if r.get("source") == "embedding":
+                    return f'similar topic (cosine {r["score"]})'
+                return f'co-mentioned {r["score"]}× in source questions'
             chips = "".join(
                 f'<a class="related-chip" href="../{r["slug"]}/stock.html" '
-                f'title="co-mentioned {r["score"]}× in source questions">'
+                f'title="{chip_title(r)}">'
                 f'{escape(r.get("topic", r["slug"]))}</a>'
                 for r in related)
             related_html = f"""

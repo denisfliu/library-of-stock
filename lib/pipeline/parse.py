@@ -13,16 +13,44 @@ def _strip_html(text: str) -> str:
     return re.sub(r'<[^>]+>', '', text)
 
 
+# Faithful port of lib/js/reader.js splitSentences — including its quirks
+# (the abbreviation test is suffix-anchored, not word-bounded). The reader's
+# on-screen sentence boundaries MUST line up with the sentence-embedding
+# index (mirror/embeddings.sqlite kind='sentence' keys on (id, sentence
+# index)), so any change here must be mirrored in reader.js and the index
+# re-embedded. This also fixes the old naive splitter's abbreviation
+# fragments ("The St." / "Louis Cathedral...") in clues.txt and digests.
+# Two shapes never end a sentence: known abbreviations, and single-letter
+# initial(ism)s ("W.", "v.", "O.B.", "U.S." — a letter preceded by a
+# non-letter, so "Georgia." still splits).
+_ABBREV = re.compile(
+    r"(?:\b(?:Mr|Mrs|Ms|Dr|St|Sts|Mt|vs|etc|Jr|Sr|Prof|Gen|Col|Fr|ca"
+    r"|e\.g|i\.e|No|Op|Nos)"
+    r"|(?:^|[^A-Za-z])(?:[A-Za-z]\.)*[A-Za-z])\.$")
+_SENT_END = re.compile(r'[.!?][”")\]]*$')
+_TRAIL_CLOSERS = re.compile(r'[”")\]]+$')
+_NEXT_SENT_START = re.compile(r'^\s*[“A-Z0-9”"(]')
+
+
+def split_sentences(text: str) -> list[str]:
+    """Split question text into sentences, reader-aligned."""
+    parts, buf = [], ''
+    tokens = re.split(r'(\s+)', text.strip())
+    for i, tok in enumerate(tokens):
+        buf += tok
+        if (_SENT_END.search(tok)
+                and not _ABBREV.search(_TRAIL_CLOSERS.sub('', tok))):
+            rest = ''.join(tokens[i + 1:])
+            if _NEXT_SENT_START.match(rest) or not rest.strip():
+                parts.append(buf)
+                buf = ''
+    if buf.strip():
+        parts.append(buf)
+    return [s.strip() for s in parts if s.strip()]
+
+
 def _split_sentences(text: str) -> list[str]:
-    """
-    Split question text into sentence-level clues.
-    Splits on sentence-ending punctuation followed by a space and uppercase.
-    """
-    sentences = re.split(
-        r'(?<=[.!?])\s+(?=[A-Z"\(\[])',
-        text.strip()
-    )
-    return [s.strip() for s in sentences if s.strip()]
+    return split_sentences(text)
 
 
 def _is_in_power(sentence: str, full_html: str) -> bool:
