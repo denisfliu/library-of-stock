@@ -28,43 +28,50 @@ from pathlib import Path
 import numpy as np
 import torch
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from ttsclean import clean   # single source of truth for guide/note stripping
+
 WORK = Path.home() / "los_tts"
 DB = WORK / "qbreader.sqlite"
 OUT = WORK / "out"
 DIFFS = (7, 8, 9)
-GAP = 0.12   # inter-sentence silence, seconds
+GAP = 0.12          # inter-sentence silence, seconds
+MAX_CHARS = 200     # split chunks longer than this (runaway risk)
+MIN_CHARS = 12      # merge chunks shorter than this (babble risk)
+RETRIES = 3         # regenerate a chunk this many times if it runs away
 
-# ---------- text cleaning (mirrors scratchpad/ttsclean.py) ----------
-PAREN_GUIDE = re.compile(r'\s*\(["“][^)]*["”]\)')
-DIRECTIONS = {
-    'emphasize', 'emphasized', 'read slowly', 'read quickly', 'read fast',
-    'slowly', 'quickly', 'slow', 'pause', 'beat', 'read carefully',
-    'editor', "editor's note", 'moderator note',
-}
-KEEP_START = re.compile(
-    r'^(this|that|these|those|his|her|hers|him|he|she|it|its|they|their|them|'
-    r'the|a|an|and|or|s|es|ed|ing|d|n|to|of|in)\b', re.I)
-BRACKET = re.compile(r'(^|.)\[([^\]]{1,40})\]')
-
-def _bracket(m):
-    pre, content = m.group(1), m.group(2).strip()
-    low = content.lower()
-    if low in DIRECTIONS:
-        return pre
-    if pre and not pre.isspace():
-        return pre + content
-    if KEEP_START.match(low):
-        return pre + content
-    return pre.rstrip() if pre else pre
-
-def clean(text: str) -> str:
-    text = PAREN_GUIDE.sub('', text or '')
-    text = BRACKET.sub(_bracket, text)
-    text = text.replace('(*)', ' ')
-    return re.sub(r'\s+', ' ', text).strip()
+# Chatterbox sampling params (settled July 2026 by A/B): default voice, no
+# reference clip (cloning sounded worse). exaggeration 0.5 read best; the
+# lower temperature + higher repetition_penalty cut runaway-glitch odds.
+PARAMS = dict(exaggeration=0.5, cfg_weight=0.5, temperature=0.7, repetition_penalty=1.3)
 
 def sentences(t):
     return [p.strip() for p in re.split(r"(?<=[.!?])\s+(?=[\"'A-Z0-9(])", t) if p.strip()]
+
+# Safe chunking: merge tiny fragments (e.g. the "H." from splitting "W. H.
+# Auden") and chunks ending in a lone initial, and split over-long sentences
+# at clause boundaries — no chunk is a glitch magnet (too short -> babble,
+# too long -> runaway).
+INITIAL_END = re.compile(r'(^|\s)[A-Z]\.$')
+def chunk_text(text):
+    merged = []
+    for s in sentences(text):
+        if merged and (len(s) < MIN_CHARS or INITIAL_END.search(merged[-1]) or len(merged[-1]) < MIN_CHARS):
+            merged[-1] += ' ' + s
+        else:
+            merged.append(s)
+    chunks = []
+    for s in merged:
+        if len(s) <= MAX_CHARS:
+            chunks.append(s); continue
+        buf = ''
+        for p in re.split(r'(?<=[,;:])\s+', s):
+            if buf and len(buf) + len(p) + 1 > MAX_CHARS:
+                chunks.append(buf); buf = p
+            else:
+                buf = (buf + ' ' + p).strip()
+        if buf: chunks.append(buf)
+    return chunks
 
 # ---------- worklist ----------
 def worklist(conn):
@@ -110,6 +117,21 @@ def main():
     model = ChatterboxTTS.from_pretrained(device="cuda")
     sr = model.sr
 
+    def gen_chunk(chunk):
+        """Generate a chunk, regenerating if it runs away (duration far past
+        what the text warrants — the runaway/babble signature). Keep the
+        shortest attempt if all exceed tolerance."""
+        exp = len(chunk) / 15.0            # ~150 wpm
+        tol = exp * 1.8 + 2.0
+        best, bestlen = None, 1 << 62
+        for _ in range(RETRIES):
+            w = model.generate(chunk, **PARAMS).squeeze(0).cpu().numpy()
+            if len(w) < bestlen:
+                best, bestlen = w, len(w)
+            if len(w) / sr <= tol:
+                return best
+        return best
+
     conn = sqlite3.connect(DB)
     items = worklist(conn)
     total = len(items)
@@ -127,14 +149,13 @@ def main():
         if not text:
             continue
         try:
-            chunks = []
-            for sent in sentences(text):
-                wav = model.generate(sent)
-                chunks.append(wav.squeeze(0).cpu().numpy())
-                chunks.append(np.zeros(int(sr * GAP), dtype=np.float32))
-            if not chunks:
+            parts = []
+            for ch in chunk_text(text):
+                parts.append(gen_chunk(ch))
+                parts.append(np.zeros(int(sr * GAP), dtype=np.float32))
+            if not parts:
                 continue
-            full = np.concatenate(chunks)
+            full = np.concatenate(parts)
             encode_opus(full, sr, path)
             made += 1
             audio_secs += len(full) / sr

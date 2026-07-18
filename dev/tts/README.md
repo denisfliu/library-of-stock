@@ -19,16 +19,27 @@ realtime there vs ~1.7x on the laptop 4070.
   verified). Reader will fetch `tossups|bonuses/{qid[:2]}/{qid}.opus`.
 
 ## Files
-- `ttsclean.py` — text cleaning. Strips pronunciation guides (`("kun-doo-REE")`
-  and `SUR [sir]`) and moderator directions (`[emphasize]`/`[read slowly]`/
-  `[pause]`); KEEPS editorial brackets (`hat[ing]`->hating, `[this concept]`,
-  `"[his]"`). Bonuses read verbatim (leadin + parts), no injected "for 10
-  points each" — the writer includes it if they want it. **This logic must be
-  ported into the real pipeline when the reader consumes the audio.**
+- `ttsclean.py` — **single source of truth** for text cleaning (gen_tts imports
+  `clean`). Strips, in either `()` or `[]`: pronunciation guides (quoted
+  `("kun-doo-REE")`, and bare `(green-YARR)`/`SUR [sir]` via a hyphen +
+  all-caps-stress heuristic — ~2.5k bare-paren guides were leaking before),
+  moderator directions (`[emphasize]`, `(read slowly)`), and **moderator
+  notes** (bracketed `[Note to moderator: ...]` and bare `Note to moderator:
+  ...` prefixes). KEEPS: **player/reader notes** (`[Note to players: ...]` —
+  info the answerer needs), real parentheticals (`(II)`, `(1710)`,
+  `(After Fragonard)`, `(log n)`), and editorial brackets (`hat[ing]`->hating,
+  `[this concept]`, `"[his]"`). Self-test: `python ttsclean.py` (21 cases).
+  Bonuses read verbatim, no injected "for 10 points each".
 - `gen_tts.py` — the generator (runs on MSL under tmux session `tts`). Reads
-  the mirror, synthesizes, encodes to Opus via ffmpeg, writes
-  `out/{tossups,bonuses}/{qid[:2]}/{qid}.opus`. Sharded by ObjectId prefix
-  (256 buckets) for HF's <10k-files-per-folder rule. Skip-existing = resumable.
+  the mirror, cleans (imports ttsclean), **chunks** (merges tiny fragments like
+  the "H." from "W. H. Auden", splits >200-char sentences at clauses — both are
+  glitch magnets), synthesizes each chunk with a **runaway validator** (if a
+  chunk's duration far exceeds what its text warrants — the babble/repetition
+  signature — regenerate, up to 3x, keep shortest), encodes to Opus via ffmpeg,
+  writes `out/{tossups,bonuses}/{qid[:2]}/{qid}.opus` (sharded by ObjectId
+  prefix, 256 buckets). Skip-existing = resumable. Sampling params in `PARAMS`
+  (settled by A/B: default voice — cloning sounded worse — exaggeration 0.5,
+  temperature 0.7, repetition_penalty 1.3).
 - `upload_hf.py` — CommitScheduler uploader (second tmux session). Reads a
   write token from `~/los_tts/.hf_token` (chmod 600, never on the cmdline),
   creates the dataset repo, commits new `*.opus` every 10 min. Idempotent.
