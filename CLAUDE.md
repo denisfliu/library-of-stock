@@ -4,6 +4,7 @@ Quizbowl study guide generator. Fetches clues from qbreader, analyzes them, gene
 
 ## Orientation (read this before exploring)
 
+- **Adding new sets/content**: `docs/adding_content.md` is the canonical, ordered runbook for ingesting new sets through every downstream system (mirror sync → audio → overviews/metadata → crossref → embeddings/search → R2 publish → build/deploy), with the runtime-vs-redeploy distinction and hard ordering constraints. **It is the single source of truth for that procedure — if you change a pipeline step, script, or ordering, update that doc in the same commit.**
 - `output/{slug}/analysis.json` is the **source of truth** for every topic. All HTML is generated from it — **never read or edit generated `.html` files** (there are ~2,500 of them); edit the JSON or the renderer, then run `./build.sh`.
 - Renderers: `lib/render/render.py` (stock.html), `lib/render/render_cards.py` (cards.html), `lib/render/render_questions.py` (questions.html), `lib/build_index.py` (index.html). Each is a Python file emitting one big HTML template.
 - Pipeline: `lib/pipeline/fetch.py` (reads the local qbreader mirror) → `lib/pipeline/parse.py` (clue extraction) → `lib/run.py` (CLI wrapper producing `clues.txt`).
