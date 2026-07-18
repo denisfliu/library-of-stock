@@ -52,7 +52,7 @@ button {{ font-family: var(--sans); cursor: pointer; }}
 
 header {{
   display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
-  max-width: 1200px; margin: 0 auto; padding: 1.1rem 1.5rem 0.6rem;
+  max-width: 1400px; margin: 0 auto; padding: 1.1rem 1.5rem 0.6rem;
   border-bottom: 1px solid var(--border);
 }}
 header h1 {{
@@ -68,7 +68,7 @@ header h1 .lede {{ color: var(--faint); }}
 .viewtabs button:hover, .viewtabs a.tab:hover {{ color: var(--bright); text-decoration: none; }}
 .viewtabs a.tab {{ color: var(--wiki); }}
 
-.wrap {{ max-width: 1200px; margin: 0 auto; padding: 1.1rem 1.5rem 3rem; display: flex; gap: 1.4rem; align-items: flex-start; }}
+.wrap {{ max-width: 1400px; margin: 0 auto; padding: 1.1rem 1.5rem 3rem; display: flex; gap: 1.4rem; align-items: flex-start; }}
 .taphint {{ display: none; }}
 
 /* ---------- mobile layout (html[data-layout="mobile"], set by the head
@@ -126,8 +126,17 @@ html[data-layout="mobile"] table.acc td, html[data-layout="mobile"] table.acc th
 html[data-layout="mobile"] .scopesel {{ flex: 1; min-width: 0; }}
 {sheet_css()}
 
-/* ---------- filter rail ---------- */
-aside {{ width: 300px; flex: none; position: sticky; top: 0.8rem; }}
+/* ---------- side rails (scope left, reading/sync right) ---------- */
+aside {{ width: 280px; flex: none; position: sticky; top: 0.8rem; }}
+/* Narrow desktop windows (above the mobile switch, below three comfortable
+   columns): stage on top full-width, the two rails side by side beneath.
+   Width-only tweak within desktop mode — the mobile/desktop mode switch
+   itself stays with data-layout (theme.MOBILE_MQ), never a media query. */
+@media (max-width: 1120px) {{
+  html[data-layout="desktop"] .wrap {{ flex-wrap: wrap; }}
+  html[data-layout="desktop"] main {{ order: -1; flex-basis: 100%; }}
+  html[data-layout="desktop"] aside {{ flex: 1; width: auto; min-width: 260px; position: static; }}
+}}
 .panel {{ background: var(--raised); border: 1px solid var(--border); border-radius: 4px; padding: 0.85rem 0.95rem; margin-bottom: 0.9rem; }}
 .panel h2 {{
   font-size: 0.72rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
@@ -320,6 +329,25 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
 }}
 .calib-cell .v {{ font-size: 1.5rem; font-variant-numeric: tabular-nums; margin: 0.15rem 0; }}
 .calib-cell .k {{ font-size: 0.7rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em; }}
+
+/* ---------- history view (searchable log of played questions) ---------- */
+.histsearch input {{
+  width: 100%; background: var(--inset); color: var(--bright); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.5rem 0.8rem; font-size: 16px; font-family: var(--sans);
+}}
+.histsearch input:focus {{ outline: none; border-color: var(--accent); }}
+.histrow {{ background: var(--raised); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 0.45rem; }}
+.histhead {{ display: flex; gap: 0.7rem; align-items: baseline; flex-wrap: wrap; padding: 0.5rem 0.85rem; cursor: pointer; }}
+.histhead:hover {{ background: var(--inset); }}
+.hist-ans {{ font-family: var(--serif); font-size: 1.02rem; color: var(--bright); }}
+.hist-meta {{ font-size: 0.76rem; color: var(--faint); }}
+.hist-res {{ margin-left: auto; font-size: 0.74rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; font-variant-numeric: tabular-nums; white-space: nowrap; }}
+.hist-res.c {{ color: var(--good); }} .hist-res.w {{ color: var(--bad); }} .hist-res.d {{ color: var(--faint); }}
+.histbody {{ display: none; border-top: 1px solid var(--border); padding: 0.7rem 0.85rem 0.8rem; }}
+.histbody.show {{ display: block; }}
+.histbody .qfull {{ font-family: var(--serif); font-size: 0.98rem; line-height: 1.65; color: var(--text); }}
+.histbody .answerline {{ margin-top: 0.5rem; font-size: 0.98rem; }}
+#histmore {{ margin-top: 0.3rem; }}
 @media (prefers-reduced-motion: reduce) {{ .timerbar i {{ transition: none !important; }} }}
 </style>
 </head>
@@ -329,6 +357,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
   <nav class="viewtabs">
     <button id="tab-play" class="on">Reader</button>
     <button id="tab-stats">My stats</button>
+    <button id="tab-history">History</button>
     <a class="tab" href="wiki.html">Wiki &nearr;</a>
   </nav>
 </header>
@@ -357,50 +386,6 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
       <div class="subhead">Difficulty</div>
       <div class="chips" id="f-diffs"></div>
       <div class="clearrow"><button class="linkbtn" id="clearfilters">Reset scope</button></div>
-    </div>
-    <div class="panel" id="panel-reading">
-      <h2>Reading</h2>
-      <label class="setting">Speed &mdash; <span class="val" id="wpmval"></span> wpm
-        <input type="range" id="wpm" min="120" max="700" step="10">
-      </label>
-      <label class="setting" style="margin-bottom:0.25rem">Sentences read</label>
-      <div class="seg" id="sentmode">
-        <button data-n="0" class="on">Full</button>
-        <input type="number" id="sentn" min="1" max="99" inputmode="numeric" placeholder="last n" aria-label="read only the last n sentences">
-      </div>
-      <div class="hint">Type how many final sentences to read (blank = full question) to drill giveaways and stock clues; earlier sentences stay hidden until you ask.</div>
-      <label class="setting drilltoggle" id="voicetoggle"><input type="checkbox" id="voice"> Read aloud (voice)</label>
-      <div id="voicerow" style="display:none">
-        <label class="setting">Voice speed &mdash; <span class="val" id="vrateval"></span>
-          <input type="range" id="vrate" min="0.6" max="1.6" step="0.05">
-        </label>
-        <div class="hint">A recorded voice reads the question &mdash; its text stays hidden until the question is over, like a real moderator. The scope narrows to questions that have audio (being added over time). The wpm slider above only affects text reveal.</div>
-      </div>
-      <label class="setting drilltoggle"><input type="checkbox" id="multibuzz"> Multiple buzzes</label>
-      <div id="multibuzzrow" style="display:none">
-        <div class="hint">A wrong answer doesn&rsquo;t end the question &mdash; reading resumes from your buzz and you can buzz again until it runs out. Your first wrong buzz still counts as a neg in stats.</div>
-      </div>
-      <label class="setting drilltoggle"><input type="checkbox" id="drill"> Drill my weaknesses</label>
-      <div id="drillrow" style="display:none">
-        <label class="setting">Focus &mdash; <span class="val" id="focusval">balanced</span>
-          <input type="range" id="focus" min="0" max="100" value="55">
-        </label>
-        <div class="hint">Weights the queue toward your weak groups &amp; answers (from My stats), with spaced review of misses. Broad = variety; Targeted = hammer weaknesses.</div>
-      </div>
-      <details class="distpanel" id="distpanel">
-        <summary>Category distribution</summary>
-        <label class="setting disttoggle"><input type="checkbox" id="usedist" checked> Follow distribution</label>
-        <div class="hint">Sample categories in a standard quizbowl mix (like qbreader) instead of raw corpus frequency. Set a weight to 0 to exclude a category; edit any weight to taste.</div>
-        <div class="distgrid" id="distgrid"></div>
-        <button class="linkbtn" id="distreset">Reset to standard</button>
-      </details>
-      <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
-      <div class="hint taphint">Tap the question text to buzz; tap it again after the reveal for the next question. Skip is never counted.</div>
-      <div class="hint">Note-run clues (&ldquo;E, G, B-flat&hellip;&rdquo;) read at a slower pace automatically.</div>
-    </div>
-    <div class="panel" id="syncpanel" style="display:none">
-      <h2>Sync</h2>
-      <div id="syncbody"></div>
     </div>
   </aside>
 
@@ -455,7 +440,55 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
       <div class="statnote" id="statnote"></div>
       <div id="statbody"></div>
     </section>
+
+    <section id="view-history" style="display:none">
+      <div class="histsearch"><input id="histq" type="search" placeholder="Search questions you&rsquo;ve played &mdash; answer, category, set&hellip;" autocomplete="off"></div>
+      <div class="statnote" id="histnote"></div>
+      <div id="histlist"></div>
+    </section>
   </main>
+
+  <aside id="rail2">
+    <div class="panel" id="panel-reading">
+      <h2>Reading</h2>
+      <label class="setting">Speed &mdash; <span class="val" id="wpmval"></span> wpm
+        <input type="range" id="wpm" min="120" max="700" step="10">
+      </label>
+      <label class="setting" style="margin-bottom:0.25rem">Sentences read</label>
+      <div class="seg" id="sentmode">
+        <button data-n="0" class="on">Full</button>
+        <input type="number" id="sentn" min="1" max="99" inputmode="numeric" placeholder="last n" aria-label="read only the last n sentences">
+      </div>
+      <label class="setting drilltoggle" id="voicetoggle"><input type="checkbox" id="voice"> Read aloud (voice)</label>
+      <div id="voicerow" style="display:none">
+        <label class="setting">Voice speed &mdash; <span class="val" id="vrateval"></span>
+          <input type="range" id="vrate" min="0.6" max="1.6" step="0.05">
+        </label>
+      </div>
+      <label class="setting drilltoggle"><input type="checkbox" id="multibuzz"> Multiple buzzes</label>
+      <div id="multibuzzrow" style="display:none">
+        <div class="hint">Wrong answers resume the reading &mdash; buzz again until it runs out. The first neg still counts.</div>
+      </div>
+      <label class="setting drilltoggle"><input type="checkbox" id="drill"> Drill my weaknesses</label>
+      <div id="drillrow" style="display:none">
+        <label class="setting">Focus &mdash; <span class="val" id="focusval">balanced</span>
+          <input type="range" id="focus" min="0" max="100" value="55">
+        </label>
+      </div>
+      <details class="distpanel" id="distpanel">
+        <summary>Category distribution</summary>
+        <label class="setting disttoggle"><input type="checkbox" id="usedist" checked> Follow distribution</label>
+        <div class="distgrid" id="distgrid"></div>
+        <button class="linkbtn" id="distreset">Reset to standard</button>
+      </details>
+      <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
+      <div class="hint taphint">Tap the question text to buzz. Skip is never counted.</div>
+    </div>
+    <div class="panel" id="syncpanel" style="display:none">
+      <h2>Sync</h2>
+      <div id="syncbody"></div>
+    </div>
+  </aside>
 </div>
 
 <div id="mbar">
