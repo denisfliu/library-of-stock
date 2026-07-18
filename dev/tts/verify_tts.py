@@ -28,7 +28,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ttsverify
-from gen_tts import worklist, chunk_text, out_path, DB
+from ttscorpus import worklist, chunk_text, out_path, DB
 
 SR = 24000    # opus was encoded at model sr; decode at a fixed rate for ASR
 

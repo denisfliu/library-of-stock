@@ -25,13 +25,16 @@ on every chunk saturates the GPU and cancels the two-stream speedup; the post-ru
 whisperX pass is the exhaustive mid-question clip net.
 
 Usage (under tmux):
-  ~/venvs/chatterbox-tts/bin/python gen_tts.py             # generate all
-  ~/venvs/chatterbox-tts/bin/python gen_tts.py --shard 0/2 # one of two parallel streams
-  ~/venvs/chatterbox-tts/bin/python gen_tts.py --limit 20  # smoke test
+  gen_tts.py                       # local: this machine's full worklist, skip-existing
+  gen_tts.py --queue               # fleet: claim from the queue this machine hosts
+  gen_tts.py --queue --queue-host msl   # fleet: claim from the queue on MSL (over ssh)
+  gen_tts.py --limit 20            # smoke test
+(--shard i/n still exists for static splitting, but the queue is the way to span
+ machines — each has its own GPU, unlike two streams sharing one.)
 """
 import argparse
 import json
-import re
+import socket
 import sqlite3
 import subprocess
 import sys
@@ -42,83 +45,17 @@ import numpy as np
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ttsclean import clean   # single source of truth for guide/note stripping
 import ttsverify            # ASR gate (shared with verify_tts.py)
+import ttsqueue             # cross-machine work queue (claim/complete)
+from ttscorpus import DB, OUT, worklist, chunk_text, out_path
 
-WORK = Path.home() / "los_tts"
-DB = WORK / "qbreader.sqlite"
-OUT = WORK / "out"
-DIFFS = (7, 8, 9)
 GAP = 0.12          # inter-sentence silence, seconds
-MAX_CHARS = 200     # split chunks longer than this (runaway risk)
-MIN_CHARS = 12      # merge chunks shorter than this (babble risk)
 RETRIES = 3         # regenerate a chunk this many times if it runs away
 
 # Chatterbox sampling params (settled July 2026 by A/B): default voice, no
 # reference clip (cloning sounded worse). exaggeration 0.5 read best; the
 # lower temperature + higher repetition_penalty cut runaway-glitch odds.
 PARAMS = dict(exaggeration=0.5, cfg_weight=0.5, temperature=0.7, repetition_penalty=1.3)
-
-# Abbreviations whose trailing period must NOT be treated as a sentence end.
-# Most name-titles (Mr./Mrs./Dr./St./Mt./Jr./Sr.) are already expanded away by
-# ttsclean, but these survive (undelimited scholarly/list abbreviations) and would
-# otherwise split a chunk mid-phrase.
-_ABBR = (r"(?:etc|al|vs|Prof|Rev|Gen|Col|Capt|Lt|Sgt|Fr|Dept|Rep|Sen|Gov|"
-         r"Ave|Blvd|Sts|Ph|cf|ca|fl| Mus|e\.g|i\.e|No|Op| Vol|Nos)")
-_ABBR_RE = re.compile(r"\b(" + _ABBR + r")\.", re.I)
-_INITIAL_RE = re.compile(r"\b([A-Z])\.")          # single-letter initials: W. H. Auden
-_SPLIT_RE = re.compile(r"(?<=[.!?])\s+(?=[\"'A-Z0-9(])")
-
-def sentences(t):
-    # Shield abbreviation/initial periods, split, then restore. Prevents the
-    # splitter from ending a chunk on "Mrs.", "et al.", "e.g.", or "W."
-    t = _ABBR_RE.sub(lambda m: m.group(0).replace(".", "\0"), t)
-    t = _INITIAL_RE.sub(r"\1\0", t)
-    return [p.replace("\0", ".").strip() for p in _SPLIT_RE.split(t) if p.strip()]
-
-# Safe chunking: merge tiny fragments (e.g. the "H." from splitting "W. H.
-# Auden") and chunks ending in a lone initial, and split over-long sentences
-# at clause boundaries — no chunk is a glitch magnet (too short -> babble,
-# too long -> runaway).
-INITIAL_END = re.compile(r'(^|\s)[A-Z]\.$')
-def chunk_text(text):
-    merged = []
-    for s in sentences(text):
-        if merged and (len(s) < MIN_CHARS or INITIAL_END.search(merged[-1]) or len(merged[-1]) < MIN_CHARS):
-            merged[-1] += ' ' + s
-        else:
-            merged.append(s)
-    chunks = []
-    for s in merged:
-        if len(s) <= MAX_CHARS:
-            chunks.append(s); continue
-        buf = ''
-        for p in re.split(r'(?<=[,;:])\s+', s):
-            if buf and len(buf) + len(p) + 1 > MAX_CHARS:
-                chunks.append(buf); buf = p
-            else:
-                buf = (buf + ' ' + p).strip()
-        if buf: chunks.append(buf)
-    return chunks
-
-# ---------- worklist ----------
-def worklist(conn):
-    items = []
-    q = "SELECT id, question_sanitized FROM tossups WHERE difficulty IN (7,8,9) ORDER BY id"
-    for qid, text in conn.execute(q):
-        items.append(("tossups", qid, clean(text)))
-    b = "SELECT id, leadin_sanitized, parts_sanitized FROM bonuses WHERE difficulty IN (7,8,9) ORDER BY id"
-    for qid, leadin, parts in conn.execute(b):
-        try:
-            plist = json.loads(parts) if parts else []
-        except Exception:
-            plist = []
-        text = " ".join([clean(leadin)] + [clean(p) for p in plist]).strip()
-        items.append(("bonuses", qid, text))
-    return items
-
-def out_path(kind, qid):
-    return OUT / kind / qid[:2] / f"{qid}.opus"
 
 def write_sidecar(opus_path, spans, texts):
     """{qid}.json: per-chunk [start_s, end_s] audio offsets + the chunk texts.
@@ -152,6 +89,14 @@ def main():
     ap.add_argument("--limit", type=int, default=0, help="stop after N new files (smoke test)")
     ap.add_argument("--shard", default="", metavar="i/n",
                     help="process a disjoint slice for parallel streams, e.g. 0/2 and 1/2")
+    ap.add_argument("--queue", action="store_true",
+                    help="cross-machine mode: claim work from the shared queue")
+    ap.add_argument("--queue-host", default="",
+                    help="ssh host of the queue DB (empty = this machine hosts it)")
+    ap.add_argument("--worker", default="",
+                    help="worker id recorded in the queue (default: hostname)")
+    ap.add_argument("--queue-batch", type=int, default=100,
+                    help="items claimed per round in queue mode")
     args = ap.parse_args()
 
     shard_i = shard_n = None
@@ -200,25 +145,13 @@ def main():
                 best, bestscore = w, score
         return best if best is not None else w
 
-    conn = sqlite3.connect(DB)
-    items = worklist(conn)
-    if shard_n:                     # disjoint slice so two streams never race a file
-        items = items[shard_i::shard_n]
-        print(f"shard {shard_i}/{shard_n}: {len(items):,} items", flush=True)
-    total = len(items)
-    done0 = sum(1 for k, qid, _ in items if out_path(k, qid).exists())
-    print(f"worklist: {total:,} items, {done0:,} already done, "
-          f"{total - done0:,} to go", flush=True)
-
-    made = 0
-    t_start = time.time()
-    audio_secs = 0.0
-    for i, (kind, qid, text) in enumerate(items):
+    def synth(kind, qid, text):
+        """Synthesize one item to out/. Returns audio seconds on success, 0.0 if
+        skipped (already exists / empty text), or None on error — the caller must
+        NOT mark a None item done, so a crashed item re-queues instead of vanishing."""
         path = out_path(kind, qid)
-        if path.exists():
-            continue
-        if not text:
-            continue
+        if path.exists() or not text:
+            return 0.0
         try:
             gap = np.zeros(int(sr * GAP), dtype=np.float32)
             parts, spans, texts = [], [], []
@@ -231,29 +164,79 @@ def main():
                 parts.append(gap)
                 pos += len(w) + len(gap)
             if not parts:
-                continue
+                return 0.0
             full = np.concatenate(parts)
             write_sidecar(path, spans, texts)
             encode_opus(full, sr, path)
-            made += 1
-            audio_secs += len(full) / sr
+            return len(full) / sr
         except Exception as e:
             print(f"  ERROR {kind}/{qid}: {e}", flush=True)
-            continue
+            return None
 
-        if made % 25 == 0:
-            el = time.time() - t_start
-            rtf = audio_secs / el if el else 0
-            rate = made / el * 3600 if el else 0
-            remaining = (total - done0 - made)
-            eta_h = remaining / rate * 1 if rate else 0
-            print(f"[{time.strftime('%H:%M:%S')}] made {made:,} "
-                  f"({done0 + made:,}/{total:,})  {rtf:.1f}x realtime  "
-                  f"{rate:.0f}/hr  ETA {eta_h/24:.1f}d", flush=True)
+    conn = sqlite3.connect(DB)
+    textmap = {qid: (kind, text) for kind, qid, text in worklist(conn)}
+    made = 0
+    t_start = time.time()
+    audio_secs = 0.0
 
-        if args.limit and made >= args.limit:
-            print(f"hit --limit {args.limit}", flush=True)
-            break
+    def progress(seen, total=None):
+        el = time.time() - t_start
+        rtf = audio_secs / el if el else 0
+        rate = made / el * 3600 if el else 0
+        tail = f"  ETA {(total - seen) / rate / 24:.1f}d" if (total and rate) else ""
+        print(f"[{time.strftime('%H:%M:%S')}] made {made:,}"
+              + (f" ({seen:,}/{total:,})" if total else "")
+              + f"  {rtf:.1f}x realtime  {rate:.0f}/hr{tail}", flush=True)
+
+    if args.queue:
+        # Cross-machine mode: claim batches from the shared queue on --queue-host
+        # (empty = this machine hosts the queue). Each qid is served to exactly one
+        # worker; text is resolved from this machine's local mirror.
+        worker = args.worker or socket.gethostname()
+        qc = ttsqueue.Client(host=args.queue_host)
+        print(f"queue mode: worker={worker!r} host={args.queue_host or 'local'} "
+              f"batch={args.queue_batch}", flush=True)
+        while True:
+            batch = qc.claim(worker, args.queue_batch)
+            if not batch:
+                print("queue drained", flush=True)
+                break
+            done = []
+            for kind, qid in batch:
+                entry = textmap.get(qid)
+                secs = synth(kind, qid, entry[1]) if entry else 0.0
+                if secs is not None:              # made or skipped -> done; error re-queues
+                    done.append((kind, qid))
+                if secs:
+                    made += 1
+                    audio_secs += secs
+                    if made % 25 == 0:
+                        progress(qc.stats().get("done", 0), sum(qc.stats().values()) or None)
+            qc.complete(done)
+            if args.limit and made >= args.limit:
+                print(f"hit --limit {args.limit}", flush=True)
+                break
+    else:
+        # Local mode: iterate this machine's full worklist (optionally a static
+        # --shard slice) and skip-existing. No coordination.
+        items = worklist(conn)
+        if shard_n:
+            items = items[shard_i::shard_n]
+            print(f"shard {shard_i}/{shard_n}: {len(items):,} items", flush=True)
+        total = len(items)
+        done0 = sum(1 for k, qid, _ in items if out_path(k, qid).exists())
+        print(f"worklist: {total:,} items, {done0:,} already done, "
+              f"{total - done0:,} to go", flush=True)
+        for kind, qid, text in items:
+            secs = synth(kind, qid, text)
+            if secs:
+                made += 1
+                audio_secs += secs
+                if made % 25 == 0:
+                    progress(done0 + made, total)
+            if args.limit and made >= args.limit:
+                print(f"hit --limit {args.limit}", flush=True)
+                break
 
     print(f"DONE this run: made {made:,} files in {(time.time()-t_start)/3600:.1f}h", flush=True)
 

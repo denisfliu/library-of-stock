@@ -74,6 +74,19 @@ realtime there vs ~1.7x on the laptop 4070.
   gen_tts's resume regenerates it; default is a `--dry-run` report. Also the
   reusable post-run QA tool. A/B bench that settled all this: `msl_ab3.py`
   (baseline-vs-primed, clip-rate scan, throughput probe) + `dev/tts_samples/tuning3/`.
+- `ttscorpus.py` — **torch-free** corpus helpers (worklist, chunk splitting,
+  `out/` path layout) shared by gen_tts, verify_tts, and ttsqueue. Kept free of
+  torch so a queue claim over SSH doesn't pay a multi-second model import.
+- `ttsqueue.py` — **cross-machine work queue** (SQLite `~/los_tts/tts_queue.db`
+  on the host machine). One Chatterbox stream saturates a GPU, so the way to go
+  faster is more *machines*, each its own GPU, drawing from one queue.
+  `init` seeds from the mirror (marking existing `out/` done); `claim`/`complete`
+  are atomic (BEGIN IMMEDIATE + busy timeout) with a 1 h lease so a crashed
+  worker's items re-serve. Transport is **SSH, not an HTTP port** (MSL is behind
+  the Stanford firewall): a remote worker runs `ssh msl python ttsqueue.py claim`,
+  batched (~100 items/round) so the round-trip is negligible. `Client(host)`
+  wraps local-vs-ssh for gen_tts. Self-test (atomicity/lease/drain): the queue
+  logic is exercised by a synthetic-DB test (see commit).
 - `upload_hf.py` — CommitScheduler uploader (second tmux session). Reads a
   write token from `~/los_tts/.hf_token` (chmod 600, never on the cmdline),
   creates the dataset repo, commits new `*.opus` + `*.json` sidecars every
@@ -81,16 +94,35 @@ realtime there vs ~1.7x on the laptop 4070.
 
 ## MSL layout
 - Workdir `~/los_tts/` : `qbreader.sqlite` (mirror copy), `gen_tts.py`,
-  `upload_hf.py`, `out/`, `gen.log`, `.hf_token`.
+  `ttscorpus.py`, `ttsqueue.py`, `ttsclean.py`, `ttsverify.py`, `upload_hf.py`,
+  `out/`, `tts_queue.db`, `gen.log`, `.hf_token`.
 - Venv `~/venvs/chatterbox-tts/` (miniforge-python venv; torch 2.6.0+cu124,
-  `setuptools<80` so perth's `pkg_resources` import works).
-- tmux: `tts` (generator), `upload` (uploader). Launch:
-  `tmux new-session -d -s tts "~/venvs/chatterbox-tts/bin/python gen_tts.py >> gen.log 2>&1"`
+  `setuptools<80` so perth's `pkg_resources` import works; plus `faster-whisper`
+  for the ASR gate).
+- MSL hosts the queue and runs one worker. tmux: `tts` (generator), `upload`
+  (uploader). Launch:
+  `~/venvs/chatterbox-tts/bin/python ttsqueue.py init`   # once, seeds the queue
+  `tmux new-session -d -s tts "~/venvs/chatterbox-tts/bin/python gen_tts.py --queue --worker msl >> gen.log 2>&1"`
   `tmux new-session -d -s upload "bash -c \"ulimit -n 65536 && ~/venvs/chatterbox-tts/bin/python upload_hf.py >> upload.log 2>&1\""`
   — the uploader NEEDS the raised fd limit: a fresh CommitScheduler's first
   push re-scans the whole out/ folder and blows past the default 1024 open
   files once the corpus is a few thousand files (hit July 18, 2026).
-- Monitor: `ssh msl 'grep "made" ~/los_tts/gen.log | tail -1'`.
+- Monitor: `ssh msl 'grep "made" ~/los_tts/gen.log | tail -1'`;
+  queue: `ssh msl '~/venvs/chatterbox-tts/bin/python ~/los_tts/tts_queue... stats'`
+  (`ttsqueue.py stats`).
+
+## Adding a worker on another machine (fleet)
+Each extra machine needs its own GPU, venv, mirror copy, and `out/` + uploader
+(it uploads its own shards to the same HF dataset). Then it just draws from MSL's
+queue over SSH:
+  1. Copy `qbreader.sqlite` + the `tts*.py` scripts to the machine's `~/los_tts/`.
+  2. Set up the same venv (chatterbox + faster-whisper).
+  3. Run the uploader (same as MSL) so its output reaches HF.
+  4. `tmux new-session -d -s tts "PY gen_tts.py --queue --queue-host msl --worker <name> >> gen.log 2>&1"`
+     — `--queue-host msl` routes claim/complete over `ssh msl`; the machine must
+     have passwordless `ssh msl` (or adjust `REMOTE_PY`/`REMOTE_SCRIPT` in
+     ttsqueue.py). Each qid is served once across the whole fleet; a worker that
+     dies has its in-flight batch re-served after the 1 h lease.
 
 ## Reader integration — DONE (July 17, 2026)
 The reader (`lib/js/reader.js`) plays this audio when "Read aloud" is on:
