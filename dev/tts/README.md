@@ -54,7 +54,12 @@ realtime there vs ~1.7x on the laptop 4070.
   `upload_hf.py`, `out/`, `gen.log`, `.hf_token`.
 - Venv `~/venvs/chatterbox-tts/` (miniforge-python venv; torch 2.6.0+cu124,
   `setuptools<80` so perth's `pkg_resources` import works).
-- tmux: `tts` (generator), and an uploader session once the token exists.
+- tmux: `tts` (generator), `upload` (uploader). Launch:
+  `tmux new-session -d -s tts "~/venvs/chatterbox-tts/bin/python gen_tts.py >> gen.log 2>&1"`
+  `tmux new-session -d -s upload "bash -c \"ulimit -n 65536 && ~/venvs/chatterbox-tts/bin/python upload_hf.py >> upload.log 2>&1\""`
+  — the uploader NEEDS the raised fd limit: a fresh CommitScheduler's first
+  push re-scans the whole out/ folder and blows past the default 1024 open
+  files once the corpus is a few thousand files (hit July 18, 2026).
 - Monitor: `ssh msl 'grep "made" ~/los_tts/gen.log | tail -1'`.
 
 ## Reader integration — DONE (July 17, 2026)
