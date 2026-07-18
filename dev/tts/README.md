@@ -112,17 +112,31 @@ realtime there vs ~1.7x on the laptop 4070.
   (`ttsqueue.py stats`).
 
 ## Adding a worker on another machine (fleet)
-Each extra machine needs its own GPU, venv, mirror copy, and `out/` + uploader
-(it uploads its own shards to the same HF dataset). Then it just draws from MSL's
-queue over SSH:
-  1. Copy `qbreader.sqlite` + the `tts*.py` scripts to the machine's `~/los_tts/`.
-  2. Set up the same venv (chatterbox + faster-whisper).
-  3. Run the uploader (same as MSL) so its output reaches HF.
-  4. `tmux new-session -d -s tts "PY gen_tts.py --queue --queue-host msl --worker <name> >> gen.log 2>&1"`
-     — `--queue-host msl` routes claim/complete over `ssh msl`; the machine must
-     have passwordless `ssh msl` (or adjust `REMOTE_PY`/`REMOTE_SCRIPT` in
-     ttsqueue.py). Each qid is served once across the whole fleet; a worker that
-     dies has its in-flight batch re-served after the 1 h lease.
+An extra machine draws from MSL's queue over SSH and **does NOT run its own
+uploader** — `upload_hf` builds the manifest from the *local* out/, so a second
+uploader would clobber MSL's manifest and conflict on the dataset's git history.
+Instead the worker ships its files to MSL with `push_out.py`, and MSL's single
+uploader owns HF + the union manifest.
+  1. Copy `qbreader.sqlite` + the `tts*.py` scripts to `~/los_tts/` (a hardlink to
+     an existing mirror copy avoids duplicating 860 MB).
+  2. Env: chatterbox-tts + faster-whisper + ffmpeg + **`setuptools<80`** (else
+     perth's watermarker silently becomes None -> `TypeError` at model load) and
+     the **CUDA** torch build (`pip install torch --index-url .../cu124`; the
+     chatterbox dep pulls the CPU build by default).
+  3. Launch the worker AND the sync loop. If you invoke the env's python directly
+     (not `conda run`), put the env's `Library\bin` on PATH first or ffmpeg isn't
+     found (`WinError 2` at encode):
+       `gen_tts.py --queue --queue-host msl --worker <name>`
+       `push_out.py --host msl`
+     `--queue-host msl` routes claim/complete over `ssh msl` (needs passwordless
+     ssh, or adjust `REMOTE_PY`/`REMOTE_SCRIPT` in ttsqueue.py). Each qid is served
+     once fleet-wide; a worker that dies has its in-flight batch re-served after
+     the 1 h lease. (Windows has no tmux — launch detached via `Start-Process
+     -WindowStyle Hidden`, and disable AC sleep so the box doesn't nap while AFK.)
+  4. **End-of-run reconcile**: `ttsqueue.py reconcile` on MSL resets to 'todo' any
+     'done' qid whose `.opus` isn't actually in MSL's out/ — closing the small
+     window where a worker marked an item done but died before push_out shipped
+     it. Run it once the queue reports drained, then let the fleet refill the gaps.
 
 ## Reader integration — DONE (July 17, 2026)
 The reader (`lib/js/reader.js`) plays this audio when "Read aloud" is on:

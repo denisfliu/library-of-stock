@@ -106,6 +106,19 @@ def stats():
     return {s: c for s, c in con.execute("SELECT status, COUNT(*) FROM items GROUP BY status")}
 
 
+def reconcile():
+    """Reset to 'todo' any item marked done whose .opus isn't in the host's out/.
+    Closes the gap where a worker completed an item but died before push_out
+    shipped the file. Run on the host after the queue drains, then refill."""
+    con = _connect()
+    rows = con.execute("SELECT kind, qid FROM items WHERE status='done'").fetchall()
+    missing = [(qid,) for kind, qid in rows if not out_path(kind, qid).exists()]
+    con.executemany("UPDATE items SET status='todo', worker=NULL, lease=NULL WHERE qid=?", missing)
+    con.commit()
+    print(f"reconcile: {len(missing):,} done-but-missing reset to todo", flush=True)
+    return len(missing)
+
+
 class Client:
     """Queue access for gen_tts. host="" -> call the library in-process (this
     machine hosts the queue); host="msl" -> run the CLI over ssh."""
@@ -143,6 +156,7 @@ def main():
     p_claim.add_argument("--worker", required=True); p_claim.add_argument("--n", type=int, default=100)
     sub.add_parser("complete")
     sub.add_parser("stats")
+    sub.add_parser("reconcile")
     args = ap.parse_args()
 
     if args.cmd == "init":
@@ -155,6 +169,8 @@ def main():
         complete(items)
     elif args.cmd == "stats":
         json.dump(stats(), sys.stdout)
+    elif args.cmd == "reconcile":
+        reconcile()
 
 
 if __name__ == "__main__":

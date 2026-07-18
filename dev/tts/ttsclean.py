@@ -88,6 +88,13 @@ def expand_abbrev(text: str) -> str:
         text = rx.sub(repl, text)
     return text
 
+# Poetry line-break slashes — a quoted passage like `"summer's day? / Rough winds
+# do shake"` uses " / " to separate verse lines; read through it (never voice
+# "slash"). Only SPACED slashes are line separators — "10/ten points", "and/or",
+# "km/h", "9/11" have no surrounding spaces and are left intact. The existing
+# line-end punctuation supplies the pause; a bare line break just reads on.
+POETRY_SLASH = re.compile(r'\s+/+\s+')
+
 def _paren(m):
     return '' if _is_guide(m.group(1)) else m.group(0)
 
@@ -111,6 +118,7 @@ def clean(text: str) -> str:
     text = BRACKET.sub(_bracket, text)
     text = text.replace('(*)', ' ')
     text = expand_abbrev(text)
+    text = POETRY_SLASH.sub(' ', text)             # verse line breaks: read through, never "slash"
     return re.sub(r'\s+', ' ', text).strip()
 
 
@@ -136,8 +144,14 @@ if __name__ == '__main__':
         ('Martin Luther King Jr. spoke', 'Martin Luther King Junior spoke'),
         ('Mt. Everest is tall', 'Mount Everest is tall'),
         ('Ali vs. Frazier fight', 'Ali versus Frazier fight'),
+        ('reads "a summer\'s day? / Rough winds do shake" here', 'reads "a summer\'s day? Rough winds do shake" here'),
+        ('the line "burning bright, / In the forests" appears', 'the line "burning bright, In the forests" appears'),
+        ('a stanza break "night // In what" here', 'a stanza break "night In what" here'),
     ]
     KEEP = [
+        ('For 10/ten points, name', 'For 10/ten points, name'),   # unspaced slash -> keep
+        ('this and/or that', 'this and/or that'),
+        ('a speed in km/h units', 'a speed in km/h units'),
         ('Henry (II) was king', 'Henry (II) was king'),
         ('born in (1710) to', 'born in (1710) to'),
         ('the painting (After Fragonard) hangs', 'the painting (After Fragonard) hangs'),
