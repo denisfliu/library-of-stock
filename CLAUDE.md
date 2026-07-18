@@ -16,6 +16,7 @@ Quizbowl study guide generator. Fetches clues from qbreader, analyzes them, gene
 - **Sweep sets** (`output/_sets/{set_slug}/`): `lib/sweep/build_set.py "2022 ACF Winter"` fetches a whole tournament, matches every tossup/bonus-part answerline via `lib/sweep/matcher.py` (override → exact → alias tiers, category-gated; overrides in `output/answerline_overrides.json`, keys from `lib/sweep/answerlines.normalize`), writes `set.json` + reviewable `report.json`, renders interactive `sweep.html`. `--all --rematch-only` re-matches without network (red links self-heal to blue as topics get pages).
 - **Shared map** (`lib/js/map_view.js`): any page mounts it (theme.LEAFLET_TAGS + `initMapView`); one pin per location (country centroids), click → panel grouped by category / year-sorted, facet chips for group + era filtering. Live on overview + sweep pages.
 - `lib/units.py` is the canonical unit registry (40 units) + `SUBCATEGORY_ALIASES` drift map; classify guides via `unit_for_guide()`, never raw subcategory strings.
+- **Semantic search page** (`search.html`, `lib/render/build_search.py` + `lib/js/semsearch.js`): free-text semantic search over all embedded sentences/bonus parts with qbreader-/db filters. The sync Worker's `/search` (sign-in gated) embeds queries at the edge and scans the R2 IVF-binary index (`lib/embed/build_search_index.py`, manifest v3 carries per-row taxonomy/difficulty + set year/name tables); filters prune rows mid-scan. The taxonomy ordinal contract is `lib/mirror/query.py`'s list order — shared by the index builder, Worker, and page. Tested by `tests/semsearch/`.
 
 ## Common commands
 
@@ -38,11 +39,12 @@ python lib/crossref/relink.py               # re-derive mechanical cross_refs (+
 python lib/crossref/infer.py                # related-topics from question co-mentions (mirror)
 python lib/audio/soundbites.py search "..." # find Commons audio for soundbites.json
 python lib/embed/embed_corpus.py tossups|bonuses|topics  # (re)embed into mirror/embeddings.sqlite (resumable)
-python lib/embed/build_search_index.py      # stage online clue-search index for R2 (--eval-only to check recall)
+python lib/embed/build_search_index.py      # stage online search index (--eval-only recall check; --upload push to R2)
 python tests/golden/run_golden.py           # golden render test (--update to rebless)
 node tests/answer_checker/run_tests.js      # reader answer-judging tests
 node tests/reader_facets/run_tests.js       # reader facet-filtering tests
 node tests/reader_audio/run_tests.js        # reader read-aloud queue restriction
+node tests/semsearch/run_tests.js           # semantic-search filter chain (page expansion + Worker row filter)
 ```
 
 ## Deferred improvements (roadmap for future sessions)

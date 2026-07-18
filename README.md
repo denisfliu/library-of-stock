@@ -15,11 +15,12 @@ The published site: <https://denisfliu.github.io/library-of-stock/>
 
 ## The Site
 
-Three entry pages, all generated:
+Four entry pages, all generated:
 
 - **`index.html`** — portal homepage (`lib/render/build_home.py`).
 - **`wiki.html`** — master study-guide index with search (`lib/build_index.py`). Links into per-topic pages, unit overview pages (`output/_categories/`), and tournament sweep pages (`output/_sets/`).
 - **`reader.html`** — question reader (`lib/render/build_reader.py` + `lib/js/reader.js`): plays real tossups with buzz/judge scoring, spaced-repetition mastery tracking, facet filtering, stats, voice reading, and semantic clue search. Question text loads at view time from R2; optional GitHub-OAuth cross-device sync runs on a Cloudflare Worker + D1 (`sync/` — see `sync/README.md`).
+- **`search.html`** — semantic search (`lib/render/build_search.py` + `lib/js/semsearch.js`): find clues by meaning across all ~1.7M embedded tossup sentences and bonus parts, with qbreader.org/db's filter set (category/subcategory/alternate subcategory, difficulties, year range, question type, set name). Queries embed at the edge on the sync Worker (`/search`, sign-in gated) and scan an IVF-binary index on R2 built by `lib/embed/build_search_index.py`; filters apply per-row *during* the scan, so top-K is computed within the filter.
 
 All pages support a runtime mobile layout mode and share theming from `lib/render/theme.py` and scripts from `lib/js/`.
 
@@ -53,7 +54,8 @@ library-of-stock/
 │   ├── render/               # Page renderers: render.py (stock), render_cards.py,
 │   │                         #   render_questions.py, render_overview.py, render_sweep.py,
 │   │                         #   build_overviews.py, build_reader.py, build_home.py,
-│   │                         #   render_audio.py (ABC→MP3), render_score_review.py, theme.py
+│   │                         #   build_search.py, render_audio.py (ABC→MP3),
+│   │                         #   render_score_review.py, theme.py
 │   ├── crossref/             # crossref.py (topic index), linker.py + relink.py
 │   │                         #   (mechanical links), infer.py (related-topics from mirror)
 │   ├── sweep/                # Tournament sets (build_set.py, matcher.py, answerlines.py),
@@ -63,9 +65,9 @@ library-of-stock/
 │   │                         #   build_search_index.py (powers reader clue search + inference)
 │   ├── images/               # Wikimedia Commons image lookup + fixers
 │   ├── audio/                # soundbites.py — Commons audio curation for overview pages
-│   └── js/                   # Shared browser JS: reader.js, answer_checker.js, sync.js,
-│                             #   qdata.js (R2 question fetch), map_view.js, mobile.js,
-│                             #   search_nav.js, anki_export.js
+│   └── js/                   # Shared browser JS: reader.js, semsearch.js, answer_checker.js,
+│                             #   sync.js, qdata.js (R2 question fetch), map_view.js,
+│                             #   mobile.js, search_nav.js, anki_export.js
 │
 ├── sync/                     # Cloudflare Worker + D1: OAuth login, reader sync, search API
 ├── tests/                    # golden render test (Python), answer_checker + reader_facets (Node)
@@ -99,7 +101,7 @@ Slugs are the full canonical name, lowercased, spaces → underscores (e.g. `sam
 
 - **Committed JSON** — analyses, cards, refs, overviews, overrides. The repo is the database of record for everything agent-authored.
 - **qbreader mirror** (`mirror/qbreader.sqlite`, gitignored) — the entire qbreader question corpus, local. Seed from an official backup with `lib/mirror/import_backup.py`; keep fresh with `python lib/mirror/sync.py`. Design: `docs/mirror.md`.
-- **R2** — `python lib/mirror/publish.py --upload` exports question-text artifacts (per-topic, per-unit, per-set) plus the semantic-search index to Cloudflare R2; site pages fetch them at view time (`lib/js/qdata.js` holds the base URL).
+- **R2** — `python lib/mirror/publish.py --upload` exports question-text artifacts (per-topic, per-unit, per-set) to Cloudflare R2; site pages fetch them at view time (`lib/js/qdata.js` holds the base URL). The semantic-search index uploads separately via `python lib/embed/build_search_index.py --upload` (binary bundles, range-read by the Worker).
 - **D1** (via `sync/` Worker) — per-user reader state for cross-device sync, behind GitHub OAuth.
 
 ## Workflows
@@ -170,6 +172,7 @@ python tests/golden/run_golden.py        # golden render test: frozen corpus thr
                                          #   (--update to rebless after intended changes)
 node tests/answer_checker/run_tests.js   # reader answer-judging logic
 node tests/reader_facets/run_tests.js    # reader facet filtering
+node tests/semsearch/run_tests.js        # semantic-search filter chain (page + Worker)
 ```
 
 ## Browsing

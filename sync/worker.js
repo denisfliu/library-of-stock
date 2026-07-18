@@ -210,8 +210,9 @@ async function prefsPut(request, env, user) {
 const SEARCH_MODEL = '@cf/qwen/qwen3-embedding-0.6b';
 const QUERY_PREFIX = 'Instruct: Given a web search query, retrieve relevant '
   + 'passages that answer the query\nQuery: ';
-const NPROBE = 24, TOPK = 40, MAX_QUERY_CHARS = 500;
-const META_BYTES = 16, CODE_BYTES = 128;
+const NPROBE = 24, NPROBE_FILTERED = 40, TOPK = 40, MAX_QUERY_CHARS = 500;
+const CODE_BYTES = 128;
+const ORD_NULL = 255; // taxonomy byte for NULL (see build_search_index.py)
 
 function f16One(bytes, off) {
   const h = bytes[off] | (bytes[off + 1] << 8);
@@ -262,10 +263,79 @@ function rowIdHex(bytes, off) {
   return s;
 }
 
+/* ---------- /search filters (qbreader-/db semantics) ----------
+   The page sends the ALREADY-EXPANDED category bundle as ordinal arrays
+   (ordinals into the manifest's canonical taxonomy lists — the expansion
+   port lives in lib/js/semsearch.js). The Worker just masks rows during
+   the scan. Composition mirrors lib/mirror/query.py _build_where:
+   category IN cats AND subcategory IN subs AND (alt IN alts OR alt IS
+   NULL) AND difficulty IN diffs AND year range AND set-name substring. */
+
+function ordMask(list) {
+  const m = new Uint8Array(256);
+  for (const v of list) if (Number.isInteger(v) && v >= 0 && v < 256) m[v] = 1;
+  return m;
+}
+
+function buildRowFilter(body, manifest) {
+  const cats = Array.isArray(body.cats) ? body.cats : [];
+  const subs = Array.isArray(body.subs) ? body.subs : [];
+  const alts = Array.isArray(body.alts) ? body.alts : [];
+  const diffs = Array.isArray(body.diffs) ? body.diffs : [];
+  const qtype = body.qtype === 'tossup' ? 0 : body.qtype === 'bonus' ? 1 : -1;
+  const minYear = Number.isInteger(body.minYear) ? body.minYear : null;
+  const maxYear = Number.isInteger(body.maxYear) ? body.maxYear : null;
+  const setQuery = typeof body.set === 'string' ? body.set.trim().toLowerCase() : '';
+
+  const hasBundle = cats.length > 0; // expansion guarantees subs/alts follow cats
+  const needSetPass = minYear !== null || maxYear !== null || setQuery !== '';
+  if (!hasBundle && !diffs.length && qtype < 0 && !needSetPass) return null;
+
+  const f = { qtype, hasBundle };
+  if (hasBundle) {
+    f.catOK = ordMask(cats);
+    f.subOK = ordMask(subs);
+    f.altOK = ordMask(alts);
+  }
+  f.diffOK = diffs.length ? ordMask(diffs) : null;
+  if (needSetPass) {
+    const years = manifest.set_years || [];
+    const names = manifest.set_names || [];
+    const n = Math.max(years.length, names.length);
+    const setOK = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      const y = years[i] || 0;
+      if (minYear !== null && (!y || y < minYear)) continue;
+      if (maxYear !== null && (!y || y > maxYear)) continue;
+      if (setQuery && !(names[i] || '').toLowerCase().includes(setQuery)) continue;
+      setOK[i] = 1;
+    }
+    f.setOK = setOK;
+  }
+  return f;
+}
+
+function rowPasses(f, bytes, off) {
+  if (f.qtype >= 0 && bytes[off + 12] !== f.qtype) return false;
+  if (f.setOK) {
+    const so = bytes[off + 14] | (bytes[off + 15] << 8);
+    if (so >= f.setOK.length || !f.setOK[so]) return false;
+  }
+  if (f.hasBundle) {
+    if (!f.catOK[bytes[off + 16]]) return false;
+    if (!f.subOK[bytes[off + 17]]) return false;
+    const alt = bytes[off + 18];
+    if (alt !== ORD_NULL && !f.altOK[alt]) return false;
+  }
+  if (f.diffOK && !f.diffOK[bytes[off + 19]]) return false;
+  return true;
+}
+
 async function search(url, request, env) {
   let q = url.searchParams.get('q') || '';
+  let body = {};
   if (request.method === 'POST') {
-    const body = await request.json().catch(() => ({}));
+    body = await request.json().catch(() => ({}));
     if (typeof body.q === 'string') q = body.q;
   }
   q = q.trim().slice(0, MAX_QUERY_CHARS);
@@ -276,12 +346,20 @@ async function search(url, request, env) {
   catch (e) { return err(env, 503, String(e.message || e)); }
   const { manifest, centroids, popcnt } = idx;
   const dims = manifest.dims, k = manifest.k;
+  const metaBytes = manifest.meta_bytes || 16;
+
+  const filter = buildRowFilter(body, manifest);
+  if (filter && metaBytes < 20) {
+    return err(env, 400, 'published index predates filters — rebuild it');
+  }
 
   const ai = await env.AI.run(SEARCH_MODEL, { text: [QUERY_PREFIX + q] });
   const vec = (ai.data && ai.data[0]) || ai;
   if (!vec || vec.length !== dims) return err(env, 502, 'embedding failed');
 
-  // top-NPROBE centroids by dot product
+  // top-N centroids by dot product; probe wider when a filter narrows
+  // the candidate pool (still within the free plan's subrequest cap).
+  const nprobe = filter ? NPROBE_FILTERED : NPROBE;
   const scores = new Float32Array(k);
   for (let c = 0; c < k; c++) {
     let dot = 0; const base = c * dims;
@@ -289,7 +367,7 @@ async function search(url, request, env) {
     scores[c] = dot;
   }
   const probes = Array.from(scores.keys())
-    .sort((a, b) => scores[b] - scores[a]).slice(0, NPROBE);
+    .sort((a, b) => scores[b] - scores[a]).slice(0, nprobe);
 
   // binary query code (sign bits)
   const qbits = new Uint8Array(CODE_BYTES);
@@ -304,15 +382,18 @@ async function search(url, request, env) {
   const bufs = (await Promise.all(reads)).filter(Boolean);
 
   // Stage 1: Hamming scan over the binary codes; keep the top candidates.
+  // Filtered rows drop here, before either ranking tier sees them, so
+  // top-K is computed within the filter.
   const rowBytes = manifest.row_bytes;
   const rerankTop = manifest.rerank_top || 200;
   const cands = [];
   for (const buf of bufs) {
     const bytes = new Uint8Array(buf);
     for (let off = 0; off + rowBytes <= bytes.length; off += rowBytes) {
+      if (filter && !rowPasses(filter, bytes, off)) continue;
       let dist = 0;
       for (let i = 0; i < CODE_BYTES; i++)
-        dist += popcnt[bytes[off + META_BYTES + i] ^ qbits[i]];
+        dist += popcnt[bytes[off + metaBytes + i] ^ qbits[i]];
       cands.push({ dist, bytes, off });
     }
   }
@@ -328,7 +409,7 @@ async function search(url, request, env) {
   qn = Math.sqrt(qn) || 1;
   for (let d = 0; d < RD; d++) q512[d] = vec[d] / qn;
   for (const c of cands) {
-    const scaleOff = c.off + META_BYTES + CODE_BYTES;
+    const scaleOff = c.off + metaBytes + CODE_BYTES;
     const scale = f16One(c.bytes, scaleOff);
     let dot = 0;
     const base = scaleOff + 2;
@@ -341,15 +422,30 @@ async function search(url, request, env) {
   }
   cands.sort((a, b) => b.score - a.score);
 
+  const named = (list, ord) =>
+    (ord === undefined || ord >= 254) ? null : (list && list[ord]) || null;
   return json(env, {
     q,
-    results: cands.slice(0, TOPK).map(c => ({
-      id: rowIdHex(c.bytes, c.off),
-      kind: c.bytes[c.off + 12],
-      s: c.bytes[c.off + 13],
-      set: manifest.set_slugs[c.bytes[c.off + 14] | (c.bytes[c.off + 15] << 8)] || null,
-      score: Math.round(c.score * 1000) / 1000,
-    })),
+    filtered: !!filter,
+    results: cands.slice(0, TOPK).map(c => {
+      const off = c.off, b = c.bytes;
+      const setOrd = b[off + 14] | (b[off + 15] << 8);
+      const out = {
+        id: rowIdHex(b, off),
+        kind: b[off + 12],
+        s: b[off + 13],
+        set: manifest.set_slugs[setOrd] || null,
+        score: Math.round(c.score * 1000) / 1000,
+      };
+      if (metaBytes >= 20) {
+        out.cat = named(manifest.categories, b[off + 16]);
+        out.sub = named(manifest.subcategories, b[off + 17]);
+        out.alt = named(manifest.alternate_subcategories, b[off + 18]);
+        out.diff = b[off + 19] === ORD_NULL ? null : b[off + 19];
+        out.year = (manifest.set_years || [])[setOrd] || null;
+      }
+      return out;
+    }),
   });
 }
 

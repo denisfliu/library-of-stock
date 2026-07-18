@@ -1,9 +1,10 @@
-"""build_home.py — Generate index.html, the two-door portal homepage.
+"""build_home.py — Generate index.html, the three-door portal homepage.
 
-The site has two main destinations: the wiki (wiki.html, built by
-lib/build_index.py) and the reader (reader.html). This page is the front
-door linking both, plus quick links to authored overview pages and sweep
-sets. Stats are computed from the corpus at build time; question-corpus
+The site has three main destinations: the wiki (wiki.html, built by
+lib/build_index.py), the reader (reader.html), and semantic search
+(search.html, built by lib/render/build_search.py). This page is the
+front door linking them, plus quick links to authored overview pages and
+sweep sets. Stats are computed from the corpus at build time; question-corpus
 figures live in door copy only (the mirror isn't available in CI).
 
 Usage:
@@ -42,6 +43,7 @@ LAYOUT_SWITCH
   color-scheme: dark;
   PALETTE_VARS
   --accent: #e8b04a;
+  --search: #79c0a5;
   --sans: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   --serif: 'Linux Libertine', Georgia, serif;
 }
@@ -86,6 +88,7 @@ html[data-layout="mobile"] .quick a { padding: 0.25rem 0; }
 }
 .door.wiki .eyebrow { color: var(--wiki); }
 .door.reader .eyebrow { color: var(--accent); }
+.door.search .eyebrow { color: var(--search); }
 .door h2 { font-family: var(--serif); font-weight: normal; font-size: 1.7rem; color: var(--bright); }
 .door p { color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem; }
 .door ul { list-style: none; margin-top: 0.9rem; }
@@ -93,12 +96,14 @@ html[data-layout="mobile"] .quick a { padding: 0.25rem 0; }
 .door li::before { content: '·'; margin-right: 0.5rem; }
 .door.wiki li::before { color: var(--wiki); }
 .door.reader li::before { color: var(--accent); }
+.door.search li::before { color: var(--search); }
 .door .go {
   display: inline-block; margin-top: 1.1rem; font-size: 0.88rem; font-weight: 600;
   border: 1px solid var(--border); border-radius: 3px; padding: 0.4rem 1.05rem;
 }
 .door.wiki .go { color: var(--wiki); }
 .door.reader .go { color: var(--accent); }
+.door.search .go { color: var(--search); }
 .door:hover .go { border-color: var(--faint); }
 
 .below {
@@ -152,6 +157,18 @@ footer a { color: var(--muted); }
       <li>Every reveal links back to the wiki</li>
     </ul>
     <span class="go">Start reading &rarr;</span>
+  </a>
+  <a class="door search" href="search.html">
+    <div class="eyebrow">Look up</div>
+    <h2>Search</h2>
+    <p>Find clues by meaning, not keywords, across the whole corpus.</p>
+    <ul>
+      <li>Semantic search over 1.7M clue sentences</li>
+      <li>qbreader-style filters: category, difficulty, year, set</li>
+      <li>Matched sentence highlighted in its question</li>
+      <li>Shareable search URLs</li>
+    </ul>
+    <span class="go">Search the corpus &rarr;</span>
   </a>
 </div>
 

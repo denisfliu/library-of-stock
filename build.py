@@ -32,6 +32,7 @@ from lib.sweep.matcher import TopicMatcher
 from lib.build_index import build as build_index
 from lib.render.build_reader import build as build_reader
 from lib.render.build_home import build as build_home
+from lib.render.build_search import build as build_search
 from lib import validate
 from dev import build_changelog, build_crossrefs, build_stats
 
@@ -64,6 +65,7 @@ def main() -> None:
     build_index(analyses=analyses)
     build_reader()
     build_home(analyses=analyses)
+    build_search()
     validate.main(analyses=analyses, parse_errors=parse_errors)
     print("Done.")
 

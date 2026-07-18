@@ -512,6 +512,7 @@ html[data-layout="mobile"] .dropdown-panel {
 <div style="display:flex;justify-content:space-between;align-items:baseline;">
 <h1>Wiki</h1>
 <div style="display:flex;gap:0.5rem;align-items:center;">
+<a href="search.html" style="background:#1a1f25;color:#79c0a5;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.7rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;">Search &#x1f50d;</a>
 <a href="reader.html" style="background:#1a1f25;color:#6b9eff;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.7rem;font-size:0.78rem;text-decoration:none;white-space:nowrap;">Reader &#x1f6ce;</a>
 <div style="position:relative;" id="dev-menu">
   <button style="background:#1a1f25;color:#9aa0a7;border:1px solid #3a3f47;border-radius:4px;padding:0.25rem 0.7rem;font-size:0.78rem;cursor:pointer;white-space:nowrap;" onclick="var p=document.getElementById('dev-panel');p.style.display=p.style.display==='none'?'flex':'none'">Dev ▾</button>
