@@ -376,6 +376,10 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
         </label>
         <div class="hint">A recorded voice reads the question &mdash; its text stays hidden until the question is over, like a real moderator. The scope narrows to questions that have audio (being added over time). The wpm slider above only affects text reveal.</div>
       </div>
+      <label class="setting drilltoggle"><input type="checkbox" id="multibuzz"> Multiple buzzes</label>
+      <div id="multibuzzrow" style="display:none">
+        <div class="hint">A wrong answer doesn&rsquo;t end the question &mdash; reading resumes from your buzz and you can buzz again until it runs out. Your first wrong buzz still counts as a neg in stats.</div>
+      </div>
       <label class="setting drilltoggle"><input type="checkbox" id="drill"> Drill my weaknesses</label>
       <div id="drillrow" style="display:none">
         <label class="setting">Focus &mdash; <span class="val" id="focusval">balanced</span>

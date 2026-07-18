@@ -45,6 +45,7 @@ python tests/golden/run_golden.py           # golden render test (--update to re
 node tests/answer_checker/run_tests.js      # reader answer-judging tests
 node tests/reader_facets/run_tests.js       # reader facet-filtering tests
 node tests/reader_audio/run_tests.js        # reader read-aloud queue restriction
+node tests/reader_multibuzz/run_tests.js    # reader multibuzz mode (neg -> resume -> rebuzz; one stats row)
 node tests/semsearch/run_tests.js           # semantic-search filter chain (page expansion + Worker row filter)
 ```
 
