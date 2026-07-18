@@ -28,6 +28,8 @@ const code = [
 const ctx = vm.createContext({
   console, Set, Map, Object, Array, JSON, Number, String, Math,
   ID2SLUG: new Map(), TOPICS: {}, eraOf: () => null,
+  // audio mode off for these tests — facet scoping is what's under test
+  audioMode: () => false, hasAudio: () => true,
 });
 vm.runInContext(code +
   '\n; globalThis.__api = { filters, rowInScope, refreshBranchScopes, pruneOrphanedPicks, setCAT: c => { CAT = c; } };',
