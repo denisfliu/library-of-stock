@@ -371,11 +371,10 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
       <div class="hint">Type how many final sentences to read (blank = full question) to drill giveaways and stock clues; earlier sentences stay hidden until you ask.</div>
       <label class="setting drilltoggle" id="voicetoggle"><input type="checkbox" id="voice"> Read aloud (voice)</label>
       <div id="voicerow" style="display:none">
-        <select id="voicesel" class="scopesel" style="width:100%;margin-bottom:0.35rem"></select>
         <label class="setting">Voice speed &mdash; <span class="val" id="vrateval"></span>
-          <input type="range" id="vrate" min="0.6" max="1.8" step="0.05">
+          <input type="range" id="vrate" min="0.6" max="1.6" step="0.05">
         </label>
-        <div class="hint">The question is spoken &mdash; its text stays hidden until the question is over, like a real moderator. Voices come from your device; the wpm slider above only affects text reveal.</div>
+        <div class="hint">A recorded voice reads the question &mdash; its text stays hidden until the question is over, like a real moderator. The scope narrows to questions that have audio (being added over time). The wpm slider above only affects text reveal.</div>
       </div>
       <label class="setting drilltoggle"><input type="checkbox" id="drill"> Drill my weaknesses</label>
       <div id="drillrow" style="display:none">

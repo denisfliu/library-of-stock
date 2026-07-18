@@ -42,6 +42,7 @@ python lib/embed/build_search_index.py      # stage online clue-search index for
 python tests/golden/run_golden.py           # golden render test (--update to rebless)
 node tests/answer_checker/run_tests.js      # reader answer-judging tests
 node tests/reader_facets/run_tests.js       # reader facet-filtering tests
+node tests/reader_audio/run_tests.js        # reader read-aloud queue restriction
 ```
 
 ## Deferred improvements (roadmap for future sessions)
