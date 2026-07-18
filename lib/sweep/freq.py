@@ -7,7 +7,6 @@ answerline, and print a table the authoring agent works from.
 Usage:
     python lib/sweep/freq.py american_literature
     python lib/sweep/freq.py film --threshold 8 --appendix-threshold 3
-    python lib/sweep/freq.py biology --refresh
 
 Exit table columns: frequency | tier | match status | answer -> topic.
 """
@@ -34,8 +33,7 @@ def build_freq_table(unit_slug: str, threshold: int = DEFAULT_THRESHOLD,
                      appendix_threshold: int = DEFAULT_APPENDIX_THRESHOLD,
                      difficulties: list[int] | None = None,
                      min_year: int = DEFAULT_MIN_YEAR,
-                     limit: int = DEFAULT_FREQ_LIMIT,
-                     refresh: bool = False) -> dict:
+                     limit: int = DEFAULT_FREQ_LIMIT) -> dict:
     """Fetch + match a unit's frequency list.
 
     Returns {unit, freq_source, curated, appendix} where curated and
@@ -48,8 +46,7 @@ def build_freq_table(unit_slug: str, threshold: int = DEFAULT_THRESHOLD,
     difficulties = difficulties or DEFAULT_DIFFICULTIES
 
     data = fetch_frequency_list(unit.freq_params, difficulties=difficulties,
-                                min_year=min_year, limit=limit,
-                                use_cache=not refresh)
+                                min_year=min_year, limit=limit)
     matcher = TopicMatcher()
 
     curated, appendix = [], []
@@ -90,8 +87,6 @@ def main():
     ap.add_argument('--appendix-threshold', type=int,
                     default=DEFAULT_APPENDIX_THRESHOLD)
     ap.add_argument('--limit', type=int, default=DEFAULT_FREQ_LIMIT)
-    ap.add_argument('--refresh', action='store_true',
-                    help='bypass the frequency-list cache')
     ap.add_argument('--json', action='store_true',
                     help='dump the full table as JSON instead of text')
     ap.add_argument('--out', metavar='FILE',
@@ -101,7 +96,7 @@ def main():
 
     table = build_freq_table(args.unit, threshold=args.threshold,
                              appendix_threshold=args.appendix_threshold,
-                             limit=args.limit, refresh=args.refresh)
+                             limit=args.limit)
 
     if args.out:
         import json

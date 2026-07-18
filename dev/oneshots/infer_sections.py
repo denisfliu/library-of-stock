@@ -18,8 +18,8 @@ mechanical index, Wikidata, or the LLM. Results are written to the KB
 shards (source="inferred"), so publish picks them up like any other KB
 section. Re-derivable and incremental.
 
-    python lib/sweep/infer_sections.py UNIT [--min-weight N]
-    python lib/sweep/infer_sections.py --all
+    python dev/oneshots/infer_sections.py UNIT [--min-weight N]
+    python dev/oneshots/infer_sections.py --all
 """
 import argparse
 import json

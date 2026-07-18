@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from lib.common import CACHE_DIR, OUTPUT_DIR
+from lib.common import OUTPUT_DIR, topic_slug
 from lib.pipeline.digest import format_digest
 from lib.pipeline.fetch import fetch_topic, fetch_text_mentions
 from lib.pipeline.parse import parse_answer_clues, parse_text_mention_clues
@@ -219,24 +219,21 @@ def main():
         clue_filename = "mentions_clues.txt" if mentions_mode else "clues.txt"
     else:
         # No outdir — derive directory from search term (legacy/work-subquery behavior)
-        safe_name = topic.strip().lower().replace(" ", "_")
+        safe_name = topic_slug(topic)
         topic_dir = OUTPUT_DIR / safe_name
         topic_dir.mkdir(parents=True, exist_ok=True)
         clue_filename = f"{safe_name}_mentions_clues.txt" if mentions_mode else f"{safe_name}_clues.txt"
 
-    # Query results cache to gitignored cache/topics/; the committed
-    # record is the topic's questions_ref.json (text stays in the mirror).
-    fetch_cache = CACHE_DIR / "topics"
     if mentions_mode:
         # Text mention search
         data = fetch_text_mentions(topic, difficulties=diffs, categories=categories,
-                                   min_year=min_year, cache_dir=fetch_cache)
+                                   min_year=min_year)
         parsed = parse_text_mention_clues(data)
         output = format_text_mentions_for_analysis(parsed)
     else:
         # Standard answerline search
         data = fetch_topic(topic, difficulties=diffs, categories=categories,
-                           min_year=min_year, cache_dir=fetch_cache)
+                           min_year=min_year)
         parsed = parse_answer_clues(data)
         output = format_clues_for_analysis(parsed)
     record_fetch(topic_dir, data, mentions=mentions_mode)

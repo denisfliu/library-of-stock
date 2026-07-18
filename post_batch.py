@@ -7,7 +7,8 @@ Usage:
 
 Steps:
   1. Rebuild cross-ref index (lib/crossref/crossref.py)
-  2. Deterministic crossref backfill (lib/crossref/backfill_crossrefs.py)
+  2. Deterministic crossref relink + related-topics inference
+     (lib/crossref/relink.py, lib/crossref/infer.py)
   3. Print card-agent prompts (chunked topics; agents follow the /cards skill)
   4. Print the crossref-agent prompt (follows the /crossref skill)
 

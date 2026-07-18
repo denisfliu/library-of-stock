@@ -12,7 +12,7 @@ Purely subtractive: ids whose mirror row no longer matches are dropped;
 nothing is re-queried, so no new ids appear. Ids missing from the mirror
 are kept (conservative). Default is a dry-run report; --apply writes.
 
-Usage: python lib/pipeline/repair_refs.py [--apply] [--verbose]
+Usage: python dev/oneshots/repair_refs.py [--apply] [--verbose]
 """
 import argparse
 import json

@@ -37,10 +37,16 @@ python lib/mirror/publish.py --upload       # export + upload reader data artifa
 python lib/crossref/relink.py               # re-derive mechanical cross_refs (+ candidates queue)
 python lib/crossref/infer.py                # related-topics from question co-mentions (mirror)
 python lib/audio/soundbites.py search "..." # find Commons audio for soundbites.json
+python lib/embed/embed_corpus.py tossups|bonuses|topics  # (re)embed into mirror/embeddings.sqlite (resumable)
+python lib/embed/build_search_index.py      # stage online clue-search index for R2 (--eval-only to check recall)
+python tests/golden/run_golden.py           # golden render test (--update to rebless)
+node tests/answer_checker/run_tests.js      # reader answer-judging tests
+node tests/reader_facets/run_tests.js       # reader facet-filtering tests
 ```
 
 ## Deferred improvements (roadmap for future sessions)
 
+- **July 2026 audit cleanup — remaining items** (junk removal, cache plumbing, one-shot relocation to `dev/oneshots/`, and nav/search-nav CSS hoisting into `theme.py` are done): (1) unify the answerline normalizers (`sweep/answerlines.normalize` vs `mirror/publish.norm_ans`, both mirroring reader.js `normAns`) and the era-bucket thresholds (`sweep/wikidata.py` / `sweep/answerline_kb.py` / `reader.js`); (2) extract the embedded client JS in `build_index.py` and `render_cards.py` into `lib/js/` files; (3) add a single local test runner wrapping the three suites; (4) consider renaming `lib/questions_store.py` (now just live refs helpers) to stop signaling the retired store.
 - **Template consolidation**: the renderers embed large HTML/CSS strings; shared CSS lives in `lib/render/theme.py`. Long-term, move page templates to Jinja2 files.
 - **`getCardImages` is triplicated** — `lib/render/render_cards.py` (Python `_synthesize_image_cards`), its embedded JS, and `lib/js/anki_export.js`. Any card-image schema change needs all three.
 - **Broaden the golden render test**: `tests/golden/` (run in CI before every deploy) covers stock/cards/questions/overview/sweep/topic_index. Not yet covered: `index.html` (embeds stock.html mtimes — needs date normalization) and the dev dashboards.

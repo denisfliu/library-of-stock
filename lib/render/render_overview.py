@@ -37,7 +37,7 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
 from lib.common import anchor_slug
 from lib.render.theme import (LEAFLET_TAGS, base_css, layout_switch_script,
-                              mobile_core_css)
+                              mobile_core_css, nav_bar_css, search_nav_css)
 from lib.sweep.answerlines import normalize
 
 UNPLACED_TITLE = 'Uncategorized'
@@ -485,55 +485,8 @@ a.entry-name:hover {{ text-decoration: none; border-bottom-style: solid; }}
 .appendix-item {{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
 .appendix-item a {{ color: #6b9eff; text-decoration: none; }}
 .appendix-item a:hover {{ text-decoration: underline; }}
-.nav-bar {{
-    margin-bottom: 0.8rem;
-    font-size: 0.85rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-}}
-.nav-links {{ display: flex; gap: 0.3rem; align-items: center; }}
-/* search nav (house style) */
-.search-nav {{ display: inline-block; }}
-.search-nav-row {{ display: flex; gap: 0.3rem; align-items: center; }}
-.search-nav-input-wrap {{ position: relative; }}
-.search-nav-input {{
-    width: 160px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
-    background: #15191e; color: #c8ccd1;
-    border: 1px solid #3a3f47; border-radius: 3px;
-    outline: none; font-family: inherit;
-}}
-.search-nav-input:focus {{ border-color: #6b9eff; width: 220px; }}
-.search-nav-input::placeholder {{ color: #555; }}
-.search-nav-dropdown {{
-    display: none; position: absolute; top: 100%; right: 0;
-    margin-top: 0.2rem; background: #1a1f25;
-    border: 1px solid #3a3f47; border-radius: 4px;
-    min-width: 280px; max-height: 350px; overflow-y: auto;
-    z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}}
-.search-nav-dropdown.open {{ display: block; }}
-.search-nav-result {{
-    display: flex; justify-content: space-between; align-items: baseline;
-    padding: 0.4rem 0.6rem; color: #c8ccd1; text-decoration: none;
-    font-size: 0.85rem; border-bottom: 1px solid #2a2f37;
-}}
-.search-nav-result:last-child {{ border-bottom: none; }}
-.search-nav-result:hover, .search-nav-result.active {{ background: #262d37; }}
-.search-nav-result-name {{ color: #6b9eff; }}
-.search-nav-result-cat {{
-    font-size: 0.72rem; color: #808790;
-    margin-left: 0.5rem; white-space: nowrap;
-}}
-.search-nav-empty {{ padding: 0.6rem; color: #555; font-size: 0.82rem; font-style: italic; }}
-.search-nav-random {{
-    background: #1a1f25; border: 1px solid #3a3f47; border-radius: 3px;
-    color: #9aa0a7; font-size: 0.85rem; cursor: pointer;
-    padding: 0.2rem 0.4rem; line-height: 1;
-}}
-.search-nav-random:hover {{ background: #262d37; color: #c8ccd1; border-color: #6b9eff; }}
+{nav_bar_css()}
+{search_nav_css()}
 {mobile_core_css()}
 html[data-layout="mobile"] .toc {{ display: block; }}
 html[data-layout="mobile"] .entry-sublist {{ margin-left: 1.2rem; }}

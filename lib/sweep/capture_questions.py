@@ -15,7 +15,7 @@ The overview page shows a per-entry "N q" button when the entry's
 normalized answerline has captured questions (see render_overview.py).
 
 Usage:
-    python lib/sweep/capture_questions.py opera [--refresh]
+    python lib/sweep/capture_questions.py opera
     python lib/sweep/capture_questions.py opera --show "soldiers"
 
 --show prints the captured question texts for one answerline — for
@@ -53,12 +53,12 @@ def ref_text(ref: dict, store: dict) -> dict | None:
             'diff': doc.get('difficulty', '')}
 
 
-def capture(unit_slug: str, refresh: bool = False) -> None:
+def capture(unit_slug: str) -> None:
     unit = UNITS_BY_SLUG.get(unit_slug)
     if unit is None:
         raise SystemExit(f'Unknown unit {unit_slug!r}')
 
-    data = fetch_unit_questions(unit.freq_params, use_cache=not refresh)
+    data = fetch_unit_questions(unit.freq_params)
 
     grouped: dict[str, list] = {}
 
@@ -128,11 +128,10 @@ def show(unit_slug: str, answerline: str) -> None:
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('unit')
-    ap.add_argument('--refresh', action='store_true')
     ap.add_argument('--show', metavar='ANSWERLINE',
                     help='print captured question texts for one answerline')
     args = ap.parse_args()
     if args.show:
         show(args.unit, args.show)
     else:
-        capture(args.unit, refresh=args.refresh)
+        capture(args.unit)

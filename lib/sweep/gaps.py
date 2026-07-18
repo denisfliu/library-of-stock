@@ -85,8 +85,7 @@ def resolve_units(target: str | None, all_units: bool) -> list:
         + ', '.join(sorted({u.category for u in UNITS})))
 
 
-def build_gap_report(units: list, floor: int = DEFAULT_FLOOR,
-                     refresh: bool = False) -> dict:
+def build_gap_report(units: list, floor: int = DEFAULT_FLOOR) -> dict:
     """Collect unmatched curated answerlines >= floor across units.
 
     Returns {floor, units: [slug...], topics: [...], places: [...]} with
@@ -95,7 +94,7 @@ def build_gap_report(units: list, floor: int = DEFAULT_FLOOR,
     """
     topics, places = [], []
     for unit in units:
-        table = build_freq_table(unit.slug, refresh=refresh)
+        table = build_freq_table(unit.slug)
         for r in table['curated']:
             if r['frequency'] < floor or r['match']['status'] != 'unmatched':
                 continue
@@ -116,14 +115,14 @@ def build_gap_report(units: list, floor: int = DEFAULT_FLOOR,
     }
 
 
-def print_summary(units: list, refresh: bool = False):
+def print_summary(units: list):
     """Per-unit tier table (>=25 / >=15 / >=10 / >=5 unmatched counts)."""
     tiers = (25, 15, 10, 5)
     header = ' '.join(f'>={t:<3}' for t in tiers)
     print(f"{'unit':<24} {'category':<16} {header}")
     totals = [0] * len(tiers)
     for unit in units:
-        table = build_freq_table(unit.slug, refresh=refresh)
+        table = build_freq_table(unit.slug)
         un = [r['frequency'] for r in table['curated']
               if r['match']['status'] == 'unmatched']
         counts = [sum(1 for f in un if f >= t) for t in tiers]
@@ -145,8 +144,6 @@ def main():
                     help='cap each section at N rows (0 = no cap)')
     ap.add_argument('--summary', action='store_true',
                     help='per-unit tier counts instead of the ranked list')
-    ap.add_argument('--refresh', action='store_true',
-                    help='bypass the frequency-list cache')
     ap.add_argument('--json', action='store_true',
                     help='dump the report as JSON instead of text')
     ap.add_argument('--out', metavar='FILE',
@@ -158,10 +155,10 @@ def main():
     units = resolve_units(args.target, args.all)
 
     if args.summary:
-        print_summary(units, refresh=args.refresh)
+        print_summary(units)
         return
 
-    report = build_gap_report(units, floor=args.floor, refresh=args.refresh)
+    report = build_gap_report(units, floor=args.floor)
     if args.top:
         report['topics'] = report['topics'][:args.top]
         report['places'] = report['places'][:args.top]

@@ -72,6 +72,76 @@ body {{
 }}"""
 
 
+def nav_bar_css() -> str:
+    """Top nav-bar row shared by stock, overview, and sweep pages.
+    Markup: <div class="nav-bar"><div class="nav-links">...</div>...</div>.
+    Page-specific extensions (overflow menu on stock pages) stay local."""
+    p = PALETTE
+    return f"""
+/* --- nav bar (theme.nav_bar_css) --- */
+.nav-bar {{
+    margin-bottom: 0.8rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}}
+.nav-bar a {{ color: {p['link']}; text-decoration: none; }}
+.nav-bar a:hover {{ text-decoration: underline; }}
+.nav-links {{ display: flex; gap: 0.3rem; align-items: center; }}
+"""
+
+
+def search_nav_css(z_index: int = 200) -> str:
+    """Search box + dropdown + random button (pairs with lib/js/search_nav.js).
+    z_index must clear the page's own stacking contexts (sweep passes 1200
+    to sit above the Leaflet map panes)."""
+    p = PALETTE
+    return f"""
+/* --- search nav (theme.search_nav_css) --- */
+.search-nav {{ display: inline-block; }}
+.search-nav-row {{ display: flex; gap: 0.3rem; align-items: center; }}
+.search-nav-input-wrap {{ position: relative; }}
+.search-nav-input {{
+    width: 160px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+    background: {p['bg_input']}; color: {p['text']};
+    border: 1px solid {p['border']}; border-radius: 3px;
+    outline: none; font-family: inherit;
+}}
+.search-nav-input:focus {{ border-color: {p['link']}; width: 220px; }}
+.search-nav-input::placeholder {{ color: #555; }}
+.search-nav-dropdown {{
+    display: none; position: absolute; top: 100%; right: 0;
+    margin-top: 0.2rem; background: {p['bg_raised']};
+    border: 1px solid {p['border']}; border-radius: 4px;
+    min-width: 280px; max-height: 350px; overflow-y: auto;
+    z-index: {z_index}; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}}
+.search-nav-dropdown.open {{ display: block; }}
+.search-nav-result {{
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 0.4rem 0.6rem; color: {p['text']}; text-decoration: none;
+    font-size: 0.85rem; border-bottom: 1px solid #2a2f37;
+}}
+.search-nav-result:last-child {{ border-bottom: none; }}
+.search-nav-result:hover, .search-nav-result.active {{ background: #262d37; }}
+.search-nav-result-name {{ color: {p['link']}; }}
+.search-nav-result-cat {{
+    font-size: 0.72rem; color: {p['text_faint']};
+    margin-left: 0.5rem; white-space: nowrap;
+}}
+.search-nav-empty {{ padding: 0.6rem; color: #555; font-size: 0.82rem; font-style: italic; }}
+.search-nav-random {{
+    background: {p['bg_raised']}; border: 1px solid {p['border']}; border-radius: 3px;
+    color: {p['text_muted']}; font-size: 0.85rem; cursor: pointer;
+    padding: 0.2rem 0.4rem; line-height: 1;
+}}
+.search-nav-random:hover {{ background: #262d37; color: {p['text']}; border-color: {p['link']}; }}
+"""
+
+
 # --- Mobile layout mode -------------------------------------------------
 #
 # Pages carry two genuinely distinct layouts selected at runtime: a tiny

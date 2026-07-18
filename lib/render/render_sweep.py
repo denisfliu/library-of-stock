@@ -18,7 +18,7 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
 from lib.questions_store import shard_slug
 from lib.render.theme import (LEAFLET_TAGS, base_css, layout_switch_script,
-                              mobile_core_css)
+                              mobile_core_css, nav_bar_css, search_nav_css)
 
 
 def render_sweep(set_data: dict, out_path: str | _Path) -> _Path:
@@ -60,16 +60,7 @@ def render_sweep(set_data: dict, out_path: str | _Path) -> _Path:
 <title>Sweep: {set_name}</title>
 <style>
 {base_css(max_width='900px')}
-.nav-bar {{
-    margin-bottom: 0.8rem;
-    font-size: 0.85rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-}}
-.nav-links {{ display: flex; gap: 0.3rem; align-items: center; }}
+{nav_bar_css()}
 .coverage-bar {{
     background: #1a1f25;
     border: 1px solid #3a3f47;
@@ -215,45 +206,7 @@ h3.subgroup-head {{
     border: 1px solid #3a3f47;
 }}
 .leaflet-popup-content a {{ color: #6b9eff; text-decoration: none; }}
-/* search nav (house style) */
-.search-nav {{ display: inline-block; }}
-.search-nav-row {{ display: flex; gap: 0.3rem; align-items: center; }}
-.search-nav-input-wrap {{ position: relative; }}
-.search-nav-input {{
-    width: 160px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
-    background: #15191e; color: #c8ccd1;
-    border: 1px solid #3a3f47; border-radius: 3px;
-    outline: none; font-family: inherit;
-}}
-.search-nav-input:focus {{ border-color: #6b9eff; width: 220px; }}
-.search-nav-input::placeholder {{ color: #555; }}
-.search-nav-dropdown {{
-    display: none; position: absolute; top: 100%; right: 0;
-    margin-top: 0.2rem; background: #1a1f25;
-    border: 1px solid #3a3f47; border-radius: 4px;
-    min-width: 280px; max-height: 350px; overflow-y: auto;
-    z-index: 1200; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-}}
-.search-nav-dropdown.open {{ display: block; }}
-.search-nav-result {{
-    display: flex; justify-content: space-between; align-items: baseline;
-    padding: 0.4rem 0.6rem; color: #c8ccd1; text-decoration: none;
-    font-size: 0.85rem; border-bottom: 1px solid #2a2f37;
-}}
-.search-nav-result:last-child {{ border-bottom: none; }}
-.search-nav-result:hover, .search-nav-result.active {{ background: #262d37; }}
-.search-nav-result-name {{ color: #6b9eff; }}
-.search-nav-result-cat {{
-    font-size: 0.72rem; color: #808790;
-    margin-left: 0.5rem; white-space: nowrap;
-}}
-.search-nav-empty {{ padding: 0.6rem; color: #555; font-size: 0.82rem; font-style: italic; }}
-.search-nav-random {{
-    background: #1a1f25; border: 1px solid #3a3f47; border-radius: 3px;
-    color: #9aa0a7; font-size: 0.85rem; cursor: pointer;
-    padding: 0.2rem 0.4rem; line-height: 1;
-}}
-.search-nav-random:hover {{ background: #262d37; color: #c8ccd1; border-color: #6b9eff; }}
+{search_nav_css(z_index=1200)}
 {mobile_core_css()}
 /* Mobile: question rows stack — label + category on a faint first line,
    the answerline full-width underneath. */

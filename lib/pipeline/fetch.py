@@ -29,7 +29,6 @@ from lib.mirror import query as mirror_query
 
 API_BASE = "https://www.qbreader.org/api"
 RATE_LIMIT = 20  # max requests per second (api_* functions only)
-DEFAULT_CACHE_DIR = CACHE_DIR
 DEFAULT_MIN_YEAR = 2012
 # The mirror has no pagination cost, so return everything up to the
 # API-parity ceiling (the old 500 cap existed to limit HTTP payloads).
@@ -101,8 +100,6 @@ def fetch_topic(
     difficulties: list[int] | None = None,
     categories: list[str] | None = None,
     min_year: int = DEFAULT_MIN_YEAR,
-    use_cache: bool = True,  # kept for signature compatibility; the
-    cache_dir: Path | None = None,  # mirror makes disk caching moot
 ) -> dict:
     """
     Fetch answerline matches for a topic from the mirror.
@@ -115,8 +112,8 @@ def fetch_topic(
     # exact_phrase adds \b word boundaries. Without it the API's substring
     # match attributes foreign questions to the topic: "Hanson" ⊂ "Chanson
     # de Roland", "Edward I" ⊂ "Charles Edward Ives" / "Edward III". Found
-    # July 2026 via spurious related.json links; repair_refs.py cleaned the
-    # committed questions_ref.json files retroactively.
+    # July 2026 via spurious related.json links; dev/oneshots/repair_refs.py
+    # cleaned the committed questions_ref.json files retroactively.
     answer_data = query_page(
         query_string,
         search_type="answer",
@@ -138,8 +135,6 @@ def fetch_text_mentions(
     difficulties: list[int] | None = None,
     categories: list[str] | None = None,
     min_year: int = DEFAULT_MIN_YEAR,
-    use_cache: bool = True,
-    cache_dir: Path | None = None,
 ) -> dict:
     """
     Fetch questions where the topic appears in the text (but may not be
@@ -169,8 +164,6 @@ def fetch_frequency_list(
     question_type: str = "all",
     min_year: int = DEFAULT_MIN_YEAR,
     max_year: int | None = None,
-    use_cache: bool = True,
-    cache_dir: Path | None = None,
 ) -> dict:
     """
     Compute the most frequent answerlines for a category slice from the
@@ -239,8 +232,6 @@ def fetch_unit_questions(
     taxonomy: dict,
     difficulties: list[int] | None = None,
     min_year: int = DEFAULT_MIN_YEAR,
-    use_cache: bool = True,
-    cache_dir: Path | None = None,
     page_size: int = 1000,
 ) -> dict:
     """
@@ -304,26 +295,23 @@ def fetch_unit_questions(
     }
 
 
-def fetch_set_list(use_cache: bool = True, cache_dir: Path | None = None) -> list[str]:
+def fetch_set_list() -> list[str]:
     """List of all set names in the mirror (year desc, name asc — the
     API's ordering)."""
     return mirror_query.set_list(conn=_mirror())
 
 
-def fetch_num_packets(set_name: str, use_cache: bool = True,
-                      cache_dir: Path | None = None) -> int:
+def fetch_num_packets(set_name: str) -> int:
     """Number of packets in a set."""
     return mirror_query.num_packets(set_name, conn=_mirror())
 
 
-def fetch_packet(set_name: str, packet_number: int, use_cache: bool = True,
-                 cache_dir: Path | None = None) -> dict:
+def fetch_packet(set_name: str, packet_number: int) -> dict:
     """One packet (1-based) of a set from the mirror: {tossups, bonuses}."""
     return mirror_query.packet(set_name, packet_number, conn=_mirror())
 
 
-def fetch_set(set_name: str, use_cache: bool = True,
-              cache_dir: Path | None = None) -> dict:
+def fetch_set(set_name: str) -> dict:
     """
     Every packet of a set from the mirror.
 
@@ -406,7 +394,7 @@ def api_packet(set_name: str, packet_number: int, use_cache: bool = True,
                cache_dir: Path | None = None) -> dict:
     """One packet from the live API, cached under cache/sets/ so an
     interrupted sync resumes where it left off."""
-    cache_dir = Path(cache_dir) if cache_dir else DEFAULT_CACHE_DIR / "sets"
+    cache_dir = Path(cache_dir) if cache_dir else CACHE_DIR / "sets"
     cache_path = (cache_dir / _sanitize_filename(set_name)
                   / f"packet_{packet_number:02d}.json")
 

@@ -34,11 +34,11 @@ target wins, ties/none fall back to ``fallback`` (reported for review). A
 KB tail record (sparse) is scored over "display + movement + creator", then
 by ``eras`` against its era bucket; no signal -> Unsectioned.
 
-    python lib/sweep/split_sections.py apply UNIT [--reapply]
+    python dev/oneshots/split_sections.py apply UNIT [--reapply]
         Rewrite sections.txt from the snapshot + spec; print ambiguities.
-    python lib/sweep/split_sections.py kb UNIT
+    python dev/oneshots/split_sections.py kb UNIT
         Re-bucket the unit's answerline-KB sections the same way.
-    python lib/sweep/split_sections.py check UNIT
+    python dev/oneshots/split_sections.py check UNIT
         Dry-run apply: show the new section sizes + ambiguities only.
 """
 import argparse
