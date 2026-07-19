@@ -46,6 +46,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0, help="check only the first N existing files")
     ap.add_argument("--apply", action="store_true", help="delete flagged files (default: dry-run)")
+    ap.add_argument("--no-asr", action="store_true",
+                    help="skip the audio clip gate; detect only text-changed files (fast, "
+                         "no decode/whisper — the right sweep after a ttsclean change)")
+    ap.add_argument("--requeue", action="store_true",
+                    help="queue mode: reset flagged items that are 'done' back to 'todo' (and "
+                         "delete their stale file) so the fleet regenerates them — deleting "
+                         "alone won't, since the queue, not file-presence, drives generation")
     args = ap.parse_args()
 
     conn = sqlite3.connect(DB)
@@ -68,6 +75,8 @@ def main():
                 stored = None
         if stored != chunks:                 # (1) text changed (or no sidecar)
             changed.append((kind, qid, "no-sidecar" if stored is None else "text-changed"))
+        elif args.no_asr:                    # text matches and we're not clip-checking
+            ok += 1
         else:                                # (2) ASR gate on unchanged files
             if wm is None:
                 wm = ttsverify.load_whisper()
@@ -93,14 +102,41 @@ def main():
                   flush=True)
 
     flagged = changed + clipped
-    print(f"\n{'APPLY' if args.apply else 'DRY-RUN'}: {len(existing):,} checked | "
+    mode = "REQUEUE" if args.requeue else "APPLY" if args.apply else "DRY-RUN"
+    print(f"\n{mode}: {len(existing):,} checked | "
           f"{len(changed):,} text-changed | {len(clipped):,} clipped/babble | {ok:,} ok | "
           f"{len(flagged):,} to regenerate ({len(flagged)/max(1,len(existing))*100:.1f}%)", flush=True)
-    print("\nsample clip/babble flags:")
-    for kind, qid, why in clipped[:20]:
-        print(f"  {kind}/{qid}: {why}")
+    print("\nsample text-changed flags (old cleaning -> stale audio):")
+    for kind, qid, why in changed[:12]:
+        sc = out_path(kind, qid).with_suffix(".json")
+        was = ""
+        if sc.exists():
+            try:
+                was = " | ".join(json.loads(sc.read_text(encoding='utf-8')).get("texts", []))[:70]
+            except Exception:
+                pass
+        print(f"  {kind}/{qid} ({why}): {was!r}")
+    if clipped:
+        print("\nsample clip/babble flags:")
+        for kind, qid, why in clipped[:12]:
+            print(f"  {kind}/{qid}: {why}")
 
-    if args.apply:
+    if args.requeue:
+        # queue-aware: reset flagged items that the queue thinks are done back to
+        # todo, and delete the stale file, so the fleet regenerates them.
+        import ttsqueue
+        con = ttsqueue._connect()
+        done = {q for (q,) in con.execute("SELECT qid FROM items WHERE status='done'")}
+        reset = [(k, q) for k, q, _ in flagged if q in done]
+        con.executemany("UPDATE items SET status='todo', worker=NULL, lease=NULL WHERE qid=?",
+                        [(q,) for _, q in reset])
+        con.commit()
+        for kind, qid in reset:
+            out_path(kind, qid).unlink(missing_ok=True)
+            out_path(kind, qid).with_suffix(".json").unlink(missing_ok=True)
+        print(f"\nrequeued {len(reset):,} stale done-items to todo (of {len(flagged):,} flagged; "
+              f"the rest are already todo/claimed) — the fleet will regenerate them", flush=True)
+    elif args.apply:
         for kind, qid, _ in flagged:
             p = out_path(kind, qid)
             p.unlink(missing_ok=True)
