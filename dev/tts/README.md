@@ -16,7 +16,7 @@ realtime there vs ~1.7x on the laptop 4070.
 - Hosting: **Hugging Face public dataset** `<user>/qb-audio`
   (R2 free tier is only 10 GB and already ~1 GB used; HF gives effectively
   unlimited public-dataset storage with a CDN + CORS + Range support, all
-  verified). Reader will fetch `tossups|bonuses/{qid[:2]}/{qid}.opus`.
+  verified). Reader will fetch `tossups|bonuses/{qid[-2:]}/{qid}.opus`.
 
 ## Files
 - `ttsclean.py` — **single source of truth** for text cleaning (gen_tts imports
@@ -59,8 +59,11 @@ realtime there vs ~1.7x on the laptop 4070.
   the GPU (89%) and cancels the two-stream speedup (measured: 4.8x combined with
   full gating vs ~6.9x ungated); the post-run whisperX pass is the exhaustive
   mid-question clip net. Encodes to
-  Opus via ffmpeg, writes `out/{tossups,bonuses}/{qid[:2]}/{qid}.opus` (sharded
-  by ObjectId prefix, 256 buckets) plus a `{qid}.json` sidecar: `{"v":1,
+  Opus via ffmpeg, writes `out/{tossups,bonuses}/{qid[-2:]}/{qid}.opus` (sharded
+  by the LAST two hex chars — the ObjectId counter, uniform across 256 buckets;
+  the timestamp *prefix* is `62` for every qbreader id, which funneled all files
+  into one folder and hit HF's hard 10k-files-per-directory limit on July 19,
+  2026 — re-sharded + re-uploaded that day) plus a `{qid}.json` sidecar: `{"v":1,
   "chunks": [[start_s,end_s],...], "texts":[...]}` — exact per-chunk audio
   offsets + chunk texts (audio time → text position; the moderator tool's
   buzz-position source). The sidecar is written before the `.opus` lands, so a
@@ -154,7 +157,7 @@ uploader owns HF + the union manifest.
 ## Reader integration — DONE (July 17, 2026)
 The reader (`lib/js/reader.js`) plays this audio when "Read aloud" is on:
 - Base `https://huggingface.co/datasets/uild42/qb-audio/resolve/main`;
-  plays `tossups/{qid[:2]}/{qid}.opus` via a shared `<audio>` element.
+  plays `tossups/{qid[-2:]}/{qid}.opus` via a shared `<audio>` element.
 - Loads `audio_index.json` and RESTRICTS the queue to questions that have
   audio (`audioMode()`/`hasAudio()` gate in `rowInScope`) — so scope/facets/
   queue only show playable questions. Before the manifest loads, nothing is

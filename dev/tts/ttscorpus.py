@@ -76,4 +76,7 @@ def worklist(conn):
     return items
 
 def out_path(kind, qid):
-    return OUT / kind / qid[:2] / f"{qid}.opus"
+    # Shard on the LAST two hex chars (the ObjectId counter — uniform), not the
+    # first two: every qbreader id starts with "62" (2022 creation timestamp),
+    # which funneled all files into one directory and hit HF's 10k/dir limit.
+    return OUT / kind / qid[-2:] / f"{qid}.opus"

@@ -25,7 +25,7 @@ imported back, one source of truth, no copy drift.
 
 | Repo | Contents | Extracted from |
 |---|---|---|
-| `qb-core` | The contracts + shared engines: question ID + `qid[:2]` sharding scheme, answerline normalization, taxonomy ordinals, TTS text cleaning, the answer checker (vendored from qbreader, credited), and the reveal/pacing engine. Python + JS packages sharing golden test vectors. | `sweep/answerlines.py`, `mirror/publish.norm_ans`, reader.js `normAns` + reveal clock, `mirror/query.py` ordinals, `dev/tts/ttsclean.py`, `lib/js/answer_checker.js`, `tests/answer_checker/` (seed vectors) |
+| `qb-core` | The contracts + shared engines: question ID + `qid[-2:]` sharding scheme, answerline normalization, taxonomy ordinals, TTS text cleaning, the answer checker (vendored from qbreader, credited), and the reveal/pacing engine. Python + JS packages sharing golden test vectors. | `sweep/answerlines.py`, `mirror/publish.norm_ans`, reader.js `normAns` + reveal clock, `mirror/query.py` ordinals, `dev/tts/ttsclean.py`, `lib/js/answer_checker.js`, `tests/answer_checker/` (seed vectors) |
 | `qb-audio` | Dataset spec (layout, manifest, chunk-offset sidecar schema, cleaning contract), generation pipeline (any-TTS-backend, mirror as one input adapter), JS playback client (manifest gate, LRU prefetch, audio-clock→text-position via sidecars). | `dev/tts/`, audio parts of `lib/js/reader.js` |
 | `qb-moderator` | The game tool (below). | new + rooms.md design |
 

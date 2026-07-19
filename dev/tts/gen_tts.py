@@ -2,7 +2,7 @@
 
 Reads the qbreader mirror, synthesizes every diff 7-9 tossup and bonus with
 Chatterbox, encodes to Opus 24k mono, and writes to
-  out/{tossups,bonuses}/{qid[:2]}/{qid}.opus
+  out/{tossups,bonuses}/{qid[-2:]}/{qid}.opus
 plus a per-question sidecar {qid}.json with per-chunk [start_s, end_s]
 audio offsets and the chunk texts (synthesis is chunk-by-chunk, so offsets
 are exact — this is what maps a buzz's audio time to a text position).
