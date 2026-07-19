@@ -95,8 +95,8 @@ def main():
                     help="ssh host of the queue DB (empty = this machine hosts it)")
     ap.add_argument("--worker", default="",
                     help="worker id recorded in the queue (default: hostname)")
-    ap.add_argument("--queue-batch", type=int, default=100,
-                    help="items claimed per round in queue mode")
+    ap.add_argument("--queue-batch", type=int, default=30,
+                    help="items claimed per round in queue mode (small = fewer stranded on stop)")
     args = ap.parse_args()
 
     shard_i = shard_n = None
@@ -196,23 +196,28 @@ def main():
         qc = ttsqueue.Client(host=args.queue_host)
         print(f"queue mode: worker={worker!r} host={args.queue_host or 'local'} "
               f"batch={args.queue_batch}", flush=True)
+        FLUSH = 5   # mark completions in small groups, so an abrupt stop (a paused
+                    # machine) leaves at most this many generated items un-acked
         while True:
             batch = qc.claim(worker, args.queue_batch)
             if not batch:
                 print("queue drained", flush=True)
                 break
-            done = []
+            pending = []
             for kind, qid in batch:
                 entry = textmap.get(qid)
                 secs = synth(kind, qid, entry[1]) if entry else 0.0
                 if secs is not None:              # made or skipped -> done; error re-queues
-                    done.append((kind, qid))
+                    pending.append((kind, qid))
+                if len(pending) >= FLUSH:
+                    qc.complete(pending); pending = []
                 if secs:
                     made += 1
                     audio_secs += secs
                     if made % 25 == 0:
-                        progress(qc.stats().get("done", 0), sum(qc.stats().values()) or None)
-            qc.complete(done)
+                        st = qc.stats()
+                        progress(st.get("done", 0), sum(st.values()) or None)
+            qc.complete(pending)
             if args.limit and made >= args.limit:
                 print(f"hit --limit {args.limit}", flush=True)
                 break

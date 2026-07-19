@@ -39,7 +39,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ttscorpus import WORK, DB, worklist, out_path
 
 QUEUE_DB = WORK / "tts_queue.db"
-LEASE_S = 3600            # a claimed-but-not-completed item re-serves after this
+LEASE_S = 1800            # a claimed-but-not-completed item re-serves after this (30 min:
+                         # a paused/killed worker's in-flight items recover promptly)
 BUSY_MS = 30000          # wait up to this for the write lock instead of erroring
 
 # Default remote invocation (a worker on another machine reaching MSL's queue).

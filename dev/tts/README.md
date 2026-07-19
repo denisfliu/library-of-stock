@@ -100,13 +100,19 @@ realtime there vs ~1.7x on the laptop 4070.
   `setuptools<80` so perth's `pkg_resources` import works; plus `faster-whisper`
   for the ASR gate).
 - MSL hosts the queue and runs one worker. tmux: `tts` (generator), `upload`
-  (uploader). Launch:
+  (uploader), `sweep` (maintenance). Launch:
   `~/venvs/chatterbox-tts/bin/python ttsqueue.py init`   # once, seeds the queue
   `tmux new-session -d -s tts "~/venvs/chatterbox-tts/bin/python gen_tts.py --queue --worker msl >> gen.log 2>&1"`
   `tmux new-session -d -s upload "bash -c \"ulimit -n 65536 && ~/venvs/chatterbox-tts/bin/python upload_hf.py >> upload.log 2>&1\""`
+  `tmux new-session -d -s sweep "bash ~/los_tts/maintain.sh >> sweep.log 2>&1"`
   — the uploader NEEDS the raised fd limit: a fresh CommitScheduler's first
   push re-scans the whole out/ folder and blows past the default 1024 open
   files once the corpus is a few thousand files (hit July 18, 2026).
+- `maintain.sh` (the `sweep` session): every 30 min runs `ttsqueue.py reconcile`
+  (requeues items a stopped worker marked done but never synced), and every 4 h
+  also runs `verify_tts.py --no-asr --requeue` (requeues stale-text files). This
+  guarantees the end-of-run sweep happens on its own and keeps the fleet
+  self-healing as workers come and go.
 - Monitor: `ssh msl 'grep "made" ~/los_tts/gen.log | tail -1'`;
   queue: `ssh msl '~/venvs/chatterbox-tts/bin/python ~/los_tts/tts_queue... stats'`
   (`ttsqueue.py stats`).
@@ -130,13 +136,20 @@ uploader owns HF + the union manifest.
        `push_out.py --host msl`
      `--queue-host msl` routes claim/complete over `ssh msl` (needs passwordless
      ssh, or adjust `REMOTE_PY`/`REMOTE_SCRIPT` in ttsqueue.py). Each qid is served
-     once fleet-wide; a worker that dies has its in-flight batch re-served after
-     the 1 h lease. (Windows has no tmux — launch detached via `Start-Process
-     -WindowStyle Hidden`, and disable AC sleep so the box doesn't nap while AFK.)
-  4. **End-of-run reconcile**: `ttsqueue.py reconcile` on MSL resets to 'todo' any
-     'done' qid whose `.opus` isn't actually in MSL's out/ — closing the small
-     window where a worker marked an item done but died before push_out shipped
-     it. Run it once the queue reports drained, then let the fleet refill the gaps.
+     once fleet-wide. On **Windows** use `worker_ctl.ps1 start|stop|status`
+     (`powershell -ExecutionPolicy Bypass -File worker_ctl.ps1 <cmd>`) — it sets
+     the PATH, launches worker+push_out detached, and tracks PIDs; disable AC sleep
+     while running (`powercfg -change -standby-timeout-ac 0`).
+  4. **Fluid pause/resume**: just stop to pause, start to resume — nothing is lost.
+     Claims are small (batch 30) and completions flush every 5, so an abrupt stop
+     leaves at most a few items un-acked; those plus the unstarted rest of the
+     batch re-serve after the 30-min lease, and MSL's `sweep` loop reconciles
+     anything completed-but-unsynced. Worst case is re-doing a handful of items.
+  5. **Reconcile / end-of-run**: MSL's `sweep` loop already runs `ttsqueue.py
+     reconcile` every 30 min (resets to 'todo' any 'done' qid whose `.opus` isn't
+     in MSL's out/) and the text-sweep every 4 h — so gaps self-heal without
+     intervention. To force it: `ttsqueue.py reconcile` + `verify_tts.py --no-asr
+     --requeue` on MSL.
 
 ## Reader integration — DONE (July 17, 2026)
 The reader (`lib/js/reader.js`) plays this audio when "Read aloud" is on:
