@@ -57,18 +57,31 @@ def _connect():
 
 def init(reseed=False):
     """Create the queue and seed it from the mirror worklist, marking as done any
-    item already present in this host's out/. Idempotent; --reseed wipes first."""
+    item already present in this host's out/. Idempotent; --reseed wipes first.
+    Also seeds/backfills set_name per qid — claim() serves sets nearest 100%
+    tossup audio first, so the moderator's pickable-set list grows fastest."""
     con = _connect()
     if reseed:
         con.execute("DROP TABLE IF EXISTS items")
     con.execute("""CREATE TABLE IF NOT EXISTS items(
         qid TEXT PRIMARY KEY, kind TEXT NOT NULL,
-        status TEXT NOT NULL DEFAULT 'todo', worker TEXT, lease REAL)""")
+        status TEXT NOT NULL DEFAULT 'todo', worker TEXT, lease REAL,
+        set_name TEXT)""")
     con.execute("CREATE INDEX IF NOT EXISTS idx_status ON items(status)")
+    try:
+        con.execute("ALTER TABLE items ADD COLUMN set_name TEXT")   # pre-existing db
+    except sqlite3.OperationalError:
+        pass                                                        # already there
     mirror = sqlite3.connect(DB)
     wl = worklist(mirror)
-    con.executemany("INSERT OR IGNORE INTO items(qid, kind) VALUES(?, ?)",
-                    [(qid, kind) for kind, qid, _ in wl])
+    sets = dict(mirror.execute(
+        "SELECT id, set_name FROM tossups WHERE difficulty IN (7,8,9)"))
+    sets.update(mirror.execute(
+        "SELECT id, set_name FROM bonuses WHERE difficulty IN (7,8,9)"))
+    con.executemany("INSERT OR IGNORE INTO items(qid, kind, set_name) VALUES(?, ?, ?)",
+                    [(qid, kind, sets.get(qid)) for kind, qid, _ in wl])
+    con.executemany("UPDATE items SET set_name=? WHERE qid=? AND set_name IS NULL",
+                    [(sets.get(qid), qid) for kind, qid, _ in wl])
     done = [(qid,) for kind, qid, _ in wl if out_path(kind, qid).exists()]
     con.executemany("UPDATE items SET status='done' WHERE qid=? AND status!='done'", done)
     con.commit()
@@ -78,13 +91,24 @@ def init(reseed=False):
 
 
 def claim(worker, n):
-    """Atomically claim up to n todo (or lease-expired) items. Returns [(kind, qid)]."""
+    """Atomically claim up to n todo (or lease-expired) items. Returns [(kind, qid)].
+
+    Serve order finishes sets, not ids: sets with the fewest not-done tossups
+    first (a set whose tossups are all done ranks 0, so its bonuses lead),
+    tossups before bonuses within a set. Every finished set immediately becomes
+    pickable in the moderator's TTS-audio mode; ids without a set_name (not in
+    the current mirror — shouldn't happen after init) go last."""
     con = _connect()
     con.execute("BEGIN IMMEDIATE")             # take the write lock up front
     cutoff = time.time() - LEASE_S
     rows = con.execute(
-        "SELECT kind, qid FROM items WHERE status='todo' "
-        "OR (status='claimed' AND lease < ?) ORDER BY qid LIMIT ?",
+        "WITH remaining AS (SELECT set_name, COUNT(*) AS r FROM items "
+        "  WHERE kind='tossups' AND status!='done' GROUP BY set_name) "
+        "SELECT i.kind, i.qid FROM items i LEFT JOIN remaining USING(set_name) "
+        "WHERE i.status='todo' OR (i.status='claimed' AND i.lease < ?) "
+        "ORDER BY CASE WHEN i.set_name IS NULL THEN 1000000 "
+        "  ELSE COALESCE(remaining.r, 0) END, "
+        "  i.kind DESC, i.set_name, i.qid LIMIT ?",
         (cutoff, n)).fetchall()
     now = time.time()
     con.executemany("UPDATE items SET status='claimed', worker=?, lease=? WHERE qid=?",

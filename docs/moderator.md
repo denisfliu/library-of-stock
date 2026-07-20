@@ -62,7 +62,12 @@ storage wiped) so codes recycle with no stale state; host mobile CSS
 pass (compact header, fitted point buttons, bottom-sheet dialogs).
 **v0.10**: upload-your-own-packets (.docx/.txt, each file = one
 packet, synthetic `up-*` qids, no TTS audio → auto-fallback);
-reading-mode select on its own set-sheet row. **v0.10.1**: parsing is
+reading-mode select on its own set-sheet row. **v0.10.2 July 19**: in
+TTS-audio mode the set picker lists only sets whose tossups ALL have
+audio (client-side pass over catalog tossup ids × audio_index qids;
+mode change re-renders the list; index fetch failure disables the
+filter and the per-question reveal fallback still covers gaps).
+**v0.10.1**: parsing is
 fully CLIENT-SIDE — Denis rejected the hosted-YAPP dependency; the
 vendored `app/vendor/qb_packet_parser.mjs` (qbreader's JS packet
 parser v1.2.2, ISC, ~2 MB lazy-loaded, mammoth bundled) parses in the

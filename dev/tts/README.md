@@ -84,8 +84,11 @@ realtime there vs ~1.7x on the laptop 4070.
   on the host machine). One Chatterbox stream saturates a GPU, so the way to go
   faster is more *machines*, each its own GPU, drawing from one queue.
   `init` seeds from the mirror (marking existing `out/` done); `claim`/`complete`
-  are atomic (BEGIN IMMEDIATE + busy timeout) with a 1 h lease so a crashed
-  worker's items re-serve. Transport is **SSH, not an HTTP port** (MSL is behind
+  are atomic (BEGIN IMMEDIATE + busy timeout) with a 30 min lease so a crashed
+  worker's items re-serve. **Claim order finishes sets** (July 19): items carry
+  `set_name` (seeded/backfilled at init) and claims serve the set with the
+  fewest not-done tossups first, tossups before bonuses — every finished set
+  immediately becomes pickable in qb-moderator's TTS-audio mode. Transport is **SSH, not an HTTP port** (MSL is behind
   the Stanford firewall): a remote worker runs `ssh msl python ttsqueue.py claim`,
   batched (~100 items/round) so the round-trip is negligible. `Client(host)`
   wraps local-vs-ssh for gen_tts. Self-test (atomicity/lease/drain): the queue
