@@ -34,6 +34,48 @@ tournament. Secrets are ~99-bit; packets are current-round-only via bucket
 links and never on public routes; bucket/admin pages are noindex +
 no-referrer. E2E: 41 checks.
 
+**Reader page (July 20, later session):** `app/read.html?b=<secret>` embeds
+MODAQ itself (npm `modaq` 1.41.1, MIT; 2 MB esbuild IIFE bundle committed at
+`app/js/read.bundle.js`, rebuilt via `npm run build:read`) preloaded through
+`ModaqControl` props: `packet` (current round, via `/b/:secret/packet`;
+`.docx` parsed in-browser by the public YAPP service — CORS `*`, verified —
+`.json` loaded directly), `players` (two teams the mod picks from the roster,
+new Worker route `GET /b/:secret/roster`, same 48h gate), `gameFormat`
+(tournament `settings.gameFormat`: acf / macf-powers / pace, set in the
+dashboard, served in bucket state), `persistState`+`storeName`, and
+`customExport` (type QBJ) whose handler uploads ONE `Round_N_A_B.qbtd.json`
+per game — `{qbj: <_round-stamped match>, game: <persisted MODAQ state>}` —
+halving files and requests vs the manual two-file flow; the mod never
+touches files. Consumers split it: the Worker stores/serves only the qbj
+half in the bundle and on `/pub` (the game half carries FULL PACKET TEXT —
+never public), `engine/qbj.matchPayload` unwraps it for stats/.yft, and the
+dashboard zip emits the derived bare `.qbj` so YellowFruit's ModaQ import
+still works. Manual two-file uploads via bucket.html work unchanged. MODAQ's hosted demo takes no
+URL params (verified against `modaq.github.io` source), which is why qb-td
+self-hosts the control. **Per-game links** (Denis's call, replacing an
+earlier shared round-keyed store he distrusted): starting a game mints an id
+into the URL (`?b=<secret>&g=<id>`) and its own storage pair
+(`qbtdMeta:<secret>:<id>` = {a,b,round,packet,t,room,started} +
+`qbtdGame:...` = MODAQ store). A game link resumes exactly its own game with
+ZERO network requests (meta + store hold everything, both validated before
+mounting — never a packet-less MODAQ); the room link always fetches fresh
+(state+packet+roster) and lists this device's in-progress games; packet
+re-uploads / round changes can't touch existing games by construction;
+fresh starts prune beyond the newest 8 games per room. Denis's intended
+usage is MANY mods sharing ONE link per tournament (same packet + roster) —
+supported by construction (game state is per-device), and duplicate
+coverage/re-exports are handled where it matters: `dedupeMatches` in
+`app/engine/stats.js` keeps only the latest upload per (round, team pair)
+— by fileId, else input order — applied inside `aggregate()` and to the
+`.yft` path (the raw zip stays complete); `MAX_FILES_PER_BUCKET` raised
+300→600 for whole-tournament buckets. So a re-export CORRECTS a game.
+Caveat: with one shared bucket the stats "room" column shows the bucket's
+name for every game — name the bucket accordingly. Traffic: 1 upload per
+export, no polling, bundle on GitHub Pages (zero Cloudflare). Pure helpers
+in `app/js/read_core.js` — 34 unit + 50 E2E checks. Not yet
+verified live: an in-browser game against the deployed Worker (needs the
+OAuth app + a redeploy: `npx wrangler deploy`, then Pages push).
+
 ## Original request (verbatim)
 
 > after you deploy, i'd like to develop a new tool. this one is for tournament
