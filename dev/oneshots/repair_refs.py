@@ -21,8 +21,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import OUTPUT_DIR, write_json_if_changed
-from lib.mirror import db as mirror_db
-from lib.mirror.query import _compile_words, _matches
+from qbmirror import db as mirror_db
+from qbmirror.query import _compile_words, _matches
 
 
 def _texts_for(row, kind: str, mentions: bool) -> list[str]:

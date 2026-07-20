@@ -36,6 +36,13 @@ SETS_DIR = OUTPUT_DIR / '_sets'
 OVERRIDES_FILE = OUTPUT_DIR / 'answerline_overrides.json'
 CROSSREF_OVERRIDES_FILE = OUTPUT_DIR / 'crossref_overrides.json'
 
+# Point the qb-mirror package (github.com/qbsuite/qb-mirror) at this
+# repo's mirror + cache. setdefault so an explicit env override (or the
+# golden test's STOCK_ROOT sandbox exporting its own) still wins; the
+# values must be set before any qbmirror.db.open_db() with no path.
+os.environ.setdefault('QBMIRROR_DB', str(MIRROR_DIR / 'qbreader.sqlite'))
+os.environ.setdefault('QBMIRROR_CACHE', str(CACHE_DIR))
+
 
 def file_lock(path: Path) -> FileLock:
     """Exclusive cross-process lock. Use as a context manager.

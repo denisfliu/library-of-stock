@@ -2,17 +2,19 @@
 fetch.py — Question data access for the pipeline.
 
 Since July 2026 every query is answered from the local qbreader mirror
-(mirror/qbreader.sqlite — see lib/mirror/), not the live API: topic
-fetches, text mentions, frequency lists, unit sweeps, set/packet reads
-all work offline and without rate limits. Result shapes are unchanged
-from the API era, and lib/mirror/query.py replicates the API's search
-semantics exactly (verified against live results at cutover).
+(mirror/qbreader.sqlite — the qb-mirror package, extracted to
+github.com/qbsuite/qb-mirror), not the live API: topic fetches, text
+mentions, frequency lists, unit sweeps, set/packet reads all work
+offline and without rate limits. Result shapes are unchanged from the
+API era, and qbmirror.query replicates the API's search semantics
+exactly (verified against live results at cutover, and re-verified
+byte-identical at package extraction).
 
-The live REST API is still used in exactly one place: lib/mirror/sync.py
-pulls new sets through the api_* functions at the bottom of this module.
-To pick up question *edits* inside already-mirrored sets, re-seed from a
-newer official backup (lib/mirror/import_backup.py) or run sync with
---refresh.
+The live REST API is used only by `qbmirror sync` (qbmirror.api) to
+pull new sets. To pick up question *edits* inside already-mirrored
+sets, re-seed from a newer official backup (`qbmirror import-backup`)
+or run sync with --refresh. lib/common sets QBMIRROR_DB/QBMIRROR_CACHE
+so the package finds the repo's mirror and cache.
 """
 import json
 import re
@@ -20,15 +22,11 @@ import sys as _sys
 import time
 from pathlib import Path
 
-import requests
-
 _sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from lib.common import CACHE_DIR
-from lib.mirror import db as mirror_db
-from lib.mirror import query as mirror_query
+import lib.common  # noqa: F401 — sets QBMIRROR_DB before qbmirror opens it
+from qbmirror import db as mirror_db
+from qbmirror import query as mirror_query
 
-API_BASE = "https://www.qbreader.org/api"
-RATE_LIMIT = 20  # max requests per second (api_* functions only)
 DEFAULT_MIN_YEAR = 2012
 # The mirror has no pagination cost, so return everything up to the
 # API-parity ceiling (the old 500 cap existed to limit HTTP payloads).
@@ -325,108 +323,6 @@ def fetch_set(set_name: str) -> dict:
     print(f"    {total_t} tossups, {total_b} bonuses")
     return {"set_name": set_name, "num_packets": num, "packets": packets}
 
-
-# ---------------------------------------------------------------------------
-# Live API access — used ONLY by lib/mirror/sync.py to pull new sets.
-# ---------------------------------------------------------------------------
-
-# Minimum interval between requests to stay under rate limit.
-MIN_INTERVAL = 1.0 / RATE_LIMIT + 0.01
-
-_last_request_time = 0.0
-
-
-def _rate_limited_get(url: str, params: dict, max_retries: int = 5) -> requests.Response:
-    """Make a GET request, respecting the rate limit. Retries on 503 with backoff."""
-    global _last_request_time
-    for attempt in range(max_retries):
-        elapsed = time.time() - _last_request_time
-        if elapsed < MIN_INTERVAL:
-            time.sleep(MIN_INTERVAL - elapsed)
-        _last_request_time = time.time()
-        resp = requests.get(url, params=params)
-        if resp.status_code == 503 and attempt < max_retries - 1:
-            wait = 2 ** attempt * 5  # 5, 10, 20, 40, 80 seconds
-            print(f"    503 error, retrying in {wait}s (attempt {attempt + 1}/{max_retries})...")
-            time.sleep(wait)
-            continue
-        resp.raise_for_status()
-        return resp
-
-
-def _sanitize_filename(name: str) -> str:
-    """Convert a set name into a safe cache filename."""
-    return re.sub(r'[^\w\-]', '_', name.strip().lower())
-
-
-def _load_cache(cache_path: Path) -> dict | list | None:
-    if cache_path.exists():
-        with open(cache_path, encoding='utf-8') as f:
-            return json.load(f)
-    return None
-
-
-def _write_cache(cache_path: Path, data) -> None:
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(cache_path, "w", encoding='utf-8') as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-
-
-def api_set_list() -> list[str]:
-    """Fetch the list of all set names from the live API (no cache —
-    the whole point is seeing new sets)."""
-    print("Fetching set list from qbreader API...")
-    resp = _rate_limited_get(f"{API_BASE}/set-list", {})
-    data = resp.json()
-    set_list = data.get("setList", data) if isinstance(data, dict) else data
-    print(f"    Got {len(set_list)} sets")
-    return set_list
-
-
-def api_num_packets(set_name: str) -> int:
-    """Number of packets in a set, from the live API."""
-    resp = _rate_limited_get(f"{API_BASE}/num-packets", {"setName": set_name})
-    data = resp.json()
-    return data["numPackets"] if isinstance(data, dict) else int(data)
-
-
-def api_packet(set_name: str, packet_number: int, use_cache: bool = True,
-               cache_dir: Path | None = None) -> dict:
-    """One packet from the live API, cached under cache/sets/ so an
-    interrupted sync resumes where it left off."""
-    cache_dir = Path(cache_dir) if cache_dir else CACHE_DIR / "sets"
-    cache_path = (cache_dir / _sanitize_filename(set_name)
-                  / f"packet_{packet_number:02d}.json")
-
-    if use_cache:
-        cached = _load_cache(cache_path)
-        if cached and (cached.get("tossups") or cached.get("bonuses")):
-            return cached
-
-    print(f"  Fetching packet {packet_number} of '{set_name}'...")
-    resp = _rate_limited_get(f"{API_BASE}/packet",
-                             {"setName": set_name, "packetNumber": packet_number})
-    data = resp.json()
-    _write_cache(cache_path, data)
-    return data
-
-
-def api_fetch_set(set_name: str, use_cache: bool = True,
-                  cache_dir: Path | None = None) -> dict:
-    """Every packet of a set from the live API (cached per packet).
-
-    Returns {set_name, num_packets, packets: [raw packet responses]}.
-    """
-    num = api_num_packets(set_name)
-    print(f"Fetching set '{set_name}' ({num} packets)...")
-    packets = [
-        api_packet(set_name, n, use_cache=use_cache, cache_dir=cache_dir)
-        for n in range(1, num + 1)
-    ]
-    total_t = sum(len(p.get("tossups", [])) for p in packets)
-    total_b = sum(len(p.get("bonuses", [])) for p in packets)
-    print(f"    {total_t} tossups, {total_b} bonuses")
-    return {"set_name": set_name, "num_packets": num, "packets": packets}
 
 
 if __name__ == "__main__":

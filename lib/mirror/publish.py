@@ -38,8 +38,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import CATEGORIES_DIR, MIRROR_DIR, OUTPUT_DIR
-from lib.mirror import db as mirror_db
-from lib.mirror import query as mirror_query
+from qbmirror import db as mirror_db
+from qbmirror import query as mirror_query
 from lib.questions_store import shard_slug
 from lib.sweep.answerline_kb import KBLookup
 from lib.sweep.section_index import SectionIndex
@@ -289,8 +289,8 @@ def _docs_by_id(conn, catalog, ids: set[str]) -> dict[str, dict]:
     callers treat that as a fatal dangling ref."""
     docs = {}
     id_list = sorted(ids)
-    for table, doc_for, qtype in (("tossups", mirror_query._tossup_doc, "tossup"),
-                                  ("bonuses", mirror_query._bonus_doc, "bonus")):
+    for table, doc_for, qtype in (("tossups", mirror_query.tossup_doc, "tossup"),
+                                  ("bonuses", mirror_query.bonus_doc, "bonus")):
         for i in range(0, len(id_list), 900):
             chunk = id_list[i:i + 900]
             marks = ",".join("?" * len(chunk))
@@ -446,7 +446,7 @@ def stage_topics() -> int:
 
 
 def stage(conn) -> dict:
-    catalog = mirror_query._Catalog(conn)
+    catalog = mirror_query.Catalog(conn)
     slug_map = _unique_slugs(mirror_query.set_list(conn=conn))
     stage_sets(conn, catalog, slug_map)
     counts = stage_catalog_and_answerlines(conn, slug_map)

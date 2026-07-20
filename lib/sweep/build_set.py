@@ -202,8 +202,8 @@ def _r2_set_slug(set_name: str) -> str:
     the mirror's set list — available here because non-rematch builds
     always run on the machine with the mirror. Kept in set.json so CI
     rematch/render never needs the mirror."""
-    from lib.mirror import db as mirror_db
-    from lib.mirror import query as mirror_query
+    from qbmirror import db as mirror_db
+    from qbmirror import query as mirror_query
     from lib.mirror.publish import _unique_slugs
     conn = mirror_db.open_db()
     try:

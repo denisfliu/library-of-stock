@@ -4,7 +4,7 @@ The third top-level page (wiki, reader, search): free-text semantic
 search over every embedded tossup sentence and bonus part, with
 qbreader.org/db's filter set. All logic lives in lib/js/semsearch.js;
 this template supplies the shell and window.SEM_CFG — the canonical
-taxonomy lists from lib/mirror/query.py in list order, which IS the
+taxonomy lists from qbmirror.query in list order, which IS the
 ordinal contract shared with build_search_index.py and the Worker.
 
 The sync Worker URL is read from lib/js/sync.js at build time so the
@@ -19,7 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import ROOT
-from lib.mirror.query import (ALTERNATE_SUBCATEGORY_TO_CATEGORY,
+from qbmirror.query import (ALTERNATE_SUBCATEGORY_TO_CATEGORY,
                               CATEGORY_TO_ALTERNATE_SUBCATEGORIES,
                               CATEGORY_TO_SUBCATEGORY, CATEGORIES,
                               SUBCATEGORIES, ALTERNATE_SUBCATEGORIES,
@@ -142,8 +142,8 @@ html[data-layout="mobile"] .frow-label {{ min-width: 100%; }}
     <span id="whoami" style="color:#808790;font-size:0.8rem"></span>
 </div>
 <h1>Semantic Search</h1>
-<div class="tagline">Find clues by meaning, not keywords &mdash; every tossup
-sentence and bonus part ever asked, ranked by semantic similarity.</div>
+<div class="tagline">Every tossup sentence and bonus part ever asked,
+ranked by semantic similarity.</div>
 
 <div class="qrow">
     <input type="text" id="q" placeholder="e.g. a painter who cut off his ear"

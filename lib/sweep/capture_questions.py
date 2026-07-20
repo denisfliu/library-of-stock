@@ -108,12 +108,12 @@ def show(unit_slug: str, answerline: str) -> None:
         raise SystemExit(f'No captured questions for answerline {key!r}')
     # Resolve the refs against the mirror (API-shaped docs carry the
     # same field names ref_text reads).
-    from lib.mirror import db as mirror_db
-    from lib.mirror import query as mirror_query
+    from qbmirror import db as mirror_db
+    from qbmirror import query as mirror_query
     from lib.mirror.publish import _docs_by_id
     conn = mirror_db.open_db()
     try:
-        store = _docs_by_id(conn, mirror_query._Catalog(conn),
+        store = _docs_by_id(conn, mirror_query.Catalog(conn),
                             {r['id'] for r in refs if r.get('id')})
     finally:
         conn.close()

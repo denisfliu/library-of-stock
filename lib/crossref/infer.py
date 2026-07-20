@@ -34,8 +34,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import OUTPUT_DIR, resolve_analyses, write_json_if_changed
 from lib.crossref.linker import Linker
-from lib.mirror import db as mirror_db
-from lib.mirror import query as mirror_query
+from qbmirror import db as mirror_db
+from qbmirror import query as mirror_query
 from lib.mirror.publish import _docs_by_id
 
 DEFAULT_TOP = 8
@@ -88,7 +88,7 @@ def build_mention_graph(analyses, linker: Linker) -> dict[str, Counter]:
     question text."""
     conn = mirror_db.open_db()
     try:
-        catalog = mirror_query._Catalog(conn)
+        catalog = mirror_query.Catalog(conn)
         ids_by_slug = {slug: _topic_question_ids(slug)
                        for slug, _p, _d in analyses}
         docs = _docs_by_id(conn, catalog,

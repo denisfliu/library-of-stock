@@ -125,8 +125,8 @@ def _row_meta(meta):
     taxonomy lists (lib/mirror/query.py order — the ordinal contract
     shared with the Worker and the search page).
     """
-    from lib.mirror import db as mirror_db
-    from lib.mirror import query as mirror_query
+    from qbmirror import db as mirror_db
+    from qbmirror import query as mirror_query
     from lib.mirror.publish import _unique_slugs
 
     cat_idx = {c: i for i, c in enumerate(mirror_query.CATEGORIES)}
