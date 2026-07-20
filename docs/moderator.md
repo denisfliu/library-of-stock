@@ -62,9 +62,74 @@ storage wiped) so codes recycle with no stale state; host mobile CSS
 pass (compact header, fitted point buttons, bottom-sheet dialogs).
 **v0.10**: upload-your-own-packets (.docx/.txt, each file = one
 packet, synthetic `up-*` qids, no TTS audio → auto-fallback);
-reading-mode select on its own set-sheet row. **v0.10.5 July 19**: TTS audio
+reading-mode select on its own set-sheet row. **v0.11.1 July 19**: ready gate —
+every question (packet load AND Next) lands in a pending state (audio
+pre-buffered, room buzzers closed, host/space buzz + point-pad buzz
+paths all gated) and reads only on a Start button press; plus a ⟲
+restart button in TTS mode (replays audio from the top, rewinds only
+the position clock — engine/scores untouched; works after a neg pause
+too, staying paused during adjudication). **v0.11 July 19 — typed answers
+in rooms**: the buzz winner's phone shows an answer input; the text
+relays through the DO (`{t:'answer'}` player→hosts, capped 300 chars),
+the host app runs the vendored checker — accept/reject auto-score the
+buzz, prompt goes back (`{t:'answer_result', result:'prompt', prompt:
+directedPrompt?}`) and keeps the buzz open for a retype (repeatable;
+host ✓/✗ can end the loop). EVERY verdict on a remote buzz — typed or
+host-tapped — broadcasts an `answer_result`, so the buzzer's phone
+always shows correct/wrong ('done' releases the bar verdict-free, e.g.
+deading over a pending buzz). Checker-off: typed answers fill the
+host's adjudication field for manual ✓/✗. Early answers that outrun
+the buzz-window resolution are stashed and applied to the equalized
+winner. New CI suite `tests/answers.test.mjs` (8 vectors — real sliced
+app.js handlers + real engine + real checker, reader-test style);
+rooms e2e extended with the answer/prompt round-trip and its
+jitter-prone equalization race de-flaked (3-attempt retry). Worker
+redeployed (protocol additions are backward-compatible; consensus-
+scorekeeper's vendored room.js needs a re-sync — `onAnswer` handler
+added). **v0.10.5 July 19**: TTS audio
 speed slider (reader vrate parity — pitch-preserved 0.6-1.6x, live
 mid-question, persisted; controls row, audio mode only).
+**v0.12 July 20 — bonus play-along + team bonus scoring** (Denis's
+spec): bonuses score to the controlling player's TEAM, not the
+individual (teamless controllers keep them individually) — new
+supersedable engine event `bonus_part {qid, team?, player?, partIdx,
+points}` (last line per qid+partIdx wins via `liveLog()`; parts logged
+at 0 when their answer shows so bonuses-heard is derivable). New
+selectors `bonusStats()` (per-team/teamless `{heard, points, ppb}`)
+and `tossupStats()` (per-player powers/gets/negs; pad-forced verdict
+points now set the entry kind — a pad +15 counts as a power). UI:
+bonus cycle is Space-stepped (part text → answer → next part) with a
+checkbox LEFT of each part (or keys 1/2/3) toggling give/ungive;
+answers hidden until Space by default in audio+reveal modes (host
+plays along — no bonus TTS, host reads the part aloud), shown in
+full-text mode; ⚙ `Bonus answers: auto/hidden/shown` overrides
+(persisted; parts never reveal word-by-word). Team panels show
+`bonus +X · ppb Y.Y`; player rows + room scoreboard show a P/G/N stat
+line; snapshot adds per-team bonus/heard/ppb + per-player stats
+(additive, old player pages fine); history/qlog use liveLog with team
+attribution. New CI suite `tests/bonus.test.mjs` (6 vectors, sliced
+real handlers + real engine) + 7 new engine vectors.
+**v0.13 July 20 — undo + previous-question review**: all engine events
+now funnel through one recorder; each host action (buzz/verdict/pad
+tap/bonus step+toggle/dead/next/start/review edit) pushes a mark + an
+app-side snapshot, and ↶/ctrl+z rebuilds state by replaying events
+before the mark while KEEPING later roster/configure events (a
+mid-question room join survives the undo — this also makes "cancel a
+buzz" free). Reading restores paused; audio reloads+seeks across
+questions; a pending remote buzz's phone bar is released on undo.
+◂ enters review of the current packet's completed tossups (between
+questions): full text + answer, score lines with an override edit pad
+(engine `override` now re-derives kind from the new points — get→-5
+IS a neg for the stat line), bonus checkboxes live via bonus_part
+supersede (a never-heard bonus can be scored late), review edits
+refresh the players' Past Questions summaries (qlog entries now carry
+qid). New CI suite `tests/undo.test.mjs` (5 vectors) + override-kind
+engine vectors; 55 tests green.
+**v0.13.1 July 20**: Start is only for the very start — the ready gate
+(pending state) now waits for the Start button only on a fresh packet
+load; Next sets the question up (audio mapper + buffer first) then
+auto-starts reading, one undo mark per click. Word-by-word reveal is
+the default reading mode instead of TTS audio (both mode selects).
 **v0.10.4 July 19**: audio.js still
 built URLs with the pre-re-shard qid[:2] path (every file 404'd →
 silent degrade misreported as "no TTS audio") — now qid[-2:] like the
