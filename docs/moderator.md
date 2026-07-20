@@ -62,7 +62,17 @@ storage wiped) so codes recycle with no stale state; host mobile CSS
 pass (compact header, fitted point buttons, bottom-sheet dialogs).
 **v0.10**: upload-your-own-packets (.docx/.txt, each file = one
 packet, synthetic `up-*` qids, no TTS audio → auto-fallback);
-reading-mode select on its own set-sheet row. **v0.10.2 July 19**: in
+reading-mode select on its own set-sheet row. **v0.10.4 July 19**: audio.js still
+built URLs with the pre-re-shard qid[:2] path (every file 404'd →
+silent degrade misreported as "no TTS audio") — now qid[-2:] like the
+reader/pipeline; degrade message split from the genuinely-no-audio one.
+**v0.10.3 July 19**: reveal pacing
+matches the reader's engine exactly (same slow-span lookahead rule,
+same 380 wpm default / 120-700 range); the wpm control moved from the
+⚙ sheet to a live slider in the controls row, shown whenever a
+question is in reveal mode — including TTS-audio fallback — and
+adjustable mid-question (persisted, localStorage.qbmodWpm).
+**v0.10.2 July 19**: in
 TTS-audio mode the set picker lists only sets whose tossups ALL have
 audio (client-side pass over catalog tossup ids × audio_index qids;
 mode change re-renders the list; index fetch failure disables the
