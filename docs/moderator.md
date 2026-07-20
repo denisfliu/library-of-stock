@@ -62,7 +62,10 @@ storage wiped) so codes recycle with no stale state; host mobile CSS
 pass (compact header, fitted point buttons, bottom-sheet dialogs).
 **v0.10**: upload-your-own-packets (.docx/.txt, each file = one
 packet, synthetic `up-*` qids, no TTS audio → auto-fallback);
-reading-mode select on its own set-sheet row. **v0.10.4 July 19**: audio.js still
+reading-mode select on its own set-sheet row. **v0.10.5 July 19**: TTS audio
+speed slider (reader vrate parity — pitch-preserved 0.6-1.6x, live
+mid-question, persisted; controls row, audio mode only).
+**v0.10.4 July 19**: audio.js still
 built URLs with the pre-re-shard qid[:2] path (every file 404'd →
 silent degrade misreported as "no TTS audio") — now qid[-2:] like the
 reader/pipeline; degrade message split from the genuinely-no-audio one.
