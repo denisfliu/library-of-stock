@@ -2,15 +2,27 @@
 
 Status: **built + deployed July 20, 2026** — repo
 [qbsuite/qb-td](https://github.com/qbsuite/qb-td) (dev checkout `../qb-td/`),
-Worker live at `qb-td.denisliu10.workers.dev` (D1 + R2 provisioned, schema
-applied, SESSION_SECRET set), pages at `qbsuite.github.io/qb-td/app/`, linked
-from the qbsuite landing page. Tests: 18 engine unit tests + 25-check Worker
-E2E (`qb-td/tests/`). Remaining manual steps:
-1. **GitHub OAuth app** (Denis): create at Settings → Developer settings →
-   OAuth Apps, callback `https://qb-td.denisliu10.workers.dev/auth/callback`;
-   put the client id in `worker/wrangler.toml`, run
-   `npx wrangler secret put GITHUB_CLIENT_SECRET`, `npx wrangler deploy`.
-   (A placeholder secret is set so the Worker runs; sign-in fails until this.)
+Worker live at `qb-td.denisliu10.workers.dev` (D1 + R2 provisioned), pages at
+`qbsuite.github.io/qb-td/app/`, linked from the qbsuite landing page.
+
+**Auth rework (July 20, late session): NO ACCOUNTS.** GitHub OAuth is gone
+(Denis: "not all tds will have GitHub"; cost was never the reason for the
+gate — packet secrecy + tenancy were, and link secrets cover both).
+Creating a tournament mints a ~99-bit `admin_secret`; `index.html?a=<secret>`
+is the TO's only credential, shown once in a save-this-link popup (no
+account, no recovery) and **dead 48h after creation** (Denis's call, mirrors
+bucket links; 410 "tournament closed"; published stats + public qbj/roster
+outlive it, so YF import stays possible). `/a/:secret/rotate` handles
+mid-tournament leaks. Creation is open, rate-limited per IP (20/day) +
+globally (300/day) via `creator_ip`. Worker lost the whole OAuth/HMAC stack
+and needs NO secrets; dashboard remembers tournaments in localStorage and
+admin downloads are plain links. Remaining manual steps:
+1. **Remote D1 migration** (Denis; the assistant's permission classifier
+   blocks remote DROPs): tables verified empty, then run in `../qb-td/worker`:
+   `npx wrangler d1 execute qb-td --remote --command "DROP TABLE IF EXISTS
+   users; DROP TABLE IF EXISTS tournaments"` followed by
+   `npx wrangler d1 execute qb-td --remote --file schema.sql`.
+   Until then, live tournament creation 500s (old NOT NULL owner_uid).
 2. **YellowFruit round-trip** (Denis): generate a `.yft` from real ModaQ
    games, open in YF >= 4.0.18, confirm stats match the public page.
 
