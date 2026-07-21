@@ -193,3 +193,7 @@ MP3 audio clips stay committed (they need fluidsynth + a soundfont to regenerate
 - Audio rendering only: `music21`, `fluidsynth`, `ffmpeg`, and a GM soundfont
 - Embedding pipeline only (`lib/embed/`): `torch` and `sentence-transformers` (local Qwen3-Embedding-0.6B)
 - Cross-platform: file locking uses `filelock` and all I/O is explicit UTF-8, so Windows, macOS, and Linux all work
+
+## License
+
+MIT (see `LICENSE`). Vendored third-party code, CDN-loaded libraries, and the provenance of question content, Commons media, and models are documented in `THIRD_PARTY_NOTICES.md`. Question content is written by the packet authors and editors of the respective tournaments and reaches this project via [qbreader](https://www.qbreader.org/).
