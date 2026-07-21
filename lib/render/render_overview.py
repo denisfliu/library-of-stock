@@ -232,10 +232,9 @@ def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
     draft_html = ''
     if overview.get('draft'):
         draft_html = (
-            '<div class="draft-banner">&#9888;&#65039; <b>AI draft</b> — '
-            'answerlines and grouping are machine-collected; the notes are '
-            'AI-written from outside knowledge and have not been reviewed. '
-            'This page is pending a human/agent editing pass.</div>')
+            '<div class="draft-banner">&#9888;&#65039; <b>AI draft</b>. '
+            'Answerlines are machine-collected; notes are AI-written '
+            'and unreviewed.</div>')
 
     html = f"""<!DOCTYPE html>
 <html lang="en" data-layout="desktop">

@@ -129,7 +129,7 @@ footer a { color: var(--muted); }
 <body>
 <div class="masthead">
   <h1>Library of Stock</h1>
-  <div class="tagline">A quizbowl study companion &mdash; read the canon, then get read the questions.</div>
+  <div class="tagline">Quizbowl study guides, a question reader, and clue search.</div>
 </div>
 <div class="statline">STATLINE</div>
 
@@ -208,7 +208,7 @@ def build(analyses=None) -> None:
         draft = ov.get("draft")
         if draft:
             draft_count += 1
-        mark = ' <span class="draft-mark" title="AI draft — pending review">draft</span>' if draft else ""
+        mark = ' <span class="draft-mark" title="AI draft, not yet reviewed">draft</span>' if draft else ""
         overview_links.append(
             f'<a href="output/_categories/{escape(slug)}/overview.html">{escape(title)}</a>{mark}'
         )
