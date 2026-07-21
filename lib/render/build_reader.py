@@ -123,7 +123,7 @@ html[data-layout="mobile"] #mbar {{
 .tablewrap {{ overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }}
 html[data-layout="mobile"] .bar {{ width: 56px; }}
 html[data-layout="mobile"] table.acc td, html[data-layout="mobile"] table.acc th {{ padding-left: 0.35rem; padding-right: 0.35rem; }}
-html[data-layout="mobile"] .scopesel {{ flex: 1; min-width: 0; }}
+html[data-layout="mobile"] .facetlbl {{ width: 100%; }}
 {sheet_css()}
 
 /* ---------- side rails (scope left, reading/sync right) ---------- */
@@ -317,10 +317,13 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
 }}
 .dimbtn:hover {{ color: var(--bright); border-color: var(--faint); }}
 .dimbtn.on {{ background: var(--accent-dim); border-color: var(--accent); color: #fff; }}
-.scoperow {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin-bottom: 1.1rem; }}
-.scopelbl {{ font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); margin-right: 0.15rem; }}
-.scopesel {{ background: var(--inset); color: var(--bright); border: 1px solid var(--border); border-radius: 3px; padding: 0.3rem 0.5rem; font-family: var(--sans); font-size: 0.82rem; }}
-.scopesel:hover {{ border-color: var(--faint); }}
+.scopebox {{ background: var(--raised); border: 1px solid var(--border); border-radius: 4px; padding: 0.7rem 0.9rem 0.55rem; margin-bottom: 1.1rem; }}
+.facetrow {{ display: flex; align-items: baseline; gap: 0.45rem; flex-wrap: wrap; padding: 0.22rem 0; }}
+.facetlbl {{ font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); width: 92px; flex-shrink: 0; }}
+.facetnote {{ font-size: 0.78rem; color: var(--faint); }}
+.scopefoot {{ margin-top: 0.35rem; font-size: 0.78rem; color: var(--faint); }}
+.scopefoot .linkbtn {{ margin-left: 0.7rem; }}
+table.acc td.name .kpart {{ color: var(--faint); }}
 .calibcv {{ width: 100%; max-width: 720px; height: auto; margin-bottom: 1.3rem; }}
 .calib {{ display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1.2rem; }}
 .calib-cell {{
@@ -377,7 +380,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
       <div class="chips" id="f-subs"></div>
       <div class="subhead" id="subsub-head" style="display:none">Subtype</div>
       <div class="chips" id="f-subsub"></div>
-      <div class="subhead" id="tags-head" style="display:none">Focus &mdash; movements &amp; schools <span style="text-transform:none;letter-spacing:0">(from the wiki)</span></div>
+      <div class="subhead" id="tags-head" style="display:none">Focus <span style="text-transform:none;letter-spacing:0">(movements &amp; schools)</span></div>
       <div class="chips" id="f-tags"></div>
       <div class="subhead" id="eras-head" style="display:none">Era</div>
       <div class="chips" id="f-eras"></div>
@@ -415,7 +418,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
         <div class="controls">
           <button class="btn primary" id="mainbtn">Start</button>
           <button class="btn" id="pausebtn" disabled>Pause</button>
-          <button class="btn" id="skipbtn" disabled title="Throw this question away — not counted in stats">Skip</button>
+          <button class="btn" id="skipbtn" disabled title="Not counted in stats">Skip</button>
           <button class="btn" id="prevbtn" disabled title="Review the previous question (k)">&#9664; Prev</button>
           <div class="timerbar" aria-hidden="true"><i id="timerfill"></i></div>
         </div>
@@ -442,7 +445,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
     </section>
 
     <section id="view-history" style="display:none">
-      <div class="histsearch"><input id="histq" type="search" placeholder="Search questions you&rsquo;ve played &mdash; answer, category, set&hellip;" autocomplete="off"></div>
+      <div class="histsearch"><input id="histq" type="search" placeholder="Search answer, category, set&hellip;" autocomplete="off"></div>
       <div class="statnote" id="histnote"></div>
       <div id="histlist"></div>
     </section>
@@ -451,7 +454,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
   <aside id="rail2">
     <div class="panel" id="panel-reading">
       <h2>Reading</h2>
-      <label class="setting">Speed &mdash; <span class="val" id="wpmval"></span> wpm
+      <label class="setting">Speed: <span class="val" id="wpmval"></span> wpm
         <input type="range" id="wpm" min="120" max="700" step="10">
       </label>
       <label class="setting" style="margin-bottom:0.25rem">Sentences read</label>
@@ -461,17 +464,17 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
       </div>
       <label class="setting drilltoggle" id="voicetoggle"><input type="checkbox" id="voice"> Read aloud (voice)</label>
       <div id="voicerow" style="display:none">
-        <label class="setting">Voice speed &mdash; <span class="val" id="vrateval"></span>
+        <label class="setting">Voice speed: <span class="val" id="vrateval"></span>
           <input type="range" id="vrate" min="0.6" max="1.6" step="0.05">
         </label>
       </div>
       <label class="setting drilltoggle"><input type="checkbox" id="multibuzz"> Multiple buzzes</label>
       <div id="multibuzzrow" style="display:none">
-        <div class="hint">Wrong answers resume the reading &mdash; buzz again until it runs out. The first neg still counts.</div>
+        <div class="hint">Wrong answers resume the reading. The first neg still counts.</div>
       </div>
       <label class="setting drilltoggle"><input type="checkbox" id="drill"> Drill my weaknesses</label>
       <div id="drillrow" style="display:none">
-        <label class="setting">Focus &mdash; <span class="val" id="focusval">balanced</span>
+        <label class="setting">Focus: <span class="val" id="focusval">balanced</span>
           <input type="range" id="focus" min="0" max="100" value="55">
         </label>
       </div>
@@ -519,6 +522,7 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
 
 <script src="lib/js/mobile.js"></script>
 <script src="lib/js/answer_checker.js"></script>
+<script src="lib/js/reveal_units.js"></script>
 <script src="lib/js/reader.js"></script>
 <script src="lib/js/sync.js"></script>
 </body>

@@ -142,7 +142,7 @@ answer('completely wrong nonsense');
 check('on: neg -> no row yet', api.LOG().length === 0);
 check('on: neg -> judge hidden', !api.$('judge').classList.contains('show'));
 check('on: neg -> beat keeps phase buzzed', api.getPhase() === 'buzzed');
-check('on: neg -> keep-listening status', api.status().text === 'No — keep listening');
+check('on: neg -> keep-listening status', api.status().text === 'No, keep listening');
 api.firePending();   // the 700ms beat
 check('on: resume -> phase reading', api.getPhase() === 'reading');
 check('on: resume -> text reveal restarts', api.calls.includes('scheduleStep'));
@@ -175,7 +175,7 @@ api.firePending();   // grace timer -> goDead
 check('on: dead after neg -> one row', api.LOG().length === 1);
 check('on: dead after neg -> res W not D', api.LOG()[0].res === 'W');
 check('on: dead after neg -> bf from first buzz', api.LOG()[0].bf === 0.9);
-check('on: dead after neg -> status', api.status().text === 'Dead — neg recorded');
+check('on: dead after neg -> status', api.status().text === 'Dead, neg recorded');
 check('on: dead after neg -> override row via W judge', api.calls.includes('showJudge:W'));
 
 /* 5. no buzz at all -> dead stays D with null bf (regression) */
@@ -183,7 +183,7 @@ begin();
 api.goDead();
 check('no buzz -> res D', api.LOG()[0].res === 'D');
 check('no buzz -> bf null', api.LOG()[0].bf === null);
-check('no buzz -> plain dead status', api.status().text === 'Dead — no buzz');
+check('no buzz -> plain dead status', api.status().text === 'Dead, no buzz');
 
 /* 6. prompt loop: prompt doesn't consume the buzz; empty concede -> neg+resume */
 begin();

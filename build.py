@@ -37,8 +37,29 @@ from lib import validate
 from dev import build_changelog, build_crossrefs, build_stats
 
 
+def sync_vendored_js() -> None:
+    """Vendor-sync step (docs/suite.md "Development flow"): files whose
+    canonical copy lives in a qbsuite sibling checkout are copied in when
+    that checkout is present, so local builds can't drift. CI has no
+    siblings and uses the committed copies."""
+    root = Path(__file__).resolve().parent
+    vendored = {
+        root / "lib/js/reveal_units.js":
+            root.parent / "qb-moderator/app/vendor/reveal_units.js",
+    }
+    for dest, src in vendored.items():
+        if not src.exists():
+            continue
+        text = src.read_text(encoding="utf-8")
+        if dest.read_text(encoding="utf-8") != text:
+            dest.write_text(text, encoding="utf-8")
+            print(f"vendor-sync: {dest.name} updated from {src}")
+
+
 def main() -> None:
     force = "--force" in sys.argv
+
+    sync_vendored_js()
 
     t0 = time.time()
     analyses, parse_errors = load_corpus()
