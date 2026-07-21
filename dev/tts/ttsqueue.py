@@ -1,7 +1,7 @@
 """ttsqueue — cross-machine work queue for TTS generation.
 
 One SQLite file on the queue host (`~/los_tts/tts_queue.db`) is the single source
-of truth for which of the ~120k diff-7-9 items still need synthesizing. Any number
+of truth for which diff-7-9 tossups still need synthesizing. Any number
 of workers, on any machine, claim disjoint batches so each qid is generated exactly
 once across the fleet — real parallelism, since each machine has its own GPU (two
 streams on one GPU just time-share it).
@@ -72,12 +72,15 @@ def init(reseed=False):
         con.execute("ALTER TABLE items ADD COLUMN set_name TEXT")   # pre-existing db
     except sqlite3.OperationalError:
         pass                                                        # already there
+    # Scope is tossups-only since July 20, 2026: purge out-of-scope rows so a
+    # pre-existing queue stops serving bonuses (their generated files stay put).
+    purged = con.execute("DELETE FROM items WHERE kind != 'tossups'").rowcount
+    if purged:
+        print(f"purged {purged:,} out-of-scope items", flush=True)
     mirror = sqlite3.connect(DB)
     wl = worklist(mirror)
     sets = dict(mirror.execute(
         "SELECT id, set_name FROM tossups WHERE difficulty IN (7,8,9)"))
-    sets.update(mirror.execute(
-        "SELECT id, set_name FROM bonuses WHERE difficulty IN (7,8,9)"))
     con.executemany("INSERT OR IGNORE INTO items(qid, kind, set_name) VALUES(?, ?, ?)",
                     [(qid, kind, sets.get(qid)) for kind, qid, _ in wl])
     con.executemany("UPDATE items SET set_name=? WHERE qid=? AND set_name IS NULL",
@@ -94,10 +97,9 @@ def claim(worker, n):
     """Atomically claim up to n todo (or lease-expired) items. Returns [(kind, qid)].
 
     Serve order finishes sets, not ids: sets with the fewest not-done tossups
-    first (a set whose tossups are all done ranks 0, so its bonuses lead),
-    tossups before bonuses within a set. Every finished set immediately becomes
-    pickable in the moderator's TTS-audio mode; ids without a set_name (not in
-    the current mirror — shouldn't happen after init) go last."""
+    first. Every finished set immediately becomes pickable in the moderator's
+    TTS-audio mode; ids without a set_name (not in the current mirror —
+    shouldn't happen after init) go last."""
     con = _connect()
     con.execute("BEGIN IMMEDIATE")             # take the write lock up front
     cutoff = time.time() - LEASE_S
@@ -108,7 +110,7 @@ def claim(worker, n):
         "WHERE i.status='todo' OR (i.status='claimed' AND i.lease < ?) "
         "ORDER BY CASE WHEN i.set_name IS NULL THEN 1000000 "
         "  ELSE COALESCE(remaining.r, 0) END, "
-        "  i.kind DESC, i.set_name, i.qid LIMIT ?",
+        "  i.set_name, i.qid LIMIT ?",
         (cutoff, n)).fetchall()
     now = time.time()
     con.executemany("UPDATE items SET status='claimed', worker=?, lease=? WHERE qid=?",

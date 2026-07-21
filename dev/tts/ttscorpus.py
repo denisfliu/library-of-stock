@@ -3,7 +3,6 @@ queue_db: the worklist (which questions to synthesize), chunk splitting, and the
 output-path layout. Kept free of torch/numpy so the queue can be claimed over SSH
 without paying a multi-second model import on every call.
 """
-import json
 import re
 from pathlib import Path
 
@@ -59,20 +58,16 @@ def chunk_text(text):
     return chunks
 
 def worklist(conn):
-    """(kind, qid, cleaned_text) for every diff 7-9 tossup and bonus, id-ordered.
-    The canonical set of items every worker and the queue agree on."""
+    """(kind, qid, cleaned_text) for every diff 7-9 tossup, id-ordered.
+    The canonical set of items every worker and the queue agree on.
+    Tossups only since July 20, 2026 — bonuses were dropped from scope (the
+    reader only plays tossup audio; cutting them halved the remaining run).
+    The ~15k bonus files generated before the cut stay on HF and in the
+    manifest; out_path stays kind-generic so they remain addressable."""
     items = []
     q = "SELECT id, question_sanitized FROM tossups WHERE difficulty IN (7,8,9) ORDER BY id"
     for qid, text in conn.execute(q):
         items.append(("tossups", qid, clean(text)))
-    b = "SELECT id, leadin_sanitized, parts_sanitized FROM bonuses WHERE difficulty IN (7,8,9) ORDER BY id"
-    for qid, leadin, parts in conn.execute(b):
-        try:
-            plist = json.loads(parts) if parts else []
-        except Exception:
-            plist = []
-        text = " ".join([clean(leadin)] + [clean(p) for p in plist]).strip()
-        items.append(("bonuses", qid, text))
     return items
 
 def out_path(kind, qid):

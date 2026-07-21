@@ -15,6 +15,7 @@ Run under tmux alongside the generator:
 import json
 import sys
 import time
+import urllib.request
 from pathlib import Path
 
 from huggingface_hub import CommitScheduler, HfApi
@@ -25,14 +26,31 @@ TOKEN_FILE = WORK / ".hf_token"
 REPO_NAME = "qb-audio"
 EVERY_MIN = 10
 
-def build_manifest():
+def fetch_remote_manifest(repo_id):
+    """Current audio_index.json as committed to the dataset, {} if absent.
+    Every fleet worker's uploader rebuilds and commits the manifest, but each
+    machine's out/ only holds the shards it generated — a local-only scan from
+    one worker would clobber every other worker's entries. Unioning with the
+    remote copy keeps the manifest monotonic: a stale/failed fetch just delays
+    another worker's additions until that worker's own next cycle re-adds them."""
+    url = f"https://huggingface.co/datasets/{repo_id}/resolve/main/audio_index.json"
+    try:
+        with urllib.request.urlopen(url, timeout=30) as r:
+            return json.loads(r.read())
+    except Exception:
+        return {}
+
+def build_manifest(repo_id=None):
     """Write out/audio_index.json = {tossups:[qid...], bonuses:[qid...]} from
-    the *.opus files present. Cheap directory walk; the reader loads this to
-    filter its queue to questions that actually have audio."""
+    the *.opus files present, unioned with the remote manifest (fleet workers
+    each hold only their own shards). The reader loads this to filter its
+    queue to questions that actually have audio."""
+    remote = fetch_remote_manifest(repo_id) if repo_id else {}
     idx = {}
     for kind in ("tossups", "bonuses"):
         d = OUT / kind
-        idx[kind] = sorted(p.stem for p in d.rglob("*.opus")) if d.exists() else []
+        local = (p.stem for p in d.rglob("*.opus")) if d.exists() else ()
+        idx[kind] = sorted(set(remote.get(kind, [])) | set(local))
     # tmp + atomic replace: the CommitScheduler snapshots this folder on its
     # own timer, and a plain write_text raced it — a truncated manifest got
     # committed (July 18, 2026) and broke the reader's read-aloud mode.
@@ -53,7 +71,7 @@ def main():
     print(f"authenticated as {user}; repo {repo_id} ready", flush=True)
     print(f"https://huggingface.co/datasets/{repo_id}", flush=True)
 
-    build_manifest()   # so the first commit already carries the index
+    build_manifest(repo_id)   # so the first commit already carries the index
     scheduler = CommitScheduler(
         repo_id=repo_id,
         repo_type="dataset",
@@ -69,8 +87,8 @@ def main():
     try:
         while True:
             time.sleep(EVERY_MIN * 60)
-            n = build_manifest()   # refresh the index just before each commit window
-            print(f"[{time.strftime('%H:%M:%S')}] {n:,} audio files present locally", flush=True)
+            n = build_manifest(repo_id)   # refresh the index just before each commit window
+            print(f"[{time.strftime('%H:%M:%S')}] manifest {n:,} qids (local ∪ remote)", flush=True)
     except KeyboardInterrupt:
         scheduler.stop()
 

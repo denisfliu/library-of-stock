@@ -10,30 +10,40 @@ realtime there vs ~1.7x on the laptop 4070.
   A/B samples: `dev/tts_samples/ab.html` (+ `v2.html`).
 - Voice: Chatterbox default speaker (female; the one in the approved samples).
 - Format: **Opus 24kbps mono in Ogg** (Denis's pick). ~123 KB/question.
-- Scope (first run): **difficulty 7-9 tossups + bonuses = 119,901 items**,
-  ~14.7 GB, ETA ~12.5 days single-stream on the 4090. Resumable, so it can be
-  extended to more difficulties later by editing `DIFFS` in `gen_tts.py`.
+- Scope: **difficulty 7-9 tossups only** (July 20, 2026: bonuses dropped from
+  scope mid-run — the reader only plays tossup audio, and cutting them halved
+  the remaining queue; the ~15k bonus files generated before the cut stay on
+  HF and in the manifest, unconsumed). Originally tossups + bonuses = 119,901
+  items. Resumable, so it can be extended to more difficulties (or back to
+  bonuses) later by editing `DIFFS`/`worklist`.
 - Hosting: **Hugging Face public dataset** `<user>/qb-audio`
   (R2 free tier is only 10 GB and already ~1 GB used; HF gives effectively
   unlimited public-dataset storage with a CDN + CORS + Range support, all
-  verified). Reader will fetch `tossups|bonuses/{qid[-2:]}/{qid}.opus`.
+  verified). Reader fetches `tossups/{qid[-2:]}/{qid}.opus`.
 
 ## Files
 - `ttsclean.py` — **single source of truth** for text cleaning (gen_tts imports
-  `clean`). Strips, in either `()` or `[]`: pronunciation guides (quoted
-  `("kun-doo-REE")`, and bare `(green-YARR)`/`SUR [sir]` via a hyphen +
-  all-caps-stress heuristic — ~2.5k bare-paren guides were leaking before),
-  moderator directions (`[emphasize]`, `(read slowly)`), and **moderator
-  notes** (bracketed `[Note to moderator: ...]` and bare `Note to moderator:
-  ...` prefixes). KEEPS: **player/reader notes** (`[Note to players: ...]` —
-  info the answerer needs), real parentheticals (`(II)`, `(1710)`,
-  `(After Fragonard)`, `(log n)`), and editorial brackets (`hat[ing]`->hating,
-  `[this concept]`, `"[his]"`). Also **expands title abbreviations** for spoken
+  `clean`). **Brackets default to KEEP** — a bracket is read unless it's clearly
+  a guide — because drop-by-default was silencing editorial substitutions like
+  `[one of these people]` (the 2022 ACF Regionals TU1 bug). Strips, in either
+  `()` or `[]`, only on strong guide evidence: pronunciation guides (any internal
+  quote `("kun-doo-REE")`/`["de-ronn"]`; `(green-YARR)` all-caps-stress;
+  lowercase-hyphen respellings `(oh-may)`/`(jing-duh-jen)`; letter/acronym
+  spell-outs `[F-M-R-I]`/`[C-D-C-forty-five]`; and echo respellings `SUR [sir]`
+  where the token near-duplicates the preceding word), moderator directions
+  (`[emphasize]`, `(read slowly)`), **moderator notes** (bracketed `[Note to
+  moderator: ...]` and bare `Note to moderator: ...` prefixes), and `[MISSING]`
+  redaction placeholders. KEEPS: **player/reader notes** (`[Note to players:
+  ...]`), real parentheticals (`(II)`, `(1710)`, `(After Fragonard)`,
+  `(log n)`), editorial insertions (`hat[ing]`->hating, `[this concept]`,
+  `"[his]"`), editorial **substitutions** for a redacted answerline
+  (`[one of these people]`, `[title object]`, `[blank]`, `[who]`), and bracketed
+  notation (`[3,3]`, `[2+2]`). Also **expands title abbreviations** for spoken
   output (`Mrs.`->Missus, `Mr.`->Mister, `Dr.`->Doctor, `St. X`->Saint X,
   `Mt.`->Mount, `Jr./Sr.`->Junior/Senior, `Op./No. N`->Opus/Number N,
   `vs.`->versus) — this fixes pronunciation AND removes the trailing period that
   otherwise splits a name like "Mrs. Dalloway" into two chunks across the gap.
-  Self-test: `python ttsclean.py` (29 cases). Bonuses read verbatim.
+  Self-test: `python ttsclean.py` (57 cases).
 - `ttsverify.py` — **ASR gate**, shared by gen_tts (inline) and verify_tts
   (backfill). whisper-tiny transcribes each synthesized chunk (~58 ms/chunk vs
   ~1 s to generate — a ~5% tax) and a chunk PASSES unless there's strong defect
@@ -59,7 +69,7 @@ realtime there vs ~1.7x on the laptop 4070.
   the GPU (89%) and cancels the two-stream speedup (measured: 4.8x combined with
   full gating vs ~6.9x ungated); the post-run whisperX pass is the exhaustive
   mid-question clip net. Encodes to
-  Opus via ffmpeg, writes `out/{tossups,bonuses}/{qid[-2:]}/{qid}.opus` (sharded
+  Opus via ffmpeg, writes `out/tossups/{qid[-2:]}/{qid}.opus` (sharded
   by the LAST two hex chars — the ObjectId counter, uniform across 256 buckets;
   the timestamp *prefix* is `62` for every qbreader id, which funneled all files
   into one folder and hit HF's hard 10k-files-per-directory limit on July 19,
@@ -83,11 +93,12 @@ realtime there vs ~1.7x on the laptop 4070.
 - `ttsqueue.py` — **cross-machine work queue** (SQLite `~/los_tts/tts_queue.db`
   on the host machine). One Chatterbox stream saturates a GPU, so the way to go
   faster is more *machines*, each its own GPU, drawing from one queue.
-  `init` seeds from the mirror (marking existing `out/` done); `claim`/`complete`
+  `init` seeds from the mirror (marking existing `out/` done) and purges
+  out-of-scope rows (the July 20 bonus cut); `claim`/`complete`
   are atomic (BEGIN IMMEDIATE + busy timeout) with a 30 min lease so a crashed
   worker's items re-serve. **Claim order finishes sets** (July 19): items carry
   `set_name` (seeded/backfilled at init) and claims serve the set with the
-  fewest not-done tossups first, tossups before bonuses — every finished set
+  fewest not-done tossups first — every finished set
   immediately becomes pickable in qb-moderator's TTS-audio mode. Transport is **SSH, not an HTTP port** (MSL is behind
   the Stanford firewall): a remote worker runs `ssh msl python ttsqueue.py claim`,
   batched (~100 items/round) so the round-trip is negligible. `Client(host)`
