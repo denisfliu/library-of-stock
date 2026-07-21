@@ -101,25 +101,47 @@ async function authLogin(url, env) {
   return Response.redirect(gh.toString(), 302);
 }
 
+// GitHub 5xxs transiently (a partial API outage broke real logins in July
+// 2026); a 5xx means the request wasn't processed, so retrying is safe even
+// for the one-shot code exchange.
+async function ghFetch(url, init) {
+  let res;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt) await new Promise(r => setTimeout(r, 400 * attempt));
+    res = await fetch(url, init);
+    if (res.status < 500) return res;
+  }
+  return res;
+}
+
 async function authCallback(url, env) {
   const state = await verifyToken(url.searchParams.get('state') || '', env.SESSION_SECRET);
   if (!state || !state.r) return new Response('bad or expired oauth state', { status: 400 });
   const code = url.searchParams.get('code');
   if (!code) return new Response('missing code', { status: 400 });
 
-  const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+  const tokenRes = await ghFetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'User-Agent': 'los-sync' },
     body: JSON.stringify({ client_id: env.GITHUB_CLIENT_ID, client_secret: env.GITHUB_CLIENT_SECRET, code }),
   });
   const tok = await tokenRes.json().catch(() => ({}));
-  if (!tok.access_token) return new Response('github token exchange failed', { status: 502 });
+  if (!tok.access_token) {
+    // GitHub's error code (e.g. incorrect_client_credentials, bad_verification_code)
+    // is safe to surface and is the only way to tell apart a stale code from a
+    // broken app config when a login fails in the field.
+    console.log('token exchange failed:', tokenRes.status, tok.error || 'no error field', tok.error_description || '');
+    return new Response('github token exchange failed' + (tok.error ? ' (' + tok.error + ')' : ''), { status: 502 });
+  }
 
-  const userRes = await fetch('https://api.github.com/user', {
+  const userRes = await ghFetch('https://api.github.com/user', {
     headers: { 'Authorization': 'Bearer ' + tok.access_token, 'Accept': 'application/vnd.github+json', 'User-Agent': 'los-sync' },
   });
   const gh = await userRes.json().catch(() => ({}));
-  if (!gh.id) return new Response('github user lookup failed', { status: 502 });
+  if (!gh.id) {
+    console.log('user lookup failed:', userRes.status, gh.message || 'no message');
+    return new Response('github user lookup failed' + (gh.message ? ' (' + gh.message + ')' : ''), { status: 502 });
+  }
 
   const uid = 'gh:' + gh.id;
   const login = String(gh.login || uid);
