@@ -38,7 +38,7 @@ in this order — the ordering constraints below are load-bearing.
 
 ```bash
 # 1. MIRROR SYNC — the only live-API step. Nothing sees new questions first.
-python lib/mirror/sync.py                       # --refresh "SET" for edits to an existing set
+qbmirror sync --db mirror/qbreader.sqlite       # --refresh "SET" for edits to an existing set
 
 # 2. AUDIO (diff 7-9 tossups+bonuses) — see the Audio section for detail.
 #    MSL queries its OWN copy of the mirror, so refresh it, then generate.
@@ -133,8 +133,8 @@ copy refreshed before generating.
 ## Caveats
 
 - **Question edits inside an already-mirrored set are NOT auto-detected.** Only
-  `python lib/mirror/sync.py --refresh "SET NAME"` or a full re-seed
-  (`lib/mirror/import_backup.py`) picks up edits; plain `sync` only adds
+  `qbmirror sync --db mirror/qbreader.sqlite --refresh "SET NAME"` or a full re-seed
+  (`qbmirror import-backup`) picks up edits; plain `sync` only adds
   wholly-missing sets.
 - **New sets do NOT re-generate audio for old questions** — audio is keyed by
   question id and skip-existing, so a re-run only fills genuinely new questions.

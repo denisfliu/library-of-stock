@@ -18,23 +18,31 @@ deferred — R2 the leading candidate if/when the online half is built).
   data). `meta` records provenance (`seeded_from_backup`, `last_sync`).
 - `mirror/raw/` — the backup dumps used for seeding (safe to delete
   after import; re-downloadable).
-- `lib/mirror/db.py` — schema, extended-JSON decoding, doc flattening
-  (shared by importer and sync — the live API and the backup dumps have
-  the same doc shape once decoded).
-- `lib/mirror/query.py` — local reimplementation of `/api/query`,
-  `/api/frequency-list`, `/api/set-list`, `/api/packet`. Semantics
-  transliterated from qbreader/website's server source (quirks included,
-  see its docstring); verified at cutover against the live API on real
-  pipeline queries — identical ids, counts, and doc fields.
+- **The engine is the extracted `qb-mirror` package** (July 2026,
+  github.com/qbsuite/qb-mirror; dev checkout `../qb-mirror`,
+  editable-installed — the first qbsuite extraction, see
+  `docs/suite.md`): `qbmirror.db` (schema, extended-JSON decoding, doc
+  flattening — shared by importer and sync, since the live API and the
+  backup dumps have the same doc shape once decoded), `qbmirror.query`
+  (local reimplementation of `/api/query`, `/api/frequency-list`,
+  `/api/set-list`, `/api/packet`; semantics transliterated from
+  qbreader/website's server source, quirks included — verified at
+  cutover against the live API and re-verified byte-identical at
+  extraction), `qbmirror.sync` + `qbmirror.api` (live-API pull), and
+  `qbmirror.import_backup`. `lib/common.py` exports `QBMIRROR_DB` /
+  `QBMIRROR_CACHE` so in-pipeline opens hit `mirror/qbreader.sqlite`.
+- `lib/mirror/publish.py` — site-side only: R2 export of reader/site
+  artifacts (stays in this repo).
 
 ## Operations
 
 ```bash
-python lib/mirror/sync.py                    # pull sets qbreader added (the ONLY live-API use)
-python lib/mirror/sync.py --dry-run          # list what a sync would fetch
-python lib/mirror/sync.py --refresh "SET"    # force-refetch one set (question edits)
-python lib/mirror/import_backup.py           # full re-seed from mirror/raw/ dumps
-python lib/mirror/publish.py --upload        # export + upload website artifacts to R2
+qbmirror sync --db mirror/qbreader.sqlite            # pull sets qbreader added (the ONLY live-API use)
+qbmirror sync --db mirror/qbreader.sqlite --dry-run  # list what a sync would fetch
+qbmirror sync --db mirror/qbreader.sqlite --refresh "SET"  # force-refetch one set (question edits)
+qbmirror import-backup --db mirror/qbreader.sqlite   # full re-seed from mirror/raw/ dumps
+qbmirror stats --db mirror/qbreader.sqlite           # row counts + provenance
+python lib/mirror/publish.py --upload                # export + upload website artifacts to R2
 ```
 
 Seeding: qbreader publishes full database backups (Google Drive folder

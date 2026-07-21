@@ -1,7 +1,10 @@
-# Online rooms — design notes (tabled July 2026)
+# Online rooms — design notes (July 2026)
 
-Status: **not started, tabled.** These notes capture the design assessment
-from July 2026 so the work can be picked up later. Nothing here is built.
+Status: **promoted into qb-moderator v1** (July 18, 2026 — see
+`docs/moderator.md`, which supersedes this doc's framing but keeps its
+architecture verbatim: DO-per-room on the existing Worker, clock protocol,
+server-side checker). Kept as the detailed reference for the room-server
+internals. Nothing here is built yet.
 
 ## Why the pieces already line up
 

@@ -8,7 +8,7 @@ Quizbowl study guide generator. Fetches clues from qbreader, analyzes them, gene
 - `output/{slug}/analysis.json` is the **source of truth** for every topic. All HTML is generated from it — **never read or edit generated `.html` files** (there are ~2,500 of them); edit the JSON or the renderer, then run `./build.sh`.
 - Renderers: `lib/render/render.py` (stock.html), `lib/render/render_cards.py` (cards.html), `lib/render/render_questions.py` (questions.html), `lib/build_index.py` (index.html). Each is a Python file emitting one big HTML template.
 - Pipeline: `lib/pipeline/fetch.py` (reads the local qbreader mirror) → `lib/pipeline/parse.py` (clue extraction) → `lib/run.py` (CLI wrapper producing `clues.txt`).
-- **qbreader mirror** (`mirror/qbreader.sqlite`, gitignored, ~860 MB): the ENTIRE qbreader database, local. All fetch.py queries run against it offline — the live API is used only by `lib/mirror/sync.py` to pull newly added sets. Seed/re-seed from official backups via `lib/mirror/import_backup.py`. Design + freshness model: `docs/mirror.md`.
+- **qbreader mirror** (`mirror/qbreader.sqlite`, gitignored, ~860 MB): the ENTIRE qbreader database, local. Since July 2026 the importer/sync/query engine is the **extracted `qb-mirror` package** (github.com/qbsuite/qb-mirror, dev checkout at `../qb-mirror`, editable-installed; `lib/common.py` sets `QBMIRROR_DB`/`QBMIRROR_CACHE`). All fetch.py queries run against it offline — the live API is used only by `qbmirror sync` to pull newly added sets; seed/re-seed via `qbmirror import-backup`. Site-side only `lib/mirror/publish.py` (R2 export) remains. Design + freshness model: `docs/mirror.md`.
 - Queues: `lib/queues/topic_queue.py` (global first/second-pass queues), `lib/queues/batch_worker.py` (per-batch claim/complete). State lives in `queue/*.json`.
 - Cross-refs: `lib/crossref/crossref.py` rebuilds `output/topic_index.json`; `lib/crossref/relink.py` re-derives mechanical links for ALL topics (tiered `lib/crossref/linker.py`; ambiguous surfaces queue in `dev/crossref_candidates.json`); the `/crossref` skill only ADJUDICATES those into `output/crossref_overrides.json`; `lib/crossref/infer.py` builds question-text co-mention `related.json` (the Related strip). Refs carry `source` provenance. Methodology: `docs/crossref.md`.
 - Agent workflows are skills in `.claude/skills/<name>/SKILL.md`: `/batch`, `/first-pass`, `/second-pass`, `/cards`, `/crossref`, plus category supplements (`/literature`, `/vfa`, `/afa`, `/philosophy`, `/science`). These are the single source of truth for agent instructions.
@@ -17,7 +17,7 @@ Quizbowl study guide generator. Fetches clues from qbreader, analyzes them, gene
 - **Sweep sets** (`output/_sets/{set_slug}/`): `lib/sweep/build_set.py "2022 ACF Winter"` fetches a whole tournament, matches every tossup/bonus-part answerline via `lib/sweep/matcher.py` (override → exact → alias tiers, category-gated; overrides in `output/answerline_overrides.json`, keys from `lib/sweep/answerlines.normalize`), writes `set.json` + reviewable `report.json`, renders interactive `sweep.html`. `--all --rematch-only` re-matches without network (red links self-heal to blue as topics get pages).
 - **Shared map** (`lib/js/map_view.js`): any page mounts it (theme.LEAFLET_TAGS + `initMapView`); one pin per location (country centroids), click → panel grouped by category / year-sorted, facet chips for group + era filtering. Live on overview + sweep pages.
 - `lib/units.py` is the canonical unit registry (40 units) + `SUBCATEGORY_ALIASES` drift map; classify guides via `unit_for_guide()`, never raw subcategory strings.
-- **Semantic search page** (`search.html`, `lib/render/build_search.py` + `lib/js/semsearch.js`): free-text semantic search over all embedded sentences/bonus parts with qbreader-/db filters. The sync Worker's `/search` (sign-in gated) embeds queries at the edge and scans the R2 IVF-binary index (`lib/embed/build_search_index.py`, manifest v3 carries per-row taxonomy/difficulty + set year/name tables); filters prune rows mid-scan. The taxonomy ordinal contract is `lib/mirror/query.py`'s list order — shared by the index builder, Worker, and page. Tested by `tests/semsearch/`.
+- **Semantic search page** (`search.html`, `lib/render/build_search.py` + `lib/js/semsearch.js`): free-text semantic search over all embedded sentences/bonus parts with qbreader-/db filters. The sync Worker's `/search` (sign-in gated) embeds queries at the edge and scans the R2 IVF-binary index (`lib/embed/build_search_index.py`, manifest v3 carries per-row taxonomy/difficulty + set year/name tables); filters prune rows mid-scan. The taxonomy ordinal contract is `qbmirror.query`'s list order (frozen by qb-mirror's tests) — shared by the index builder, Worker, and page. Tested by `tests/semsearch/`.
 
 ## Common commands
 
@@ -34,7 +34,7 @@ python lib/sweep/author.py assemble UNIT    # sections.txt + intro.txt -> overvi
 python lib/sweep/capture_questions.py UNIT  # capture unit's questions for the page
 python lib/render/build_overviews.py        # render overview pages (--force, --unit)
 python lib/sweep/build_set.py --list-sets   # find exact qbreader set names
-python lib/mirror/sync.py                   # pull new sets from qbreader into the mirror
+qbmirror sync --db mirror/qbreader.sqlite   # pull new sets from qbreader into the mirror
 python lib/mirror/publish.py --upload       # export + upload reader data artifacts to R2
 python lib/crossref/relink.py               # re-derive mechanical cross_refs (+ candidates queue)
 python lib/crossref/infer.py                # related-topics from question co-mentions (mirror)
@@ -46,6 +46,7 @@ node tests/answer_checker/run_tests.js      # reader answer-judging tests
 node tests/reader_facets/run_tests.js       # reader facet-filtering tests
 node tests/reader_audio/run_tests.js        # reader read-aloud queue restriction
 node tests/reader_multibuzz/run_tests.js    # reader multibuzz mode (neg -> resume -> rebuzz; one stats row)
+node tests/reader_stats/run_tests.js        # reader stats engine (multi-select scope facets + composite breakdown)
 node tests/semsearch/run_tests.js           # semantic-search filter chain (page expansion + Worker row filter)
 ```
 
