@@ -25,6 +25,7 @@ const preamble = `
 let cur = null, phase = 'idle', wordIdx = 0, buzzAt = null;
 let tick = null, graceTimer = null, graceAnim = null;
 let LOG = [];
+const sessionRows = [];
 const settings = { sent: 0, multibuzz: false };
 const audioEl = null;
 const window = { losReaderHook: {} };

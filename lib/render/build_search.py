@@ -140,6 +140,7 @@ html[data-layout="mobile"] .frow-label {{ min-width: 100%; }}
         <a href="reader.html">Reader</a>
     </div>
     <span id="whoami" style="color:#808790;font-size:0.8rem"></span>
+    <button type="button" class="linkbtn" id="csmode2" style="margin-left:0.7rem"></button>
 </div>
 <h1>Semantic Search</h1>
 <div class="tagline">Every tossup sentence and bonus part ever asked,
@@ -183,6 +184,7 @@ ranked by semantic similarity.</div>
 
 <script>window.SEM_CFG = {json.dumps(cfg)};</script>
 <script src="lib/js/qdata.js"></script>
+<script src="lib/js/clue_search.js"></script>
 <script src="lib/js/semsearch.js"></script>
 </body>
 </html>

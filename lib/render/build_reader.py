@@ -351,6 +351,32 @@ table.acc td.name .kpart {{ color: var(--faint); }}
 .histbody .qfull {{ font-family: var(--serif); font-size: 0.98rem; line-height: 1.65; color: var(--text); }}
 .histbody .answerline {{ margin-top: 0.5rem; font-size: 0.98rem; }}
 #histmore {{ margin-top: 0.3rem; }}
+
+/* ---------- missed clues report ---------- */
+.mc {{ background: var(--raised); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.7rem; overflow: hidden; }}
+.mc-head {{ display: flex; align-items: center; gap: 0.55rem; padding: 0.55rem 0.7rem 0.45rem; flex-wrap: wrap; }}
+.mc-depth {{ font-variant-numeric: tabular-nums; font-size: 0.8rem; font-weight: 600; min-width: 2.6rem; text-align: right; color: var(--bright); }}
+.mc-depth small {{ font-weight: 400; font-size: 0.65rem; color: var(--faint); }}
+.mc-res {{ font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.08rem 0.4rem; border-radius: 3px; border: 1px solid; }}
+.mc-res.dead {{ color: var(--faint); border-color: var(--border); }}
+.mc-res.neg {{ color: var(--bad); border-color: var(--bad); }}
+.mc-res.ok {{ color: var(--good); border-color: var(--good); }}
+.mc-ans {{ font-weight: 600; color: var(--bright); font-size: 0.9rem; }}
+.mc-ans a {{ font-size: 0.72rem; font-weight: 400; margin-left: 0.3rem; }}
+.mc-meta {{ margin-left: auto; font-size: 0.7rem; color: var(--faint); white-space: nowrap; }}
+.mc-bar {{ height: 3px; background: var(--inset); position: relative; }}
+.mc-bar i {{ position: absolute; left: 0; top: 0; bottom: 0; }}
+.mc-bar i.neg {{ background: var(--bad); }}
+.mc-bar i.ok {{ background: var(--good); }}
+.mc-bar i.dead {{ background: var(--border); }}
+.mc-query {{ padding: 0.5rem 0.7rem 0.55rem; font-size: 0.8rem; color: var(--muted); font-style: italic; border-bottom: 1px solid var(--inset); }}
+.mc-query .lbl {{ font-style: normal; font-size: 0.65rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.1rem; }}
+.mc-sim {{ padding: 0.35rem 0.7rem 0.55rem; }}
+.mc-sim .cluenote {{ padding: 0.35rem 0; }}
+.mc-sim .clueitem {{ padding-left: 0; padding-right: 0; border-color: var(--inset); }}
+.simtoggle {{ background: none; border: none; color: var(--wiki); font-size: 0.75rem; cursor: pointer; padding: 0.2rem 0; }}
+.simlist {{ display: none; }}
+.simlist.open {{ display: block; }}
 @media (prefers-reduced-motion: reduce) {{ .timerbar i {{ transition: none !important; }} }}
 </style>
 </head>
@@ -360,6 +386,7 @@ table.acc td.name .kpart {{ color: var(--faint); }}
   <nav class="viewtabs">
     <button id="tab-play" class="on">Reader</button>
     <button id="tab-stats">My stats</button>
+    <button id="tab-missed">Missed clues</button>
     <button id="tab-history">History</button>
     <a class="tab" href="wiki.html">Wiki &nearr;</a>
   </nav>
@@ -444,6 +471,11 @@ table.acc td.name .kpart {{ color: var(--faint); }}
       <div id="statbody"></div>
     </section>
 
+    <section id="view-missed" style="display:none">
+      <div class="statnote" id="missednote"></div>
+      <div id="missedlist"></div>
+    </section>
+
     <section id="view-history" style="display:none">
       <div class="histsearch"><input id="histq" type="search" placeholder="Search answer, category, set&hellip;" autocomplete="off"></div>
       <div class="statnote" id="histnote"></div>
@@ -487,6 +519,15 @@ table.acc td.name .kpart {{ color: var(--faint); }}
       <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
       <div class="hint taphint">Tap the question text to buzz. Skip is never counted.</div>
     </div>
+    <div class="panel" id="panel-cluesearch">
+      <h2>Clue search</h2>
+      <div class="seg" id="csmode">
+        <button data-m="cloud">Cloud</button>
+        <button data-m="local">In browser</button>
+      </div>
+      <div class="hint">Cloud needs sign in. In browser runs the model on this device, 600 MB, downloads once.</div>
+      <div class="hint" id="csprog" style="display:none"></div>
+    </div>
     <div class="panel" id="syncpanel" style="display:none">
       <h2>Sync</h2>
       <div id="syncbody"></div>
@@ -523,6 +564,7 @@ table.acc td.name .kpart {{ color: var(--faint); }}
 <script src="lib/js/mobile.js"></script>
 <script src="lib/js/answer_checker.js"></script>
 <script src="lib/js/reveal_units.js"></script>
+<script src="lib/js/clue_search.js"></script>
 <script src="lib/js/reader.js"></script>
 <script src="lib/js/sync.js"></script>
 </body>
