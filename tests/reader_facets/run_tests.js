@@ -32,7 +32,7 @@ const ctx = vm.createContext({
   audioMode: () => false, hasAudio: () => true,
 });
 vm.runInContext(code +
-  '\n; globalThis.__api = { filters, rowInScope, refreshBranchScopes, pruneOrphanedPicks, setCAT: c => { CAT = c; } };',
+  '\n; globalThis.__api = { filters, rowInScope, refreshBranchScopes, pruneOrphanedPicks, groupFacetModel, setCAT: c => { CAT = c; } };',
   ctx, { filename: 'reader.js (sliced)' });
 const api = ctx.__api;
 
@@ -41,7 +41,8 @@ const CATS = ['Science', 'Mythology', 'Fine Arts'];
 const SUBS = ['Biology', 'Other Science', 'Other Fine Arts', 'Visual Fine Arts', 'Mythology'];
 const ALTS = ['Computer Science', 'Math', 'Opera', 'Film'];
 const SECV = [['biology', 'Cells'], ['computer_science', 'Algorithms'], ['math', 'Analysis'],
-              ['opera', 'Verdi'], ['mythology', 'Greek'], ['visual_fine_arts', 'Baroque']];
+              ['opera', 'Verdi'], ['mythology', 'Greek'], ['visual_fine_arts', 'Baroque'],
+              ['opera', 'Puccini']];
 const rows = [];
 const add = (cat, sub, alt, sec, count) => {
   for (let i = 0; i < count; i++) rows.push([CATS.indexOf(cat), SUBS.indexOf(sub),
@@ -124,6 +125,54 @@ check('Biology not "constrained" by its noise CS row', by['Science/Biology'] ===
 setFilters([], ['Other Science'], ['Opera']);
 api.pruneOrphanedPicks();
 check('no-category state clears descendants', api.filters.subs.size === 0 && api.filters.subsubs.size === 0);
+
+/* ---- Group facet model (accordion; the July 2026 vanish bug) ---- */
+const gfm = (secCount, sections) => {
+  api.filters.sections.clear();
+  (sections || []).forEach(s => api.filters.sections.add(s));
+  return api.groupFacetModel(secCount, SECV);
+};
+const unitsOf = m => m.units.map(u => u[0]);
+
+// THE bug: >4 units used to hide the facet outright — now all offered
+setFilters(['Science'], [], []);
+let m = gfm({ 0: 100, 1: 90, 2: 80, 3: 70, 4: 60, 5: 50 });
+check('many-unit scope shows (no more unit cap)', m.show && m.units.length === 6,
+  JSON.stringify(unitsOf(m)));
+check('units ordered by scope rows', unitsOf(m)[0] === 'biology' && unitsOf(m)[5] === 'visual_fine_arts',
+  JSON.stringify(unitsOf(m)));
+
+// unfiltered corpus: no taxonomy narrowing -> facet stays hidden
+setFilters([], [], []);
+m = gfm({ 0: 100, 1: 90 });
+check('no narrowing -> hidden', !m.show);
+
+// stray under-floor unit never surfaces...
+setFilters(['Science'], [], []);
+m = gfm({ 1: 100, 2: 90, 4: 4 });
+check('under-floor stray unit excluded', m.show && !unitsOf(m).includes('mythology'),
+  JSON.stringify(unitsOf(m)));
+// ...unless one of its sections is actively picked (picks never vanish)
+m = gfm({ 1: 100, 2: 90, 4: 4 }, [4]);
+check('picked section keeps its under-floor unit', unitsOf(m).includes('mythology'),
+  JSON.stringify(unitsOf(m)));
+
+// <3-row sections are noise unless picked
+m = gfm({ 1: 100, 2: 2 });
+check('2-row section dropped', m.units.every(([, ids]) => !ids.includes(2)),
+  JSON.stringify(m.units));
+m = gfm({ 1: 100, 2: 2 }, [2]);
+check('2-row section kept when picked', m.units.some(([, ids]) => ids.includes(2)));
+
+// single unit still shows (renderer draws it flat, no accordion header)
+m = gfm({ 3: 50, 6: 20, 1: 2 });
+check('single-unit scope', m.show && m.units.length === 1 && unitsOf(m)[0] === 'opera'
+  && JSON.stringify(m.units[0][1]) === '[3,6]',
+  JSON.stringify(m.units));
+
+// a lone section is no facet at all
+m = gfm({ 3: 50 });
+check('one section -> hidden', !m.show);
 
 console.log(`${pass}/${pass + fail} reader facet cases pass`);
 process.exit(fail ? 1 : 0);

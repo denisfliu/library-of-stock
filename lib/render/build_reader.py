@@ -152,6 +152,19 @@ aside {{ width: 280px; flex: none; position: sticky; top: 0.8rem; }}
 .chip.on {{ background: var(--accent-dim); border-color: var(--accent); color: #fff; }}
 .chip .n {{ opacity: 0.65; font-size: 0.74rem; font-variant-numeric: tabular-nums; }}
 .subhead {{ font-size: 0.75rem; color: var(--faint); margin: 0.65rem 0 0.35rem; }}
+/* Group facet accordion: one collapsible row per overview unit. */
+.groupacc details {{ border-top: 1px solid var(--inset); }}
+.groupacc details:first-child {{ border-top: none; }}
+.groupacc summary {{ list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 0.4rem;
+  padding: 0.32rem 0; font-size: 0.8rem; color: var(--muted); user-select: none; }}
+.groupacc summary::-webkit-details-marker {{ display: none; }}
+.groupacc summary::before {{ content: '▸'; font-size: 0.7rem; color: var(--faint); }}
+.groupacc details[open] > summary::before {{ content: '▾'; }}
+.groupacc summary:hover {{ color: var(--bright); }}
+.groupacc summary .n {{ margin-left: auto; font-size: 0.72rem; color: var(--faint); font-variant-numeric: tabular-nums; }}
+.groupacc summary .picked {{ font-size: 0.7rem; color: var(--accent); }}
+.groupacc details .chips {{ padding: 0.15rem 0 0.5rem 0.85rem; }}
+.groupacc .groupextra {{ padding: 0.35rem 0 0.1rem; }}
 .clearrow {{ margin-top: 0.6rem; }}
 .linkbtn {{ background: none; border: none; color: var(--wiki); font-size: 0.8rem; padding: 0; }}
 .linkbtn:hover {{ text-decoration: underline; }}
@@ -369,6 +382,7 @@ table.acc td.name .kpart {{ color: var(--faint); }}
 .mc-bar i.neg {{ background: var(--bad); }}
 .mc-bar i.ok {{ background: var(--good); }}
 .mc-bar i.dead {{ background: var(--border); }}
+.mc-q + .mc-q {{ border-top: 1px solid var(--border); }}
 .mc-query {{ padding: 0.5rem 0.7rem 0.55rem; font-size: 0.8rem; color: var(--muted); font-style: italic; border-bottom: 1px solid var(--inset); }}
 .mc-query .lbl {{ font-style: normal; font-size: 0.65rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.1rem; }}
 .mc-sim {{ padding: 0.35rem 0.7rem 0.55rem; }}

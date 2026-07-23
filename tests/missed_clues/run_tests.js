@@ -78,6 +78,16 @@ const doc = { question_sanitized: TEXT };
 const SENTS = splitSentences(TEXT);
 check('fixture splits into 4 sentences', SENTS.length === 4, String(SENTS.length));
 
+// Expected query indices: the up-to-3 sentences before lastHeard,
+// falling back to lastHeard itself at the very start.
+function expQueries(lastHeard) {
+  const out = [];
+  for (let k = 1; k <= 3; k++) if (lastHeard - k >= 0) out.push(lastHeard - k);
+  if (!out.length) out.push(lastHeard);
+  return out;
+}
+const qis = got => got.queries.map(q => q.qi);
+
 /* ---- full read: every buzz position round-trips exactly ---- */
 {
   const nUnits = recFor(TEXT, 0, 0).nUnits;
@@ -91,10 +101,12 @@ check('fixture splits into 4 sentences', SENTS.length === 4, String(SENTS.length
       detail = 'fb=' + fb + ' got=' + got.lastHeard + ' want=' + want.lastHeard;
       break;
     }
-    if (got.qi !== Math.max(0, want.lastHeard - 1)) {
-      ok = false; detail = 'fb=' + fb + ' qi=' + got.qi; break;
+    if (JSON.stringify(qis(got)) !== JSON.stringify(expQueries(want.lastHeard))) {
+      ok = false; detail = 'fb=' + fb + ' queries=' + JSON.stringify(qis(got)); break;
     }
-    if (got.query !== SENTS[got.qi]) { ok = false; detail = 'fb=' + fb + ' query mismatch'; break; }
+    if (got.queries.some(q => q.text !== SENTS[q.qi])) {
+      ok = false; detail = 'fb=' + fb + ' query text mismatch'; break;
+    }
   }
   check('full read: all ' + (nUnits + 1) + ' buzz positions round-trip', ok, detail);
 }
@@ -114,33 +126,45 @@ check('fixture splits into 4 sentences', SENTS.length === 4, String(SENTS.length
     }
   }
   check('last-2 trim: all ' + (nUnits + 1) + ' buzz positions round-trip', ok, detail);
-  // buzz inside the first READ sentence still queries the unheard one before it
+  // buzz inside the first READ sentence still queries the unheard ones before it
   const got = missedQueryFor(recFor(TEXT, 2, 3), doc);
-  check('trim: query reaches back into the unread text',
-    got.lastHeard === 2 && got.qi === 1 && got.query === SENTS[1],
-    JSON.stringify({ lastHeard: got.lastHeard, qi: got.qi }));
+  check('trim: queries reach back into the unread text',
+    got.lastHeard === 2 && JSON.stringify(qis(got)) === '[1,0]'
+    && got.queries[0].text === SENTS[1],
+    JSON.stringify({ lastHeard: got.lastHeard, qis: qis(got) }));
 }
 
 /* ---- edge cases ---- */
 {
-  // dead question: last heard is the giveaway, query the sentence before it
+  // dead question: last heard is the giveaway, query the 3 before it
   const got = missedQueryFor({ bf: null, sent: 0 }, doc);
-  check('dead: query = second-to-last sentence',
-    got.lastHeard === 3 && got.qi === 2 && got.query === SENTS[2],
-    JSON.stringify(got));
+  check('dead: queries the 3 sentences before the giveaway',
+    got.lastHeard === 3 && JSON.stringify(qis(got)) === '[2,1,0]'
+    && got.queries[0].text === SENTS[2],
+    JSON.stringify(qis(got)));
 
-  // buzz before the first word: clamp to sentence 0
+  // buzz before the first word: falls back to sentence 0
   const got0 = missedQueryFor(recFor(TEXT, 0, 0), doc);
-  check('buzz at word 0: clamps to sentence 0', got0.qi === 0 && got0.query === SENTS[0]);
+  check('buzz at word 0: falls back to sentence 0',
+    JSON.stringify(qis(got0)) === '[0]' && got0.queries[0].text === SENTS[0]);
 
   // buzz in sentence 0: no earlier sentence to query
   const got1 = missedQueryFor(recFor(TEXT, 0, 5), doc);
-  check('buzz in sentence 0: queries sentence 0', got1.lastHeard === 0 && got1.qi === 0);
+  check('buzz in sentence 0: queries sentence 0',
+    got1.lastHeard === 0 && JSON.stringify(qis(got1)) === '[0]');
+
+  // buzz in sentence 1: exactly one earlier sentence to query
+  const s0words = SENTS[0].split(/\s+/).length;
+  const got2 = missedQueryFor(recFor(TEXT, 0, s0words + 2), doc);
+  check('buzz in sentence 1: one query',
+    got2.lastHeard === 1 && JSON.stringify(qis(got2)) === '[0]',
+    JSON.stringify({ lastHeard: got2.lastHeard, qis: qis(got2) }));
 
   // one-sentence question, dead
   const one = { question_sanitized: 'Name this element with atomic number 79.' };
   const gotOne = missedQueryFor({ bf: null, sent: 0 }, one);
-  check('one-sentence dead: queries the only sentence', gotOne.qi === 0);
+  check('one-sentence dead: queries the only sentence',
+    JSON.stringify(qis(gotOne)) === '[0]');
 
   // empty text
   check('empty text -> null', missedQueryFor({ bf: 0.5, sent: 0 }, { question_sanitized: '' }) === null);
