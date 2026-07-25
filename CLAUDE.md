@@ -48,6 +48,7 @@ node tests/reader_facets/run_tests.js       # reader facet-filtering tests
 node tests/reader_audio/run_tests.js        # reader read-aloud queue restriction
 node tests/reader_multibuzz/run_tests.js    # reader multibuzz mode (neg -> resume -> rebuzz; one stats row)
 node tests/reader_stats/run_tests.js        # reader stats engine (multi-select scope facets + composite breakdown)
+node tests/reader_dist/run_tests.js         # reader distribution sampling (nested cat/sub/subtype weight chain)
 node tests/semsearch/run_tests.js           # semantic-search filter chain + in-browser engine (Worker-port parity, scan vs naive reference)
 node tests/missed_clues/run_tests.js        # missed-clues buzz-sentence derivation (bf round-trip)
 ```

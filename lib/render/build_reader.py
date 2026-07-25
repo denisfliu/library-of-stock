@@ -118,7 +118,8 @@ html[data-layout="mobile"] #mbar {{
 #m-main {{ flex: 1; font-weight: 600; }}
 /* Rail panels lose their card chrome once inside a sheet body. */
 .los-sheet-body .panel {{ border: none; background: none; padding: 0.4rem 0 0; margin: 0; }}
-.los-sheet-body .distgrid input {{ min-height: 40px; }}
+.los-sheet-body .dtree .dw {{ min-height: 40px; }}
+.los-sheet-body .dtree .twist {{ width: 24px; height: 24px; line-height: 24px; }}
 /* Stats view on a narrow screen */
 .tablewrap {{ overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }}
 html[data-layout="mobile"] .bar {{ width: 56px; }}
@@ -260,10 +261,32 @@ main {{ flex: 1; min-width: 0; }}
 .distpanel summary {{ cursor: pointer; color: var(--bright); font-size: 0.86rem; font-weight: 600; }}
 .disttoggle {{ display: flex; align-items: center; gap: 0.45rem; color: var(--bright); cursor: pointer; margin: 0.5rem 0 0.3rem; }}
 .disttoggle input {{ accent-color: var(--accent); width: 15px; height: 15px; }}
-.distgrid {{ display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 0.6rem; align-items: center; margin: 0.5rem 0; }}
-.distgrid label {{ font-size: 0.8rem; color: var(--muted); }}
-.distgrid input {{ width: 3.4rem; background: var(--inset); border: 1px solid var(--border); color: var(--bright); border-radius: 4px; padding: 0.15rem 0.35rem; font-size: 0.8rem; text-align: right; }}
-.distgrid input:disabled {{ opacity: 0.4; }}
+.dtree {{ margin: 0.55rem 0 0; }}
+.drow {{ position: relative; display: flex; align-items: center; gap: 0.3rem; padding: 0.22rem 0 0.3rem; }}
+.drow .bar {{ position: absolute; left: 0; bottom: 1px; height: 2px; background: var(--accent-dim); border-radius: 1px; pointer-events: none; }}
+.drow.lv0 .bar {{ background: var(--accent); opacity: 0.75; }}
+.twist {{ width: 16px; height: 16px; flex-shrink: 0; background: none; border: none; padding: 0;
+  color: var(--faint); font-size: 0.62rem; line-height: 16px; cursor: pointer; transform: rotate(0deg); }}
+.twist.open {{ transform: rotate(90deg); color: var(--muted); }}
+.twist.leaf {{ visibility: hidden; cursor: default; }}
+.dname {{ flex: 1; font-size: 0.8rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+.drow.lv0 .dname {{ color: var(--text); }}
+.drow.zero .dname {{ color: var(--faint); }}
+.dpct {{ width: 2.6rem; text-align: right; font-size: 0.72rem; color: var(--faint); font-variant-numeric: tabular-nums; flex-shrink: 0; }}
+.drow.lv0 .dpct {{ color: var(--muted); }}
+.dw {{ width: 3rem; flex-shrink: 0; background: var(--inset); border: 1px solid var(--border); color: var(--bright);
+  border-radius: 4px; padding: 0.15rem 0.35rem; font-size: 0.8rem; text-align: right; font-variant-numeric: tabular-nums; }}
+.dw:focus {{ outline: none; border-color: var(--accent-dim); }}
+.dw.untouched {{ color: var(--faint); }}
+.dw:disabled {{ opacity: 0.4; }}
+.dtree.disabled .bar {{ opacity: 0.25; }}
+.dtree.disabled .evenrow {{ display: none; }}
+.kids {{ margin-left: 14px; border-left: 1px solid var(--border); padding-left: 6px; }}
+.evenrow {{ display: flex; justify-content: flex-end; padding: 0.05rem 0 0.25rem; }}
+.evenrow .linkbtn {{ font-size: 0.72rem; color: var(--faint); }}
+.evenrow .linkbtn:hover {{ color: var(--wiki); }}
+.distfoot {{ display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.55rem; }}
+.disttotal {{ font-size: 0.74rem; color: var(--faint); font-variant-numeric: tabular-nums; }}
 
 .controls {{ display: flex; gap: 0.6rem; align-items: center; padding: 0.75rem 1.1rem; border-top: 1px solid var(--border); flex-wrap: wrap; }}
 .btn {{
@@ -527,8 +550,11 @@ table.acc td.name .kpart {{ color: var(--faint); }}
       <details class="distpanel" id="distpanel">
         <summary>Category distribution</summary>
         <label class="setting disttoggle"><input type="checkbox" id="usedist" checked> Follow distribution</label>
-        <div class="distgrid" id="distgrid"></div>
-        <button class="linkbtn" id="distreset">Reset to standard</button>
+        <div class="dtree" id="disttree"></div>
+        <div class="distfoot">
+          <button class="linkbtn" id="distreset">Reset to standard</button>
+          <span class="disttotal" id="disttotal"></span>
+        </div>
       </details>
       <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
       <div class="hint taphint">Tap the question text to buzz. Skip is never counted.</div>
