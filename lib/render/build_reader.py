@@ -103,6 +103,27 @@ html[data-layout="mobile"] .btn {{ padding: 0.65rem 1.25rem; font-size: 1rem; }}
 html[data-layout="mobile"] .chip {{ padding: 0.4rem 0.9rem; font-size: 0.92rem; }}
 html[data-layout="mobile"] .seg button {{ padding: 0.55rem 0.2rem; font-size: 0.9rem; }}
 html[data-layout="mobile"] .qtext {{ font-size: 1.06rem; line-height: 1.7; padding: 0.95rem 1rem 1.05rem; min-height: 8.5rem; }}
+/* Live-question window: while a question is live, reader.js (syncQPane)
+   sizes the card to fill down to the action bar and the text scrolls
+   INSIDE it, pinned to the newest words; the page is scroll-locked so the
+   buzz target never moves. Relaxes back to a growing card on done. */
+html[data-layout="mobile"] body.qlock {{ overflow: hidden; }}
+html[data-layout="mobile"] .qcard.live {{ display: flex; flex-direction: column; }}
+html[data-layout="mobile"] .qcard.live .qtext {{
+  flex: 1 1 0; min-height: 0; overflow-y: auto;
+  -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+}}
+html[data-layout="mobile"] .qcard.live .qtext.scrolled {{
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 30px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 30px);
+}}
+.qjump {{
+  position: absolute; right: 0.8rem; bottom: 0.8rem; z-index: 5;
+  background: var(--accent-dim); border: 1px solid var(--accent); color: #fff;
+  border-radius: 16px; padding: 0.4rem 0.95rem; font-size: 0.85rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
+}}
+.qjump[hidden] {{ display: none; }}
 html[data-layout="mobile"] .controls {{ display: none; }}
 html[data-layout="mobile"] .kbdhint {{ display: none; }}
 html[data-layout="mobile"] .taphint {{ display: block; }}
@@ -214,7 +235,7 @@ kbd {{
 
 /* ---------- stage ---------- */
 main {{ flex: 1; min-width: 0; }}
-.qcard {{ background: var(--raised); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }}
+.qcard {{ background: var(--raised); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; position: relative; }}
 .qmeta {{
   display: flex; gap: 0.9rem; flex-wrap: wrap; align-items: baseline;
   padding: 0.55rem 1.1rem; border-bottom: 1px solid var(--border);
@@ -467,6 +488,7 @@ table.acc td.name .kpart {{ color: var(--faint); }}
         </div>
         <div class="reviewbar" id="reviewbar" style="display:none"></div>
         <div class="qtext" id="qtext"></div>
+        <button class="qjump" id="qjump" hidden>&#8595; Latest</button>
         <div class="answerrow" id="answerrow">
           <input id="answerinput" type="text" placeholder="Answer&hellip;" autocomplete="off" spellcheck="false">
         </div>
@@ -480,7 +502,7 @@ table.acc td.name .kpart {{ color: var(--faint); }}
           </div>
         </div>
         <div class="controls">
-          <button class="btn primary" id="mainbtn">Start</button>
+          <button class="btn primary" id="mainbtn" disabled>Start</button>
           <button class="btn" id="pausebtn" disabled>Pause</button>
           <button class="btn" id="skipbtn" disabled title="Not counted in stats">Skip</button>
           <button class="btn" id="prevbtn" disabled title="Review the previous question (k)">&#9664; Prev</button>
@@ -581,7 +603,7 @@ table.acc td.name .kpart {{ color: var(--faint); }}
     <button class="btn" id="m-prev" disabled title="Previous question">&#9664;</button>
     <button class="btn" id="m-pause" disabled>Pause</button>
     <button class="btn" id="m-skip" disabled>Skip</button>
-    <button class="btn primary" id="m-main">Start</button>
+    <button class="btn primary" id="m-main" disabled>Start</button>
   </div>
 </div>
 
