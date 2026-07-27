@@ -75,7 +75,7 @@ realtime there vs ~1.7x on the laptop 4070.
   into one folder and hit HF's hard 10k-files-per-directory limit on July 19,
   2026 — re-sharded + re-uploaded that day) plus a `{qid}.json` sidecar: `{"v":1,
   "chunks": [[start_s,end_s],...], "texts":[...]}` — exact per-chunk audio
-  offsets + chunk texts (audio time → text position; the moderator tool's
+  offsets + chunk texts (audio time → text position; the scorekeeper's
   buzz-position source). The sidecar is written before the `.opus` lands, so a
   present `.opus` always implies a present sidecar. Skip-existing = resumable.
   Sampling params in `PARAMS` (settled by A/B: default voice — cloning sounded
@@ -99,7 +99,7 @@ realtime there vs ~1.7x on the laptop 4070.
   worker's items re-serve. **Claim order finishes sets** (July 19): items carry
   `set_name` (seeded/backfilled at init) and claims serve the set with the
   fewest not-done tossups first — every finished set
-  immediately becomes pickable in qb-moderator's TTS-audio mode. Transport is **SSH, not an HTTP port** (MSL is behind
+  immediately becomes pickable in qb-scorekeeper's TTS-audio mode. Transport is **SSH, not an HTTP port** (MSL is behind
   the Stanford firewall): a remote worker runs `ssh msl python ttsqueue.py claim`,
   batched (~100 items/round) so the round-trip is negligible. `Client(host)`
   wraps local-vs-ssh for gen_tts. Self-test (atomicity/lease/drain): the queue

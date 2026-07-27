@@ -1,7 +1,7 @@
-# qb-moderator — design plan (July 2026)
+# qb-scorekeeper — design plan (July 2026)
 
-Status: **v0 BUILT July 18, 2026** — `github.com/qbsuite/qb-moderator`
-(public, CI, app live at https://qbsuite.github.io/qb-moderator/app/).
+Status: **v0 BUILT July 18, 2026** — `github.com/qbsuite/qb-scorekeeper`
+(public, CI, app live at https://qbsuite.github.io/qb-scorekeeper/app/).
 Build-order steps 1–2 are done: SPEC.md (engine events, scoring rule
 table, room protocol sketch), the pure event-sourced engine (22 test
 vectors incl. host point-pad verdict overrides — Denis July 18: in
@@ -19,7 +19,7 @@ bar with add/rename teams + pointer-drag players + per-player
 +15/+10/−5/0 boxes (buzz+verdict in one tap during reading, plain score
 adjustment otherwise), bonus on/off toggle. **v0.6 July 19 (Denis's
 no-two-copies + UX pass)**: `reveal_units.js` is now THE canonical
-classic-script copy in qb-moderator — `lib/js/reader.js` dropped its
+classic-script copy in qb-scorekeeper — `lib/js/reader.js` dropped its
 inline splitter and loads the shared file (script tag in
 build_reader.py; `build.py sync_vendored_js()` copies from the sibling
 checkout so local builds can't drift; all reader node suites + golden
@@ -158,7 +158,7 @@ shared qb-rooms instance** (vendors `app/room.js` byte-identical with a
 drift test, own snapshot/qlog payload shapes, spectator links via a
 `~watch` name sentinel; worker unchanged — the relay never inspects
 payloads, so both apps share one deployment; protocol freeze noted in
-qb-moderator SPEC.md). Same day, for remote US-wide consensus play:
+qb-scorekeeper SPEC.md). Same day, for remote US-wide consensus play:
 **latency-equalized buzz arbitration** in the DO (ping/pong RTT
 sampling, buzzes compete within an RTT-sized window on estimated press
 time = arrival − RTT/2, caps 100/200ms bound lag-faking and announce
@@ -169,7 +169,7 @@ lock.
 
 This doc supersedes the "living-room, hotkeys-first" sketch in
 `docs/suite.md` and **promotes the tabled rooms design**
-(`docs/rooms.md`) into moderator v1 — Denis decided July 18 that buzz
+(`docs/rooms.md`) into scorekeeper v1 — Denis decided July 18 that buzz
 mode 1 *is* a temporary self-hosted room with phones as buzzers.
 
 ## The two buzz modes (Denis, July 18)
@@ -240,7 +240,7 @@ existing HMAC session token.
 **"Temporary self-hosted"** means two things, both supported:
 - *Temporary*: rooms are ephemeral — in-DO state only, short code,
   garbage-collected after inactivity. No accounts required to join.
-- *Self-hosted*: the room server ships in the qb-moderator repo with a
+- *Self-hosted*: the room server ships in the qb-scorekeeper repo with a
   `wrangler.toml`; anyone can deploy it to their own free Cloudflare
   account and point the client at their URL (same self-hosting stance as
   qb-search). We also run a default instance on `los-sync`. The client
@@ -311,7 +311,7 @@ hear its own TTS output).
 
 ## Build order
 
-1. **Protocol + engine spec** (first artifact in the qb-moderator repo):
+1. **Protocol + engine spec** (first artifact in the qb-scorekeeper repo):
    message types, state diagram, the scoring rule table above as data,
    engine test vectors (buzz-at-word × verdict × timing → score deltas).
 2. **Engine + solo mode**: engine as a plain JS module driven by hotkeys

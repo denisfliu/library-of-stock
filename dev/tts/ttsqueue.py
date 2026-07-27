@@ -59,7 +59,7 @@ def init(reseed=False):
     """Create the queue and seed it from the mirror worklist, marking as done any
     item already present in this host's out/. Idempotent; --reseed wipes first.
     Also seeds/backfills set_name per qid — claim() serves sets nearest 100%
-    tossup audio first, so the moderator's pickable-set list grows fastest."""
+    tossup audio first, so the scorekeeper's pickable-set list grows fastest."""
     con = _connect()
     if reseed:
         con.execute("DROP TABLE IF EXISTS items")
@@ -97,7 +97,7 @@ def claim(worker, n):
     """Atomically claim up to n todo (or lease-expired) items. Returns [(kind, qid)].
 
     Serve order finishes sets, not ids: sets with the fewest not-done tossups
-    first. Every finished set immediately becomes pickable in the moderator's
+    first. Every finished set immediately becomes pickable in the scorekeeper's
     TTS-audio mode; ids without a set_name (not in the current mirror —
     shouldn't happen after init) go last."""
     con = _connect()

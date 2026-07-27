@@ -208,7 +208,7 @@ v4.0.18 (`src/renderer/DataModel/FileParsing.ts`, `Tournament.ts`,
   stays in one place). Key scheme: `t/<tid>/packet/<r>/<name>`,
   `t/<tid>/bucket/<bid>/<fileid>-<name>`, `t/<tid>/roster.qbj`.
 - **No DO / no second Worker in v1.** Live current-round on the bucket page is
-  a poll of the bucket-state endpoint (~30 s). The `qb-moderator` `RoomDO`
+  a poll of the bucket-state endpoint (~30 s). The `qb-scorekeeper` `RoomDO`
   WebSocket relay remains a drop-in upgrade if polling ever feels laggy —
   explicitly deferred, as the original plan allowed.
 - **The stats + `.yft` engine runs client-side** as a dependency-free shared JS
@@ -219,10 +219,10 @@ v4.0.18 (`src/renderer/DataModel/FileParsing.ts`, `Tournament.ts`,
   endpoints. Rationale: YF import needs no server transformation (see Format
   findings), browsers handle these file sizes trivially, and it keeps the
   Worker at sync/worker.js's proven complexity level. Also mirrors the suite's
-  static-app pattern (qb-moderator).
+  static-app pattern (qb-scorekeeper).
 - **Frontend = static pages** in the `qb-td` repo, served at
   `qbsuite.github.io/qb-td/` via Pages. Routing is query-param based, matching
-  qb-moderator's `player.html?room=X` convention: bucket link
+  qb-scorekeeper's `player.html?room=X` convention: bucket link
   `bucket.html?b=<secret>`, public stats `stats.html?t=<slug>`, admin
   `admin.html`. (The original plan's `/b/<code>` path style assumed
   Worker-served HTML; query params keep the API/page split clean.)
@@ -272,7 +272,7 @@ A pure JS module (`qb-td/src/stats/`) that:
 `consensus-scorekeeper` `src/util/tournament-aggregate.js` is a good *shape*
 reference (pure `aggregate → {standings, leaderboard, ...}`) but is flat-CSV,
 not qbj, and has no tossup/bonus granularity — this engine is new. The moderator
-scoring-rule table (`docs/moderator.md:161-186`, 15/10/−5/0 + 10/part bonuses) is
+scoring-rule table (`docs/scorekeeper.md:161-186`, 15/10/−5/0 + 10/part bonuses) is
 the closest existing per-question spec. Extract to its own package if a second
 suite consumer appears (suite rule).
 

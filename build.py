@@ -45,7 +45,7 @@ def sync_vendored_js() -> None:
     root = Path(__file__).resolve().parent
     vendored = {
         root / "lib/js/reveal_units.js":
-            root.parent / "qb-moderator/app/vendor/reveal_units.js",
+            root.parent / "qb-scorekeeper/app/vendor/reveal_units.js",
     }
     for dest, src in vendored.items():
         if not src.exists():

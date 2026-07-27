@@ -1,7 +1,7 @@
 # Online rooms — design notes (July 2026)
 
-Status: **promoted into qb-moderator v1** (July 18, 2026 — see
-`docs/moderator.md`, which supersedes this doc's framing but keeps its
+Status: **promoted into qb-scorekeeper v1** (July 18, 2026 — see
+`docs/scorekeeper.md`, which supersedes this doc's framing but keeps its
 architecture verbatim: DO-per-room on the existing Worker, clock protocol,
 server-side checker). Kept as the detailed reference for the room-server
 internals. Nothing here is built yet.

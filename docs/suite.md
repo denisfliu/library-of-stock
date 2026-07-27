@@ -2,7 +2,7 @@
 
 Status: **org created** (`github.com/qbsuite`, renamed from qbkit), extraction
 not started. The intent: a suite of quizbowl tools, each organized around a
-**user-facing surface** (the database, the audio, search, the moderator, the
+**user-facing surface** (the database, the audio, search, the scorekeeper, the
 wiki) rather than internal plumbing. `library-of-stock` moves into the org,
 goes fully public, and becomes the reference consumer of the extracted
 packages — code moves out and is imported back, one source of truth, no copy
@@ -46,12 +46,12 @@ drift.
 | `qb-mirror` | *The database interface.* Python package + CLI: build a full local qbreader SQLite from official backups, sync new sets from the live API, clean query layer (category/set/difficulty/answerline). Owns the **taxonomy ordinals** contract. | `lib/mirror/` (importer, sync, query engine; R2 publisher stays site-side) |
 | `qb-audio` | **The dataset + its SPEC.md are the product.** HF dataset (stays `uild42/qb-audio` — Denis decided against an HF org, July 18) + a versioned SPEC.md: layout + path scheme (`tossups\|bonuses/{qid[-2:]}/{qid}.opus`), `audio_index.json` manifest schema, chunk-offset sidecar schema (v1 chunks, v2 word-level post-alignment), and the **text-cleaning contract** ("exactly the text the audio speaks"). Everything a consumer needs is plain HTTP — no install. Supporting code: generation pipeline (any TTS backend; qb-mirror as input adapter) + a reference JS playback client as a plain copyable/CDN-loadable file (manifest gate, LRU prefetch, audio-clock→text-position via sidecars). **First public deliverable.** | `dev/tts/`, audio parts of `lib/js/reader.js` |
 | `qb-search` | Self-hostable semantic search: embedder, IVF-binary index builder, Cloudflare Worker, minimal search UI. | `lib/embed/`, `sync/worker.js` `/search`, `lib/js/semsearch.js` |
-| `qb-moderator` | The moderator app (PWA) — **full plan: `docs/moderator.md`** (July 18; supersedes the hotkeys-first sketch). Two buzz modes: (1) temporary self-hosted **rooms** (DO-per-room per docs/rooms.md, promoted into v1; phones as buzzers, mobile-critical, host console, past-questions log, in-person read-aloud or remote text-reveal) and (2) **voice** (calibrated physical-buzzer sound detection + STT answer, optional local Whisper download). Optional scoring layer (15/10/-5, negs only during reading) with a human-manned adjudication mode. Engine = pure state machine module inside this repo. | new + docs/rooms.md + docs/moderator.md |
+| `qb-scorekeeper` | The scorekeeper app (PWA) — **full plan: `docs/scorekeeper.md`** (July 18; supersedes the hotkeys-first sketch). Two buzz modes: (1) temporary self-hosted **rooms** (DO-per-room per docs/rooms.md, promoted into v1; phones as buzzers, mobile-critical, host console, past-questions log, in-person read-aloud or remote text-reveal) and (2) **voice** (calibrated physical-buzzer sound detection + STT answer, optional local Whisper download). Optional scoring layer (15/10/-5, negs only during reading) with a human-manned adjudication mode. Engine = pure state machine module inside this repo. | new + docs/rooms.md + docs/scorekeeper.md |
 | `qb-td` | Tournament hub for TDs (**shipped July 20, 2026**; plan + status: `docs/tournament_hub.md`): per-room upload buckets for ModaQ game files, packet distribution + live round, live public stats, YellowFruit `.yft` + qbj-bundle export. Cloudflare Worker (D1+R2, OAuth from sync/) + static pages + dependency-free qbj/stats/yft engine. | new + `sync/worker.js` auth |
 | `qbsuite.github.io` | The wiki/site itself — study guides, overviews, reader, search pages — **plus the whole generation pipeline** (this repo, transferred + renamed; org root Pages requires that exact repo name). | `library-of-stock` |
 
 Old qb-core pieces, new homes:
-- Answer checker → stays qbreader's; reader + moderator keep thin vendored
+- Answer checker → stays qbreader's; reader + scorekeeper keep thin vendored
   copies with attribution; fixes go upstream.
 - TTS text cleaning (`ttsclean`) → `qb-audio` (part of the dataset spec:
   "this is exactly the text the audio says").
@@ -67,7 +67,7 @@ Old qb-core pieces, new homes:
 ## Development flow (the parity requirement)
 
 Local layout: sibling checkouts under `~/code/` (`qb-mirror`, `qb-audio`,
-`qb-search`, `qb-moderator`, `qb-td`, `qbsuite.github.io`).
+`qb-search`, `qb-scorekeeper`, `qb-td`, `qbsuite.github.io`).
 
 - **Python**: every package is `pip install -e ../qb-mirror` into the shared
   env — edit in the package repo, effects are live in the site immediately,
@@ -93,7 +93,7 @@ Local layout: sibling checkouts under `~/code/` (`qb-mirror`, `qb-audio`,
 
 Synthesis is per-*chunk* (`chunk_text` merges tiny fragments, splits long
 sentences at clauses), so cumulative per-chunk durations are exact and free
-to record at generation time. Load-bearing for the moderator (audio time T →
+to record at generation time. Load-bearing for the scorekeeper (audio time T →
 text position → powers/negs) and part of the qb-audio dataset spec.
 
 - `gen_tts.py` emits a per-question sidecar `{qid}.json` next to each
@@ -158,10 +158,10 @@ move. GitHub is the whole migration:
    (registries-on-demand); no PyPI step planned.
 3. **Site migration** to `qbsuite.github.io` (any time; independent).
 4. **qb-search**.
-5. **qb-moderator** — build order in `docs/moderator.md`: ~~protocol+engine
+5. **qb-scorekeeper** — build order in `docs/scorekeeper.md`: ~~protocol+engine
    spec → engine + solo mode~~ **v0 shipped July 18**
-   (github.com/qbsuite/qb-moderator; app at
-   qbsuite.github.io/qb-moderator/app/) → rooms (DO + player PWA + host
+   (github.com/qbsuite/qb-scorekeeper; app at
+   qbsuite.github.io/qb-scorekeeper/app/) → rooms (DO + player PWA + host
    console) → voice mode → local STT download.
 
 Manual (Denis) checklist remaining: ~~`@qbsuite` npm org~~ (done July 18,
@@ -179,7 +179,7 @@ audio dataset README credits qbreader + tournament authors. Code license:
 MIT across the org (matches qbreader and Chatterbox).
 
 Status (done July 20, 2026): every repo carries a MIT `LICENSE`; this repo,
-qb-td, and qb-moderator also carry `THIRD_PARTY_NOTICES.md` with full
+qb-td, and qb-scorekeeper also carry `THIRD_PARTY_NOTICES.md` with full
 license texts for vendored code (qb-answer-checker + inlined deps,
 qb-packet-parser + its LICENSE.txt sidecar, MODAQ) and interop notes
 (YellowFruit is AGPL-3.0 — qb-td implements the .yft *format* only, no YF
