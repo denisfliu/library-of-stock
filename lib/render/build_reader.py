@@ -102,11 +102,14 @@ html[data-layout="mobile"] .mchrome {{
 html[data-layout="mobile"] .btn {{ padding: 0.65rem 1.25rem; font-size: 1rem; }}
 html[data-layout="mobile"] .chip {{ padding: 0.4rem 0.9rem; font-size: 0.92rem; }}
 html[data-layout="mobile"] .seg button {{ padding: 0.55rem 0.2rem; font-size: 0.9rem; }}
-html[data-layout="mobile"] .qtext {{ font-size: 1.06rem; line-height: 1.7; padding: 0.95rem 1rem 1.05rem; min-height: 8.5rem; }}
+html[data-layout="mobile"] .qtext {{ font-size: calc(1.06rem * var(--qscale, 1)); line-height: 1.7; padding: 0.95rem 1rem 1.05rem; min-height: 8.5rem; }}
 /* Live-question follow: while a question is live, reader.js keeps the page
    scrolled to the newest words (chat-style above the fixed bottom bar);
-   scrolling up unpins and shows the ↓ Latest pill, fixed above the bar
-   (exact offset set by syncQJump from the bar's live rect). */
+   scrolling away unpins and shows the ↓ Latest pill, fixed above the bar
+   (exact offset set by syncQJump from the bar's live rect). The spacer
+   extends the page while live so the text can be scrolled all the way to
+   the top of the screen. */
+#qspacer {{ height: 70vh; height: 70svh; }}
 .qjump {{
   position: fixed; right: 0.8rem; bottom: 96px; z-index: 60;
   background: var(--accent-dim); border: 1px solid var(--accent); color: #fff;
@@ -241,7 +244,7 @@ main {{ flex: 1; min-width: 0; }}
 .status.dead {{ color: var(--faint); }}
 
 .qtext {{
-  font-family: var(--serif); font-size: 1.14rem; line-height: 1.78; color: var(--bright);
+  font-family: var(--serif); font-size: calc(1.14rem * var(--qscale, 1)); line-height: 1.78; color: var(--bright);
   padding: 1.15rem 1.3rem 1.25rem; min-height: 11.5rem;
 }}
 .qtext .skipped {{ color: var(--faint); }}
@@ -512,6 +515,7 @@ table.acc td.name .kpart {{ color: var(--faint); }}
           <div class="chips" id="w-practice"></div>
         </div>
       </div>
+      <div id="qspacer" hidden></div>
     </section>
 
     <section id="view-stats" style="display:none">
@@ -537,6 +541,9 @@ table.acc td.name .kpart {{ color: var(--faint); }}
       <h2>Reading</h2>
       <label class="setting">Speed: <span class="val" id="wpmval"></span> wpm
         <input type="range" id="wpm" min="120" max="700" step="10">
+      </label>
+      <label class="setting">Text size: <span class="val" id="fsizeval"></span>
+        <input type="range" id="fsize" min="80" max="150" step="5">
       </label>
       <label class="setting" style="margin-bottom:0.25rem">Sentences read</label>
       <div class="seg" id="sentmode">
@@ -569,7 +576,7 @@ table.acc td.name .kpart {{ color: var(--faint); }}
         </div>
       </details>
       <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
-      <div class="hint taphint">Tap the question text to buzz. Skip is never counted.</div>
+      <div class="hint taphint">Skip is never counted.</div>
     </div>
     <div class="panel" id="panel-cluesearch">
       <h2>Clue search</h2>
