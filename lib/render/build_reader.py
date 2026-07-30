@@ -103,34 +103,12 @@ html[data-layout="mobile"] .btn {{ padding: 0.65rem 1.25rem; font-size: 1rem; }}
 html[data-layout="mobile"] .chip {{ padding: 0.4rem 0.9rem; font-size: 0.92rem; }}
 html[data-layout="mobile"] .seg button {{ padding: 0.55rem 0.2rem; font-size: 0.9rem; }}
 html[data-layout="mobile"] .qtext {{ font-size: 1.06rem; line-height: 1.7; padding: 0.95rem 1rem 1.05rem; min-height: 8.5rem; }}
-/* Live-question window: while a question is live, reader.js (syncQPane)
-   sizes the card to fill down to the action bar and the text scrolls
-   INSIDE it, pinned to the newest words; the page is scroll-locked so the
-   buzz target never moves. Relaxes back to a growing card on done. */
-html[data-layout="mobile"] body.qlock {{ overflow: hidden; }}
-/* The chrome above the card slides closed while the live pane is active, so
-   the question text gets the top of the viewport; it returns on done/review.
-   reader.js remeasures the pane on transitionend. */
-html[data-layout="mobile"] header, html[data-layout="mobile"] .mchrome {{
-  max-height: 300px; overflow: hidden;
-  transition: max-height 0.22s ease, opacity 0.15s ease, padding 0.22s ease;
-}}
-html[data-layout="mobile"] body.qlock header,
-html[data-layout="mobile"] body.qlock .mchrome {{
-  max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0;
-  border-bottom-width: 0;
-}}
-html[data-layout="mobile"] .qcard.live {{ display: flex; flex-direction: column; }}
-html[data-layout="mobile"] .qcard.live .qtext {{
-  flex: 1 1 0; min-height: 0; overflow-y: auto;
-  -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
-}}
-html[data-layout="mobile"] .qcard.live .qtext.scrolled {{
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 30px);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 30px);
-}}
+/* Live-question follow: while a question is live, reader.js keeps the page
+   scrolled to the newest words (chat-style above the fixed bottom bar);
+   scrolling up unpins and shows the ↓ Latest pill, fixed above the bar
+   (exact offset set by syncQJump from the bar's live rect). */
 .qjump {{
-  position: absolute; right: 0.8rem; bottom: 0.8rem; z-index: 5;
+  position: fixed; right: 0.8rem; bottom: 96px; z-index: 60;
   background: var(--accent-dim); border: 1px solid var(--accent); color: #fff;
   border-radius: 16px; padding: 0.4rem 0.95rem; font-size: 0.85rem;
   box-shadow: 0 2px 12px rgba(0,0,0,0.5);
@@ -447,10 +425,7 @@ table.acc td.name .kpart {{ color: var(--faint); }}
 .simtoggle {{ background: none; border: none; color: var(--wiki); font-size: 0.75rem; cursor: pointer; padding: 0.2rem 0; }}
 .simlist {{ display: none; }}
 .simlist.open {{ display: block; }}
-@media (prefers-reduced-motion: reduce) {{
-  .timerbar i {{ transition: none !important; }}
-  html[data-layout="mobile"] header, html[data-layout="mobile"] .mchrome {{ transition: none !important; }}
-}}
+@media (prefers-reduced-motion: reduce) {{ .timerbar i {{ transition: none !important; }} }}
 </style>
 </head>
 <body>
