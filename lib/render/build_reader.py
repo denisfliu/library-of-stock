@@ -108,6 +108,18 @@ html[data-layout="mobile"] .qtext {{ font-size: 1.06rem; line-height: 1.7; paddi
    INSIDE it, pinned to the newest words; the page is scroll-locked so the
    buzz target never moves. Relaxes back to a growing card on done. */
 html[data-layout="mobile"] body.qlock {{ overflow: hidden; }}
+/* The chrome above the card slides closed while the live pane is active, so
+   the question text gets the top of the viewport; it returns on done/review.
+   reader.js remeasures the pane on transitionend. */
+html[data-layout="mobile"] header, html[data-layout="mobile"] .mchrome {{
+  max-height: 300px; overflow: hidden;
+  transition: max-height 0.22s ease, opacity 0.15s ease, padding 0.22s ease;
+}}
+html[data-layout="mobile"] body.qlock header,
+html[data-layout="mobile"] body.qlock .mchrome {{
+  max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0;
+  border-bottom-width: 0;
+}}
 html[data-layout="mobile"] .qcard.live {{ display: flex; flex-direction: column; }}
 html[data-layout="mobile"] .qcard.live .qtext {{
   flex: 1 1 0; min-height: 0; overflow-y: auto;
@@ -435,7 +447,10 @@ table.acc td.name .kpart {{ color: var(--faint); }}
 .simtoggle {{ background: none; border: none; color: var(--wiki); font-size: 0.75rem; cursor: pointer; padding: 0.2rem 0; }}
 .simlist {{ display: none; }}
 .simlist.open {{ display: block; }}
-@media (prefers-reduced-motion: reduce) {{ .timerbar i {{ transition: none !important; }} }}
+@media (prefers-reduced-motion: reduce) {{
+  .timerbar i {{ transition: none !important; }}
+  html[data-layout="mobile"] header, html[data-layout="mobile"] .mchrome {{ transition: none !important; }}
+}}
 </style>
 </head>
 <body>
