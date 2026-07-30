@@ -13,7 +13,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import ROOT
-from lib.render.theme import PALETTE, layout_switch_script, sheet_css
+from lib.render.theme import PALETTE, cache_buster, layout_switch_script, sheet_css
+
+
+def js_v(name: str) -> str:
+    """Cache-buster for a lib/js asset (Pages caches JS ~10 min; a fresh
+    page must never run a stale script)."""
+    return cache_buster(ROOT / "lib" / "js" / name)
 
 
 def page_html() -> str:
@@ -102,7 +108,7 @@ html[data-layout="mobile"] .mchrome {{
 html[data-layout="mobile"] .btn {{ padding: 0.65rem 1.25rem; font-size: 1rem; }}
 html[data-layout="mobile"] .chip {{ padding: 0.4rem 0.9rem; font-size: 0.92rem; }}
 html[data-layout="mobile"] .seg button {{ padding: 0.55rem 0.2rem; font-size: 0.9rem; }}
-html[data-layout="mobile"] .qtext {{ font-size: calc(1.06rem * var(--qscale, 1)); line-height: 1.7; padding: 0.95rem 1rem 1.05rem; min-height: 8.5rem; }}
+html[data-layout="mobile"] .qtext {{ font-size: var(--qsize, 1.06rem); line-height: 1.7; padding: 0.95rem 1rem 1.05rem; min-height: 8.5rem; }}
 /* Live-question follow: while a question is live, reader.js keeps the page
    scrolled to the newest words (chat-style above the fixed bottom bar);
    scrolling away unpins and shows the ↓ Latest pill, fixed above the bar
@@ -244,7 +250,7 @@ main {{ flex: 1; min-width: 0; }}
 .status.dead {{ color: var(--faint); }}
 
 .qtext {{
-  font-family: var(--serif); font-size: calc(1.14rem * var(--qscale, 1)); line-height: 1.78; color: var(--bright);
+  font-family: var(--serif); font-size: var(--qsize, 1.14rem); line-height: 1.78; color: var(--bright);
   padding: 1.15rem 1.3rem 1.25rem; min-height: 11.5rem;
 }}
 .qtext .skipped {{ color: var(--faint); }}
@@ -543,7 +549,7 @@ table.acc td.name .kpart {{ color: var(--faint); }}
         <input type="range" id="wpm" min="120" max="700" step="10">
       </label>
       <label class="setting">Text size: <span class="val" id="fsizeval"></span>
-        <input type="range" id="fsize" min="80" max="150" step="5">
+        <input type="range" id="fsize" min="13" max="28" step="1">
       </label>
       <label class="setting" style="margin-bottom:0.25rem">Sentences read</label>
       <div class="seg" id="sentmode">
@@ -613,19 +619,19 @@ table.acc td.name .kpart {{ color: var(--faint); }}
   <div class="los-sheet-body" id="sheet-reading-body"></div>
 </div>
 
-<script src="lib/js/qdata.js"></script>
+<script src="lib/js/qdata.js?v={js_v('qdata.js')}"></script>
 <div id="cluepanel" aria-live="polite">
   <div class="cluehead"><h3>Similar clues</h3><span id="cluequery"></span>
     <button id="clueclose" aria-label="close">&times;</button></div>
   <div id="cluebody"></div>
 </div>
 
-<script src="lib/js/mobile.js"></script>
-<script src="lib/js/answer_checker.js"></script>
-<script src="lib/js/reveal_units.js"></script>
-<script src="lib/js/clue_search.js"></script>
-<script src="lib/js/reader.js"></script>
-<script src="lib/js/sync.js"></script>
+<script src="lib/js/mobile.js?v={js_v('mobile.js')}"></script>
+<script src="lib/js/answer_checker.js?v={js_v('answer_checker.js')}"></script>
+<script src="lib/js/reveal_units.js?v={js_v('reveal_units.js')}"></script>
+<script src="lib/js/clue_search.js?v={js_v('clue_search.js')}"></script>
+<script src="lib/js/reader.js?v={js_v('reader.js')}"></script>
+<script src="lib/js/sync.js?v={js_v('sync.js')}"></script>
 </body>
 </html>
 """

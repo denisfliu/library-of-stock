@@ -266,9 +266,17 @@ def table_cards_css(table_class: str) -> str:
 """
 
 
-def mp3_cache_buster(mp3_path: Path) -> str:
-    """Short content hash for cache-busting audio URLs ('0' if missing)."""
-    mp3_path = Path(mp3_path)
-    if not mp3_path.exists():
+def cache_buster(path: Path) -> str:
+    """Short content hash for cache-busting asset URLs ('0' if missing).
+
+    Pages that reference mutable assets (JS, audio) must append ?v={hash}:
+    GitHub Pages caches assets for ~10 minutes, so a fresh HTML page can
+    otherwise run a stale script."""
+    path = Path(path)
+    if not path.exists():
         return '0'
-    return hashlib.md5(mp3_path.read_bytes()).hexdigest()[:8]
+    return hashlib.md5(path.read_bytes()).hexdigest()[:8]
+
+
+def mp3_cache_buster(mp3_path: Path) -> str:
+    return cache_buster(mp3_path)
