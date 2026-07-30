@@ -23,10 +23,10 @@ admin downloads are plain links. Remaining manual steps:
    users; DROP TABLE IF EXISTS tournaments"` followed by
    `npx wrangler d1 execute qb-td --remote --file schema.sql`.
    Until then, live tournament creation 500s (old NOT NULL owner_uid).
-2. **YellowFruit round-trip** (Denis): generate a `.yft` from real ModaQ
+2. **YellowFruit round-trip** (Denis): generate a `.yft` from real MODAQ
    games, open in YF >= 4.0.18, confirm stats match the public page.
 
-The two "Open items" (YellowFruit's exact `YfData` contract, ModaQ's native
+The two "Open items" (YellowFruit's exact `YfData` contract, MODAQ's native
 game-file format) were re-verified against source on build day — findings
 folded into "Format findings" below, and the architecture was simplified
 accordingly (single Worker, client-side engine). The three key design
@@ -61,7 +61,7 @@ halving files and requests vs the manual two-file flow; the mod never
 touches files. Consumers split it: the Worker stores/serves only the qbj
 half in the bundle and on `/pub` (the game half carries FULL PACKET TEXT —
 never public), `engine/qbj.matchPayload` unwraps it for stats/.yft, and the
-dashboard zip emits the derived bare `.qbj` so YellowFruit's ModaQ import
+dashboard zip emits the derived bare `.qbj` so YellowFruit's MODAQ import
 still works. Manual two-file uploads via bucket.html work unchanged. MODAQ's hosted demo takes no
 URL params (verified against `modaq.github.io` source), which is why qb-td
 self-hosts the control. **Per-game links** (Denis's call, replacing an
@@ -108,7 +108,7 @@ OAuth app + a redeploy: `npx wrangler deploy`, then Pages push).
 ## Problem / intended outcome
 
 A TO running a tournament currently chases down each moderator's game files (the
-`.qbj` match file + the ModaQ native game file), downloads them one by one,
+`.qbj` match file + the MODAQ native game file), downloads them one by one,
 imports them into YellowFruit, and generates stats by hand. This tool
 centralizes that: TOs create a tournament, hand each room a private upload
 "bucket," distribute packets, track the live round, collect the roster, and get
@@ -129,19 +129,19 @@ Verified against MODAQ master (`src/qbj/QBJ.ts`,
 v4.0.18 (`src/renderer/DataModel/FileParsing.ts`, `Tournament.ts`,
 `TournamentManager.ts`, `Match.ts`).
 
-- **ModaQ exports three files** from its Export-to-JSON dialog:
+- **MODAQ exports three files** from its Export-to-JSON dialog:
   - `Round_{N}_{TeamA}_{TeamB}.qbj` — a **bare match object** (snake_case match
     schema, NOT wrapped in `{version, objects}`): `{tossups_read, match_teams:
     [{team:{name, players}, bonus_points, match_players:[{player:{name},
     tossups_heard, answer_counts:[{number, answer:{value}}]}], lineups}],
     match_questions:[…buzzes with word_index…], packets, _round}`. `_round` is
     a nonstandard field carrying the user-entered round number.
-  - `Round_{N}_{TeamA}_{TeamB}_Game.json` — the full ModaQ GameState (packet +
+  - `Round_{N}_{TeamA}_{TeamB}_Game.json` — the full MODAQ GameState (packet +
     players + cycles). **This is "the game file"** — extension `.json`, treated
     by us as an opaque blob.
   - `Round_{N}_{TeamA}_{TeamB}_Events.json` — cycles only (some TDs collect it;
     also an opaque blob).
-- **YellowFruit natively imports raw ModaQ `.qbj` files** ("import game files"):
+- **YellowFruit natively imports raw MODAQ `.qbj` files** ("import game files"):
   `TournamentManager.importMatchesFromWholeQbj` → uses `_round` to place each
   match (`IModaqMatch` in `Match.ts`). So the **qbj-bundle fallback needs zero
   transformation** — it's just the collected files + roster in a zip.
@@ -254,7 +254,7 @@ Follow the patterns from `sync/schema.sql` (`users` table identical).
    and **download qbj bundle**; toggle **publish**.
 2. **Moderator bucket page** (`bucket.html?b=<secret>`, no login, mobile-first): shows
    the tournament + this room + the live current round; download the current
-   round's packet; upload this game's `.qbj` + ModaQ native game file (drag/drop
+   round's packet; upload this game's `.qbj` + MODAQ native game file (drag/drop
    or file pick); confirm + list this room's prior uploads.
 3. **Public stats page** (`stats.html?t=<slug>`, only when published): standings (W/L,
    PPG, PPB, PP20TUH) + individual leaderboard (TUH, 15/10/−5, P/N, bonus
@@ -280,20 +280,20 @@ suite consumer appears (suite rule).
 
 1. Engine first (pure JS, offline-testable): qbj parse → merge with roster →
    standings/leaderboard → `.yft` serialization → store-only zip. Node test
-   suite with ModaQ-shaped fixtures.
+   suite with MODAQ-shaped fixtures.
 2. Worker: OAuth (copy from `sync/`), D1 schema, tournament/bucket/round/file
    API, R2 blob endpoints, public endpoints behind the publish gate.
 3. Frontends: TO admin dashboard; moderator bucket page (poll current round);
    public stats page — all on the shared engine module.
 4. **Round-trip a generated `.yft` through real YellowFruit** (manual, Denis)
    to confirm it opens with no version/schema errors and stats match; verify
-   the qbj bundle imports via YF's ModaQ import path.
+   the qbj bundle imports via YF's MODAQ import path.
 5. Deploy (D1 create + schema, OAuth app, secrets, `wrangler deploy`), add
    `qb-td` to the qbsuite landing page.
 
 ## Verification
 
-- **`.yft` round-trip**: generate from real ModaQ qbj matches + roster, open in
+- **`.yft` round-trip**: generate from real MODAQ qbj matches + roster, open in
   YellowFruit v4, confirm it loads with no version/schema errors and its report
   matches our public page's numbers.
 - **Stats parity**: cross-check the aggregator against YellowFruit's HTML report
@@ -310,6 +310,6 @@ suite consumer appears (suite rule).
 
 - ~~Exact `YfVersion` / `YfData` field set~~ — verified against YF 4.0.18
   source; see Format findings. We stamp `YfVersion: '4.0.18'`.
-- ~~ModaQ's native "game file" format/extension~~ — `Round_N_A_B_Game.json`,
+- ~~MODAQ's native "game file" format/extension~~ — `Round_N_A_B_Game.json`,
   a full GameState dump; stored + served as an opaque blob. Only the `.qbj`
   is parsed for stats.
