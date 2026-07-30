@@ -109,20 +109,9 @@ html[data-layout="mobile"] .btn {{ padding: 0.65rem 1.25rem; font-size: 1rem; }}
 html[data-layout="mobile"] .chip {{ padding: 0.4rem 0.9rem; font-size: 0.92rem; }}
 html[data-layout="mobile"] .seg button {{ padding: 0.55rem 0.2rem; font-size: 0.9rem; }}
 html[data-layout="mobile"] .qtext {{ font-size: var(--qsize, 1.06rem); line-height: 1.7; padding: 0.95rem 1rem 1.05rem; min-height: 8.5rem; }}
-/* Live-question follow: while a question is live, reader.js keeps the page
-   scrolled to the newest words (chat-style above the fixed bottom bar);
-   scrolling away unpins and shows the ↓ Latest pill, fixed above the bar
-   (exact offset set by syncQJump from the bar's live rect). The spacer
-   extends the page while live so the text can be scrolled all the way to
-   the top of the screen. */
+/* Live-question run-out: while a question is live, reader.js unhides the
+   spacer so the revealing text can be scrolled anywhere on screen. */
 #qspacer {{ height: 70vh; height: 70svh; }}
-.qjump {{
-  position: fixed; right: 0.8rem; bottom: 96px; z-index: 60;
-  background: var(--accent-dim); border: 1px solid var(--accent); color: #fff;
-  border-radius: 16px; padding: 0.4rem 0.95rem; font-size: 0.85rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.5);
-}}
-.qjump[hidden] {{ display: none; }}
 html[data-layout="mobile"] .controls {{ display: none; }}
 html[data-layout="mobile"] .kbdhint {{ display: none; }}
 html[data-layout="mobile"] .taphint {{ display: block; }}
@@ -487,7 +476,6 @@ table.acc td.name .kpart {{ color: var(--faint); }}
         </div>
         <div class="reviewbar" id="reviewbar" style="display:none"></div>
         <div class="qtext" id="qtext"></div>
-        <button class="qjump" id="qjump" hidden>&#8595; Latest</button>
         <div class="answerrow" id="answerrow">
           <input id="answerinput" type="text" placeholder="Answer&hellip;" autocomplete="off" spellcheck="false">
         </div>
