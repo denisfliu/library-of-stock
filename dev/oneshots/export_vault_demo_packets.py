@@ -1,10 +1,11 @@
-"""One-shot: export 2025 VAULT packets 1-3 from the qbreader mirror into
-qb-td's demo packet sources (../qb-td/tools/demo/round{1,2,3}.json).
+"""One-shot: export 2022 ACF Winter packets 1-9 from the qbreader mirror
+into qb-td's demo packet sources (../qb-td/tools/demo/round{1..9}.json).
 
-The demo tournament (qb-td app/demo.html) ships three real packets; this
-regenerates its committed sources from the mirror. Formatted text is kept,
-with <i> converted to <em> because MODAQ's FormattedTextParser throws on
-unknown tags (it supports b/u/em/req/sub/sup only). Run from repo root:
+The demo tournament (qb-td app/demo.html) ships real packets — a 4-team
+triple round robin needs 9 rounds; this regenerates its committed sources
+from the mirror. Formatted text is kept, with <i> converted to <em>
+because MODAQ's FormattedTextParser throws on unknown tags (it supports
+b/u/em/req/sub/sup only). Run from repo root:
 
     python dev/oneshots/export_vault_demo_packets.py
 """
@@ -17,8 +18,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from lib.common import ROOT  # noqa: E402
 
-SET_NAME = "2025 VAULT"
-PACKETS = [1, 2, 3]
+SET_NAME = "2022 ACF Winter"
+PACKETS = list(range(1, 10))
 OUT_DIR = ROOT.parent / "qb-td" / "tools" / "demo"
 
 I_TAG = re.compile(r"<(/?)i>", re.IGNORECASE)
