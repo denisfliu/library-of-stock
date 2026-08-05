@@ -1,9 +1,12 @@
-// Regression test for the semantic-search filter chain: the category-
-// bundle expansion in lib/js/semsearch.js (a port of lib/mirror/query.py
-// _expand_category_bundle) and the Worker's row filtering in
-// sync/worker.js (buildRowFilter / rowPasses, a port of _build_where).
-// Executes the REAL functions sliced out of both files against synthetic
-// index rows. Run: node tests/semsearch/run_tests.js
+// Regression test for the semantic-search backend pair: the Worker's row
+// filtering in sync/worker.js (buildRowFilter / rowPasses, a port of
+// qbmirror.query._build_where) and the vendored in-browser engine
+// lib/js/clue_search.js (canonical home: qbsuite/qb-search; vendored
+// here for the reader, synced by build.py's vendor step). This is the
+// ONE place Worker and engine meet in CI — the search page itself and
+// its bundle-expansion tests live in qbsuite/qb-search now.
+// Executes the REAL functions against synthetic index rows.
+// Run: node tests/semsearch/run_tests.js
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -46,15 +49,6 @@ const CFG = {
   },
 };
 
-/* ---- slice the page's expansion ---- */
-const pageSrc = fs.readFileSync(path.join(__dirname, '../../lib/js/semsearch.js'), 'utf8');
-const pageCtx = vm.createContext({ CFG, Number, Array, Object });
-vm.runInContext(
-  slice(pageSrc, 'function expandBundle(', '\n/* ---------- session', 'semsearch.js') +
-  '\n; globalThis.__page = { expandBundle, bundleOrdinals };',
-  pageCtx, { filename: 'semsearch.js (sliced)' });
-const page = pageCtx.__page;
-
 /* ---- slice the Worker's filter ---- */
 const workerSrc = fs.readFileSync(path.join(__dirname, '../../sync/worker.js'), 'utf8');
 const workerCtx = vm.createContext({ Number, Array, Object, Uint8Array, Math });
@@ -88,39 +82,15 @@ const manifest = {
 const filterFor = body => worker.buildRowFilter(body, manifest);
 const passes = (f, r) => worker.rowPasses(f, r, 0);
 
-/* ---- expansion semantics (query.py parity) ---- */
-let b = page.expandBundle([], [], []);
-check('nothing selected -> null', b === null);
-
-b = page.expandBundle(['Science'], [], []);
-check('cat only -> all its subs', JSON.stringify(b.subs.sort()) ===
-  JSON.stringify(['Biology', 'Other Science']), JSON.stringify(b));
-check('cat only -> all its alts', JSON.stringify(b.alts.sort()) ===
-  JSON.stringify(['Computer Science', 'Math']), JSON.stringify(b));
-
-b = page.expandBundle([], ['Other Science'], []);
-check('sub implies cat', b.cats.includes('Science'), JSON.stringify(b));
-check('sub pick narrows subs', JSON.stringify(b.subs) === '["Other Science"]',
-  JSON.stringify(b));
-check('sub pick still fills alts', b.alts.includes('Math') && b.alts.includes('Computer Science'),
-  JSON.stringify(b));
-
-b = page.expandBundle([], [], ['Opera']);
-check('alt implies cat + all subs', b.cats.includes('Fine Arts') &&
-  b.subs.includes('Visual Fine Arts') && b.subs.includes('Other Fine Arts'),
-  JSON.stringify(b));
-check('alt pick narrows alts', JSON.stringify(b.alts) === '["Opera"]', JSON.stringify(b));
-
-b = page.expandBundle(['Mythology'], [], ['Math']);
-check('cross-category picks compose', b.cats.includes('Science') &&
-  b.subs.includes('Mythology') && JSON.stringify(b.alts) === '["Math"]',
-  JSON.stringify(b));
-
 /* ---- worker row filtering ---- */
 check('no filters -> null (unfiltered scan)', filterFor({}) === null);
 
-// bundle via the real expansion: Science with only Math picked
-const ords = page.bundleOrdinals(page.expandBundle([], [], ['Math']));
+// Category-bundle ordinals as the qb-search page sends them (expansion
+// semantics are tested where the page lives, qbsuite/qb-search): the alt
+// 'Math' picked alone expands to Science + all its subs; a bare
+// 'Fine Arts' pick expands to all its subs and alts.
+const ords = { cats: [1], subs: [2, 3], alts: [2] };
+const faOrds = { cats: [2], subs: [4, 5], alts: [4, 5] };
 let f = filterFor(ords);
 const CAT = n => CFG.cats.indexOf(n), SUB = n => CFG.subs.indexOf(n),
       ALT = n => CFG.alts.indexOf(n);
@@ -150,7 +120,7 @@ f = filterFor({ set: 'acf winter' });
 check('set substring keeps its set', passes(f, row({ setOrd: 1 })));
 check('set substring drops others', !passes(f, row({ setOrd: 0 })));
 
-f = filterFor({ qtype: 'bonus', diffs: [9], minYear: 2020, ...page.bundleOrdinals(page.expandBundle(['Fine Arts'], [], [])) });
+f = filterFor({ qtype: 'bonus', diffs: [9], minYear: 2020, ...faOrds });
 check('all filters compose (pass)', passes(f, row({ kind: 1, diff: 9, setOrd: 1, cat: CAT('Fine Arts'), sub: SUB('Visual Fine Arts'), alt: ALT('Film') })));
 check('all filters compose (one miss fails)', !passes(f, row({ kind: 0, diff: 9, setOrd: 1, cat: CAT('Fine Arts'), sub: SUB('Visual Fine Arts'), alt: ALT('Film') })));
 
@@ -173,8 +143,7 @@ const clue = clueCtx.window.losClueSearch._test;
   const bodies = [
     {}, ords, { diffs: [7, 8] }, { qtype: 'tossup' }, { qtype: 'bonus' },
     { minYear: 2020 }, { maxYear: 2016 }, { set: 'acf winter' },
-    { qtype: 'bonus', diffs: [9], minYear: 2020,
-      ...page.bundleOrdinals(page.expandBundle(['Fine Arts'], [], [])) },
+    { qtype: 'bonus', diffs: [9], minYear: 2020, ...faOrds },
   ];
   const rows = [
     row({}), row({ kind: 1 }), row({ diff: 7 }), row({ diff: 9, kind: 1, setOrd: 1 }),

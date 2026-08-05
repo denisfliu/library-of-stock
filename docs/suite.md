@@ -45,7 +45,7 @@ drift.
 |---|---|---|
 | `qb-mirror` | *The database interface.* Python package + CLI: build a full local qbreader SQLite from official backups, sync new sets from the live API, clean query layer (category/set/difficulty/answerline). Owns the **taxonomy ordinals** contract. | `lib/mirror/` (importer, sync, query engine; R2 publisher stays site-side) |
 | `qb-audio` | **The dataset + its SPEC.md are the product.** HF dataset (stays `uild42/qb-audio` — Denis decided against an HF org, July 18) + a versioned SPEC.md: layout + path scheme (`tossups\|bonuses/{qid[-2:]}/{qid}.opus`), `audio_index.json` manifest schema, chunk-offset sidecar schema (v1 chunks, v2 word-level post-alignment), and the **text-cleaning contract** ("exactly the text the audio speaks"). Everything a consumer needs is plain HTTP — no install. Supporting code: generation pipeline (any TTS backend; qb-mirror as input adapter) + a reference JS playback client as a plain copyable/CDN-loadable file (manifest gate, LRU prefetch, audio-clock→text-position via sidecars). **First public deliverable.** | `dev/tts/`, audio parts of `lib/js/reader.js` |
-| `qb-search` | Self-hostable semantic search: embedder, IVF-binary index builder, Cloudflare Worker, minimal search UI. | `lib/embed/`, `sync/worker.js` `/search`, `lib/js/semsearch.js` |
+| `qb-search` | Self-hostable semantic search: embedder, IVF-binary index builder, Cloudflare Worker, search UI. **App shipped Aug 4, 2026** (`github.com/qbsuite/qb-search`, live at `qbsuite.github.io/qb-search/app/`): the search page + the in-browser engine (`clue_search.js`, canonical home there; vendored back into `lib/js/` by build.py's vendor step for the reader) + generated taxonomy ordinals from qb-mirror. Still site-side: `lib/embed/` (embedder + index builder) and the Worker `/search` route. | `lib/embed/`, `sync/worker.js` `/search`, ~~`lib/js/semsearch.js`~~ (moved) |
 | `qb-scorekeeper` | The scorekeeper app (PWA) — **full plan: `docs/scorekeeper.md`** (July 18; supersedes the hotkeys-first sketch). Two buzz modes: (1) temporary self-hosted **rooms** (DO-per-room per docs/rooms.md, promoted into v1; phones as buzzers, mobile-critical, host console, past-questions log, in-person read-aloud or remote text-reveal) and (2) **voice** (calibrated physical-buzzer sound detection + STT answer, optional local Whisper download). Optional scoring layer (15/10/-5, negs only during reading) with a human-manned adjudication mode. Engine = pure state machine module inside this repo. | new + docs/rooms.md + docs/scorekeeper.md |
 | `qb-td` | Tournament hub for TDs (**shipped July 20, 2026**; plan + status: `docs/tournament_hub.md`): per-room upload buckets for MODAQ game files, packet distribution + live round, live public stats, YellowFruit `.yft` + qbj-bundle export. Cloudflare Worker (D1+R2, OAuth from sync/) + static pages + dependency-free qbj/stats/yft engine. | new + `sync/worker.js` auth |
 | `qbsuite.github.io` | The wiki/site itself — study guides, overviews, reader, search pages — **plus the whole generation pipeline** (this repo, transferred + renamed; org root Pages requires that exact repo name). | `library-of-stock` |
@@ -54,7 +54,10 @@ Old qb-core pieces, new homes:
 - Answer checker → stays qbreader's; reader + scorekeeper keep thin vendored
   copies with attribution; fixes go upstream.
 - TTS text cleaning (`ttsclean`) → `qb-audio` (part of the dataset spec:
-  "this is exactly the text the audio says").
+  "this is exactly the text the audio says"). Pre-staged at
+  `lib/audio/ttsclean.py` since July 29, 2026 (pure-stdlib, no `lib.common`), so
+  the extraction is a file move; the MSL generator already consumes it as a
+  deployed flat copy.
 - Taxonomy ordinals → `qb-mirror`; `qb-search` imports them.
 - Answerline normalization + reveal/pacing engine → site-internal; the
   normAns-×3 unification survives as a site cleanup (CLAUDE.md roadmap),
@@ -125,8 +128,10 @@ move. GitHub is the whole migration:
    page — fold its `index.html` sections into the site homepage and
    delete/replace that repo as part of this step.
 3. Verify repo Settings → Pages → Source = GitHub Actions after transfer.
-4. `sync/wrangler.toml` `ALLOWED_ORIGIN` → `https://qbsuite.github.io` +
-   `npx wrangler deploy` (CORS + login-redirect validation).
+4. `sync/wrangler.toml` `ALLOWED_ORIGINS` is already a multi-origin list
+   including `https://qbsuite.github.io` (added for the qb-search app,
+   Aug 2026) — after migration, drop the `denisfliu.github.io` entry +
+   `npx wrangler deploy`.
 5. OAuth app: callback URL points at the Worker (unchanged); update cosmetic
    homepage URL; optionally transfer the app to the org.
 6. Old `denisfliu.github.io/library-of-stock` links die (github.io never
@@ -157,7 +162,8 @@ move. GitHub is the whole migration:
    checkout shadows it locally). The git pin IS the supported install
    (registries-on-demand); no PyPI step planned.
 3. **Site migration** to `qbsuite.github.io` (any time; independent).
-4. **qb-search**.
+4. **qb-search** — app + in-browser engine **shipped Aug 4, 2026**
+   (see repo map); embedder/index-builder/Worker extraction remains.
 5. **qb-scorekeeper** — build order in `docs/scorekeeper.md`: ~~protocol+engine
    spec → engine + solo mode~~ **v0 shipped July 18**
    (github.com/qbsuite/qb-scorekeeper; app at

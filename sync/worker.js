@@ -63,6 +63,13 @@ async function verifyToken(token, secret) {
 }
 
 /* ---------- responses ---------- */
+// Multiple Pages origins consume this Worker (the library-of-stock site
+// and the qb-search app); ALLOWED_ORIGINS is comma-separated, with
+// ALLOWED_ORIGIN kept as a fallback for older configs.
+function allowedOrigins(env) {
+  return String(env.ALLOWED_ORIGINS || env.ALLOWED_ORIGIN || '')
+    .split(',').map(s => s.trim()).filter(Boolean);
+}
 function corsHeaders(env) {
   return {
     'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN,
@@ -87,10 +94,12 @@ async function requireUser(request, env) {
 
 /* ---------- oauth flow ---------- */
 async function authLogin(url, env) {
-  // `return` must land back on the site we serve — prevents open redirects.
+  // `return` must land back on a site we serve — prevents open redirects.
+  // origin + '/' so 'https://ours.github.io.evil.com' can't slip past.
   const ret = url.searchParams.get('return') || '';
-  if (!ret.startsWith(env.ALLOWED_ORIGIN)) {
-    return new Response('bad return url (must be on ' + env.ALLOWED_ORIGIN + ')', { status: 400 });
+  const origins = allowedOrigins(env);
+  if (!origins.some(o => ret === o || ret.startsWith(o + '/'))) {
+    return new Response('bad return url (must be on ' + origins.join(' or ') + ')', { status: 400 });
   }
   const state = await signToken({ r: ret, exp: Date.now() + STATE_TTL }, env.SESSION_SECRET);
   const gh = new URL('https://github.com/login/oauth/authorize');
@@ -474,6 +483,14 @@ async function search(url, request, env) {
 /* ---------- router ---------- */
 export default {
   async fetch(request, env) {
+    // Resolve multi-origin CORS once per request: hand every handler an
+    // env whose ALLOWED_ORIGIN is the request's Origin when allowlisted
+    // (else the first origin — non-CORS requests never read the header).
+    const origins = allowedOrigins(env);
+    const reqOrigin = request.headers.get('Origin');
+    env = Object.assign(Object.create(null), env, {
+      ALLOWED_ORIGIN: origins.includes(reqOrigin) ? reqOrigin : origins[0],
+    });
     const url = new URL(request.url);
     const path = url.pathname;
 

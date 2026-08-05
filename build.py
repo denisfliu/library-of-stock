@@ -32,7 +32,6 @@ from lib.sweep.matcher import TopicMatcher
 from lib.build_index import build as build_index
 from lib.render.build_reader import build as build_reader
 from lib.render.build_home import build as build_home
-from lib.render.build_search import build as build_search
 from lib import validate
 from dev import build_changelog, build_crossrefs, build_stats
 
@@ -46,6 +45,8 @@ def sync_vendored_js() -> None:
     vendored = {
         root / "lib/js/reveal_units.js":
             root.parent / "qb-scorekeeper/app/vendor/reveal_units.js",
+        root / "lib/js/clue_search.js":
+            root.parent / "qb-search/app/js/clue_search.js",
     }
     for dest, src in vendored.items():
         if not src.exists():
@@ -86,7 +87,6 @@ def main() -> None:
     build_index(analyses=analyses)
     build_reader()
     build_home(analyses=analyses)
-    build_search()
     validate.main(analyses=analyses, parse_errors=parse_errors)
     print("Done.")
 
