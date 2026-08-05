@@ -46,7 +46,7 @@ def sync_vendored_js() -> None:
         root / "lib/js/reveal_units.js":
             root.parent / "qb-scorekeeper/app/vendor/reveal_units.js",
         root / "lib/js/clue_search.js":
-            root.parent / "qb-search/app/js/clue_search.js",
+            root.parent / "qb-semantic-search/app/js/clue_search.js",
     }
     for dest, src in vendored.items():
         if not src.exists():

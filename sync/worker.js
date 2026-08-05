@@ -64,7 +64,7 @@ async function verifyToken(token, secret) {
 
 /* ---------- responses ---------- */
 // Multiple Pages origins consume this Worker (the library-of-stock site
-// and the qb-search app); ALLOWED_ORIGINS is comma-separated, with
+// and the qb-semantic-search app); ALLOWED_ORIGINS is comma-separated, with
 // ALLOWED_ORIGIN kept as a fallback for older configs.
 function allowedOrigins(env) {
   return String(env.ALLOWED_ORIGINS || env.ALLOWED_ORIGIN || '')

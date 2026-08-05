@@ -2,7 +2,7 @@
 
 The site has three main destinations: the wiki (wiki.html, built by
 lib/build_index.py), the reader (reader.html), and semantic search
-(the qb-search app at qbsuite.github.io/qb-search/app/). This page is the
+(the qb-semantic-search app at qbsuite.github.io/qb-semantic-search/app/). This page is the
 front door linking them, plus quick links to authored overview pages and
 sweep sets. Stats are computed from the corpus at build time; question-corpus
 figures live in door copy only (the mirror isn't available in CI).
@@ -158,7 +158,7 @@ footer a { color: var(--muted); }
     </ul>
     <span class="go">Start reading &rarr;</span>
   </a>
-  <a class="door search" href="https://qbsuite.github.io/qb-search/app/">
+  <a class="door search" href="https://qbsuite.github.io/qb-semantic-search/app/">
     <div class="eyebrow">Look up</div>
     <h2>Search</h2>
     <p>Find clues by meaning, not keywords, across the whole corpus.</p>

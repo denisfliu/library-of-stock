@@ -243,7 +243,7 @@ existing HMAC session token.
 - *Self-hosted*: the room server ships in the qb-scorekeeper repo with a
   `wrangler.toml`; anyone can deploy it to their own free Cloudflare
   account and point the client at their URL (same self-hosting stance as
-  qb-search). We also run a default instance on `los-sync`. The client
+  qb-semantic-search). We also run a default instance on `los-sync`. The client
   is server-URL-agnostic.
 
 **In-person vs remote presentation** (same room, host's choice):

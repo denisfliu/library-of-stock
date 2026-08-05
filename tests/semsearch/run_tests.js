@@ -1,10 +1,10 @@
 // Regression test for the semantic-search backend pair: the Worker's row
 // filtering in sync/worker.js (buildRowFilter / rowPasses, a port of
 // qbmirror.query._build_where) and the vendored in-browser engine
-// lib/js/clue_search.js (canonical home: qbsuite/qb-search; vendored
+// lib/js/clue_search.js (canonical home: qbsuite/qb-semantic-search; vendored
 // here for the reader, synced by build.py's vendor step). This is the
 // ONE place Worker and engine meet in CI — the search page itself and
-// its bundle-expansion tests live in qbsuite/qb-search now.
+// its bundle-expansion tests live in qbsuite/qb-semantic-search now.
 // Executes the REAL functions against synthetic index rows.
 // Run: node tests/semsearch/run_tests.js
 'use strict';
@@ -85,8 +85,8 @@ const passes = (f, r) => worker.rowPasses(f, r, 0);
 /* ---- worker row filtering ---- */
 check('no filters -> null (unfiltered scan)', filterFor({}) === null);
 
-// Category-bundle ordinals as the qb-search page sends them (expansion
-// semantics are tested where the page lives, qbsuite/qb-search): the alt
+// Category-bundle ordinals as the qb-semantic-search page sends them (expansion
+// semantics are tested where the page lives, qbsuite/qb-semantic-search): the alt
 // 'Math' picked alone expands to Science + all its subs; a bare
 // 'Fine Arts' pick expands to all its subs and alts.
 const ords = { cats: [1], subs: [2, 3], alts: [2] };
