@@ -398,7 +398,13 @@ table.acc td.name .kpart {{ color: var(--faint); }}
     padding: 0.2rem 0.3rem; text-align: right; font-variant-numeric: tabular-nums;
 }}
 .wnum:focus {{ border-color: var(--accent); outline: none; }}
-.proglegend {{ display: flex; gap: 0.9rem; flex-wrap: wrap; padding: 0.4rem 0.25rem 0; font-size: 0.78rem; color: var(--muted); }}
+.proglegend {{ display: flex; gap: 0.5rem; flex-wrap: wrap; padding: 0.45rem 0.25rem 0; font-size: 0.78rem; color: var(--muted); }}
+.legitem {{
+    background: none; border: 1px solid transparent; border-radius: 3px; color: var(--muted);
+    font-size: 0.78rem; padding: 0.1rem 0.4rem; display: inline-flex; align-items: center;
+}}
+.legitem:hover {{ color: var(--bright); border-color: var(--border); }}
+.legitem.off {{ opacity: 0.4; text-decoration: line-through; }}
 .proglegend .sw {{ display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 0.35rem; }}
 .proglegend .sw.dash {{ height: 0; border-top: 3px dashed; border-radius: 0; }}
 .progtip {{
@@ -420,6 +426,7 @@ table.acc tr.pinned td.name::before {{
 html[data-layout="mobile"] .progcv {{ height: 220px; }}
 html[data-layout="mobile"] .wslider {{ width: 110px; }}
 html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.sparkhead {{ display: none; }}
+
 .calib {{ display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1.2rem; }}
 .calib-cell {{
     flex: 1; min-width: 110px; background: var(--raised); border: 1px solid var(--border);
