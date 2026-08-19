@@ -370,6 +370,56 @@ table.acc th.sorth:hover {{ color: var(--bright); }}
 .scopefoot .linkbtn {{ margin-left: 0.7rem; }}
 table.acc td.name .kpart {{ color: var(--faint); }}
 .calibcv {{ width: 100%; max-width: 720px; height: auto; margin-bottom: 1.3rem; }}
+
+/* progress-over-time chart (stats) */
+.progwrap {{ position: relative; background: var(--raised); border: 1px solid var(--border); border-radius: 4px; padding: 0.55rem 0.6rem 0.4rem; max-width: 860px; }}
+.progcv {{ display: block; width: 100%; height: 300px; }}
+.ctlrow {{ display: flex; gap: 1.1rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.55rem; }}
+.ctlgrp {{ display: flex; gap: 0.3rem; align-items: center; }}
+.ctllbl {{ font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); margin-right: 0.15rem; }}
+.wslider {{
+    -webkit-appearance: none; appearance: none; width: 150px; height: 3px;
+    background: var(--border); border-radius: 2px; outline: none;
+}}
+.wslider::-webkit-slider-thumb {{
+    -webkit-appearance: none; appearance: none; width: 13px; height: 13px;
+    border-radius: 50%; background: var(--accent); border: 1px solid {p['bg']}; cursor: pointer;
+}}
+.wslider::-moz-range-thumb {{
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--accent); border: 1px solid {p['bg']}; cursor: pointer;
+}}
+.wslider:disabled {{ opacity: 0.4; }}
+.wslider:disabled::-webkit-slider-thumb {{ background: var(--faint); cursor: default; }}
+.wslider:disabled::-moz-range-thumb {{ background: var(--faint); cursor: default; }}
+.wnum {{
+    width: 52px; background: var(--inset); border: 1px solid var(--border); border-radius: 3px;
+    color: var(--text); font-family: var(--sans); font-size: 0.78rem;
+    padding: 0.2rem 0.3rem; text-align: right; font-variant-numeric: tabular-nums;
+}}
+.wnum:focus {{ border-color: var(--accent); outline: none; }}
+.proglegend {{ display: flex; gap: 0.9rem; flex-wrap: wrap; padding: 0.4rem 0.25rem 0; font-size: 0.78rem; color: var(--muted); }}
+.proglegend .sw {{ display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 0.35rem; }}
+.proglegend .sw.dash {{ height: 0; border-top: 3px dashed; border-radius: 0; }}
+.progtip {{
+    position: absolute; pointer-events: none; background: {p['bg']};
+    border: 1px solid var(--border); border-radius: 4px; padding: 0.4rem 0.55rem;
+    font-size: 0.76rem; color: var(--text); white-space: nowrap; opacity: 0;
+    transition: opacity 0.08s; box-shadow: 0 3px 12px rgba(0,0,0,0.5); z-index: 5;
+}}
+.progtip .tth {{ color: var(--bright); font-weight: 600; margin-bottom: 0.15rem; }}
+.progtip .ttr {{ display: flex; gap: 0.7rem; justify-content: space-between; font-variant-numeric: tabular-nums; }}
+.progtip .ttr i {{ font-style: normal; color: var(--faint); }}
+canvas.spark {{ width: 96px; height: 22px; vertical-align: middle; cursor: pointer; opacity: 0.85; }}
+canvas.spark:hover {{ opacity: 1; }}
+table.acc tr.pinned td {{ background: rgba(232, 176, 74, 0.05); }}
+table.acc tr.pinned td.name::before {{
+    content: ''; display: inline-block; width: 8px; height: 8px;
+    border-radius: 2px; margin-right: 0.45rem; background: var(--pincol);
+}}
+html[data-layout="mobile"] .progcv {{ height: 220px; }}
+html[data-layout="mobile"] .wslider {{ width: 110px; }}
+html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.sparkhead {{ display: none; }}
 .calib {{ display: flex; gap: 0.7rem; flex-wrap: wrap; margin-bottom: 1.2rem; }}
 .calib-cell {{
     flex: 1; min-width: 110px; background: var(--raised); border: 1px solid var(--border);
