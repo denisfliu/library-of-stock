@@ -1,7 +1,7 @@
 """render_sweep.py — Render a tournament sweep page from set.json.
 
 A sweep page lists every tossup and bonus-part answerline of one set,
-linked to existing topic pages (blue) or flagged as gaps (red). The
+linked to existing topic pages (blue) or left as plain text (gaps). The
 page is interactive client-side: filter by category, hide already-
 covered answerlines, switch between packet order / category grouping /
 a map view (shared lib/js/map_view.js), and expand any row to read the
@@ -18,7 +18,8 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
 from lib.questions_store import shard_slug
 from lib.render.theme import (LEAFLET_TAGS, base_css, layout_switch_script,
-                              mobile_core_css, nav_bar_css, search_nav_css)
+                              mobile_core_css, search_nav_css, site_nav,
+                              site_nav_css)
 
 
 def render_sweep(set_data: dict, out_path: str | _Path) -> _Path:
@@ -59,196 +60,211 @@ def render_sweep(set_data: dict, out_path: str | _Path) -> _Path:
 {LEAFLET_TAGS}
 <title>Sweep: {set_name}</title>
 <style>
-{base_css(max_width='900px')}
-{nav_bar_css()}
+{base_css(max_width='860px', body_padding='22px 24px 64px', h1_size='28px',
+          h1_pad='0', h1_margin='0')}
+{site_nav_css()}
+.breadcrumb {{ font-size: 14px; color: var(--c-muted); margin-top: 0.4rem; }}
+h1 {{ margin-top: 2px; }}
 .coverage-bar {{
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    padding: 0.5rem 0.9rem;
-    margin-bottom: 0.9rem;
-    font-size: 0.82rem;
-    color: #9aa0a7;
-    display: flex;
-    gap: 1.2rem;
-    flex-wrap: wrap;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--c-muted);
+    font-variant-numeric: tabular-nums;
 }}
-.coverage-bar b {{ color: #e0e0e0; }}
+.coverage-bar b {{ color: var(--c-text); font-weight: 600; }}
+#visible-count:not(:empty)::before {{ content: ' \\00b7  '; }}
 .controls {{
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
+    gap: 6px;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-top: 20px;
 }}
 .cat-chip {{
-    background: #1a2535;
-    border: 1px solid #2a4060;
-    border-radius: 12px;
-    color: #6b9eff;
-    font-size: 0.78rem;
-    padding: 0.15rem 0.65rem;
+    font: inherit;
+    font-size: 13px;
+    color: var(--c-text);
+    background: var(--c-pick);
+    border: 1px solid var(--c-pickline);
+    border-radius: 99px;
+    padding: 3px 12px;
     cursor: pointer;
     user-select: none;
     white-space: nowrap;
 }}
-.cat-chip .chip-count {{ color: #808790; font-size: 0.7rem; margin-left: 0.25rem; }}
+.cat-chip:hover {{ border-color: var(--c-link); }}
+.cat-chip .chip-count {{ color: var(--c-muted); margin-left: 6px; font-variant-numeric: tabular-nums; }}
 .cat-chip.off {{
-    background: #15191e;
-    border-color: #3a3f47;
-    color: #555;
+    background: none;
+    border-color: var(--c-border);
+    color: var(--c-faint);
     text-decoration: line-through;
 }}
-.cat-chip.off .chip-count {{ color: #444; }}
-.toggle-btn {{
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    border-radius: 3px;
-    color: #9aa0a7;
-    font-size: 0.78rem;
-    padding: 0.2rem 0.6rem;
+.cat-chip.off:hover {{ border-color: var(--c-link); }}
+.cat-chip.off .chip-count {{ color: var(--c-faint2); }}
+.view-tabs {{
+    display: flex;
+    align-items: flex-end;
+    gap: 26px;
+    margin-top: 22px;
+    border-bottom: 1px solid var(--c-border);
+    flex-wrap: wrap;
+}}
+.view-tabs .tab {{
+    font: inherit;
+    font-size: 15px;
+    color: var(--c-muted);
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0 0 10px;
     cursor: pointer;
-    user-select: none;
 }}
-.toggle-btn.on {{
-    border-color: #6b9eff;
-    color: #6b9eff;
-    background: #1a2535;
+.view-tabs .tab:hover {{ color: var(--c-text); }}
+.view-tabs .tab.on {{ color: var(--c-text); font-weight: 600; box-shadow: inset 0 -2px 0 var(--c-link); }}
+.view-tabs .tabs-sp {{ flex-grow: 1; }}
+.gaps-label {{
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; color: var(--c-muted);
+    padding-bottom: 10px; cursor: pointer; user-select: none;
 }}
-.controls-sep {{ color: #3a3f47; margin: 0 0.2rem; }}
-h2.group-head {{
-    font-family: 'Linux Libertine', Georgia, serif;
-    font-size: 1.2rem;
-    font-weight: normal;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0.1rem;
-    margin: 1.1rem 0 0.35rem;
-    color: #e0e0e0;
+.gaps-label input {{ accent-color: var(--c-link); margin: 0; }}
+.group-head-row {{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding: 24px 0 10px;
+    border-bottom: 1px solid var(--c-text);
 }}
+h2.group-head {{ font-size: 17px; font-weight: 600; color: var(--c-bright); }}
+.group-sum {{ font-size: 13px; color: var(--c-muted); white-space: nowrap; }}
 h3.subgroup-head {{
-    font-size: 0.9rem;
-    margin: 0.6rem 0 0.2rem;
-    color: #9aa0a7;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 14px 0 0;
+    padding-bottom: 6px;
+    color: var(--c-muted);
 }}
-.q-table {{ width: 100%; border-collapse: collapse; font-size: 0.85rem; }}
+.q-table {{ width: 100%; border-collapse: collapse; font-size: 14.5px; }}
 .q-table td {{
-    padding: 0.16rem 0.4rem;
-    border-top: 1px solid #22272e;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--c-border);
     vertical-align: baseline;
 }}
+.q-table tr:hover td {{ background: var(--c-hover); }}
+.q-table td:first-child {{ border-radius: 8px 0 0 8px; padding-left: 4px; }}
+.q-table td:last-child {{ border-radius: 0 8px 8px 0; padding-right: 4px; }}
 .q-label {{
-    width: 2.6rem;
+    width: 52px;
     white-space: nowrap;
-    color: #808790;
-    font-size: 0.72rem;
-    font-weight: bold;
+    color: var(--c-muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
 }}
 .q-cat {{
     text-align: right;
     white-space: nowrap;
-    color: #808790;
-    font-size: 0.72rem;
+    color: var(--c-muted);
+    font-size: 13px;
+    padding-left: 12px !important;
 }}
-.q-answer a {{
-    color: #6b9eff;
-    text-decoration: none;
-    border-bottom: 1px dotted #6b9eff;
-}}
-.q-answer a:hover {{ border-bottom-style: solid; }}
-.q-answer .no-page {{
-    color: #cc6666;
-    border-bottom: 1px dotted #cc6666;
-}}
-.q-answer .via-topic {{
-    color: #808790;
-    font-size: 0.75rem;
-    margin-left: 0.35rem;
-}}
+.q-answer a {{ color: var(--c-link); text-decoration: none; }}
+.q-answer a:hover {{ text-decoration: underline; }}
+.q-answer .no-page {{ color: var(--c-bad); }}
+.q-answer .via-topic {{ color: var(--c-muted); }}
 .qtext-btn {{
+    font: inherit;
     background: none;
-    border: 1px solid #2a2f37;
-    border-radius: 3px;
-    color: #808790;
-    font-size: 0.65rem;
-    padding: 0 0.35rem;
-    margin-left: 0.4rem;
+    border: 1px solid var(--c-border);
+    border-radius: 6px;
+    color: var(--c-muted);
+    font-size: 12px;
+    padding: 0 6px;
+    margin-left: 8px;
     cursor: pointer;
-    vertical-align: middle;
+    opacity: 0;
 }}
-.qtext-btn:hover {{ color: #6b9eff; border-color: #6b9eff; }}
+.q-table tr:hover .qtext-btn, .qtext-btn:focus-visible, .qtext-btn.open {{ opacity: 1; }}
+.qtext-btn:hover {{ color: var(--c-link); border-color: var(--c-link); }}
+.qtext-btn.open {{ color: var(--c-text); background: var(--c-pick); border-color: var(--c-pickline); }}
+@media (hover: none) {{ .qtext-btn {{ opacity: 1; }} }}
+.q-table tr.qtext-row:hover td {{ background: none; }}
 .qtext-row td {{
-    background: #15191e;
-    color: #9aa0a7;
-    font-size: 0.8rem;
-    line-height: 1.45;
-    padding: 0.45rem 0.7rem;
+    color: var(--c-text);
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 4px 0 12px 52px !important;
 }}
-.qdata-error a {{ color: #6b9eff; }}
+.qdata-error a {{ color: var(--c-link); }}
+.legend {{ margin-top: 10px; font-size: 13px; color: var(--c-muted); }}
 .map-box {{
-    border: 1px solid #3a3f47;
-    margin-bottom: 0.6rem;
+    border: 1px solid var(--c-border);
+    border-radius: 8px 8px 0 0;
+    margin-top: 20px;
 }}
 .map-note {{
-    color: #555;
-    font-size: 0.78rem;
-    font-style: italic;
-    margin-bottom: 1rem;
+    color: var(--c-faint);
+    font-size: 13px;
+    margin: 0.4rem 0 1rem;
 }}
 .empty-note {{
-    color: #555;
-    font-style: italic;
-    font-size: 0.85rem;
-    padding: 1rem 0;
+    color: var(--c-muted);
+    font-size: 14px;
+    padding: 1.5rem 0;
 }}
-.leaflet-container {{ background: #101418; }}
+.leaflet-container {{ background: var(--c-bg); font-family: inherit; }}
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {{
-    background: #1a1f25; color: #c8ccd1;
-    border: 1px solid #3a3f47;
+    background: var(--c-raised); color: var(--c-text);
+    border: 1px solid var(--c-border);
 }}
-.leaflet-popup-content a {{ color: #6b9eff; text-decoration: none; }}
+.leaflet-popup-content a {{ color: var(--c-link); text-decoration: none; }}
 {search_nav_css(z_index=1200)}
 {mobile_core_css()}
-/* Mobile: question rows stack — label + category on a faint first line,
-   the answerline full-width underneath. */
+html[data-layout="mobile"] body {{ padding-top: 16px; }}
+html[data-layout="mobile"] h1 {{ font-size: 24px; }}
+/* Mobile: question rows stack — label + category on a muted first line,
+   the answerline full-width underneath; the question button always shows. */
 html[data-layout="mobile"] .q-table, html[data-layout="mobile"] .q-table tbody {{ display: block; }}
 html[data-layout="mobile"] .q-table tr {{
     display: grid;
     grid-template-columns: auto 1fr;
     column-gap: 0.5rem;
-    border-top: 1px solid #22272e;
-    padding: 0.3rem 0;
+    border-bottom: 1px solid var(--c-border);
+    padding: 0.4rem 0;
 }}
-html[data-layout="mobile"] .q-table td {{ display: block; border-top: none; padding: 0.05rem 0; }}
+html[data-layout="mobile"] .q-table tr:hover td {{ background: none; }}
+html[data-layout="mobile"] .q-table td {{ display: block; border-bottom: none; padding: 0.05rem 0 !important; }}
 html[data-layout="mobile"] .q-table td.q-label {{ grid-row: 1; grid-column: 1; width: auto; }}
 html[data-layout="mobile"] .q-table td.q-cat {{ grid-row: 1; grid-column: 2; text-align: right; }}
 html[data-layout="mobile"] .q-table td.q-answer {{ grid-column: 1 / -1; }}
-html[data-layout="mobile"] .qtext-row td {{ grid-column: 1 / -1; }}
-html[data-layout="mobile"] .cat-chip {{ padding: 0.35rem 0.75rem; font-size: 0.85rem; }}
-html[data-layout="mobile"] .toggle-btn {{ padding: 0.35rem 0.75rem; }}
-html[data-layout="mobile"] .qtext-btn {{ font-size: 0.75rem; padding: 0.15rem 0.5rem; min-height: 30px; }}
+html[data-layout="mobile"] .qtext-row td {{ grid-column: 1 / -1; padding: 0.2rem 0 0.4rem !important; }}
+html[data-layout="mobile"] .qtext-btn {{ opacity: 1; font-size: 13px; padding: 0.15rem 0.6rem; min-height: 30px; }}
+html[data-layout="mobile"] .cat-chip {{ padding: 0.35rem 0.8rem; font-size: 14px; min-height: 0; }}
+html[data-layout="mobile"] .view-tabs {{ gap: 6px 20px; }}
+html[data-layout="mobile"] .view-tabs .tab {{ min-height: 0; padding-top: 8px; }}
+html[data-layout="mobile"] .gaps-label {{ min-height: 0; }}
+html[data-layout="mobile"] .group-sum {{ white-space: normal; text-align: right; }}
 html[data-layout="mobile"] .search-nav-dropdown {{
     min-width: 0; width: min(320px, calc(100vw - 1.5rem));
 }}
 </style>
 </head>
 <body>
+{site_nav('../../../', 'wiki', '<div class="nav-search"></div>')}
+<div class="breadcrumb">Tournament sweep</div>
 <h1>{set_name}</h1>
-<div class="nav-bar">
-<div class="nav-links"><a href="../../../wiki.html" class="nav-home">&larr; Wiki</a></div>
-<div class="nav-search"></div>
-</div>
 <div class="coverage-bar" id="coverage-bar">
-<span><b>{total}</b> answerlines</span>
-<span><b>{linked}</b> with study pages ({pct}%)</span>
-<span id="visible-count"></span>
+<span><b>{total:,}</b> answerlines</span> &middot;
+<span><b>{linked:,}</b> with study pages ({pct}%)</span><span id="visible-count"></span>
 </div>
 <div class="controls" id="cat-chips"></div>
-<div class="controls">
-<button class="toggle-btn" id="gaps-toggle">Show gaps only</button>
-<span class="controls-sep">|</span>
-<button class="toggle-btn on" data-view="packet">By packet</button>
-<button class="toggle-btn" data-view="category">By category</button>
-<button class="toggle-btn" data-view="map">Map</button>
+<div class="view-tabs" role="tablist">
+<button class="toggle-btn tab on" data-view="packet" role="tab">By packet</button>
+<button class="toggle-btn tab" data-view="category" role="tab">By category</button>
+<button class="toggle-btn tab" data-view="map" role="tab">Map</button>
+<span class="tabs-sp"></span>
+<label class="gaps-label"><input type="checkbox" id="gaps-toggle"> Show gaps only</label>
 </div>
 <div id="map-wrap" style="display:none">
     <div class="map-box" id="map-box"></div>
@@ -285,7 +301,7 @@ function esc(s) {{
 function answerHtml(q) {{
     if (q.slug) {{
         const via = (q.topic && q.topic.toLowerCase() !== q.a.toLowerCase())
-            ? `<span class="via-topic">&rarr; ${{esc(q.topic)}}</span>` : '';
+            ? `<span class="via-topic"> &rarr; ${{esc(q.topic)}}</span>` : '';
         return `<a href="../../${{encodeURIComponent(q.slug)}}/stock.html">${{esc(q.a)}}</a>${{via}}`;
     }}
     return `<span class="no-page" title="No page yet">${{esc(q.a)}}</span>`;
@@ -301,10 +317,19 @@ function rowHtml(q, showCat) {{
         ? `<td class="q-cat">${{esc(q.sub && q.sub !== q.cat ? q.sub : q.cat)}}</td>`
         : '';
     const qbtn = q.id
-        ? `<button class="qtext-btn" data-qi="${{QUESTIONS.indexOf(q)}}" title="Show question">?</button>`
+        ? `<button class="qtext-btn" data-qi="${{QUESTIONS.indexOf(q)}}" title="Show question" aria-expanded="false">question</button>`
         : '';
     return `<tr><td class="q-label">${{qLabel(q)}}</td>` +
            `<td class="q-answer">${{answerHtml(q)}}${{qbtn}}</td>${{cat}}</tr>`;
+}}
+
+function groupHead(title, rows) {{
+    const have = rows.filter(q => q.slug).length;
+    const sum = gapsOnly
+        ? `${{rows.length}} without a study page`
+        : `${{have}} of these ${{rows.length}} ${{have === 1 ? 'has' : 'have'}} a study page`;
+    return `<div class="group-head-row"><h2 class="group-head">${{esc(title)}}</h2>` +
+           `<span class="group-sum">${{sum}}</span></div>`;
 }}
 
 function renderBody() {{
@@ -312,7 +337,7 @@ function renderBody() {{
     const body = document.getElementById('body');
     const mapWrap = document.getElementById('map-wrap');
     document.getElementById('visible-count').textContent =
-        (qs.length === QUESTIONS.length) ? '' : `showing ${{qs.length}}`;
+        (qs.length === QUESTIONS.length) ? '' : `showing ${{qs.length.toLocaleString('en-US')}}`;
 
     if (view === 'map') {{
         body.innerHTML = '';
@@ -333,14 +358,14 @@ function renderBody() {{
             const inPacket = qs.filter(q => q.p === p).sort((a, b) =>
                 (a.t === b.t ? (a.n - b.n || (a.part ?? -1) - (b.part ?? -1))
                              : (a.t === 'tossup' ? -1 : 1)));
-            html += `<h2 class="group-head">Packet ${{p}}</h2>` +
+            html += groupHead('Packet ' + p, inPacket) +
                 `<table class="q-table">${{inPacket.map(q => rowHtml(q, true)).join('')}}</table>`;
         }}
     }} else {{
         for (const cat of CAT_ORDER) {{
             const inCat = qs.filter(q => q.cat === cat);
             if (!inCat.length) continue;
-            html += `<h2 class="group-head">${{esc(cat)}}</h2>`;
+            html += groupHead(cat, inCat);
             const subs = [...new Set(inCat.map(q => q.sub))].sort();
             for (const sub of subs) {{
                 const inSub = inCat.filter(q => q.sub === sub)
@@ -352,6 +377,7 @@ function renderBody() {{
             }}
         }}
     }}
+    html += '<div class="legend">Blue answerlines have a study page; red ones don’t yet.</div>';
     body.innerHTML = html;
 }}
 
@@ -394,9 +420,10 @@ function renderChips() {{
     box.innerHTML = CAT_ORDER.map(cat => {{
         const inCat = QUESTIONS.filter(q => q.cat === cat);
         const have = inCat.filter(q => q.slug).length;
-        const off = offCats.has(cat) ? ' off' : '';
-        return `<span class="cat-chip${{off}}" data-cat="${{esc(cat)}}">${{esc(cat)}}` +
-               `<span class="chip-count">${{have}}/${{inCat.length}}</span></span>`;
+        const isOff = offCats.has(cat);
+        return `<button class="cat-chip${{isOff ? ' off' : ''}}" data-cat="${{esc(cat)}}" ` +
+               `aria-pressed="${{!isOff}}">${{esc(cat)}}` +
+               `<span class="chip-count">${{have}}/${{inCat.length}}</span></button>`;
     }}).join('');
     box.querySelectorAll('.cat-chip').forEach(chip => {{
         chip.addEventListener('click', () => {{
@@ -408,16 +435,17 @@ function renderChips() {{
     }});
 }}
 
-document.getElementById('gaps-toggle').addEventListener('click', function () {{
-    gapsOnly = !gapsOnly;
-    this.classList.toggle('on', gapsOnly);
+document.getElementById('gaps-toggle').addEventListener('change', function () {{
+    gapsOnly = this.checked;
     renderBody();
 }});
 document.querySelectorAll('.toggle-btn[data-view]').forEach(btn => {{
     btn.addEventListener('click', () => {{
         view = btn.dataset.view;
-        document.querySelectorAll('.toggle-btn[data-view]').forEach(b =>
-            b.classList.toggle('on', b === btn));
+        document.querySelectorAll('.toggle-btn[data-view]').forEach(b => {{
+            b.classList.toggle('on', b === btn);
+            b.setAttribute('aria-selected', String(b === btn));
+        }});
         renderBody();
     }});
 }});
@@ -452,8 +480,12 @@ document.getElementById('body').addEventListener('click', e => {{
     const tr = btn.closest('tr');
     if (tr.nextElementSibling && tr.nextElementSibling.classList.contains('qtext-row')) {{
         tr.nextElementSibling.remove();
+        btn.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
         return;
     }}
+    btn.classList.add('open');
+    btn.setAttribute('aria-expanded', 'true');
     const q = QUESTIONS[parseInt(btn.dataset.qi)];
     const row = document.createElement('tr');
     row.className = 'qtext-row';

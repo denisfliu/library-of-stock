@@ -20,22 +20,62 @@ LEAFLET_TAGS = (
     '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>'
 )
 
-# Dark theme palette (matches the CSS embedded in the renderers).
-PALETTE = {
-    'bg': '#101418',
-    'bg_raised': '#1a1f25',
-    'bg_input': '#15191e',
-    'border': '#3a3f47',
-    'link': '#6b9eff',
-    'text': '#c8ccd1',
-    'text_bright': '#e0e0e0',
-    'text_muted': '#9aa0a7',
-    'text_faint': '#808790',
+# Colour tokens. Every page includes THEME_VARS_CSS (base_css does it for
+# you; pages with their own <style> call theme_vars_css()). PALETTE maps
+# the historical names to those CSS variables, so f-string CSS written
+# against PALETTE follows the light/dark switch automatically. The look is
+# shared with qbsuite (qb-td): warm off-white light mode, soft charcoal
+# dark mode, chosen by prefers-color-scheme (html[data-theme] overrides).
+THEME_LIGHT = {
+    'bg': '#fafaf8', 'raised': '#f1f1ec', 'input': '#ffffff', 'border': '#e4e4e7',
+    'line2': '#ececea', 'hover': '#efefea', 'link': '#1d4ed8', 'text': '#1a1a1a',
+    'bright': '#111111', 'muted': '#52525b', 'faint': '#71717a', 'faint2': '#a1a1aa',
+    'accent': '#a16207', 'good': '#15803d', 'bad': '#b91c1c', 'warn': '#b4410e',
+    'selbg': '#e8eefc', 'selline': '#9db5ef', 'pick': '#e4e4df', 'pickline': '#c9c9c2',
+    'winbg': '#dcefe0', 'winfg': '#14532d', 'hl': '#fdf1c7', 'raised2': '#f6f6f2',
+}
+THEME_DARK = {
+    'bg': '#232326', 'raised': '#2b2b2f', 'input': '#1e1e21', 'border': '#36363c',
+    'line2': '#303036', 'hover': '#303036', 'link': '#8fb0f5', 'text': '#e4e4e7',
+    'bright': '#f4f4f5', 'muted': '#a1a1aa', 'faint': '#8a8a93', 'faint2': '#6b6b73',
+    'accent': '#e0b25a', 'good': '#6fc58d', 'bad': '#f08a8a', 'warn': '#e7a177',
+    'selbg': '#2a3448', 'selline': '#4a5f8a', 'pick': '#38383f', 'pickline': '#4d4d55',
+    'winbg': '#2a4032', 'winfg': '#cfeeda', 'hl': '#4a4126', 'raised2': '#27272b',
 }
 
 
+def _vars(d):
+    return ' '.join(f'--c-{k}: {v};' for k, v in d.items())
+
+
+def theme_vars_css() -> str:
+    """Colour variables for both themes. Include once per page."""
+    return (
+        f":root {{ color-scheme: light; {_vars(THEME_LIGHT)} }}\n"
+        "@media (prefers-color-scheme: dark) {\n"
+        f"  :root:not([data-theme=\"light\"]) {{ color-scheme: dark; {_vars(THEME_DARK)} }}\n"
+        "}\n"
+        f":root[data-theme=\"dark\"] {{ color-scheme: dark; {_vars(THEME_DARK)} }}\n"
+    )
+
+
+PALETTE = {
+    'bg': 'var(--c-bg)',
+    'bg_raised': 'var(--c-raised)',
+    'bg_input': 'var(--c-input)',
+    'border': 'var(--c-border)',
+    'link': 'var(--c-link)',
+    'text': 'var(--c-text)',
+    'text_bright': 'var(--c-bright)',
+    'text_muted': 'var(--c-muted)',
+    'text_faint': 'var(--c-faint)',
+}
+
+FONT_STACK = "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
+
+
 def base_css(max_width='960px', body_padding='1.5rem 1.5rem',
-             type_scale=True, h1_size='1.8rem',
+             type_scale=True, h1_size='1.75rem',
              h1_pad='0.25rem', h1_margin='0.5rem',
              global_links=True) -> str:
     """Shared page-header CSS: reset, body, links, h1.
@@ -46,15 +86,16 @@ def base_css(max_width='960px', body_padding='1.5rem 1.5rem',
     come from PALETTE.
     """
     p = PALETTE
-    type_rules = "\n    line-height: 1.5;\n    font-size: 14px;" if type_scale else ""
+    type_rules = "\n    line-height: 1.55;\n    font-size: 15px;" if type_scale else ""
     if global_links:
         links = (f"a {{ color: {p['link']}; text-decoration: none; }}\n"
                  "a:hover { text-decoration: underline; }\n")
     else:
         links = ""
-    return f"""* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+    return f"""{theme_vars_css()}* {{ margin: 0; padding: 0; box-sizing: border-box; }}
 body {{
-    font-family: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    font-family: {FONT_STACK};
+    -webkit-font-smoothing: antialiased;
     background: {p['bg']};
     color: {p['text']};
     max-width: {max_width};
@@ -62,10 +103,10 @@ body {{
     padding: {body_padding};{type_rules}
 }}
 {links}h1 {{
-    font-family: 'Linux Libertine', Georgia, serif;
+    font-family: {FONT_STACK};
     font-size: {h1_size};
-    font-weight: normal;
-    border-bottom: 1px solid {p['border']};
+    font-weight: 600;
+    letter-spacing: -0.01em;
     padding-bottom: {h1_pad};
     margin-bottom: {h1_margin};
     color: {p['text_bright']};
@@ -91,7 +132,44 @@ def nav_bar_css() -> str:
 .nav-bar a {{ color: {p['link']}; text-decoration: none; }}
 .nav-bar a:hover {{ text-decoration: underline; }}
 .nav-links {{ display: flex; gap: 0.3rem; align-items: center; }}
+{site_nav_css()}"""
+
+
+def site_nav_css() -> str:
+    """The shared Library of Stock top bar (markup from site_nav())."""
+    p = PALETTE
+    return f"""
+/* --- site nav (theme.site_nav) --- */
+.site-nav {{
+    display: flex; align-items: center; gap: 0.35rem 1.2rem; flex-wrap: wrap;
+    font-size: 14px; padding-bottom: 0.85rem; margin-bottom: 1.6rem;
+    border-bottom: 1px solid {p['border']};
+}}
+.site-nav a {{ color: {p['text_muted']}; text-decoration: none; }}
+.site-nav a:hover {{ color: {p['text']}; text-decoration: none; }}
+.site-nav a.site-home {{ color: {p['text']}; font-weight: 600; }}
+.site-nav a.here {{ color: {p['text']}; }}
+.site-nav .site-sp {{ flex-grow: 1; }}
+html[data-layout="mobile"] .site-nav {{ gap: 0.3rem 0.9rem; }}
 """
+
+
+def site_nav(root: str, active: str = '', right: str = '') -> str:
+    """Shared top bar: Library of Stock · Wiki · Reader · Search, then
+    `right` (page tools such as the guide search box + Random). `root` is
+    the relative path to the site root ('' at the top level, '../../' on
+    output/<slug>/ pages)."""
+    def link(key, href, label):
+        cls = ' class="here"' if key == active else ''
+        return f'<a{cls} href="{href}">{label}</a>'
+    return (
+        '<nav class="site-nav">'
+        f'<a class="site-home" href="{root}index.html">Library of Stock</a>'
+        + link('wiki', f'{root}wiki.html', 'Wiki')
+        + link('reader', f'{root}reader.html', 'Reader')
+        + link('search', 'https://qbsuite.github.io/qb-semantic-search/app/', 'Search')
+        + '<span class="site-sp"></span>' + right + '</nav>'
+    )
 
 
 def search_nav_css(z_index: int = 200) -> str:
@@ -107,38 +185,38 @@ def search_nav_css(z_index: int = 200) -> str:
 .search-nav-input {{
     width: 160px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
     background: {p['bg_input']}; color: {p['text']};
-    border: 1px solid {p['border']}; border-radius: 3px;
+    border: 1px solid {p['border']}; border-radius: 8px;
     outline: none; font-family: inherit;
 }}
 .search-nav-input:focus {{ border-color: {p['link']}; width: 220px; }}
-.search-nav-input::placeholder {{ color: #555; }}
+.search-nav-input::placeholder {{ color: var(--c-faint2); }}
 .search-nav-dropdown {{
     display: none; position: absolute; top: 100%; right: 0;
     margin-top: 0.2rem; background: {p['bg_raised']};
     border: 1px solid {p['border']}; border-radius: 4px;
     min-width: 280px; max-height: 350px; overflow-y: auto;
-    z-index: {z_index}; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    z-index: {z_index}; box-shadow: 0 8px 24px rgba(0,0,0,0.14);
 }}
 .search-nav-dropdown.open {{ display: block; }}
 .search-nav-result {{
     display: flex; justify-content: space-between; align-items: baseline;
     padding: 0.4rem 0.6rem; color: {p['text']}; text-decoration: none;
-    font-size: 0.85rem; border-bottom: 1px solid #2a2f37;
+    font-size: 0.85rem; border-bottom: 1px solid var(--c-line2);
 }}
 .search-nav-result:last-child {{ border-bottom: none; }}
-.search-nav-result:hover, .search-nav-result.active {{ background: #262d37; }}
+.search-nav-result:hover, .search-nav-result.active {{ background: var(--c-hover); }}
 .search-nav-result-name {{ color: {p['link']}; }}
 .search-nav-result-cat {{
     font-size: 0.72rem; color: {p['text_faint']};
     margin-left: 0.5rem; white-space: nowrap;
 }}
-.search-nav-empty {{ padding: 0.6rem; color: #555; font-size: 0.82rem; font-style: italic; }}
+.search-nav-empty {{ padding: 0.6rem; color: var(--c-faint2); font-size: 0.82rem; font-style: italic; }}
 .search-nav-random {{
-    background: {p['bg_raised']}; border: 1px solid {p['border']}; border-radius: 3px;
+    background: none; border: 1px solid {p['border']}; border-radius: 8px;
     color: {p['text_muted']}; font-size: 0.85rem; cursor: pointer;
-    padding: 0.2rem 0.4rem; line-height: 1;
+    padding: 0.3rem 0.55rem; line-height: 1;
 }}
-.search-nav-random:hover {{ background: #262d37; color: {p['text']}; border-color: {p['link']}; }}
+.search-nav-random:hover {{ background: var(--c-hover); color: {p['text']}; border-color: {p['link']}; }}
 """
 
 
@@ -209,18 +287,18 @@ def sheet_css() -> str:
 /* --- bottom sheet (theme.sheet_css) --- */
 .los-backdrop {{
     display: none; position: fixed; inset: 0; z-index: 90;
-    background: rgba(0,0,0,0.55);
+    background: rgba(0,0,0,0.32);
 }}
 .los-backdrop.open {{ display: block; }}
 .los-sheet {{
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 91;
-    background: {p['bg_raised']};
+    background: {p['bg']};
     border-top: 1px solid {p['border']};
-    border-radius: 14px 14px 0 0;
+    border-radius: 16px 16px 0 0;
     max-height: 85vh; max-height: 85dvh;
     display: none; flex-direction: column;
     padding-bottom: env(safe-area-inset-bottom);
-    box-shadow: 0 -8px 30px rgba(0,0,0,0.45);
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.18);
 }}
 .los-sheet.open {{ display: flex; }}
 .los-sheet-handle {{

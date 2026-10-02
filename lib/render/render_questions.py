@@ -19,7 +19,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import resolve_analyses
-from lib.render.theme import base_css, layout_switch_script, mobile_core_css
+from lib.render.theme import (base_css, layout_switch_script, mobile_core_css,
+                              site_nav, site_nav_css)
 
 
 def _tab_label(entry: dict) -> str:
@@ -54,22 +55,24 @@ function header(prefix, i, q) {
             <div class="q-header">
                 <span class="q-num">${prefix}${i}</span>
                 <span class="q-source">${esc(set.name || '')} (${set.year ?? ''})</span>
-                <span class="q-meta">Diff ${q.difficulty ?? ''} &middot; ${esc(q.category || '')}</span>
+                <span class="q-meta">difficulty ${q.difficulty ?? ''} &middot; ${esc(q.category || '')}</span>
             </div>`;
 }
+
+const ANS = '<span class="q-ans-label">ANSWER</span>';
 
 function panelHtml(entry) {
     const query = entry.mentions ? entry.query_string : '';
     const tossups = entry.tossups.map((t, i) => `
         <div class="question">${header('T', i + 1, t)}
             <div class="q-text">${highlight(t.question || '', query)}</div>
-            <div class="q-answer">ANSWER: ${t.answer || ''}</div>
+            <div class="q-answer">${ANS}${t.answer || ''}</div>
         </div>`).join('');
     const bonuses = entry.bonuses.map((b, i) => {
         const parts = (b.parts || []).map((part, j) => `
             <div class="b-part">
-                <div class="b-part-text">[10] ${highlight(part, query)}</div>
-                <div class="q-answer">ANSWER: ${(b.answers || [])[j] || ''}</div>
+                <div class="b-part-text"><span class="b-ten">[10]</span> ${highlight(part, query)}</div>
+                <div class="q-answer">${ANS}${(b.answers || [])[j] || ''}</div>
             </div>`).join('');
         return `
         <div class="question">${header('B', i + 1, b)}
@@ -79,14 +82,32 @@ function panelHtml(entry) {
     }).join('');
     const nt = entry.tossups.length, nb = entry.bonuses.length;
     const stats = `${nt} tossup${nt !== 1 ? 's' : ''} &middot; ${nb} bonus${nb !== 1 ? 'es' : ''}`;
-    const empty = '<p style="color:#808790;font-style:italic;padding:0.5rem 0;">No questions.</p>';
+    const empty = '<p class="q-empty">No questions.</p>';
+    // Tossups / Bonuses are underline sub-tabs (counts in the labels);
+    // the h2s stay for structure/screen readers.
     return `
-<div class="tab-stats">${stats}</div>
+<div class="sub-tabs" role="tablist">
+<button class="sub-btn active" data-k="t" role="tab">Tossups<span class="c">${nt}</span></button>
+<button class="sub-btn" data-k="b" role="tab">Bonuses<span class="c">${nb}</span></button>
+<span class="tab-stats">${stats}</span>
+</div>
+<div class="sub-panel" data-k="t">
 <h2>Tossups</h2>
 ${tossups || empty}
+</div>
+<div class="sub-panel" data-k="b" style="display:none">
 <h2>Bonuses</h2>
-${bonuses || empty}`;
+${bonuses || empty}
+</div>`;
 }
+
+document.addEventListener('click', e => {
+    const btn = e.target.closest && e.target.closest('.sub-btn');
+    if (!btn) return;
+    const panel = btn.closest('.tab-panel');
+    panel.querySelectorAll('.sub-btn').forEach(b => b.classList.toggle('active', b === btn));
+    panel.querySelectorAll('.sub-panel').forEach(p => p.style.display = p.dataset.k === btn.dataset.k ? 'block' : 'none');
+});
 
 qdataFetch('topic_questions/' + TOPIC_SLUG + '.json').then(entries => {
     entries.forEach((entry, i) => {
@@ -115,9 +136,16 @@ def render_questions_html(refs: list[dict], output_path: str | Path,
     topic = topic_display or (refs[0].get("query_string", "Unknown") if refs
                               else "Unknown")
 
+    # Breadcrumb back to the study guide (Wiki lives in the shared site nav).
     back_link = ""
     if stock_link:
-        back_link = f'<div class="back-link"><a href="../../wiki.html">&larr; Wiki</a> · <a href="{escape(stock_link)}">Study guide</a></div>'
+        back_link = (f'<div class="back-link"><a href="{escape(stock_link)}">{escape(topic)}</a>'
+                     f' <span class="crumb-muted">&middot; study guide</span></div>')
+    cards_link = ""
+    if (output_path.parent / "cards.json").exists():
+        cards_link = '<a class="head-link" href="cards.html">Make cards</a>'
+    labels = [_tab_label(e) for e in refs]
+    subline = ("Questions matched by " + ", ".join(escape(l) for l in labels)) if labels else ""
 
     tabs_html = ""
     panels_html = ""
@@ -140,94 +168,108 @@ def render_questions_html(refs: list[dict], output_path: str | Path,
 {layout_switch_script()}
 <title>Questions: {escape(topic)}</title>
 <style>
-{base_css()}
+{base_css(max_width='868px')}
+{site_nav_css()}
 .back-link {{
-    display: inline-block;
-    margin-bottom: 1rem;
-    font-size: 0.88rem;
+    margin-top: 2rem;
+    font-size: 14px;
+}}
+.crumb-muted {{ color: var(--c-muted); }}
+.page-head {{
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem 1.1rem;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}}
+.page-head h1 {{ font-size: 28px; margin: 0; padding: 0; flex: 1 1 auto; }}
+.head-link {{ font-size: 14px; }}
+.subline {{ margin-top: 4px; font-size: 13px; color: var(--c-muted); }}
+.tab-bar, .sub-tabs {{
+    display: flex;
+    align-items: flex-end;
+    gap: 0.4rem 1.6rem;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--c-border);
 }}
 .tab-bar {{
     display: {'none' if single else 'flex'};
-    gap: 0.25rem;
-    flex-wrap: wrap;
-    margin: 0.8rem 0 0.2rem;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0;
+    margin-top: 1.1rem;
 }}
-.tab-btn {{
+.sub-tabs {{ margin-top: 1.1rem; }}
+.tab-btn, .sub-btn {{
     background: none;
-    border: 1px solid transparent;
-    border-bottom: none;
-    padding: 0.3rem 0.75rem;
-    font-size: 0.82rem;
-    color: #808790;
-    cursor: pointer;
-    border-radius: 3px 3px 0 0;
+    border: none;
+    border-radius: 0;
+    padding: 0 0 0.6rem;
     margin-bottom: -1px;
+    font: inherit;
+    font-size: 15px;
+    color: var(--c-muted);
+    cursor: pointer;
 }}
-.tab-btn:hover {{ color: #c8ccd1; }}
-.tab-btn.active {{
-    color: #6b9eff;
-    border-color: #3a3f47;
-    border-bottom-color: #101418;
-    background: #101418;
+.tab-btn {{ font-size: 14px; }}
+.tab-btn:hover, .sub-btn:hover {{ color: var(--c-text); }}
+.tab-btn.active, .sub-btn.active {{
+    color: var(--c-text);
+    font-weight: 600;
+    box-shadow: inset 0 -2px 0 var(--c-link);
 }}
+.sub-btn .c {{ font-weight: 400; color: var(--c-muted); font-size: 13px; margin-left: 0.3rem; }}
 .tab-stats {{
-    font-size: 0.85rem;
-    color: #808790;
-    margin: 0.6rem 0 1rem;
+    margin-left: auto;
+    padding-bottom: 0.6rem;
+    font-size: 13px;
+    color: var(--c-muted);
 }}
-.q-loading, .qdata-error {{
-    color: #808790;
+.q-loading, .qdata-error, .q-empty {{
+    color: var(--c-muted);
     font-style: italic;
-    padding: 0.8rem 0;
-    font-size: 0.9rem;
+    padding: 1.2rem 0;
+    font-size: 14px;
 }}
-.qdata-error a {{ color: #6b9eff; }}
-h2 {{
-    font-family: 'Linux Libertine', Georgia, serif;
-    font-size: 1.3rem;
-    font-weight: normal;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0.15rem;
-    margin-bottom: 0.8rem;
-    margin-top: 1.5rem;
-    color: #e0e0e0;
+.qdata-error a {{ color: var(--c-link); }}
+.sub-panel h2 {{
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap;
 }}
 .question {{
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    margin-bottom: 0.8rem;
-    padding: 0;
-    border-radius: 4px;
-    overflow: hidden;
+    padding: 1.35rem 0;
+    border-bottom: 1px solid var(--c-border);
 }}
 .q-header {{
     display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.35rem 0.8rem;
-    background: #1f252d;
-    border-bottom: 1px solid #3a3f47;
-    font-size: 0.82rem;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--c-muted);
 }}
-.q-num {{ font-weight: bold; color: #6b9eff; min-width: 2rem; }}
-.q-source {{ color: #c8ccd1; }}
-.q-meta {{ color: #808790; margin-left: auto; }}
-.q-text {{ padding: 0.6rem 0.8rem; font-size: 0.9rem; line-height: 1.6; }}
-.q-text b {{ color: #e0e0e0; }}
-.q-answer {{ padding: 0.4rem 0.8rem; font-size: 0.85rem; border-top: 1px solid #2a2f37; color: #9aa0a7; }}
-.q-answer b, .q-answer u {{ color: #6bcf8e; }}
-.b-part {{ border-top: 1px solid #2a2f37; }}
-.b-part-text {{ padding: 0.5rem 0.8rem; font-size: 0.9rem; line-height: 1.6; }}
-mark {{ background: #5a4a00; color: #ffd54f; border-radius: 2px; padding: 0 2px; }}
+.q-num {{ font-weight: 600; color: var(--c-text); }}
+.q-meta {{ margin-left: auto; }}
+.q-text, .b-part-text {{ margin-top: 0.5rem; font-size: 15.5px; line-height: 1.65; }}
+.q-text:empty {{ display: none; }}
+.q-text b, .b-part-text b {{ color: var(--c-bright); }}
+.q-answer {{ margin-top: 0.6rem; font-size: 15px; line-height: 1.6; color: var(--c-text); }}
+.q-ans-label {{
+    color: var(--c-muted); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.04em; margin-right: 0.4rem;
+}}
+.b-part {{ margin-top: 0.9rem; }}
+.b-ten {{ color: var(--c-muted); font-size: 13px; }}
+mark {{ background: var(--c-hl); color: inherit; border-radius: 2px; padding: 0 2px; }}
 {mobile_core_css()}
-html[data-layout="mobile"] .tab-btn {{ padding: 0.55rem 0.8rem; font-size: 0.88rem; }}
+html[data-layout="mobile"] .tab-btn, html[data-layout="mobile"] .sub-btn {{ min-height: 40px; display: inline-flex; align-items: flex-end; }}
+html[data-layout="mobile"] .page-head h1 {{ font-size: 24px; }}
+html[data-layout="mobile"] .q-meta {{ margin-left: 0; }}
+html[data-layout="mobile"] .tab-stats {{ display: none; }}
 </style>
 </head>
 <body>
+{site_nav('../../', 'wiki')}
 {back_link}
-<h1>Questions: {escape(topic)}</h1>
+<div class="page-head"><h1>Source questions</h1>{cards_link}</div>
+<div class="subline">{subline}</div>
 <div class="tab-bar">
 {tabs_html}</div>
 {panels_html}

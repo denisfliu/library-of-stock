@@ -6,7 +6,8 @@ sections whose entries are frequency-ranked answerlines with context
 blurbs, and a collapsed appendix of lower-frequency answerlines.
 
 Links resolve at render time through TopicMatcher, so entries flip from
-red ("no page yet") to blue automatically as topic pages are created.
+plain text ("no page yet") to blue links automatically as topic pages are
+created.
 
 overview.json schema: see .claude/skills/overview/SKILL.md and the
 category-pages plan. Renderer expects:
@@ -37,7 +38,8 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parent.parent.parent))
 from lib.common import anchor_slug
 from lib.render.theme import (LEAFLET_TAGS, base_css, layout_switch_script,
-                              mobile_core_css, nav_bar_css, search_nav_css)
+                              mobile_core_css, search_nav_css, site_nav,
+                              site_nav_css)
 from lib.sweep.answerlines import normalize
 
 UNPLACED_TITLE = 'Uncategorized'
@@ -104,12 +106,35 @@ def _entry_html(entry: dict, matcher, category: str, nested: bool = False) -> st
                         for w in works)
         works_html = f'<ul class="entry-sublist">{inner}</ul>'
     cls = 'entry sub-entry' if nested else 'entry'
+    # One hairline row (frequency column + name/note/chips); the panels
+    # and nested works sit beneath it inside the same <li>.
     return (f'<li class="{cls}" id="e-{escape(qkey.replace(" ", "-"))}">'
-            f'<span class="freq-badge" title="{freq} questions">{freq}&times;</span> '
-            f'{name_html}{note_html}{qbtn}{clip_btn}'
+            f'<div class="entry-row">'
+            f'<span class="freq-badge" title="{freq} questions">{freq}&times;</span>'
+            f'<span class="entry-body">{name_html}{note_html}{qbtn}{clip_btn}</span>'
+            f'</div>'
             f'<div class="q-panel" style="display:none"></div>'
             f'{clip_panel}'
             f'{works_html}</li>')
+
+
+def _ranges(nums) -> str:
+    """[5, 7, 8, 9, 10] -> '5, 7&ndash;10' (runs of 3+ collapse)."""
+    try:
+        vals = sorted({int(n) for n in nums})
+    except (TypeError, ValueError):
+        return ', '.join(escape(str(n)) for n in nums)
+    out, i = [], 0
+    while i < len(vals):
+        j = i
+        while j + 1 < len(vals) and vals[j + 1] == vals[j] + 1:
+            j += 1
+        if j - i >= 2:
+            out.append(f'{vals[i]}&ndash;{vals[j]}')
+        else:
+            out.extend(str(v) for v in vals[i:j + 1])
+        i = j + 1
+    return ', '.join(out)
 
 
 def _coverage(entries: list[dict], matcher, category: str) -> tuple[int, int]:
@@ -174,13 +199,19 @@ def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
                       .replace('</', '<\\/'))
 
     # TOC
+    def _count(s):
+        return sum(1 for _ in _flatten(s.get('entries', [])))
+
     toc_items = ''.join(
         f'<li><a href="#{anchor_slug(s["name"])}">{escape(s["name"])}</a>'
-        f'<span class="toc-count">{sum(1 for _ in _flatten(s.get("entries", [])))}</span></li>'
+        f'<span class="toc-count">{_count(s)}</span></li>'
         for s in sections if s.get('entries'))
 
-    # Sections (authored order preserved — frequency is a badge only)
+    # Sections (authored order preserved — frequency is a badge only).
+    # The legend line sits under the first section, where a reader first
+    # meets the blue-vs-plain distinction.
     sections_html = ''
+    legend_done = False
     for s in sections:
         entries = s.get('entries', [])
         if not entries:
@@ -189,10 +220,19 @@ def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
         blurb_html = (f'<p class="section-blurb">{escape(blurb)}</p>'
                       if blurb else '')
         items = ''.join(_entry_html(e, matcher, raw_category) for e in entries)
+        n = _count(s)
+        legend = ''
+        if not legend_done:
+            legend = ('<div class="legend">Blue names have a study page; '
+                      'red ones don’t yet.</div>')
+            legend_done = True
         sections_html += (
             f'<section class="unit-section">'
+            f'<div class="section-head">'
             f'<h2 id="{anchor_slug(s["name"])}">{escape(s["name"])}</h2>'
-            f'{blurb_html}<ul class="entry-list">{items}</ul></section>')
+            f'<span class="section-count">{n} answerline{"" if n == 1 else "s"}'
+            f'</span></div>'
+            f'{blurb_html}<ul class="entry-list">{items}</ul>{legend}</section>')
 
     # Appendix (mechanical, collapsed)
     appendix = overview.get('appendix', [])
@@ -212,27 +252,35 @@ def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
         appendix_html = (
             f'<details class="appendix"><summary>Appendix: '
             f'{len(appendix)} more answerlines '
-            f'(frequency {fs.get("appendix_threshold", "?")}&ndash;'
-            f'{fs.get("threshold", "?")})</summary>'
+            f'<span class="appendix-range">(frequency '
+            f'{fs.get("appendix_threshold", "?")}&ndash;'
+            f'{fs.get("threshold", "?")})</span></summary>'
             f'<div class="appendix-grid">{rows}</div></details>')
 
-    intro_html = ''.join(f'<p>{escape(p)}</p>' for p in overview.get('intro', []))
+    # Intro: the first paragraph shows; the rest sit behind a toggle.
+    intro_paras = overview.get('intro', [])
+    intro_html = ''.join(f'<p>{escape(p)}</p>' for p in intro_paras[:1])
+    if len(intro_paras) > 1:
+        n_more = len(intro_paras) - 1
+        more_label = (f'Read the full introduction ({n_more} more '
+                      f'paragraph{"" if n_more == 1 else "s"})')
+        intro_html += (
+            '<div class="intro-more" id="intro-more" hidden>'
+            + ''.join(f'<p>{escape(p)}</p>' for p in intro_paras[1:])
+            + '</div>'
+            f'<button class="intro-toggle linkbtn" id="intro-toggle" '
+            f'aria-expanded="false" aria-controls="intro-more" '
+            f'data-more="{escape(more_label)}">{escape(more_label)}</button>')
     diffs = fs.get('difficulties', [])
-    diffs_str = ','.join(str(d) for d in diffs) if diffs else 'all'
+    diffs_str = _ranges(diffs) if diffs else 'all'
     pct = round(100 * have / total) if total else 0
 
-    nav_html = (
-        '<div class="nav-bar">'
-        '<div class="nav-links">'
-        '<a href="../../../wiki.html" class="nav-home">&larr; Wiki</a>'
-        '</div>'
-        '<div class="nav-search"></div>'
-        '</div>')
+    nav_html = site_nav('../../../', 'wiki', '<div class="nav-search"></div>')
 
     draft_html = ''
     if overview.get('draft'):
         draft_html = (
-            '<div class="draft-banner">&#9888;&#65039; <b>AI draft</b>. '
+            '<div class="draft-banner"><b>AI draft.</b> '
             'Answerlines are machine-collected; notes are AI-written '
             'and unreviewed.</div>')
 
@@ -245,142 +293,183 @@ def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
 {LEAFLET_TAGS}
 <title>{title} — Overview</title>
 <style>
-{base_css(max_width='860px')}
+{base_css(max_width='820px', body_padding='22px 24px 64px', h1_size='28px',
+          h1_pad='0', h1_margin='0')}
+{site_nav_css()}
 .breadcrumb {{
-    font-size: 0.8rem;
-    color: #808790;
-    margin-bottom: 0.2rem;
+    font-size: 14px;
+    color: var(--c-muted);
+    margin-top: 0.4rem;
 }}
-.intro p {{
-    font-size: 0.95rem;
-    line-height: 1.65;
-    margin-bottom: 0.7rem;
-    color: #c8ccd1;
-}}
-.draft-banner {{
-    background: #2a2410;
-    border: 1px solid #8a6a2f;
-    border-radius: 4px;
-    color: #e8b04a;
-    font-size: 0.85rem;
-    padding: 0.5rem 0.9rem;
-    margin: 0.7rem 0;
-}}
-.draft-banner b {{ color: #f0c46a; }}
+h1 {{ margin-top: 2px; }}
 .coverage-bar {{
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    padding: 0.5rem 0.9rem;
-    margin: 0.9rem 0;
-    font-size: 0.82rem;
-    color: #9aa0a7;
     display: flex;
-    gap: 1.2rem;
+    gap: 6px 18px;
     flex-wrap: wrap;
+    align-items: baseline;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--c-muted);
+    font-variant-numeric: tabular-nums;
 }}
-.coverage-bar b {{ color: #e0e0e0; }}
-.toc {{
-    display: inline-block;
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    padding: 0.6rem 1rem;
-    margin-bottom: 1.2rem;
-    font-size: 0.88rem;
+.coverage-bar b {{ color: var(--c-text); font-weight: 600; }}
+.linkbtn {{
+    font: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--c-link);
+    cursor: pointer;
 }}
+.linkbtn:hover {{ text-decoration: underline; }}
+.map-toggle {{ font-size: 13px; }}
+.map-toggle.on {{ font-weight: 600; }}
+.draft-banner {{
+    background: var(--c-hl);
+    border-radius: 8px;
+    color: var(--c-text);
+    font-size: 13.5px;
+    padding: 0.5rem 0.8rem;
+    margin: 16px 0 0;
+}}
+.draft-banner b {{ color: var(--c-accent); font-weight: 600; }}
+.intro {{ margin-top: 20px; }}
+.intro p {{
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 0.75rem;
+    color: var(--c-text);
+}}
+.intro p:last-child, .intro > p:first-child {{ margin-bottom: 0; }}
+.intro-more {{ margin-top: 0.75rem; }}
+.intro-toggle {{ font-size: 14px; margin-top: 6px; }}
+.map-box {{ border: 1px solid var(--c-border); border-radius: 8px 8px 0 0; margin-top: 16px; }}
+.map-note {{
+    color: var(--c-faint);
+    font-size: 13px;
+    margin: 0.4rem 0 0;
+}}
+.leaflet-container {{ background: var(--c-bg); font-family: inherit; }}
+.leaflet-popup-content-wrapper, .leaflet-popup-tip {{
+    background: var(--c-raised); color: var(--c-text);
+    border: 1px solid var(--c-border);
+}}
+.leaflet-popup-content a {{ color: var(--c-link); text-decoration: none; }}
 .toc-title {{
-    font-weight: bold;
-    color: #e0e0e0;
-    margin-bottom: 0.3rem;
+    margin: 32px 0 0;
+    padding-bottom: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--c-muted);
 }}
-.toc ol {{ margin-left: 1.4rem; }}
-.toc li {{ margin-bottom: 0.1rem; }}
+.toc ol {{
+    margin: 0;
+    padding: 10px 0 0 22px;
+    border-top: 1px solid var(--c-border);
+    columns: 2 280px;
+    column-gap: 32px;
+    font-size: 14px;
+}}
+.toc li {{ padding: 2px 0; break-inside: avoid; }}
+.toc li::marker {{ color: var(--c-muted); }}
 .toc-count {{
-    color: #808790;
-    font-size: 0.75rem;
-    margin-left: 0.4rem;
+    color: var(--c-muted);
+    font-variant-numeric: tabular-nums;
+    margin-left: 0.35rem;
 }}
-.unit-section h2 {{
-    font-family: 'Linux Libertine', Georgia, serif;
-    font-size: 1.35rem;
-    font-weight: normal;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0.15rem;
-    margin: 1.4rem 0 0.5rem;
-    color: #e0e0e0;
+.unit-section {{ margin-top: 44px; }}
+.section-head {{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--c-text);
 }}
+.section-head h2 {{
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--c-bright);
+    scroll-margin-top: 1rem;
+}}
+.section-count {{ font-size: 13px; color: var(--c-muted); white-space: nowrap; }}
 .section-blurb {{
-    font-size: 0.88rem;
-    color: #9aa0a7;
-    font-style: italic;
-    margin-bottom: 0.5rem;
+    margin: 12px 0 8px;
+    color: var(--c-muted);
+    font-size: 14.5px;
     line-height: 1.5;
 }}
-.entry-sublist {{
-    list-style: none;
-    margin: 0.1rem 0 0.15rem 2.6rem;
-    border-left: 1px solid #2a2f37;
-    padding-left: 0.7rem;
+.entry-list, .entry-sublist {{ list-style: none; margin: 0; padding: 0; }}
+.entry-row {{
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 8px 10px;
+    margin: 0 -10px;
+    border-top: 1px solid var(--c-border);
+    border-radius: 8px;
 }}
-.sub-entry {{
-    border-top: none !important;
-    padding: 0.12rem 0;
-    font-size: 0.85rem;
+.entry-row:hover {{ background: var(--c-hover); }}
+.entry-list > .entry:first-child > .entry-row {{ border-top-color: transparent; }}
+.section-blurb + .entry-list > .entry:first-child > .entry-row {{ border-top-color: var(--c-border); }}
+.sub-entry > .entry-row {{ padding-left: 46px; }}
+.sub-entry .sub-entry > .entry-row {{ padding-left: 82px; }}
+.freq-badge {{
+    flex: 0 0 30px;
+    text-align: right;
+    color: var(--c-muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }}
-.q-toggle {{
+.entry-body {{ flex: 1 1 auto; min-width: 0; font-size: 14.5px; line-height: 1.5; }}
+.entry-name {{ font-weight: 600; }}
+a.entry-name {{ color: var(--c-link); text-decoration: none; }}
+a.entry-name:hover {{ text-decoration: underline; }}
+.no-page {{ color: var(--c-bad); cursor: default; }}
+.entry-note {{ color: var(--c-muted); }}
+.q-toggle, .clip-toggle {{
+    font: inherit;
+    font-size: 12px;
+    color: var(--c-muted);
     background: none;
-    border: 1px solid #2a2f37;
-    border-radius: 3px;
-    color: #808790;
-    font-size: 0.68rem;
-    padding: 0.02rem 0.4rem;
-    margin-left: 0.4rem;
+    border: none;
+    border-radius: 6px;
+    padding: 0 4px;
+    margin-left: 4px;
     cursor: pointer;
-    vertical-align: middle;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }}
-.q-toggle:hover {{ color: #6b9eff; border-color: #6b9eff; }}
-.q-toggle.open {{ color: #6b9eff; border-color: #2a4060; background: #1a2535; }}
-.qdata-error a {{ color: #6b9eff; }}
-.q-panel {{
-    margin: 0.3rem 0 0.4rem 2.6rem;
-    border: 1px solid #2a2f37;
-    background: #15191e;
-    padding: 0.5rem 0.7rem;
-    font-size: 0.8rem;
-    max-height: 320px;
-    overflow-y: auto;
+.q-toggle:hover, .clip-toggle:hover {{ color: var(--c-link); text-decoration: underline; }}
+.q-toggle.open, .clip-toggle.open {{
+    color: var(--c-text); font-weight: 600;
+    background: var(--c-pick);
 }}
+.q-panel, .clip-panel {{
+    margin: 2px 0 8px 42px;
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    background: var(--c-raised2);
+    padding: 0.4rem 0.8rem;
+    font-size: 13.5px;
+}}
+.sub-entry > .q-panel, .sub-entry > .clip-panel {{ margin-left: 78px; }}
+.q-panel {{ max-height: 320px; overflow-y: auto; }}
 .q-item {{
-    padding: 0.35rem 0;
-    border-top: 1px solid #22272e;
-    line-height: 1.45;
-    color: #9aa0a7;
+    padding: 0.45rem 0;
+    border-top: 1px solid var(--c-line2);
+    line-height: 1.5;
+    color: var(--c-text);
 }}
 .q-item:first-child {{ border-top: none; }}
 .q-item-meta {{
-    font-size: 0.7rem;
-    color: #555;
+    font-size: 12px;
+    color: var(--c-faint);
     margin-bottom: 0.1rem;
 }}
-.q-item-meta b {{ color: #808790; }}
-.clip-toggle {{
-    background: none;
-    border: 1px solid #2a2f37;
-    border-radius: 3px;
-    color: #808790;
-    font-size: 0.68rem;
-    padding: 0.02rem 0.4rem;
-    margin-left: 0.3rem;
-    cursor: pointer;
-    vertical-align: middle;
-}}
-.clip-toggle:hover {{ color: #e0b860; border-color: #e0b860; }}
-.clip-toggle.open {{ color: #e0b860; border-color: #6b5a2a; background: #1f1c12; }}
-.clip-panel {{
-    margin: 0.3rem 0 0.4rem 2.6rem;
-    border: 1px solid #2a2f37;
-    background: #15191e;
-    padding: 0.4rem 0.7rem;
-}}
+.q-item-meta b {{ color: var(--c-muted); font-weight: 600; }}
+.qdata-error a {{ color: var(--c-link); }}
 .clip-row {{
     display: flex;
     align-items: center;
@@ -388,146 +477,104 @@ def render_overview(overview: dict, matcher, out_path: str | _Path) -> dict:
     padding: 0.2rem 0;
 }}
 .clip-label {{
-    color: #9aa0a7;
-    font-size: 0.78rem;
+    color: var(--c-muted);
+    font-size: 13px;
     min-width: 10rem;
 }}
-.clip-row audio {{ height: 26px; }}
+.clip-row audio {{ height: 28px; }}
 .clip-attr {{
-    color: #555;
+    color: var(--c-faint);
     text-decoration: none;
-    font-size: 0.75rem;
+    font-size: 12px;
     margin-left: 0.2rem;
 }}
-.clip-attr:hover {{ color: #6b9eff; }}
-.map-toggle {{
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    border-radius: 3px;
-    color: #9aa0a7;
-    font-size: 0.78rem;
-    padding: 0.1rem 0.6rem;
-    cursor: pointer;
-    margin-left: auto;
-}}
-.map-toggle:hover, .map-toggle.on {{ color: #6b9eff; border-color: #6b9eff; }}
-.map-box {{ border: 1px solid #3a3f47; margin-bottom: 0.3rem; }}
-.map-note {{
-    color: #555;
-    font-size: 0.78rem;
-    font-style: italic;
-    margin-bottom: 0.9rem;
-}}
-.leaflet-container {{ background: #101418; }}
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {{
-    background: #1a1f25; color: #c8ccd1;
-    border: 1px solid #3a3f47;
-}}
-.leaflet-popup-content a {{ color: #6b9eff; text-decoration: none; }}
-.entry-list {{
-    list-style: none;
-    margin: 0;
-}}
-.entry {{
-    padding: 0.28rem 0;
-    border-top: 1px solid #22272e;
-    font-size: 0.9rem;
-    line-height: 1.5;
-}}
-.entry:first-child {{ border-top: none; }}
-.freq-badge {{
-    display: inline-block;
-    min-width: 2.1rem;
-    text-align: right;
-    color: #808790;
-    font-size: 0.72rem;
-    font-weight: bold;
-    white-space: nowrap;
-}}
-.entry-name {{
-    font-weight: bold;
-}}
-a.entry-name {{
-    color: #6b9eff;
-    text-decoration: none;
-    border-bottom: 1px dotted #6b9eff;
-}}
-a.entry-name:hover {{ text-decoration: none; border-bottom-style: solid; }}
-.no-page {{
-    color: #cc6666;
-    border-bottom: 1px dotted #cc6666;
-    cursor: default;
-}}
-.entry-note {{
-    color: #9aa0a7;
-}}
-.appendix {{
-    margin-top: 1.6rem;
-    border: 1px solid #3a3f47;
-    background: #1a1f25;
-}}
+.clip-attr:hover {{ color: var(--c-link); text-decoration: none; }}
+.legend {{ margin-top: 10px; font-size: 13px; color: var(--c-muted); }}
+.appendix {{ margin-top: 44px; }}
 .appendix summary {{
     cursor: pointer;
-    padding: 0.5rem 0.9rem;
-    color: #9aa0a7;
-    font-size: 0.85rem;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--c-text);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--c-bright);
     user-select: none;
 }}
-.appendix summary:hover {{ color: #c8ccd1; }}
+.appendix-range {{ font-size: 13px; font-weight: 400; color: var(--c-muted); }}
+.appendix summary:hover .appendix-range {{ color: var(--c-text); }}
 .appendix-grid {{
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 0.15rem 1rem;
-    padding: 0.6rem 0.9rem 0.8rem;
-    font-size: 0.8rem;
+    padding: 0.7rem 0 0;
+    font-size: 13.5px;
 }}
 .appendix-item {{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.appendix-item a {{ color: #6b9eff; text-decoration: none; }}
+.appendix-item .freq-badge {{ display: inline-block; min-width: 30px; margin-right: 0.3rem; }}
+.appendix-item a {{ color: var(--c-link); text-decoration: none; }}
 .appendix-item a:hover {{ text-decoration: underline; }}
-{nav_bar_css()}
 {search_nav_css()}
 {mobile_core_css()}
-html[data-layout="mobile"] .toc {{ display: block; }}
-html[data-layout="mobile"] .entry-sublist {{ margin-left: 1.2rem; }}
-html[data-layout="mobile"] .q-panel, html[data-layout="mobile"] .clip-panel {{ margin-left: 0; }}
+html[data-layout="mobile"] body {{ padding-top: 16px; }}
+html[data-layout="mobile"] h1 {{ font-size: 24px; }}
+html[data-layout="mobile"] .sub-entry > .entry-row {{ padding-left: 28px; }}
+html[data-layout="mobile"] .sub-entry .sub-entry > .entry-row {{ padding-left: 46px; }}
+html[data-layout="mobile"] .q-panel, html[data-layout="mobile"] .clip-panel,
+html[data-layout="mobile"] .sub-entry > .q-panel,
+html[data-layout="mobile"] .sub-entry > .clip-panel {{ margin-left: 0; }}
 html[data-layout="mobile"] .q-toggle, html[data-layout="mobile"] .clip-toggle {{
-    font-size: 0.78rem; padding: 0.2rem 0.6rem; min-height: 32px;
+    font-size: 13px; padding: 0.2rem 0.5rem; min-height: 32px;
+    border: 1px solid var(--c-border); margin-top: 2px;
 }}
+html[data-layout="mobile"] .linkbtn {{ min-height: 0; padding: 0.35rem 0; }}
 html[data-layout="mobile"] .clip-label {{ min-width: 0; }}
 html[data-layout="mobile"] .clip-row {{ flex-wrap: wrap; }}
 html[data-layout="mobile"] .search-nav-dropdown {{
     min-width: 0; width: min(320px, calc(100vw - 1.5rem));
 }}
-html[data-layout="mobile"] .coverage-bar {{ gap: 0.4rem 1.2rem; }}
 </style>
 </head>
 <body>
+{nav_html}
 <div class="breadcrumb">{category}</div>
 <h1>{title}</h1>
-{nav_html}
-{draft_html}
-<div class="intro">{intro_html}</div>
 <div class="coverage-bar">
-<span><b>{total}</b> core answerlines (frequency &ge; {fs.get('threshold', '?')})</span>
-<span><b>{have}</b> with study pages ({pct}%)</span>
-<span>difficulties {diffs_str}, {fs.get('min_year', '?')}&ndash;present</span>
+<span><b>{total:,}</b> core answerlines (frequency &ge; {fs.get('threshold', '?')})</span>
+<span><b>{have:,}</b> with study pages ({pct}%)</span>
+<span>difficulties {diffs_str} &middot; {fs.get('min_year', '?')}&ndash;present</span>
 <span>frequency data {escape(str(fs.get('fetched', '?')))}</span>
-<button class="map-toggle" id="map-toggle">Map</button>
+<button class="map-toggle linkbtn" id="map-toggle" aria-expanded="false">Map</button>
 </div>
+{draft_html}
 <div id="map-wrap" style="display:none">
     <div class="map-box" id="map-box"></div>
     <div class="map-note" id="map-note"></div>
 </div>
-<div class="toc">
-<div class="toc-title">Contents</div>
+<div class="intro">{intro_html}</div>
+<nav class="toc">
+<h2 class="toc-title">Contents</h2>
 <ol>{toc_items}</ol>
-</div>
+</nav>
 {sections_html}
 {appendix_html}
 <script src="../../guides_data.js"></script>
 <script src="../../../lib/js/search_nav.js"></script>
 <script src="../../../lib/js/map_view.js"></script>
 <script>initSearchNav('.nav-search', {{ prefix: '../../../' }});</script>
+<script>
+// Intro: first paragraph visible, the rest behind a toggle.
+(function () {{
+    const btn = document.getElementById('intro-toggle');
+    const more = document.getElementById('intro-more');
+    if (!btn || !more) return;
+    btn.addEventListener('click', () => {{
+        const open = more.hidden;
+        more.hidden = !open;
+        btn.setAttribute('aria-expanded', String(open));
+        btn.textContent = open ? 'Show less' : btn.dataset.more;
+    }});
+}})();
+</script>
 <script>
 const MAP_ITEMS = {map_items_json};
 let mapCtl = null;
@@ -536,6 +583,8 @@ document.getElementById('map-toggle').addEventListener('click', function () {{
     const show = wrap.style.display === 'none';
     wrap.style.display = show ? '' : 'none';
     this.classList.toggle('on', show);
+    this.setAttribute('aria-expanded', String(show));
+    this.textContent = show ? 'Hide map' : 'Map';
     if (show && !mapCtl) {{
         const items = MAP_ITEMS.map(it => ({{
             name: it.name,
@@ -556,9 +605,10 @@ document.getElementById('map-toggle').addEventListener('click', function () {{
 }});
 </script>
 <script>
-// Score-clip panels (soundbites from matched topics' score_clues).
+// Soundbite panels (Wikimedia Commons recordings from soundbites.json).
+// Each entry's own panels are direct children of its <li>.
 document.querySelectorAll('.clip-toggle').forEach(btn => {{
-    const panel = btn.parentElement.querySelector('.clip-panel');
+    const panel = btn.closest('.entry').querySelector(':scope > .clip-panel');
     if (!panel) return;
     btn.addEventListener('click', () => {{
         const open = panel.style.display !== 'none';
@@ -581,7 +631,7 @@ const UNIT_SLUG = {unit_slug_json};
                     </div>`).join('');
     document.querySelectorAll('.q-toggle').forEach(btn => {{
         if (btn.style.display === 'none') return;
-        const panel = btn.parentElement.querySelector('.q-panel');
+        const panel = btn.closest('.entry').querySelector(':scope > .q-panel');
         btn.addEventListener('click', () => {{
             const open = panel.style.display !== 'none';
             panel.style.display = open ? 'none' : '';

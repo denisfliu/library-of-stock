@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import TOPIC_INDEX_FILE, anchor_slug
 from lib.render.theme import (ABCJS_SCRIPT_TAG, base_css, layout_switch_script,
                               mobile_core_css, mp3_cache_buster, nav_bar_css,
-                              search_nav_css)
+                              search_nav_css, site_nav)
 
 
 def _load_crossref_index():
@@ -116,19 +116,27 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     cards_file = "cards.html"
     has_cards = (output_path.parent / "cards.json").exists()
     cards_secondary = f'<a href="{cards_file}">Make cards</a>' if has_cards else ""
-    nav_html = (
-        f'<div class="nav-bar">'
-        f'<div class="nav-links">'
-        f'<a href="../../wiki.html" class="nav-home">&larr; Wiki</a>'
+    # Shared site bar on top (guide search + random land in .nav-search,
+    # filled by lib/js/search_nav.js); the page actions sit on the h1 line.
+    # .nav-overflow-* is the mobile overflow menu (toggled by search_nav.js);
+    # .page-pn receives search_nav's prev/next links (moved by the page script).
+    nav_html = site_nav('../../', 'wiki', '<div class="nav-search"></div>')
+    overflow_icon = ('<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">'
+                     '<path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" '
+                     'stroke-width="1.6" stroke-linecap="round"/></svg>')
+    head_html = (
+        f'<div class="page-head">'
+        f'<h1>{topic}</h1>'
+        f'<div class="nav-links page-actions">'
         f'<div class="nav-overflow-wrap">'
-        f'<button class="nav-overflow-btn" title="More">&#9776;</button>'
+        f'<button class="nav-overflow-btn" title="More" aria-label="More">{overflow_icon}</button>'
         f'<div class="nav-secondary">'
         f'<a href="{questions_file}">View source questions</a>'
         f'{cards_secondary}'
         f'</div>'
         f'</div>'
+        f'<span class="page-pn"></span>'
         f'</div>'
-        f'<div class="nav-search"></div>'
         f'</div>'
     )
 
@@ -187,7 +195,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         for ci, clue in enumerate(clue_list):
             freq = clue.get("frequency", 1)
             # Old schema uses string frequencies ("very common", "common")
-            freq_display = f"{freq}x" if isinstance(freq, int) else str(freq)
+            freq_display = f"{freq}\u00d7" if isinstance(freq, int) else str(freq)
             # Old schema uses "power" bool; new schema uses "tendency" string
             if "tendency" in clue:
                 tendency = clue["tendency"]
@@ -207,16 +215,19 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
             ex_html = ""
             if examples:
                 tooltip_text = " | ".join(escape(ex) for ex in examples[:3])
-                ex_html = f'<span class="ex-icon" title="Examples">&#x1f4ac;<span class="ex-tooltip">{tooltip_text}</span></span>'
+                ex_label = "example" if len(examples) == 1 else "examples"
+                ex_html = (f'<span class="ex-icon" tabindex="0" role="button" title="Examples">'
+                           f'{ex_label}<span class="ex-tooltip">{tooltip_text}</span></span>')
 
             inline_clips = "".join(_score_clip_html(c) for c in clip_for_clue.get(ci, []))
             clues_html += f"""
             <tr class="clue-row">
                 <td class="clue-freq">{freq_display}</td>
                 <td class="clue-body">
-                    <span class="clue-text">{escape(clue_text)}</span>
-                    <span class="badge {badge_class}">{tendency}</span>{ex_html}{inline_clips}
+                    <span class="clue-text">{escape(clue_text)}</span>{inline_clips}
                 </td>
+                <td class="clue-ex">{ex_html}</td>
+                <td class="clue-tag"><span class="badge {badge_class}">{tendency}</span></td>
             </tr>
             """
 
@@ -254,7 +265,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
 
         # Unmatched clips → spanning rows at top of table
         unmatched_rows = "".join(
-            f'<tr><td colspan="2" style="padding:0.3rem 0.5rem;">{_score_clip_html(c)}</td></tr>'
+            f'<tr class="clip-row"><td colspan="4">{_score_clip_html(c)}</td></tr>'
             for c in unmatched_clips
         )
         clues_table = f'<table class="clue-table">{unmatched_rows}{clues_html}</table>' if (clues_html or unmatched_rows) else ""
@@ -296,9 +307,11 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         # Generate anchor ID from work name
         anchor_id = anchor_slug(work_name_raw)
 
+        n_clues = len(clue_list)
+        count_label = f"{n_clues} clue" + ("" if n_clues == 1 else "s") if n_clues else ""
         works_html += f"""
         <details class="work" id="{anchor_id}" open>
-            <summary class="work-title">{escape(work_name_raw)}{work_link_btn}</summary>
+            <summary class="work-title"><span class="work-name">{escape(work_name_raw)}{work_link_btn}</span><span class="work-count">{count_label}</span></summary>
             <p class="work-desc">{desc}</p>
             {images_html}
             {clues_table}
@@ -309,7 +322,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     if suggestions:
         items = "".join(f"<li>{escape(s)}</li>" for s in suggestions)
         suggestions_html = f"""
-        <h3>Suggested Deep Dives</h3>
+        <h3>Suggested deep dives</h3>
         <ul>{items}</ul>
         """
 
@@ -321,7 +334,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         body = "".join(f"<p>{_linkify(p, cross_refs, self_topic)}</p>" for p in paragraphs)
         comp_summary_html = f"""
         <section class="comp-summary">
-            <h2>Summary of Facts</h2>
+            <h2>Summary of facts</h2>
             {body}
         </section>
         """
@@ -364,7 +377,7 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
             )
         links_html = f"""
         <section class="links">
-            <h2>Further Reading</h2>
+            <h2>Further reading</h2>
             {'<ul>' + link_items + '</ul>' if link_items else ''}
             {suggestions_html}
         </section>
@@ -381,298 +394,303 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
 {abcjs_script}
 <title>Stock: {topic}</title>
 <style>
-{base_css()}
-.summary {{
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    padding: 0.6rem 1rem;
-    margin-bottom: 1.2rem;
-    font-size: 0.92rem;
-    color: #9aa0a7;
+{base_css(max_width='868px')}
+/* page head: h1 + page actions on one line */
+.page-head {{
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem 1rem;
+    flex-wrap: wrap;
+    margin-top: 2.2rem;
 }}
+.page-head h1 {{
+    font-size: 28px;
+    margin: 0;
+    padding: 0;
+    flex: 1 1 auto;
+}}
+.page-head .page-actions {{
+    display: flex;
+    align-items: baseline;
+    gap: 1.1rem;
+    font-size: 14px;
+    flex-wrap: wrap;
+}}
+.page-actions a {{ color: var(--c-link); text-decoration: none; }}
+.page-actions a:hover {{ text-decoration: underline; }}
+.page-pn {{ display: flex; gap: 1.1rem; }}
+.page-pn a.search-nav-prev, .page-pn a.search-nav-next {{
+    color: var(--c-muted);
+    font-weight: normal;
+    font-size: 14px;
+    background: none;
+    border: none;
+    padding: 0;
+    white-space: nowrap;
+}}
+.page-pn a.search-nav-prev:hover, .page-pn a.search-nav-next:hover {{
+    color: var(--c-text);
+    background: none;
+    text-decoration: underline;
+}}
+.summary {{
+    margin: 1rem 0 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--c-text);
+}}
+/* sections: heading over a rule, collapsible via <details> */
 .work {{
-    border: 1px solid #3a3f47;
-    margin-bottom: 1rem;
-    background: #1a1f25;
+    margin-top: 2.5rem;
 }}
 .work-title {{
-    font-size: 1rem;
-    font-weight: bold;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--c-text);
+    font-size: 17px;
+    font-weight: 600;
     cursor: pointer;
-    padding: 0.4rem 0.8rem;
-    background: #1f252d;
-    border-bottom: 1px solid #3a3f47;
     user-select: none;
     list-style: none;
-    color: #e0e0e0;
+    color: var(--c-bright);
 }}
 .work-title::-webkit-details-marker {{ display: none; }}
-.work-title::before {{
-    content: '\u25b6';
-    font-size: 0.65rem;
-    margin-right: 0.5rem;
-    display: inline-block;
+.work-name {{ min-width: 0; flex: 1 1 auto; }}
+.work-count {{
+    flex: none;
+    font-size: 13px;
+    font-weight: normal;
+    color: var(--c-muted);
+    white-space: nowrap;
+}}
+/* collapse chevron (CSS-drawn) after the count */
+.work-title::after {{
+    content: '';
+    flex: none;
+    align-self: center;
+    width: 6px;
+    height: 6px;
+    margin: 0 2px 0 -2px;
+    border-right: 1.5px solid var(--c-faint);
+    border-bottom: 1.5px solid var(--c-faint);
+    transform: translateY(-2px) rotate(45deg);
     transition: transform 0.15s;
-    color: #9aa0a7;
 }}
-.work[open] > .work-title::before {{
-    transform: rotate(90deg);
+.work:not([open]) > .work-title::after {{
+    transform: rotate(-45deg);
 }}
-.work-title:hover {{
-    background: #262d37;
-}}
+.work-title:hover::after {{ border-color: var(--c-text); }}
+.work:not([open]) > .work-title {{ color: var(--c-muted); border-bottom-color: var(--c-border); }}
 .work-link-btn {{
-    float: right;
-    padding: 0.1rem 0.5rem;
-    font-size: 0.8rem;
-    color: #6b9eff;
-    border: 1px solid #2a4060;
-    border-radius: 3px;
-    text-decoration: none;
-    background: #1a2535;
     margin-left: 0.5rem;
-}}
-.work-link-btn:hover {{
-    background: #223050;
+    font-size: 14px;
+    font-weight: normal;
+    color: var(--c-link);
     text-decoration: none;
 }}
+.work-link-btn:hover {{ text-decoration: underline; }}
 .work-desc {{
-    padding: 0.3rem 0.8rem;
-    color: #9aa0a7;
-    font-size: 0.85rem;
-    border-bottom: 1px solid #2a2f37;
+    margin: 0.75rem 0 0.5rem;
+    color: var(--c-muted);
+    font-size: 14.5px;
+    line-height: 1.6;
 }}
-.work-desc a {{ color: #6b9eff; text-decoration: none; }}
+.work-desc a {{ color: var(--c-link); text-decoration: none; }}
 .work-desc a:hover {{ text-decoration: underline; }}
 .work-images {{
     display: flex;
     flex-wrap: wrap;
-    gap: 0.8rem;
-    padding: 0.5rem 0.8rem;
-    border-bottom: 1px solid #2a2f37;
+    gap: 1rem;
+    margin: 0.75rem 0;
 }}
 .work-images img {{
     max-width: 250px;
     max-height: 280px;
-    border: 1px solid #3a3f47;
+    border-radius: 6px;
     object-fit: contain;
-    background: #15191e;
+    background: var(--c-raised);
 }}
 .work-images figure {{ margin: 0; }}
 .work-images figcaption {{
-    font-size: 0.75rem;
-    color: #9aa0a7;
-    margin-top: 0.2rem;
-    text-align: center;
+    font-size: 12.5px;
+    color: var(--c-muted);
+    margin-top: 0.3rem;
 }}
 .work-images .image-link {{
     display: flex;
     align-items: center;
-    justify-content: center;
-    min-width: 120px;
-    min-height: 60px;
-    background: #15191e;
-    border: 1px dashed #3a3f47;
-    padding: 0.5rem;
+    min-height: 2rem;
+    font-size: 14px;
 }}
-.work-images .image-link a {{
-    color: #6b9eff;
-    font-size: 0.82rem;
-}}
-/* clue table */
+.work-images .image-link a {{ color: var(--c-link); }}
+/* clue rows: hairlines, freq column, text, example, tag */
 .clue-table {{
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.82rem;
+    font-size: 15px;
 }}
-.clue-row td {{
-    padding: 0.15rem 0.4rem;
-    border-top: 1px solid #2a2f37;
-    vertical-align: middle;
+.clue-row td, .clip-row td {{
+    padding: 0.5rem 0.35rem;
+    border-top: 1px solid var(--c-border);
+    vertical-align: baseline;
 }}
+.clue-row:hover td {{ background: var(--c-hover); }}
+.clue-row td:first-child {{ border-radius: 8px 0 0 8px; }}
+.clue-row td:last-child {{ border-radius: 0 8px 8px 0; }}
 .clue-freq {{
-    width: 2rem;
-    text-align: center;
-    color: #9aa0a7;
-    font-size: 0.75rem;
-    font-weight: bold;
+    width: 2.4rem;
+    text-align: right;
+    color: var(--c-muted);
+    font-size: 13px;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    padding-right: 0.6rem !important;
 }}
 .clue-body {{
-    line-height: 1.35;
+    line-height: 1.5;
 }}
 .clue-text {{
-    color: #c8ccd1;
+    color: var(--c-text);
 }}
+.clue-ex {{ width: 1%; white-space: nowrap; text-align: right; }}
+.clue-tag {{ width: 1%; white-space: nowrap; text-align: right; }}
 .badge {{
-    font-size: 0.6rem;
-    padding: 0.05rem 0.3rem;
-    border-radius: 3px;
-    text-transform: uppercase;
-    font-weight: bold;
-    white-space: nowrap;
-    margin-left: 0.25rem;
-    vertical-align: middle;
-}}
-.badge-power {{ background: #3b1c1c; color: #f08080; border: 1px solid #6b2a2a; }}
-.badge-giveaway {{ background: #1c3327; color: #6bcf8e; border: 1px solid #2a6b42; }}
-.badge-mid {{ background: #332b1a; color: #e0b860; border: 1px solid #6b5a2a; }}
-.ex-icon {{
     display: inline-block;
-    width: 1.1rem;
-    text-align: center;
-    font-size: 0.72rem;
-    color: #555;
-    cursor: pointer;
-    margin-left: 0.25rem;
-    vertical-align: middle;
-    position: relative;
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 0 0.45rem;
+    border-radius: 99px;
+    white-space: nowrap;
 }}
-.ex-icon:hover {{ color: #6b9eff; }}
+.badge-giveaway {{ background: var(--c-winbg); color: var(--c-winfg); font-weight: 600; }}
+.badge-mid {{ color: var(--c-muted); box-shadow: inset 0 0 0 1px var(--c-border); }}
+.badge-power {{ color: var(--c-warn); box-shadow: inset 0 0 0 1px var(--c-warn); }}
+/* "example(s)" affordance: shows on row hover/focus on desktop; the
+   tooltip carries up to three source sentences. */
+.ex-icon {{
+    position: relative;
+    display: inline-block;
+    font-size: 13px;
+    color: var(--c-link);
+    cursor: pointer;
+    opacity: 0;
+    outline: none;
+}}
+.clue-row:hover .ex-icon, .ex-icon:focus, .ex-icon.open {{ opacity: 1; }}
+.ex-icon:hover, .ex-icon:focus-visible {{ text-decoration: underline; }}
 .ex-icon .ex-tooltip {{
     display: none;
     position: absolute;
-    bottom: 1.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    border-radius: 4px;
-    padding: 0.4rem 0.6rem;
-    font-size: 0.75rem;
-    color: #9aa0a7;
+    bottom: calc(100% + 6px);
+    right: 0;
+    background: var(--c-input);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
+    font-size: 13px;
+    color: var(--c-text);
     font-style: italic;
     font-weight: normal;
     white-space: normal;
     width: max-content;
-    max-width: 350px;
+    max-width: 380px;
     z-index: 10;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.14);
     text-align: left;
-    line-height: 1.3;
-}}
-.ex-icon:hover .ex-tooltip {{ display: block; }}
-.suggestions, .links {{
-    margin-top: 1.2rem;
-}}
-.suggestions h2, .links h2 {{
-    font-family: 'Linux Libertine', Georgia, serif;
-    font-size: 1.2rem;
-    font-weight: normal;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0.15rem;
-    margin-bottom: 0.4rem;
-    color: #e0e0e0;
-}}
-.suggestions ul, .links ul {{
-    margin: 0 0 0 1.5rem;
-    padding: 0;
-    font-size: 0.88rem;
-}}
-.suggestions li, .links li {{
-    margin-bottom: 0.15rem;
-}}
-.links a {{ color: #6b9eff; text-decoration: none; }}
-.links a:hover {{ text-decoration: underline; }}
-.crossref-inline {{
-    color: #6b9eff;
-    text-decoration: none;
-    border-bottom: 1px dotted #6b9eff;
-}}
-.crossref-inline:hover {{
-    text-decoration: none;
-    border-bottom: 1px solid #6b9eff;
-}}
-.crossref-inline-red {{
-    color: #cc6666;
-    border-bottom: 1px dotted #cc6666;
+    line-height: 1.45;
     cursor: default;
 }}
-.related {{ margin-top: 1.2rem; }}
-.related h2 {{
-    font-family: 'Linux Libertine', Georgia, serif;
-    font-size: 1.15rem;
-    font-weight: normal;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0.15rem;
-    margin-bottom: 0.6rem;
-    color: #e0e0e0;
+.ex-icon:hover .ex-tooltip, .ex-icon:focus .ex-tooltip, .ex-icon.open .ex-tooltip {{ display: block; }}
+/* trailing sections share the heading-over-rule look */
+.comp-summary, .related, .links {{ margin-top: 2.5rem; }}
+.comp-summary h2, .related h2, .links h2, .links h3 {{
+    font-size: 17px;
+    font-weight: 600;
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--c-text);
+    color: var(--c-bright);
+}}
+.links h3 {{ margin-top: 1.5rem; }}
+.links ul {{
+    margin: 0 0 0 1.25rem;
+    padding: 0;
+    font-size: 15px;
+}}
+.links li {{ margin-bottom: 0.25rem; }}
+.links a {{ color: var(--c-link); text-decoration: none; }}
+.links a:hover {{ text-decoration: underline; }}
+.crossref-inline {{
+    color: var(--c-link);
+    text-decoration: none;
+}}
+.crossref-inline:hover {{ text-decoration: underline; }}
+.crossref-inline-red {{
+    color: var(--c-bad);
+    border-bottom: 1px dotted var(--c-bad);
+    cursor: default;
 }}
 .related-chips {{ display: flex; flex-wrap: wrap; gap: 0.4rem; }}
 .related-chip {{
-    background: #1a2535;
-    border: 1px solid #2a4060;
-    border-radius: 12px;
-    color: #6b9eff;
-    font-size: 0.82rem;
-    padding: 0.18rem 0.7rem;
+    border: 1px solid var(--c-border);
+    border-radius: 99px;
+    color: var(--c-text);
+    font-size: 13.5px;
+    padding: 0.2rem 0.75rem;
     text-decoration: none;
     white-space: nowrap;
 }}
-.related-chip:hover {{ border-color: #6b9eff; background: #22304a; }}
-.comp-summary {{
-    margin-top: 1.2rem;
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    padding: 0.8rem 1rem;
-}}
-.comp-summary h2 {{
-    font-family: 'Linux Libertine', Georgia, serif;
-    font-size: 1.2rem;
-    font-weight: normal;
-    border-bottom: 1px solid #3a3f47;
-    padding-bottom: 0.15rem;
-    margin-bottom: 0.5rem;
-    color: #e0e0e0;
-}}
+.related-chip:hover {{ border-color: var(--c-link); color: var(--c-link); background: var(--c-hover); text-decoration: none; }}
 .comp-summary p {{
-    font-size: 0.88rem;
-    color: #c8ccd1;
-    margin-bottom: 0.5rem;
-    line-height: 1.6;
+    font-size: 15px;
+    color: var(--c-text);
+    margin-bottom: 0.75rem;
+    line-height: 1.65;
 }}
-.comp-summary p:last-child {{
-    margin-bottom: 0;
-}}
+.comp-summary p:last-child {{ margin-bottom: 0; }}
 {nav_bar_css()}
+.site-nav .nav-search {{ display: flex; align-items: center; }}
 .nav-overflow-wrap {{
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: baseline;
 }}
 .nav-secondary {{
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}}
-.nav-secondary a::before {{
-    content: '·';
-    margin-right: 0.5rem;
-    color: #555;
+    align-items: baseline;
+    gap: 1.1rem;
 }}
 .nav-overflow-btn {{
     display: none;
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    border-radius: 3px;
-    color: #9aa0a7;
-    font-size: 1rem;
+    background: none;
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    color: var(--c-muted);
     cursor: pointer;
-    padding: 0.2rem 0.5rem;
-    line-height: 1;
+    padding: 0.3rem 0.5rem;
+    line-height: 0;
 }}
 .nav-overflow-btn:hover {{
-    background: #262d37;
-    color: #c8ccd1;
-    border-color: #6b9eff;
+    background: var(--c-hover);
+    color: var(--c-text);
 }}
 /* Mobile layout — keyed on html[data-layout="mobile"], set by the head
    script from theme.layout_switch_script (MOBILE_MQ is the one breakpoint). */
+html[data-layout="mobile"] .page-head {{ margin-top: 1.2rem; align-items: center; }}
+html[data-layout="mobile"] .page-head h1 {{ font-size: 24px; flex-basis: 100%; }}
+html[data-layout="mobile"] .page-actions {{ align-items: center; width: 100%; }}
+html[data-layout="mobile"] .page-pn {{ margin-left: auto; }}
+html[data-layout="mobile"] .page-pn a {{ display: inline-flex; align-items: center; min-height: 40px; }}
+html[data-layout="mobile"] .nav-overflow-wrap {{ align-items: center; }}
 html[data-layout="mobile"] .nav-overflow-btn {{
     display: inline-flex;
     align-items: center;
     min-height: 40px;
-    margin-left: 0.4rem;
+    min-width: 40px;
+    justify-content: center;
 }}
 html[data-layout="mobile"] .nav-secondary {{
     display: none;
@@ -681,55 +699,72 @@ html[data-layout="mobile"] .nav-secondary {{
     left: 0;
     flex-direction: column;
     align-items: flex-start;
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    border-radius: 4px;
-    padding: 0.4rem 0;
+    background: var(--c-input);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    padding: 0.35rem 0;
     z-index: 100;
-    min-width: 180px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    min-width: 200px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.16);
     gap: 0;
 }}
 html[data-layout="mobile"] .nav-overflow-wrap.open .nav-secondary {{
     display: flex;
 }}
 html[data-layout="mobile"] .nav-secondary a {{
-    padding: 0.5rem 0.8rem;
+    padding: 0.6rem 0.9rem;
     width: 100%;
     box-sizing: border-box;
 }}
-html[data-layout="mobile"] .nav-secondary a::before {{
-    display: none;
-}}
 html[data-layout="mobile"] .nav-secondary a:hover {{
-    background: #262d37;
+    background: var(--c-hover);
     text-decoration: none;
 }}
 html[data-layout="mobile"] .search-nav-input {{
-    width: 110px;
+    width: 130px;
 }}
 html[data-layout="mobile"] .search-nav-input:focus {{
-    width: 150px;
+    width: 170px;
 }}
-html[data-layout="mobile"] .search-nav-random,
-html[data-layout="mobile"] .search-nav-prev,
-html[data-layout="mobile"] .search-nav-next {{
+html[data-layout="mobile"] .search-nav-random {{
     min-height: 40px;
-    padding: 0.4rem 0.6rem;
+    padding: 0.4rem 0.7rem;
 }}
 html[data-layout="mobile"] .search-nav-dropdown {{
     min-width: 0;
     width: min(320px, calc(100vw - 1.5rem));
 }}
-/* Clue-example tooltips: hover has no meaning on touch, so a tap toggles
-   .open (lib/js/mobile.js losTapTooltips) and the tooltip becomes a small
-   fixed panel at the bottom of the viewport — anchored tooltips clip on
-   narrow screens. */
-html[data-layout="mobile"] .ex-icon {{
-    font-size: 0.9rem;
-    width: 1.6rem;
+/* Clue rows on phones: freq + text on the first line, then the example
+   link and tag on a second line. Hover has no meaning on touch, so the
+   example link is always visible and a tap toggles .open
+   (lib/js/mobile.js losTapTooltips); the tooltip becomes a small fixed
+   panel at the bottom of the viewport — anchored tooltips clip on narrow
+   screens. */
+html[data-layout="mobile"] .clue-table, html[data-layout="mobile"] .clue-table tbody {{ display: block; }}
+html[data-layout="mobile"] .clue-row {{
+    display: grid;
+    grid-template-columns: 2.2rem minmax(0, 1fr) auto;
+    column-gap: 0.5rem;
+    border-top: 1px solid var(--c-border);
+    padding: 0.55rem 0;
 }}
-html[data-layout="mobile"] .ex-icon:hover:not(.open) .ex-tooltip {{ display: none; }}
+html[data-layout="mobile"] .clue-row td {{ border: none; padding: 0; background: none; }}
+html[data-layout="mobile"] .clue-row:hover td {{ background: none; }}
+html[data-layout="mobile"] .clue-freq {{ grid-row: 1; grid-column: 1; padding-right: 0 !important; width: auto; }}
+html[data-layout="mobile"] .clue-body {{ grid-row: 1; grid-column: 2 / -1; }}
+html[data-layout="mobile"] .clue-ex {{ grid-row: 2; grid-column: 2; text-align: left; width: auto; align-self: center; }}
+html[data-layout="mobile"] .clue-tag {{ grid-row: 2; grid-column: 3; width: auto; align-self: center; }}
+html[data-layout="mobile"] .clue-ex:empty + .clue-tag {{ padding: 0.3rem 0 0; }}
+html[data-layout="mobile"] .clip-row {{ display: block; }}
+html[data-layout="mobile"] .clip-row td {{ display: block; padding: 0.4rem 0; }}
+html[data-layout="mobile"] .ex-icon {{
+    opacity: 1;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+}}
+html[data-layout="mobile"] .ex-icon:hover:not(.open) .ex-tooltip,
+html[data-layout="mobile"] .ex-icon:focus:not(.open) .ex-tooltip {{ display: none; }}
 html[data-layout="mobile"] .ex-icon.open .ex-tooltip {{
     display: block;
     position: fixed;
@@ -742,46 +777,30 @@ html[data-layout="mobile"] .ex-icon.open .ex-tooltip {{
     max-width: none;
     max-height: 45vh;
     overflow-y: auto;
-    padding: 0.7rem 0.9rem;
-    font-size: 0.85rem;
+    padding: 0.75rem 0.95rem;
+    font-size: 14px;
     z-index: 300;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.55);
-}}
-html[data-layout="mobile"] .clue-row td {{
-    padding: 0.3rem 0.4rem;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
 }}
 html[data-layout="mobile"] .work-images img {{
     max-width: 100%;
 }}
 html[data-layout="mobile"] .related-chip {{
-    padding: 0.35rem 0.8rem;
-    font-size: 0.88rem;
+    padding: 0.4rem 0.85rem;
+    font-size: 14px;
 }}
 {search_nav_css()}
+.search-nav-random {{ font-size: 14px; padding: 0.3rem 0.75rem; color: var(--c-link); }}
+.search-nav-input {{ font-size: 14px; padding: 0.3rem 0.6rem; }}
 .search-nav-prev, .search-nav-next {{
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    border-radius: 3px;
-    color: #9aa0a7;
-    font-size: 0.85rem;
-    cursor: pointer;
-    padding: 0.2rem 0.5rem;
-    line-height: 1;
-    text-decoration: none;
-    font-weight: bold;
-}}
-.search-nav-prev:hover, .search-nav-next:hover {{
-    background: #262d37;
-    color: #6b9eff;
-    border-color: #6b9eff;
+    color: var(--c-muted);
     text-decoration: none;
 }}
 .score-clip {{
-    margin: 0.6rem 0.8rem 0.4rem;
-    background: #151a20;
-    border: 1px solid #3a3f47;
-    border-radius: 4px;
-    padding: 0.5rem 0.7rem;
+    margin: 0.5rem 0 0.25rem;
+    background: var(--c-raised);
+    border-radius: 8px;
+    padding: 0.55rem 0.75rem;
 }}
 .score-clip-header {{
     display: flex;
@@ -791,26 +810,26 @@ html[data-layout="mobile"] .related-chip {{
     flex-wrap: wrap;
 }}
 .score-clip-label {{
-    font-size: 0.8rem;
-    color: #808790;
+    font-size: 13px;
+    color: var(--c-muted);
 }}
 .review-badge {{
-    font-size: 0.72rem;
-    color: #f0a060;
+    font-size: 12px;
+    color: var(--c-warn);
 }}
 .score-notation svg {{
     max-width: 100%;
 }}
 .score-notation .abcjs-staff path {{
-    fill: #c8ccd1;
-    stroke: #c8ccd1;
+    fill: var(--c-text);
+    stroke: var(--c-text);
 }}
 {mobile_core_css()}
 </style>
 </head>
 <body>
-<h1>{topic}</h1>
 {nav_html}
+{head_html}
 <div class="summary">{summary}</div>
 {works_html}
 {comp_summary_html}
@@ -820,7 +839,18 @@ html[data-layout="mobile"] .related-chip {{
 <script src="../../lib/js/mobile.js"></script>
 <script src="../../lib/js/search_nav.js"></script>
 <script>initSearchNav('.nav-search', {{ prefix: '../../', currentSlug: '{topic_key}' }});
-losTapTooltips('.ex-icon');</script>
+losTapTooltips('.ex-icon');
+(function () {{
+    // Page-level restyle of the shared search_nav widget: prev/next move to
+    // the page actions on the h1 line (titles kept), Random gets a text label.
+    var pn = document.querySelector('.page-pn');
+    var prev = document.querySelector('.nav-search .search-nav-prev');
+    var next = document.querySelector('.nav-search .search-nav-next');
+    if (pn && prev) {{ prev.textContent = '\u2190 Previous'; pn.appendChild(prev); }}
+    if (pn && next) {{ next.textContent = 'Next \u2192'; pn.appendChild(next); }}
+    var rnd = document.querySelector('.nav-search .search-nav-random');
+    if (rnd) rnd.textContent = 'Random';
+}})();</script>
 {f'''<script>
 // Render ABC notation for all score clips
 document.querySelectorAll('.score-clip').forEach(function(clip) {{
@@ -829,7 +859,7 @@ document.querySelectorAll('.score-clip').forEach(function(clip) {{
     if (abc && el && typeof ABCJS !== 'undefined') {{
         ABCJS.renderAbc(el, abc, {{ responsive: 'resize', staffwidth: 340, scale: 0.85,
             paddingright: 0, paddingleft: 0, stafflineThickness: 1.5,
-            foregroundColor: '#c8ccd1' }});
+            foregroundColor: 'var(--c-text)' }});
     }}
 }});
 

@@ -13,7 +13,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import OUTPUT_DIR, DEV_DIR, resolve_analyses
-from lib.render.theme import ABCJS_SCRIPT_TAG, mp3_cache_buster
+from lib.render.theme import (ABCJS_SCRIPT_TAG, FONT_STACK, mp3_cache_buster,
+                              theme_vars_css)
 OUT_FILE = DEV_DIR / "score_clues_review.html"
 
 
@@ -109,37 +110,42 @@ def render(clues):
 <title>Score Clues Review</title>
 {ABCJS_SCRIPT_TAG}
 <style>
+{theme_vars_css()}
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f4f6; color: #1a1a2e; }}
-header {{ background: #1a1a2e; color: #fff; padding: 1.2rem 2rem; display: flex; align-items: center; gap: 2rem; }}
-header h1 {{ font-size: 1.3rem; font-weight: 600; }}
-.back {{ font-size: 0.8rem; }}
-.back a {{ color: rgba(255,255,255,0.6); text-decoration: none; }}
-.back a:hover {{ color: #fff; }}
-.stats {{ font-size: 0.85rem; opacity: 0.7; }}
-.controls {{ margin-left: auto; display: flex; gap: 0.5rem; }}
-.controls button {{ padding: 0.35rem 0.8rem; border: 1px solid rgba(255,255,255,0.3); background: transparent; color: #fff; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }}
-.controls button.active {{ background: #fff; color: #1a1a2e; }}
+body {{ font-family: {FONT_STACK}; -webkit-font-smoothing: antialiased; background: var(--c-bg); color: var(--c-text); }}
+header {{ max-width: 1000px; margin: 0 auto; padding: 1.4rem 1rem 0.9rem; display: flex; align-items: baseline; gap: 0.6rem 1.6rem; flex-wrap: wrap; border-bottom: 1px solid var(--c-border); }}
+header h1 {{ font-size: 1.4rem; font-weight: 600; color: var(--c-bright); }}
+.back {{ font-size: 0.85rem; }}
+.back a {{ color: var(--c-muted); text-decoration: none; }}
+.back a:hover {{ color: var(--c-text); }}
+.stats {{ font-size: 0.85rem; color: var(--c-muted); }}
+.controls {{ margin-left: auto; display: flex; gap: 0.4rem; }}
+.controls button {{ font: inherit; padding: 0.25rem 0.8rem; border: 1px solid var(--c-border); background: none; color: var(--c-text); border-radius: 99px; cursor: pointer; font-size: 0.8rem; }}
+.controls button:hover {{ border-color: var(--c-link); }}
+.controls button.active {{ background: var(--c-pick); border-color: var(--c-pickline); font-weight: 600; }}
 main {{ max-width: 1000px; margin: 1.5rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 1rem; }}
-.clue-card {{ background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; }}
+.clue-card {{ background: var(--c-raised2); border: 1px solid var(--c-border); border-radius: 8px; overflow: hidden; }}
 .clue-card[hidden] {{ display: none; }}
-.clue-header {{ display: flex; align-items: flex-start; justify-content: space-between; padding: 0.9rem 1.2rem 0.5rem; border-bottom: 1px solid #eee; }}
+.clue-header {{ display: flex; align-items: flex-start; justify-content: space-between; padding: 0.9rem 1.2rem 0.5rem; border-bottom: 1px solid var(--c-line2); }}
 .clue-title {{ display: flex; flex-direction: column; gap: 0.2rem; }}
-.topic-link {{ font-weight: 700; font-size: 1rem; color: #1a1a2e; text-decoration: none; }}
+.topic-link {{ font-weight: 600; font-size: 1rem; color: var(--c-link); text-decoration: none; }}
 .topic-link:hover {{ text-decoration: underline; }}
-.work-name {{ font-size: 0.85rem; color: #666; }}
-.badge {{ font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 20px; white-space: nowrap; }}
-.badge.review {{ background: #fff3cd; color: #856404; }}
-.badge.ok {{ background: #d1e7dd; color: #0a3622; }}
+.work-name {{ font-size: 0.85rem; color: var(--c-muted); }}
+.badge {{ font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 99px; white-space: nowrap; }}
+.badge.review {{ background: var(--c-hl); color: var(--c-accent); }}
+.badge.ok {{ background: var(--c-winbg); color: var(--c-winfg); }}
 .clue-body {{ display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 0.8rem 1.2rem; }}
-.notation svg {{ max-width: 100%; height: auto; }}
+.notation svg {{ max-width: 100%; height: auto; color: var(--c-text); }}
+/* abcjs draws in black; follow the theme's text colour instead. */
+.notation svg [fill]:not([fill="none"]) {{ fill: var(--c-text); }}
+.notation svg [stroke]:not([stroke="none"]) {{ stroke: var(--c-text); }}
 .clue-meta {{ display: flex; flex-direction: column; gap: 0.6rem; justify-content: center; }}
 .description {{ font-size: 0.9rem; font-weight: 500; }}
-.source-text {{ font-size: 0.82rem; color: #555; font-style: italic; line-height: 1.4; }}
+.source-text {{ font-size: 0.82rem; color: var(--c-muted); line-height: 1.4; }}
 audio {{ width: 100%; margin-top: 0.3rem; }}
-.no-audio {{ font-size: 0.8rem; color: #999; }}
-.abc-raw {{ padding: 0.5rem 1.2rem 0.8rem; border-top: 1px solid #eee; }}
-.abc-raw code {{ font-size: 0.72rem; color: #888; white-space: pre-wrap; word-break: break-all; }}
+.no-audio {{ font-size: 0.8rem; color: var(--c-faint); }}
+.abc-raw {{ padding: 0.5rem 1.2rem 0.8rem; border-top: 1px solid var(--c-line2); }}
+.abc-raw code {{ font-size: 0.72rem; color: var(--c-faint); white-space: pre-wrap; word-break: break-all; }}
 </style>
 </head>
 <body>

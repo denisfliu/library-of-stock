@@ -16,7 +16,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import OUTPUT_DIR, load_cards, resolve_analyses
 from lib.render.theme import (ABCJS_SCRIPT_TAG, base_css, layout_switch_script,
-                              mobile_core_css, table_cards_css, mp3_cache_buster)
+                              mobile_core_css, table_cards_css, mp3_cache_buster,
+                              site_nav, site_nav_css)
 
 
 def _synthesize_image_cards(analysis: dict, cards: list) -> list:
@@ -139,145 +140,228 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
 <title>Cards: {escape(topic)}</title>
 {abcjs_script}
 <style>
-{base_css(max_width='1100px', body_padding='1.5rem', h1_size='1.6rem')}
+{base_css(max_width='1088px', body_padding='1.5rem', h1_size='28px')}
+{site_nav_css()}
+.back-link {{
+    margin-top: 2rem;
+    font-size: 14px;
+}}
+.crumb-muted {{ color: var(--c-muted); }}
+/* page head: h1 + count, then the three page-level actions */
+.page-head {{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}}
+.page-head h1 {{ margin: 0 0.6rem 0 0; padding: 0; }}
+.page-head .sp, .toolbar .sp {{ flex-grow: 1; }}
+.stats {{
+    font-size: 13px;
+    color: var(--c-muted);
+}}
+.subline {{ margin-top: 4px; font-size: 13px; color: var(--c-muted); }}
+.page-head button, .modal-actions button, .palette-actions button, .palette-apply button {{
+    font: inherit;
+    font-size: 14px;
+    color: var(--c-link);
+    background: none;
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+}}
+.page-head button:hover, .modal-actions button:hover,
+.palette-actions button:hover, .palette-apply button:hover {{ border-color: var(--c-link); }}
+.page-head button.primary, .modal-actions button.primary {{ font-weight: 600; }}
+.page-head button:disabled {{ opacity: 0.6; cursor: default; }}
+.caret {{ color: var(--c-muted); }}
+/* More menu */
+.more-wrap {{ position: relative; }}
+.more-menu {{
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 50;
+    min-width: 210px;
+    background: var(--c-input);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+    padding: 0.3rem 0;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+}}
+.more-wrap.open .more-menu {{ display: block; }}
+.page-head .more-menu button {{
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    border-radius: 0;
+    padding: 0.5rem 0.9rem;
+    color: var(--c-text);
+}}
+.page-head .more-menu button:hover {{ background: var(--c-hover); }}
+.more-sep {{ border-top: 1px solid var(--c-border); margin: 0.3rem 0; }}
+/* toolbar row: selection bar (only with >=1 selected) + works filter */
 .toolbar {{
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     align-items: center;
-    margin-bottom: 1rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #3a3f47;
+    margin-top: 1.25rem;
+    min-height: 44px;
 }}
-.toolbar button, .toolbar select {{
-    padding: 0.3rem 0.7rem;
-    font-size: 0.82rem;
-    background: #1a1f25;
-    color: #c8ccd1;
-    border: 1px solid #3a3f47;
-    border-radius: 3px;
+.selbar {{
+    display: none;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    padding: 0.35rem 0.9rem;
+    background: var(--c-raised);
+    border-radius: 10px;
+    font-size: 14px;
+    min-height: 44px;
+}}
+.selbar.on {{ display: flex; }}
+.sel-hint {{ font-size: 13px; color: var(--c-muted); }}
+.selbar.on + .sel-hint {{ display: none; }}
+.selgrp {{ display: inline-flex; align-items: center; gap: 0.4rem; }}
+.linkbtn {{
+    font: inherit;
+    font-size: 14px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--c-link);
     cursor: pointer;
-    font-family: inherit;
 }}
-.toolbar button:hover {{ background: #262d37; }}
-.toolbar button.primary {{
-    background: #2a3a55;
-    color: #6b9eff;
-    border-color: #6b9eff;
-}}
-.toolbar button.danger {{
-    color: #f08080;
-    border-color: #6b2a2a;
-}}
+.linkbtn:hover {{ text-decoration: underline; }}
+.linkbtn.danger {{ color: var(--c-warn); }}
+.linkbtn.quiet {{ color: var(--c-muted); }}
 .toolbar input[type="text"] {{
-    padding: 0.3rem 0.6rem;
-    font-size: 0.82rem;
-    background: #15191e;
-    color: #c8ccd1;
-    border: 1px solid #3a3f47;
-    border-radius: 3px;
+    padding: 0.2rem 0.55rem;
+    font-size: 13px;
+    background: var(--c-input);
+    color: var(--c-text);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
     outline: none;
     font-family: inherit;
-    width: 160px;
+    width: 130px;
 }}
-.toolbar input:focus {{ border-color: #6b9eff; }}
-.stats {{
-    font-size: 0.82rem;
-    color: #808790;
-    margin-left: auto;
+.toolbar input:focus {{ border-color: var(--c-link); }}
+.pill-select {{
+    font: inherit;
+    font-size: 13px;
+    color: var(--c-text);
+    background: none;
+    border: 1px solid var(--c-border);
+    border-radius: 99px;
+    padding: 0.3rem 0.8rem;
+    cursor: pointer;
+    max-width: 220px;
 }}
+.modal button {{ white-space: nowrap; }}
+.pill-select:hover {{ border-color: var(--c-link); }}
 /* Card table */
 .card-table {{
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
+    font-size: 14px;
+    margin-top: 0.6rem;
 }}
 .card-table th {{
     text-align: left;
-    padding: 0.4rem 0.5rem;
-    background: #1f252d;
-    border-bottom: 1px solid #3a3f47;
-    color: #9aa0a7;
-    font-weight: 600;
+    padding: 0.5rem 0.6rem 0.5rem 0;
+    background: var(--c-bg);
+    border-bottom: 1px solid var(--c-text);
+    color: var(--c-muted);
+    font-weight: 500;
+    font-size: 13px;
     position: sticky;
     top: 0;
     z-index: 10;
 }}
-.card-table th.cb-col {{ width: 2rem; text-align: center; }}
-.card-table th.freq-col {{ width: 2.5rem; text-align: center; }}
-.card-table th.type-col {{ width: 4rem; }}
+.card-table th.cb-col {{ width: 2rem; text-align: left; }}
+.card-table th.freq-col {{ width: 3rem; text-align: right; }}
+.card-table th.type-col {{ width: 7rem; padding-left: 0.9rem; }}
+.card-table th.back-col {{ width: 14rem; }}
 .card-table th.tags-col {{ width: 10rem; }}
 .card-table td {{
-    padding: 0.35rem 0.5rem;
-    border-bottom: 1px solid #2a2f37;
-    vertical-align: top;
+    padding: 0.55rem 0.6rem 0.55rem 0;
+    border-bottom: 1px solid var(--c-border);
+    vertical-align: baseline;
 }}
 .card-table tr:hover td {{
-    background: #1a1f25;
+    background: var(--c-hover);
 }}
 .card-table tr.selected td {{
-    background: #1e2a3a;
+    background: var(--c-hover);
 }}
-.card-table td.cb-col {{ text-align: center; }}
+.card-table input[type="checkbox"] {{ accent-color: var(--c-link); width: 16px; height: 16px; margin: 0; vertical-align: middle; }}
+.card-table td.cb-col {{ text-align: left; padding-left: 0.2rem; }}
 .card-table td.freq-col {{
-    text-align: center;
-    color: #808790;
-    font-weight: bold;
+    text-align: right;
+    color: var(--c-muted);
+    font-variant-numeric: tabular-nums;
 }}
+.card-table td.ind-col {{ color: var(--c-muted); padding-left: 0.9rem; }}
+.card-table td.back-cell {{ font-weight: 600; }}
 .card-table .editable {{
     cursor: text;
     min-height: 1.2em;
     outline: none;
-    border-radius: 2px;
+    border-radius: 4px;
     padding: 0.1rem 0.2rem;
+    margin: -0.1rem -0.2rem;
 }}
 .card-table .editable:focus {{
-    background: #15191e;
-    box-shadow: 0 0 0 1px #6b9eff;
+    background: var(--c-input);
+    box-shadow: 0 0 0 1px var(--c-link);
 }}
-.card-table .tag {{
+.card-table .tag, .modal .tag {{
     display: inline-block;
-    font-size: 0.7rem;
-    background: #15191e;
-    border: 1px solid #2a2f37;
-    border-radius: 8px;
-    padding: 0 0.35rem;
-    margin: 0.1rem 0.1rem;
-    color: #808790;
+    font-size: 12px;
+    border: 1px solid var(--c-border);
+    border-radius: 99px;
+    padding: 0 0.45rem;
+    margin: 0.1rem 0.15rem 0.1rem 0;
+    color: var(--c-muted);
 }}
-.back-link {{
-    display: inline-block;
-    margin-bottom: 0.8rem;
-    font-size: 0.88rem;
-}}
+.modal .tag:hover {{ border-color: var(--c-link); color: var(--c-link); }}
 /* Modal */
 .modal-overlay {{
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.35);
     z-index: 100;
     align-items: center;
     justify-content: center;
 }}
 .modal-overlay.open {{ display: flex; }}
 .modal {{
-    background: #1a1f25;
-    border: 1px solid #3a3f47;
-    border-radius: 6px;
-    padding: 1.2rem;
+    background: var(--c-bg);
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    padding: 1.3rem 1.4rem;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
     min-width: 400px;
     max-width: 600px;
 }}
 .modal h3 {{
-    font-size: 1rem;
+    font-size: 17px;
+    font-weight: 600;
     margin-bottom: 0.8rem;
-    color: #e0e0e0;
+    color: var(--c-bright);
 }}
 .modal label {{
     display: block;
     font-size: 0.82rem;
-    color: #9aa0a7;
+    color: var(--c-muted);
     margin-bottom: 0.2rem;
     margin-top: 0.6rem;
 }}
@@ -285,15 +369,15 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
     width: 100%;
     padding: 0.4rem 0.6rem;
     font-size: 0.85rem;
-    background: #15191e;
-    color: #c8ccd1;
-    border: 1px solid #3a3f47;
-    border-radius: 3px;
+    background: var(--c-input);
+    color: var(--c-text);
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
     font-family: inherit;
     outline: none;
 }}
 .modal textarea {{ min-height: 60px; resize: vertical; }}
-.modal input:focus, .modal textarea:focus {{ border-color: #6b9eff; }}
+.modal input:focus, .modal textarea:focus {{ border-color: var(--c-link); }}
 .modal-actions {{
     display: flex;
     gap: 0.5rem;
@@ -305,53 +389,63 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
     align-items: center;
     gap: 0.5rem;
     padding: 0.3rem;
-    border: 1px solid #2a2f37;
+    border: 1px solid var(--c-line2);
     border-radius: 3px;
     margin-bottom: 0.3rem;
-    background: #15191e;
+    background: var(--c-input);
 }}
 .img-list-item img {{
     max-width: 80px;
     max-height: 60px;
     border-radius: 2px;
-    border: 1px solid #3a3f47;
+    border: 1px solid var(--c-border);
     flex-shrink: 0;
 }}
 .img-list-item .img-info {{
     flex: 1;
     font-size: 0.78rem;
-    color: #9aa0a7;
+    color: var(--c-muted);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }}
 .img-list-item .img-side {{
     font-size: 0.72rem;
-    color: #808790;
-    border: 1px solid #3a3f47;
+    color: var(--c-faint);
+    border: 1px solid var(--c-border);
     border-radius: 3px;
     padding: 0.1rem 0.3rem;
 }}
 .img-list-item .img-remove {{
-    color: #f08080;
+    color: var(--c-bad);
     cursor: pointer;
     font-size: 0.82rem;
     flex-shrink: 0;
 }}
 .img-palette {{
-    border: 1px solid #3a3f47;
-    border-radius: 4px;
-    background: #15191e;
-    padding: 0.6rem;
-    margin-bottom: 1rem;
+    background: var(--c-raised);
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    margin-top: 1.25rem;
 }}
 .img-palette summary {{
     cursor: pointer;
-    font-size: 0.85rem;
-    color: #9aa0a7;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--c-text);
     user-select: none;
 }}
-.img-palette summary:hover {{ color: #c8ccd1; }}
+.img-palette summary #palette-count {{ font-weight: normal; color: var(--c-muted); }}
+.palette-actions input {{
+    padding: 0.3rem 0.6rem; font: inherit; font-size: 13px;
+    background: var(--c-input); color: var(--c-text);
+    border: 1px solid var(--c-border); border-radius: 8px; outline: none;
+}}
+.palette-apply select {{
+    font: inherit; font-size: 13px; background: var(--c-input); color: var(--c-text);
+    border: 1px solid var(--c-border); border-radius: 8px; padding: 0.2rem 0.4rem;
+}}
+.img-palette summary:hover {{ color: var(--c-text); }}
 .palette-grid {{
     display: flex;
     flex-wrap: wrap;
@@ -362,11 +456,11 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
     position: relative;
     cursor: pointer;
     border: 2px solid transparent;
-    border-radius: 3px;
+    border-radius: 6px;
     transition: border-color 0.15s;
 }}
-.palette-img:hover {{ border-color: #6b9eff; }}
-.palette-img.selected {{ border-color: #6b9eff; }}
+.palette-img:hover {{ border-color: var(--c-link); }}
+.palette-img.selected {{ border-color: var(--c-link); }}
 .palette-img img {{
     max-height: 70px;
     max-width: 110px;
@@ -377,9 +471,9 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
     position: absolute;
     top: -4px;
     right: -4px;
-    background: #1a1f25;
-    color: #f08080;
-    border: 1px solid #3a3f47;
+    background: var(--c-raised);
+    color: var(--c-bad);
+    border: 1px solid var(--c-border);
     border-radius: 50%;
     width: 16px;
     height: 16px;
@@ -401,57 +495,21 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
     flex: 1;
     min-width: 150px;
 }}
-.palette-actions button {{
-    padding: 0.25rem 0.5rem;
-    font-size: 0.78rem;
-    background: #1a1f25;
-    color: #6b9eff;
-    border: 1px solid #6b9eff;
-    border-radius: 3px;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-}}
 .palette-apply {{
     display: flex;
     gap: 0.4rem;
     align-items: center;
     margin-top: 0.4rem;
     font-size: 0.82rem;
-    color: #9aa0a7;
-}}
-.palette-apply button {{
-    padding: 0.25rem 0.5rem;
-    font-size: 0.78rem;
-    background: #2a3a55;
-    color: #6b9eff;
-    border: 1px solid #6b9eff;
-    border-radius: 3px;
-    cursor: pointer;
-    font-family: inherit;
-}}
-.modal-actions button {{
-    padding: 0.35rem 0.8rem;
-    font-size: 0.82rem;
-    border: 1px solid #3a3f47;
-    border-radius: 3px;
-    cursor: pointer;
-    font-family: inherit;
-    background: #1a1f25;
-    color: #c8ccd1;
-}}
-.modal-actions button.primary {{
-    background: #2a3a55;
-    color: #6b9eff;
-    border-color: #6b9eff;
+    color: var(--c-muted);
 }}
 #ctx-menu {{
     display: none;
     position: fixed;
     z-index: 2000;
-    background: #1e2329;
-    border: 1px solid #3a3f47;
-    border-radius: 5px;
+    background: var(--c-input);
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
     padding: 0.3rem 0;
     min-width: 180px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.5);
@@ -460,101 +518,111 @@ def render_cards_html(analysis: dict, output_path: str | Path, cards: list | Non
     padding: 0.45rem 1rem;
     cursor: pointer;
     font-size: 0.88rem;
-    color: #c8ccd1;
+    color: var(--c-text);
     white-space: nowrap;
 }}
-#ctx-menu .ctx-item:hover {{ background: #2a3040; }}
-#ctx-menu .ctx-sep {{ border-top: 1px solid #3a3f47; margin: 0.25rem 0; }}
-#ctx-menu .ctx-item.danger {{ color: #e06c75; }}
+#ctx-menu .ctx-item:hover {{ background: var(--c-hover); }}
+#ctx-menu .ctx-sep {{ border-top: 1px solid var(--c-border); margin: 0.25rem 0; }}
+#ctx-menu .ctx-item.danger {{ color: var(--c-bad); }}
 #ctx-menu .ctx-sub {{
     padding: 0.35rem 1rem 0.2rem;
     font-size: 0.75rem;
-    color: #555;
+    color: var(--c-faint2);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     cursor: default;
 }}
 {mobile_core_css()}
 {table_cards_css('card-table')}
-/* Mobile: each card row becomes a small grid — freq + indicator as a faint
-   header line with the row checkbox at the right, then Front/Back/Tags
-   stacked full-width (labels via data-label from table_cards_css). */
+/* Mobile: stacked cards separated by hairlines — checkbox on the left,
+   then "freq x . indicator" as a muted line, the front, the back in bold,
+   and tags (table_cards_css above does the base block transform). */
+html[data-layout="mobile"] table.card-table {{ border-top: 1px solid var(--c-text); }}
 html[data-layout="mobile"] table.card-table tr {{
     display: grid;
-    grid-template-columns: auto auto 1fr auto;
+    grid-template-columns: 22px auto minmax(0, 1fr);
     column-gap: 0.6rem;
-    align-items: center;
-}}
-html[data-layout="mobile"] table.card-table td.freq-col {{
-    grid-row: 1; grid-column: 1; padding: 0; text-align: left;
-}}
-html[data-layout="mobile"] table.card-table td:nth-child(3) {{
-    grid-row: 1; grid-column: 2; padding: 0;
-    font-size: 0.72rem; color: #808790; text-transform: uppercase; letter-spacing: 0.05em;
+    row-gap: 0.15rem;
+    align-items: baseline;
+    border: none;
+    border-bottom: 1px solid var(--c-border);
+    border-radius: 8px;
+    background: none;
+    margin: 0;
+    padding: 0.75rem 0.35rem;
 }}
 html[data-layout="mobile"] table.card-table td.cb-col {{
-    grid-row: 1; grid-column: 4; padding: 0; justify-self: end;
+    grid-row: 1 / span 4; grid-column: 1; padding: 0.1rem 0 0; align-self: start;
 }}
 html[data-layout="mobile"] table.card-table td.cb-col input {{
-    width: 20px; height: 20px;
+    width: 18px; height: 18px;
+}}
+html[data-layout="mobile"] table.card-table td.freq-col {{
+    grid-row: 1; grid-column: 2; padding: 0; text-align: left; font-size: 12.5px;
+}}
+html[data-layout="mobile"] table.card-table td.ind-col {{
+    grid-row: 1; grid-column: 3; padding: 0; font-size: 12.5px;
+}}
+html[data-layout="mobile"] table.card-table td.freq-col:not(:empty) + td.ind-col::before {{
+    content: '·  '; white-space: pre;
 }}
 html[data-layout="mobile"] table.card-table td:nth-child(4),
 html[data-layout="mobile"] table.card-table td:nth-child(5),
 html[data-layout="mobile"] table.card-table td:nth-child(6) {{
-    grid-column: 1 / -1;
+    grid-column: 2 / -1; font-size: 14.5px; padding: 0.1rem 0 0;
 }}
+html[data-layout="mobile"] table.card-table td[data-label]::before {{ display: none; }}
 html[data-layout="mobile"] .card-table tr:hover td {{ background: none; }}
-html[data-layout="mobile"] .card-table tr.selected {{ border-color: #6b9eff; background: #1e2a3a; }}
+html[data-layout="mobile"] .card-table tr.selected {{ background: var(--c-hover); }}
 html[data-layout="mobile"] .card-table tr.selected td {{ background: none; }}
 .mobile-selectall {{ display: none; }}
 html[data-layout="mobile"] .mobile-selectall {{
-    display: flex; align-items: center; gap: 0.45rem;
-    font-size: 0.85rem; color: #9aa0a7; margin: 0.2rem 0 0.6rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 14px; color: var(--c-muted); margin: 0.6rem 0 0.4rem;
 }}
-html[data-layout="mobile"] .mobile-selectall input {{ width: 18px; height: 18px; }}
+html[data-layout="mobile"] .mobile-selectall input {{ width: 18px; height: 18px; accent-color: var(--c-link); }}
 html[data-layout="mobile"] .modal {{
     min-width: 0; width: calc(100vw - 2rem);
     max-height: 85vh; max-height: 85dvh; overflow-y: auto;
 }}
-html[data-layout="mobile"] .stats {{ margin-left: 0; width: 100%; }}
-html[data-layout="mobile"] .toolbar input[type="text"] {{ width: 130px; }}
+html[data-layout="mobile"] .page-head h1 {{ font-size: 24px; }}
+html[data-layout="mobile"] .page-head .sp {{ flex-basis: 100%; height: 0; }}
+html[data-layout="mobile"] .page-head > button.primary {{ margin-left: auto; }}
+html[data-layout="mobile"] .more-menu {{ right: auto; left: 0; }}
+html[data-layout="mobile"] .page-head .more-menu button {{ min-height: 44px; }}
+html[data-layout="mobile"] .toolbar input[type="text"] {{ width: 120px; }}
+html[data-layout="mobile"] .selbar {{ width: 100%; }}
+html[data-layout="mobile"] .pill-select {{ min-height: 40px; max-width: 100%; }}
 </style>
 </head>
 <body>
-<div class="back-link"><a href="../../wiki.html">&larr; Wiki</a> · <a href="{stock_link}">Study guide</a></div>
-<h1>Cards: {escape(topic)}</h1>
-
-<div class="toolbar">
-    <button onclick="addCard()" class="primary">+ Add card</button>
-    <button onclick="duplicateSelected()">Duplicate selected</button>
-    <button onclick="deleteSelected()" class="danger">Delete selected</button>
-    <span style="color:#3a3f47">|</span>
-    <input type="text" id="bulk-tag" placeholder="Tag to add..." list="tag-suggestions">
-    <datalist id="tag-suggestions">
-        {"".join(f'<option value="{escape(t)}">' for t in rec_tags)}
-    </datalist>
-    <button onclick="addTagToSelected()">Add tag to selected</button>
-    <span style="color:#3a3f47">|</span>
-    <input type="text" id="bulk-indicator" placeholder="Indicator..." list="indicator-suggestions">
-    <button onclick="setIndicatorSelected()">Set indicator</button>
-    <span style="color:#3a3f47">|</span>
-    <select id="filter-work" onchange="renderTable()">
-        <option value="">All works</option>
-    </select>
-    <span style="color:#3a3f47">|</span>
-    <button onclick="exportJSON()" class="primary">Save JSON</button>
-    <button onclick="exportTSV()">Export TSV</button>
-    <button onclick="exportApkgBtn()" class="primary">Download .apkg</button>
+{site_nav('../../', 'wiki')}
+<div class="back-link"><a href="{stock_link}">{escape(topic)}</a> <span class="crumb-muted">&middot; study guide</span></div>
+<div class="page-head">
+    <h1>Cards</h1>
     <span class="stats" id="stats"></span>
+    <span class="sp"></span>
+    <button onclick="addCard()">+ Add card</button>
+    <div class="more-wrap" id="more-wrap">
+        <button id="more-btn" onclick="toggleMore(event)" aria-haspopup="true" aria-expanded="false">More <span class="caret">&#9662;</span></button>
+        <div class="more-menu" id="more-menu" role="menu">
+            <button role="menuitem" onclick="closeMore();exportJSON()">Save JSON</button>
+            <button role="menuitem" onclick="closeMore();exportTSV()">Export TSV</button>
+            <div class="more-sep"></div>
+            <button role="menuitem" onclick="closeMore();togglePalette()">Media palette &amp; images</button>
+        </div>
+    </div>
+    <button onclick="exportApkgBtn()" class="primary">Download .apkg</button>
 </div>
+<div class="subline">Made from the study guide's clues. Edit them here (double-click a row for the full editor, right-click for bulk actions), then download for Anki.</div>
 
-<details class="img-palette" open>
-    <summary>Media Palette <span id="palette-count"></span></summary>
+<details class="img-palette" id="img-palette" open hidden>
+    <summary>Media palette <span id="palette-count"></span></summary>
     <div class="palette-grid" id="palette-grid"></div>
     <div class="palette-actions">
         <input type="text" id="palette-url" placeholder="Add image URL...">
         <button onclick="addToPalette()">+ Add</button>
-        <span style="font-size:0.72rem;color:#555;">or Ctrl+V to paste</span>
+        <span style="font-size:0.72rem;color:var(--c-faint2);">or Ctrl+V to paste</span>
     </div>
     <div class="palette-apply" id="palette-apply" style="display:none;">
         <span>Selected image:</span>
@@ -563,11 +631,35 @@ html[data-layout="mobile"] .toolbar input[type="text"] {{ width: 130px; }}
             <option value="front">Front</option>
         </select>
         <button onclick="applyPaletteToSelected()">Apply to selected cards</button>
-        <button onclick="clearPaletteSelection()" style="background:#1a1f25;">Cancel</button>
+        <button onclick="clearPaletteSelection()" style="background:var(--c-raised);">Cancel</button>
     </div>
-    {'<div id="clips-section" style="display:none;margin-top:0.6rem;border-top:1px solid #3a3f47;padding-top:0.5rem;"><div style="font-size:0.75rem;color:#808790;margin-bottom:0.4rem;">Score Clips</div><div id="clips-grid" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div></div>' if has_score_clips else ''}
+    {'<div id="clips-section" style="display:none;margin-top:0.6rem;border-top:1px solid var(--c-border);padding-top:0.5rem;"><div style="font-size:0.75rem;color:var(--c-faint);margin-bottom:0.4rem;">Score clips</div><div id="clips-grid" style="display:flex;flex-wrap:wrap;gap:0.5rem;"></div></div>' if has_score_clips else ''}
 </details>
 
+<div class="toolbar">
+    <div class="selbar" id="selbar">
+        <b id="sel-count">0 selected</b>
+        <button class="linkbtn" onclick="duplicateSelected()">Duplicate</button>
+        <span class="selgrp">
+            <input type="text" id="bulk-tag" placeholder="Tag..." list="tag-suggestions">
+            <button class="linkbtn" onclick="addTagToSelected()">Add tag</button>
+        </span>
+        <span class="selgrp">
+            <input type="text" id="bulk-indicator" placeholder="Indicator..." list="indicator-suggestions">
+            <button class="linkbtn" onclick="setIndicatorSelected()">Set indicator</button>
+        </span>
+        <button class="linkbtn danger" onclick="deleteSelected()">Delete</button>
+        <button class="linkbtn quiet" onclick="toggleAll(false)">Clear</button>
+    </div>
+    <span class="sel-hint d-only">Select cards for bulk actions.</span>
+    <datalist id="tag-suggestions">
+        {"".join(f'<option value="{escape(t)}">' for t in rec_tags)}
+    </datalist>
+    <span class="sp"></span>
+    <select id="filter-work" class="pill-select" onchange="renderTable()" aria-label="Filter by work">
+        <option value="">All works</option>
+    </select>
+</div>
 <label class="mobile-selectall"><input type="checkbox" id="select-all-m" onchange="toggleAll(this.checked)"> Select all shown</label>
 <table class="card-table">
     <thead>
@@ -576,7 +668,7 @@ html[data-layout="mobile"] .toolbar input[type="text"] {{ width: 130px; }}
             <th class="freq-col">Freq</th>
             <th class="type-col">Indicator</th>
             <th>Front</th>
-            <th>Back</th>
+            <th class="back-col">Back</th>
             <th class="tags-col">Tags</th>
         </tr>
     </thead>
@@ -601,11 +693,11 @@ html[data-layout="mobile"] .toolbar input[type="text"] {{ width: 130px; }}
         <textarea id="m-front"></textarea>
         <label>Back</label>
         <input type="text" id="m-back">
-        <label>Images <span style="font-weight:normal;font-size:0.78rem;color:#808790;">(palette, paste, or URL)</span></label>
+        <label>Images <span style="font-weight:normal;font-size:0.78rem;color:var(--c-faint);">(palette, paste, or URL)</span></label>
         <div id="m-images-list"></div>
         <div id="m-palette-picker" style="margin-top:0.3rem;"></div>
-        <div id="m-image-drop" style="border:1px dashed #3a3f47;border-radius:4px;padding:0.5rem;margin-top:0.3rem;text-align:center;background:#15191e;cursor:pointer;" tabindex="0">
-            <div style="font-size:0.82rem;color:#808790;">Paste image here (Ctrl+V) or drag &amp; drop</div>
+        <div id="m-image-drop" style="border:1px dashed var(--c-border);border-radius:4px;padding:0.5rem;margin-top:0.3rem;text-align:center;background:var(--c-input);cursor:pointer;" tabindex="0">
+            <div style="font-size:0.82rem;color:var(--c-faint);">Paste image here (Ctrl+V) or drag &amp; drop</div>
         </div>
         <div style="display:flex;gap:0.4rem;align-items:center;margin-top:0.4rem;">
             <input type="text" id="m-image-url" placeholder="Or enter image URL...">
@@ -613,7 +705,7 @@ html[data-layout="mobile"] .toolbar input[type="text"] {{ width: 130px; }}
                 <option value="back">Back</option>
                 <option value="front">Front</option>
             </select>
-            <button type="button" onclick="addImageToList()" style="padding:0.3rem 0.6rem;font-size:0.82rem;background:#1a1f25;color:#6b9eff;border:1px solid #6b9eff;border-radius:3px;cursor:pointer;">+ Add</button>
+            <button type="button" onclick="addImageToList()" style="padding:0.3rem 0.6rem;font-size:0.82rem;background:var(--c-raised);color:var(--c-link);border:1px solid var(--c-link);border-radius:3px;cursor:pointer;">+ Add</button>
         </div>
         <label>Tags (comma separated)</label>
         <input type="text" id="m-tags">
@@ -635,13 +727,13 @@ html[data-layout="mobile"] .toolbar input[type="text"] {{ width: 130px; }}
     <div class="ctx-sep"></div>
     <div class="ctx-sub">Tag</div>
     <div style="padding:0.2rem 0.7rem 0.4rem;">
-        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+        <input type="text" id="ctx-tag-input" placeholder="Tag name..." list="tag-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:var(--c-input);border:1px solid var(--c-border);border-radius:3px;color:var(--c-text);">
     </div>
     <div class="ctx-item" onclick="ctxAddTag()">Add tag</div>
     <div class="ctx-sep"></div>
     <div class="ctx-sub">Indicator</div>
     <div style="padding:0.2rem 0.7rem 0.4rem;">
-        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:#15191e;border:1px solid #3a3f47;border-radius:3px;color:#c8ccd1;">
+        <input type="text" id="ctx-indicator-input" placeholder="Indicator..." list="indicator-suggestions" style="width:100%;padding:0.3rem 0.4rem;font-size:0.82rem;background:var(--c-input);border:1px solid var(--c-border);border-radius:3px;color:var(--c-text);">
     </div>
     <div class="ctx-item" onclick="ctxSetIndicator()">Set indicator</div>
     <div class="ctx-sep"></div>
@@ -673,10 +765,10 @@ function renderTable() {{
     tbody.innerHTML = visible.map(c => `
         <tr data-idx="${{c._idx}}">
             <td class="cb-col"><input type="checkbox" class="row-cb" data-idx="${{c._idx}}"></td>
-            <td class="freq-col">${{c.frequency || ''}}x</td>
-            <td>${{c.indicator || c.type || 'basic'}}</td>
+            <td class="freq-col">${{c.frequency ? c.frequency + '\u00d7' : ''}}</td>
+            <td class="ind-col">${{c.indicator || c.type || 'basic'}}</td>
             <td data-label="Front">${{getImgs(c,'front')}}${{getImgs(c,'front') ? '<br>' : ''}}<div class="editable" style="display:inline" contenteditable="true" data-field="front" data-idx="${{c._idx}}">${{escHtml(c.front)}}</div></td>
-            <td data-label="Back"><div class="editable" contenteditable="true" data-field="back" data-idx="${{c._idx}}">${{escHtml(c.back)}}</div>${{getImgs(c,'back')}}</td>
+            <td data-label="Back" class="back-cell"><div class="editable" contenteditable="true" data-field="back" data-idx="${{c._idx}}">${{escHtml(c.back)}}</div>${{getImgs(c,'back')}}</td>
             <td data-label="Tags">${{(c.tags || []).map(t => `<span class="tag">${{escHtml(t)}}</span>`).join('')}}</td>
         </tr>
     `).join('');
@@ -698,7 +790,52 @@ function renderTable() {{
         }});
     }});
 
-    document.getElementById('stats').textContent = visible.length + ' of ' + cards.length + ' cards';
+    document.getElementById('stats').textContent = visible.length === cards.length
+        ? cards.length + ' card' + (cards.length !== 1 ? 's' : '')
+        : visible.length + ' of ' + cards.length + ' cards';
+    updateSelBar();
+}}
+
+// Selection bar: bulk actions show only while >=1 card is selected; the
+// selected rows get .selected for the tint.
+function updateSelBar() {{
+    const n = getSelected().length;
+    document.getElementById('selbar').classList.toggle('on', n > 0);
+    document.getElementById('sel-count').textContent = n + ' selected';
+    document.querySelectorAll('.row-cb').forEach(cb => {{
+        cb.closest('tr')?.classList.toggle('selected', cb.checked);
+    }});
+    if (n === 0) {{
+        document.getElementById('select-all').checked = false;
+        document.getElementById('select-all-m').checked = false;
+    }}
+}}
+document.getElementById('card-body').addEventListener('change', e => {{
+    if (e.target.classList.contains('row-cb')) updateSelBar();
+}});
+
+// More menu (Save JSON / Export TSV / media palette)
+function toggleMore(e) {{
+    e.stopPropagation();
+    const w = document.getElementById('more-wrap');
+    const open = w.classList.toggle('open');
+    document.getElementById('more-btn').setAttribute('aria-expanded', open);
+}}
+function closeMore() {{
+    document.getElementById('more-wrap').classList.remove('open');
+    document.getElementById('more-btn').setAttribute('aria-expanded', 'false');
+}}
+document.addEventListener('click', e => {{
+    if (!document.getElementById('more-wrap').contains(e.target)) closeMore();
+}});
+document.addEventListener('keydown', e => {{ if (e.key === 'Escape') closeMore(); }});
+
+// Media palette panel: shown by default only when there is media to show;
+// otherwise reachable from More.
+function togglePalette(force, quiet) {{
+    const p = document.getElementById('img-palette');
+    p.hidden = force === undefined ? !p.hidden : !force;
+    if (!p.hidden && !quiet) {{ p.open = true; p.scrollIntoView({{ block: 'nearest' }}); }}
 }}
 
 function escHtml(s) {{
@@ -709,6 +846,7 @@ function escHtml(s) {{
 
 function toggleAll(checked) {{
     document.querySelectorAll('.row-cb').forEach(cb => cb.checked = checked);
+    updateSelBar();
 }}
 
 function getSelected() {{
@@ -749,6 +887,7 @@ function showCtxMenu(e, rowIdx) {{
         cb.checked = true;
     }}
     ctxTargetIdx = rowIdx;
+    updateSelBar();
     const sel = getSelected();
     document.getElementById('ctx-label').textContent = sel.length + ' card' + (sel.length !== 1 ? 's' : '');
     ctxMenu.style.display = 'block';
@@ -829,6 +968,7 @@ document.getElementById('card-body').addEventListener('click', e => {{
         }}
     }}
     lastCheckedIdx = idx;
+    updateSelBar();
 }});
 // ──────────────────────────────────────────────────────────────
 
@@ -950,7 +1090,7 @@ function getImgs(card, side) {{
 function renderImageList() {{
     const el = document.getElementById('m-images-list');
     if (modalImages.length === 0) {{
-        el.innerHTML = '<div style="font-size:0.78rem;color:#555;padding:0.3rem;">No images</div>';
+        el.innerHTML = '<div style="font-size:0.78rem;color:var(--c-faint2);padding:0.3rem;">No images</div>';
         return;
     }}
     el.innerHTML = modalImages.map((img, i) => `
@@ -986,10 +1126,10 @@ function renderModalPalette() {{
         return;
     }}
     const side = document.getElementById('m-image-side-new').value;
-    picker.innerHTML = '<div style="font-size:0.75rem;color:#808790;margin-bottom:0.25rem;">From palette:</div>' +
+    picker.innerHTML = '<div style="font-size:0.75rem;color:var(--c-faint);margin-bottom:0.25rem;">From palette:</div>' +
         '<div style="display:flex;flex-wrap:wrap;gap:0.3rem;">' +
         paletteImages.map((img, i) => `
-            <div style="position:relative;cursor:pointer;border:1px solid #3a3f47;border-radius:3px;overflow:hidden;"
+            <div style="position:relative;cursor:pointer;border:1px solid var(--c-border);border-radius:3px;overflow:hidden;"
                  onclick="addPaletteImgToModal(${{i}})" title="${{escHtml(img.label)}}">
                 <img src="${{escHtml(img.url)}}" style="max-height:50px;max-width:80px;display:block;" onerror="this.parentElement.style.display='none'">
             </div>
@@ -1062,17 +1202,17 @@ const dropZone = document.getElementById('m-image-drop');
 if (dropZone) {{
     dropZone.addEventListener('dragover', e => {{
         e.preventDefault();
-        dropZone.style.borderColor = '#6b9eff';
-        dropZone.style.background = '#1a2535';
+        dropZone.style.borderColor = 'var(--c-link)';
+        dropZone.style.background = 'var(--c-selbg)';
     }});
     dropZone.addEventListener('dragleave', () => {{
-        dropZone.style.borderColor = '#3a3f47';
-        dropZone.style.background = '#15191e';
+        dropZone.style.borderColor = 'var(--c-border)';
+        dropZone.style.background = 'var(--c-input)';
     }});
     dropZone.addEventListener('drop', e => {{
         e.preventDefault();
-        dropZone.style.borderColor = '#3a3f47';
-        dropZone.style.background = '#15191e';
+        dropZone.style.borderColor = 'var(--c-border)';
+        dropZone.style.background = 'var(--c-input)';
         const file = e.dataTransfer?.files?.[0];
         if (file) handleImageFile(file);
     }});
@@ -1107,8 +1247,8 @@ function initClipsPalette() {{
     const grid = document.getElementById('clips-grid');
     section.style.display = '';
     grid.innerHTML = clips.map((clip, i) => `
-        <div style="background:#1a1f25;border:1px solid #3a3f47;border-radius:4px;padding:0.4rem 0.6rem;min-width:180px;max-width:280px;">
-            <div style="font-size:0.72rem;color:#9aa0a7;margin-bottom:0.25rem;">${{escHtml(clip.work || '')}}${{clip.needs_review ? ' <span style="color:#f0a060;" title="Needs review">⚠</span>' : ''}}</div>
+        <div style="background:var(--c-input);border:1px solid var(--c-border);border-radius:8px;padding:0.4rem 0.6rem;min-width:180px;max-width:280px;">
+            <div style="font-size:0.72rem;color:var(--c-muted);margin-bottom:0.25rem;">${{escHtml(clip.work || '')}}${{clip.needs_review ? ' <span style="color:var(--c-warn);" title="Needs review">⚠</span>' : ''}}</div>
             <div id="clip-notation-${{i}}" style="max-width:100%;overflow:hidden;"></div>
             <div style="margin-top:0.3rem;display:flex;align-items:center;gap:0.4rem;">
                 <audio controls preload="none" src="${{escHtml(clip.mp3)}}${{clip.mp3_v ? '?v=' + clip.mp3_v : ''}}" style="height:24px;width:120px;"></audio>
@@ -1137,7 +1277,7 @@ function renderPalette() {{
     const countEl = document.getElementById('palette-count');
     countEl.textContent = paletteImages.length ? `(${{paletteImages.length}})` : '';
     if (paletteImages.length === 0) {{
-        grid.innerHTML = '<span style="font-size:0.78rem;color:#555;">No images yet. Add one below or paste with Ctrl+V.</span>';
+        grid.innerHTML = '<span style="font-size:0.78rem;color:var(--c-faint2);">No images yet. Add one below or paste with Ctrl+V.</span>';
         return;
     }}
     grid.innerHTML = paletteImages.map((img, i) => `
@@ -1220,6 +1360,7 @@ document.querySelector('.img-palette')?.addEventListener('paste', e => {{
 renderPalette();
 renderTable();
 {'initClipsPalette();' if has_score_clips else ''}
+if (paletteImages.length || SCORE_CLIPS.some(c => c.mp3)) togglePalette(true, true);
 </script>
 {'<div id="offscreen-render" style="display:none;position:absolute;"></div>' if has_score_clips else ''}
 <script src="../../lib/js/anki_export.js"></script>

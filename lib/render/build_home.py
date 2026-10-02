@@ -1,11 +1,11 @@
-"""build_home.py — Generate index.html, the three-door portal homepage.
+"""build_home.py — Generate index.html, the portal homepage.
 
 The site has three main destinations: the wiki (wiki.html, built by
 lib/build_index.py), the reader (reader.html), and semantic search
 (the qb-semantic-search app at qbsuite.github.io/qb-semantic-search/app/). This page is the
-front door linking them, plus quick links to authored overview pages and
-sweep sets. Stats are computed from the corpus at build time; question-corpus
-figures live in door copy only (the mirror isn't available in CI).
+front door linking them (three icon tiles), plus quick links to authored
+overview pages and sweep sets. Stats are computed from the corpus at build
+time; the reader question count is static (the mirror isn't available in CI).
 
 Usage:
     python lib/render/build_home.py
@@ -17,19 +17,21 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from lib.common import ROOT, CATEGORIES_DIR, SETS_DIR, resolve_analyses
-from lib.render.theme import PALETTE, layout_switch_script
+from lib.render.theme import FONT_STACK, layout_switch_script, theme_vars_css
 from lib.units import UNITS_BY_SLUG
 
-# CSS custom properties for the neutral palette, sourced from theme.PALETTE
-# so the portal can't drift from the wiki/reader. (--accent is a semantic
-# color not yet in PALETTE and stays inline in the template.)
-_PALETTE_VARS = (
-    f"--bg: {PALETTE['bg']}; --raised: {PALETTE['bg_raised']}; "
-    f"--inset: {PALETTE['bg_input']}; --border: {PALETTE['border']};\n"
-    f"  --text: {PALETTE['text']}; --bright: {PALETTE['text_bright']}; "
-    f"--muted: {PALETTE['text_muted']}; --faint: {PALETTE['text_faint']};\n"
-    f"  --wiki: {PALETTE['link']};"
-)
+SEARCH_URL = "https://qbsuite.github.io/qb-semantic-search/app/"
+
+# Inline stroke icons for the three tiles (book / headphones / magnifier).
+_SVG = ('<svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" '
+        'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" '
+        'stroke-linejoin="round" aria-hidden="true">{}</svg>')
+ICON_BOOK = _SVG.format('<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/>'
+                        '<path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/>')
+ICON_HEADPHONES = _SVG.format('<path d="M4 14v-2a8 8 0 0 1 16 0v2"/>'
+                              '<rect x="3" y="14" width="4" height="7" rx="1.5"/>'
+                              '<rect x="17" y="14" width="4" height="7" rx="1.5"/>')
+ICON_SEARCH = _SVG.format('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>')
 
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en" data-layout="desktop">
@@ -39,156 +41,130 @@ TEMPLATE = """<!DOCTYPE html>
 LAYOUT_SWITCH
 <title>Library of Stock</title>
 <style>
-:root {
-  color-scheme: dark;
-  PALETTE_VARS
-  --accent: #e8b04a;
-  --search: #79c0a5;
-  --sans: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-  --serif: 'Linux Libertine', Georgia, serif;
-}
+THEME_VARS
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { background: var(--bg); }
+html { background: var(--c-bg); }
 body {
-  font-family: var(--sans); background: var(--bg); color: var(--text);
-  font-size: 15px; line-height: 1.55; min-height: 100vh;
-  display: flex; flex-direction: column; align-items: center;
-  padding: 0 1.2rem 3rem;
+  font-family: FONT_STACK; -webkit-font-smoothing: antialiased;
+  background: var(--c-bg); color: var(--c-text);
+  font-size: 15px; line-height: 1.5; min-height: 100vh;
 }
-a { text-decoration: none; }
-.masthead { text-align: center; margin: 3.2rem 0 0.4rem; }
+a { color: var(--c-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 88px 24px 64px; }
+.masthead { text-align: center; }
 .masthead h1 {
-  font-family: var(--serif); font-weight: normal; font-size: 2.5rem; color: var(--bright);
-  letter-spacing: 0.01em;
+  font-size: 34px; font-weight: 700; letter-spacing: -0.02em; color: var(--c-bright);
 }
-.masthead .tagline { color: var(--muted); font-size: 0.95rem; margin-top: 0.35rem; }
+.masthead .tagline { margin-top: 6px; color: var(--c-muted); font-size: 16px; }
 .statline {
-  display: flex; gap: 1.6rem; justify-content: center; flex-wrap: wrap;
-  color: var(--faint); font-size: 0.8rem; margin: 1.1rem 0 2.2rem;
+  margin-top: 10px; font-size: 13px; color: var(--c-muted);
   font-variant-numeric: tabular-nums;
 }
-.statline b { color: var(--muted); font-weight: 600; }
+.statline span + span::before { content: ' \\00b7  '; white-space: pre; }
 
-.doors { display: flex; gap: 1.2rem; width: 100%; max-width: 860px; }
-html[data-layout="mobile"] .doors { flex-direction: column; }
-html[data-layout="mobile"] .masthead { margin-top: 1.8rem; }
-html[data-layout="mobile"] .masthead h1 { font-size: 2rem; }
-html[data-layout="mobile"] .statline { gap: 0.7rem 1.4rem; }
-html[data-layout="mobile"] .door .go { padding: 0.6rem 1.3rem; }
-html[data-layout="mobile"] .quick a { padding: 0.25rem 0; }
-.door {
-  flex: 1; display: block; background: var(--raised); border: 1px solid var(--border);
-  border-radius: 6px; padding: 1.5rem 1.5rem 1.35rem; color: var(--text);
-  transition: border-color 0.15s;
+.tiles {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;
+  margin: 40px auto 0; max-width: 600px;
 }
-.door:hover { border-color: var(--faint); }
-.door .eyebrow {
-  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
-  margin-bottom: 0.55rem;
+a.tile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; height: 132px; border: 1px solid var(--c-border); border-radius: 14px;
+  color: var(--c-text);
 }
-.door.wiki .eyebrow { color: var(--wiki); }
-.door.reader .eyebrow { color: var(--accent); }
-.door.search .eyebrow { color: var(--search); }
-.door h2 { font-family: var(--serif); font-weight: normal; font-size: 1.7rem; color: var(--bright); }
-.door p { color: var(--muted); font-size: 0.9rem; margin-top: 0.5rem; }
-.door ul { list-style: none; margin-top: 0.9rem; }
-.door li { font-size: 0.85rem; color: var(--text); padding: 0.22rem 0; }
-.door li::before { content: '·'; margin-right: 0.5rem; }
-.door.wiki li::before { color: var(--wiki); }
-.door.reader li::before { color: var(--accent); }
-.door.search li::before { color: var(--search); }
-.door .go {
-  display: inline-block; margin-top: 1.1rem; font-size: 0.88rem; font-weight: 600;
-  border: 1px solid var(--border); border-radius: 3px; padding: 0.4rem 1.05rem;
-}
-.door.wiki .go { color: var(--wiki); }
-.door.reader .go { color: var(--accent); }
-.door.search .go { color: var(--search); }
-.door:hover .go { border-color: var(--faint); }
+a.tile:hover { text-decoration: none; background: var(--c-hover); border-color: var(--c-link); }
+a.tile .ic { color: var(--c-muted); }
+a.tile:hover .ic, a.tile:hover .nm { color: var(--c-link); }
+a.tile .nm { font-size: 18px; font-weight: 600; }
 
-.below {
-  width: 100%; max-width: 860px; margin-top: 1.2rem;
-  display: flex; gap: 1.2rem; flex-wrap: wrap;
+.sec-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  margin-top: 64px; padding-bottom: 8px;
 }
-.quick {
-  flex: 1; min-width: 240px; background: var(--inset); border: 1px solid var(--border);
-  border-radius: 6px; padding: 0.9rem 1.1rem;
+.sec-head h2, h2.sec { font-size: 15px; font-weight: 600; color: var(--c-muted); }
+.sec-head .note { font-size: 13px; color: var(--c-muted); }
+h2.sec { margin-top: 40px; padding-bottom: 8px; }
+.ov-cols {
+  border-top: 1px solid var(--c-border); padding-top: 12px;
+  column-width: 180px; column-gap: 24px; font-size: 14px;
 }
-.quick h3 {
-  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--faint); margin-bottom: 0.5rem;
+.ov-cols > div { padding: 3px 0; break-inside: avoid; }
+.reviewed {
+  margin-left: 6px; font-size: 12px; color: var(--c-muted);
+  border: 1px solid var(--c-border); border-radius: 99px; padding: 0 7px;
+  white-space: nowrap;
 }
-.quick a { display: inline-block; color: var(--wiki); font-size: 0.85rem; margin: 0.12rem 0.9rem 0.12rem 0; }
-.quick a:hover { text-decoration: underline; }
-.quick .draft-mark { color: var(--accent); font-size: 0.7rem; vertical-align: super; }
-.quick .soon { color: var(--faint); font-size: 0.85rem; margin: 0.12rem 0.9rem 0.12rem 0; }
-footer { margin-top: 2.4rem; color: var(--faint); font-size: 0.75rem; text-align: center; }
-footer a { color: var(--muted); }
+.rows { border-top: 1px solid var(--c-border); }
+.rows > div { border-bottom: 1px solid var(--c-border); }
+.rows .item { padding: 12px 10px; margin: 0 -10px; border-radius: 8px; }
+.rows .item:hover { background: var(--c-hover); }
+.rows .item a { font-weight: 600; }
+.soon { color: var(--c-faint); font-size: 14px; }
+footer { margin-top: 48px; font-size: 14px; color: var(--c-muted); text-align: center; }
+footer a { color: var(--c-muted); text-decoration: underline; }
+
+html[data-layout="mobile"] .wrap { padding: 40px 16px 48px; }
+html[data-layout="mobile"] .masthead h1 { font-size: 28px; }
+html[data-layout="mobile"] .tiles { gap: 10px; margin-top: 28px; }
+html[data-layout="mobile"] a.tile { height: 104px; }
+html[data-layout="mobile"] a.tile .nm { font-size: 16px; }
+html[data-layout="mobile"] .sec-head { margin-top: 44px; }
+html[data-layout="mobile"] .ov-cols { column-width: 150px; column-gap: 16px; }
+html[data-layout="mobile"] .ov-cols > div { padding: 5px 0; }
 </style>
 </head>
 <body>
-<div class="masthead">
+<div class="wrap">
+<header class="masthead">
   <h1>Library of Stock</h1>
-  <div class="tagline">Quizbowl study guides, a question reader, and clue search.</div>
-</div>
-<div class="statline">STATLINE</div>
+  <div class="tagline">Quizbowl study guides, a question reader, and clue search</div>
+  <div class="statline">STATLINE</div>
+</header>
 
-<div class="doors">
-  <a class="door wiki" href="wiki.html">
-    <div class="eyebrow">Study</div>
-    <h2>Wiki</h2>
-    <p>Every topic the canon asks about, analyzed from real clues.</p>
-    <ul>
-      <li>Search all GUIDE_COUNT guides</li>
-      <li>Category overviews with question panels &amp; soundbites</li>
-      <li>Timeline and map views</li>
-      <li>Anki-style cards per topic</li>
-    </ul>
-    <span class="go">Open the wiki &rarr;</span>
-  </a>
-  <a class="door reader" href="reader.html">
-    <div class="eyebrow">Practice</div>
-    <h2>Reader</h2>
-    <p>Get questions read to you, buzz, and learn where you're weak.</p>
-    <ul>
-      <li>187,000+ tossups, filtered by category, movement &amp; era</li>
-      <li>Last-<i>n</i>-sentences mode for giveaway drilling</li>
-      <li>Accuracy &amp; buzz-depth stats, weakest-first</li>
-      <li>Every reveal links back to the wiki</li>
-    </ul>
-    <span class="go">Start reading &rarr;</span>
-  </a>
-  <a class="door search" href="https://qbsuite.github.io/qb-semantic-search/app/">
-    <div class="eyebrow">Look up</div>
-    <h2>Search</h2>
-    <p>Find clues by meaning, not keywords, across the whole corpus.</p>
-    <ul>
-      <li>Semantic search over 1.7M clue sentences</li>
-      <li>qbreader-style filters: category, difficulty, year, set</li>
-      <li>Matched sentence highlighted in its question</li>
-      <li>Shareable search URLs</li>
-    </ul>
-    <span class="go">Search the corpus &rarr;</span>
-  </a>
+<nav class="tiles" aria-label="Sections">
+  <a class="tile" href="wiki.html" title="Study guides for GUIDE_COUNT topics, category overviews, timeline and location views">ICON_BOOK<span class="nm">Wiki</span></a>
+  <a class="tile" href="reader.html" title="Get questions read to you, buzz, and learn where you're weak">ICON_HEADPHONES<span class="nm">Reader</span></a>
+  <a class="tile" href="SEARCH_URL" title="Find clues by meaning, not keywords, across the whole corpus">ICON_SEARCH<span class="nm">Search</span></a>
+</nav>
+
+<div class="sec-head">
+  <h2>Category overviews</h2>
+  <span class="note">AI drafts unless marked reviewed</span>
+</div>
+<div class="ov-cols">
+  OVERVIEW_LINKS
 </div>
 
-<div class="below">
-  <div class="quick">
-    <h3>Category overviews</h3>
-    OVERVIEW_LINKS
-  </div>
-  <div class="quick">
-    <h3>Tournament sweeps</h3>
-    SWEEP_LINKS
-  </div>
+<h2 class="sec">Tournament sweeps</h2>
+<div class="rows">
+  SWEEP_LINKS
 </div>
 
 <footer>
   Questions mirrored from <a href="https://www.qbreader.org">qbreader</a> &middot; noncommercial study use
 </footer>
+</div>
 </body>
 </html>
 """
+
+
+def _set_display_name(set_dir: Path, sets_index: dict) -> str:
+    """Human name for a sweep set: set.json's set_name (or legacy name),
+    then the sets.json registry, then a prettified slug."""
+    slug = set_dir.name
+    try:
+        data = json.loads((set_dir / "set.json").read_text(encoding="utf-8"))
+        name = data.get("set_name") or data.get("name")
+        if name:
+            return name
+    except (OSError, json.JSONDecodeError):
+        pass
+    if sets_index.get(slug):
+        return sets_index[slug]
+    words = slug.replace("_", " ").split()
+    return " ".join(w.upper() if (w.isalpha() and len(w) <= 3) else w.capitalize()
+                    for w in words)
 
 
 def build(analyses=None) -> None:
@@ -205,45 +181,62 @@ def build(analyses=None) -> None:
         slug = ov_path.parent.name
         unit = UNITS_BY_SLUG.get(slug)
         title = unit.title if unit else slug.replace("_", " ").title()
-        draft = ov.get("draft")
-        if draft:
+        # Inverted marker: drafts are the norm, so only reviewed overviews
+        # get a pill; the draft state stays in the link's title tooltip.
+        if ov.get("draft"):
             draft_count += 1
-        mark = ' <span class="draft-mark" title="AI draft, not yet reviewed">draft</span>' if draft else ""
+            attr, mark = ' title="AI draft, not yet reviewed"', ""
+        else:
+            attr = ' title="Reviewed"'
+            mark = ' <span class="reviewed" title="Reviewed by a human">reviewed</span>'
         overview_links.append(
-            f'<a href="output/_categories/{escape(slug)}/overview.html">{escape(title)}</a>{mark}'
+            f'<div><a href="output/_categories/{escape(slug)}/overview.html"{attr}>'
+            f'{escape(title)}</a>{mark}</div>'
         )
+    n_overviews = len(overview_links)
     if not overview_links:
         overview_links.append('<span class="soon">none yet</span>')
 
+    sets_index = {}
+    try:
+        for e in json.loads((SETS_DIR / "sets.json").read_text(encoding="utf-8")):
+            sets_index[e.get("set_slug")] = e.get("set_name")
+    except (OSError, json.JSONDecodeError, AttributeError, TypeError):
+        pass
+
     sweep_links = []
     for set_path in sorted(SETS_DIR.glob("*/set.json")):
-        try:
-            name = json.loads(set_path.read_text(encoding="utf-8")).get("name", set_path.parent.name)
-        except (OSError, json.JSONDecodeError):
-            name = set_path.parent.name
+        name = _set_display_name(set_path.parent, sets_index)
         sweep_links.append(
-            f'<a href="output/_sets/{escape(set_path.parent.name)}/sweep.html">{escape(name)}</a>'
+            f'<div><div class="item"><a href="output/_sets/{escape(set_path.parent.name)}/sweep.html">'
+            f'{escape(name)}</a></div></div>'
         )
+    n_sweeps = len(sweep_links)
     if not sweep_links:
-        sweep_links.append('<span class="soon">none yet</span>')
+        sweep_links.append('<div><div class="item"><span class="soon">none yet</span></div></div>')
 
     stats = [
-        f"<span><b>{guide_count}</b> study guides</span>",
-        f"<span><b>{len(overview_links)}</b> category overviews</span>",
-        f"<span><b>{len(sweep_links)}</b> tournament sweeps</span>",
-        "<span><b>187k+</b> questions in the reader</span>",
+        f"<span>{guide_count} study guides</span>",
+        f"<span>{n_overviews} category overviews</span>",
+        f"<span>{n_sweeps} tournament sweep{'' if n_sweeps == 1 else 's'}</span>",
+        "<span>187k+ questions in the reader</span>",
     ]
 
     html = (TEMPLATE
             .replace("LAYOUT_SWITCH", layout_switch_script())
-            .replace("PALETTE_VARS", _PALETTE_VARS)
-            .replace("STATLINE", "\n  ".join(stats))
+            .replace("THEME_VARS", theme_vars_css())
+            .replace("FONT_STACK", FONT_STACK)
+            .replace("STATLINE", "".join(stats))
             .replace("GUIDE_COUNT", str(guide_count))
-            .replace("OVERVIEW_LINKS", "\n    ".join(overview_links))
-            .replace("SWEEP_LINKS", "\n    ".join(sweep_links)))
+            .replace("ICON_BOOK", ICON_BOOK)
+            .replace("ICON_HEADPHONES", ICON_HEADPHONES)
+            .replace("ICON_SEARCH", ICON_SEARCH)
+            .replace("SEARCH_URL", SEARCH_URL)
+            .replace("OVERVIEW_LINKS", "\n  ".join(overview_links))
+            .replace("SWEEP_LINKS", "\n  ".join(sweep_links)))
     (ROOT / "index.html").write_text(html, encoding="utf-8")
     print(f"Built index.html (portal): {guide_count} guides, "
-          f"{len(overview_links)} overviews ({draft_count} drafts), {len(sweep_links)} sweeps")
+          f"{n_overviews} overviews ({draft_count} drafts), {n_sweeps} sweeps")
 
 
 if __name__ == "__main__":

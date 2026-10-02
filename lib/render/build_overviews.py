@@ -5,7 +5,7 @@ Usage:
 
 Incremental: a page is re-rendered when its overview.json OR the topic
 index is newer than the existing overview.html — link resolution depends
-on the whole corpus, so new topic pages must flip red links to blue.
+on the whole corpus, so new topic pages must turn plain names into links.
 """
 import argparse
 import json
