@@ -27,7 +27,8 @@ class Embedder:
         from sentence_transformers import SentenceTransformer
 
         if device is None:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
+            device = ("cuda" if torch.cuda.is_available()
+                      else "mps" if torch.backends.mps.is_available() else "cpu")
         self.device = device
         # fp16 halves VRAM (the 4070 laptop card has 8 GB shared with the
         # desktop) with no measurable retrieval quality loss.

@@ -13,7 +13,9 @@ Organize by **individual works or work groups** (series, chapel cycles, etc.):
 - "Other Works" for infrequently clued pieces
 - "General / Biographical" for common identifiers
 
-Every work section needs an `indicator` field: `Painting`, `Sculpture`, `Fresco`, `Print`, `Engraving`, `Mural`, `Installation`, `Building`, `Architect`.
+Every work section needs an `indicator` field: `Painting`, `Sculpture`, `Fresco`, `Print`, `Engraving`, `Mural`, `Installation`, `Building`, `Architect`, plus `Performance`, `Photograph` and `Film` for performance, photo and film works, and `Book` for an artist's writings.
+
+For performance and multimedia artists (Schneemann, Abramović, Beuys), section by individual pieces just as for painters, and use the work-type indicator (`Performance: ...`).
 
 For movements (Ashcan School, YBA, etc.): use `Movement` indicator and organize by key members/exhibitions.
 

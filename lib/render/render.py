@@ -71,6 +71,11 @@ def _linkify(text, cross_refs, self_topic, escaped=True):
     return text
 
 
+# Speech-bubble glyph for a clue's source examples (currentColor, 13px).
+EX_ICON_SVG = ('<svg class="ex-glyph" width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">'
+               '<path d="M3 3.5h10a1 1 0 0 1 1 1v5.5a1 1 0 0 1-1 1H7.5L4.5 13.5V11H3a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z" '
+               'fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>')
+
 def render_html(analysis: dict, output_path: str | Path) -> Path:
     """
     Render an analysis dict to a self-contained HTML file.
@@ -106,6 +111,14 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     self_topic = analysis.get("topic", "")
     topic_index = _load_crossref_index()
     summary = _linkify(analysis.get("summary", ""), cross_refs, self_topic)
+    has_placement = any(isinstance(c.get("placement"), dict)
+                        for w in analysis.get("works", []) for c in w.get("clues", []))
+    place_legend = ('<p class="place-legend"><span class="place place-mid"><span class="place-dot" '
+                    'style="left:50%"></span></span> Each bar shows where a clue usually comes in a '
+                    'tossup, from the opening line on the left to the giveaway on the right. '
+                    'Hover or tap the bar to see example sentences; clues heard only in bonuses '
+                    'have a speech icon instead.</p>'
+                    if has_placement else "")
     works = analysis.get("works", [])
     suggestions = analysis.get("recursive_suggestions", [])
     links = analysis.get("links", [])
@@ -175,7 +188,9 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
         for clip_work, clips in score_clips_by_work.items():
             if clip_work == work_name or clip_work in work_name or work_name.startswith(clip_work):
                 work_clips.extend(clips)
-        clue_list = work.get("clues", [])
+        # Most-asked clues first; ties keep the author's order (stable sort).
+        clue_list = sorted(work.get("clues", []),
+                           key=lambda c: -c["frequency"] if isinstance(c.get("frequency"), int) else 0)
         clip_for_clue: dict[int, list] = {}  # clue_idx → [clips]
         unmatched_clips = []
         for clip in work_clips:
@@ -192,6 +207,9 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                 unmatched_clips.append(clip)
 
         clues_html = ""
+        # Sections whose clues carry placement data (pipeline v2) show the
+        # placement bar instead of the legacy giveaway tag.
+        section_has_place = any(isinstance(c.get("placement"), dict) for c in clue_list)
         for ci, clue in enumerate(clue_list):
             freq = clue.get("frequency", 1)
             # Old schema uses string frequencies ("very common", "common")
@@ -203,31 +221,48 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
                 tendency = "power"
             else:
                 tendency = "mid"
-            badge_class = {
-                "power": "badge-power",
-                "giveaway": "badge-giveaway",
-                "mid": "badge-mid",
-            }.get(tendency, "badge-mid")
+            # Pipeline-v2 clues carry `placement` (mean position in their
+            # tossups, 0 = opening line, 1 = giveaway), drawn as a small
+            # track. Older clues only know giveaway, kept as a tag.
+            place = clue.get("placement")
+            badge_html = ""
+            place_bar = place_tip = ""
+            if isinstance(place, dict) and place.get("avg") is not None:
+                avg, n = place["avg"], place.get("n", 0)
+                zone = "late" if avg >= 0.85 else "early" if avg <= 0.35 else "mid"
+                place_tip = (f"On average this clue comes {round(avg * 100)}% of the way through "
+                             f"the tossup ({n} tossup{'s' if n != 1 else ''}).")
+                place_bar = (f'<span class="place place-{zone}">'
+                             f'<span class="place-dot" style="left:{avg * 100:.0f}%"></span></span>')
+            elif tendency == "giveaway" and not section_has_place:
+                badge_html = '<span class="badge badge-giveaway">giveaway</span>'
             # Old schema uses "text" key; new schema uses "clue"
             clue_text = clue.get("clue") or clue.get("text", "")
 
+            # One control under the count: the placement bar when the clue
+            # has one (it opens the examples), else the speech-bubble icon.
             examples = clue.get("examples", [])
             ex_html = ""
             if examples:
                 tooltip_text = " | ".join(escape(ex) for ex in examples[:3])
+                if place_tip:
+                    tooltip_text = f'<span class="ex-place">{place_tip}</span>{tooltip_text}'
                 ex_label = "example" if len(examples) == 1 else "examples"
-                ex_html = (f'<span class="ex-icon" tabindex="0" role="button" title="Examples">'
-                           f'{ex_label}<span class="ex-tooltip">{tooltip_text}</span></span>')
+                trigger = place_bar or EX_ICON_SVG
+                ex_html = (f'<span class="ex-icon{" ex-on-place" if place_bar else ""}" tabindex="0" '
+                           f'role="button" aria-label="Show {ex_label}">'
+                           f'{trigger}<span class="ex-tooltip">{tooltip_text}</span></span>')
+            elif place_bar:
+                ex_html = place_bar.replace('<span class="place ',
+                                            f'<span title="{place_tip}" aria-label="{place_tip}" class="place ', 1)
 
             inline_clips = "".join(_score_clip_html(c) for c in clip_for_clue.get(ci, []))
             clues_html += f"""
             <tr class="clue-row">
-                <td class="clue-freq">{freq_display}</td>
+                <td class="clue-freq"><span class="freq-n">{freq_display}</span><span class="freq-tools">{ex_html}</span></td>
                 <td class="clue-body">
-                    <span class="clue-text">{escape(clue_text)}</span>{inline_clips}
+                    <span class="clue-text">{escape(clue_text)}</span>{badge_html}{inline_clips}
                 </td>
-                <td class="clue-ex">{ex_html}</td>
-                <td class="clue-tag"><span class="badge {badge_class}">{tendency}</span></td>
             </tr>
             """
 
@@ -530,10 +565,10 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
 .clue-table {{
     width: 100%;
     border-collapse: collapse;
-    font-size: 15px;
+    font-size: 14px;  /* below the section summary (14.5px) */
 }}
 .clue-row td, .clip-row td {{
-    padding: 0.5rem 0.35rem;
+    padding: 0.3rem 0.35rem;
     border-top: 1px solid var(--c-border);
     vertical-align: baseline;
 }}
@@ -541,22 +576,48 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
 .clue-row td:first-child {{ border-radius: 8px 0 0 8px; }}
 .clue-row td:last-child {{ border-radius: 0 8px 8px 0; }}
 .clue-freq {{
-    width: 2.4rem;
+    width: 2.6rem;
     text-align: right;
     color: var(--c-muted);
-    font-size: 13px;
+    font-size: 12px;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
     padding-right: 0.6rem !important;
 }}
 .clue-body {{
-    line-height: 1.5;
+    line-height: 1.45;
 }}
+/* Legacy giveaway tag sits inline after the clue text. */
+.clue-body .badge {{ margin-left: 0.4rem; font-size: 11px; vertical-align: 1px; }}
+.clue-body .score-clip {{ max-width: 480px; }}
+/* Examples: a small icon under the clue's count. */
+.clue-freq .freq-n {{ display: block; }}
+/* Under the count: the examples icon and the placement bar, so the clue
+   text keeps the whole row. */
+.freq-tools {{ display: flex; align-items: center; justify-content: flex-end; gap: 5px; margin-top: 2px; }}
+.clue-freq .ex-icon {{ display: inline-flex; opacity: 0.55; }}
+/* The placement bar doubles as the examples trigger: full strength, with a
+   taller hit area than the 3px bar itself. */
+.clue-freq .ex-icon.ex-on-place {{ opacity: 1; padding: 5px 0; cursor: pointer; }}
+.ex-place {{ display: block; font-style: normal; color: var(--c-muted); margin-bottom: 4px; }}
+.clue-freq .ex-icon .ex-tooltip {{ right: auto; left: 0; }}
+.ex-glyph {{ display: block; }}
+/* Placement: where the clue usually comes in a tossup (opening -> giveaway). */
+.place {{
+    display: inline-block; position: relative; vertical-align: middle;
+    width: 24px; height: 3px; border-radius: 2px; background: var(--c-border);
+}}
+.place-dot {{
+    position: absolute; top: 50%; width: 7px; height: 7px; border-radius: 50%;
+    transform: translate(-50%, -50%); background: var(--c-muted);
+}}
+.place-early .place-dot {{ background: var(--c-warn); }}
+.place-late .place-dot {{ background: var(--c-good); }}
+.place-legend {{ margin: 0.9rem 0 0; font-size: 13px; color: var(--c-muted); }}
+.place-legend .place {{ margin-right: 0.35rem; }}
 .clue-text {{
     color: var(--c-text);
 }}
-.clue-ex {{ width: 1%; white-space: nowrap; text-align: right; }}
-.clue-tag {{ width: 1%; white-space: nowrap; text-align: right; }}
 .badge {{
     display: inline-block;
     font-size: 12px;
@@ -566,8 +627,6 @@ def render_html(analysis: dict, output_path: str | Path) -> Path:
     white-space: nowrap;
 }}
 .badge-giveaway {{ background: var(--c-winbg); color: var(--c-winfg); font-weight: 600; }}
-.badge-mid {{ color: var(--c-muted); box-shadow: inset 0 0 0 1px var(--c-border); }}
-.badge-power {{ color: var(--c-warn); box-shadow: inset 0 0 0 1px var(--c-warn); }}
 /* "example(s)" affordance: shows on row hover/focus on desktop; the
    tooltip carries up to three source sentences. */
 .ex-icon {{
@@ -743,25 +802,22 @@ html[data-layout="mobile"] .search-nav-dropdown {{
 html[data-layout="mobile"] .clue-table, html[data-layout="mobile"] .clue-table tbody {{ display: block; }}
 html[data-layout="mobile"] .clue-row {{
     display: grid;
-    grid-template-columns: 2.2rem minmax(0, 1fr) auto;
+    grid-template-columns: 2.6rem minmax(0, 1fr);
     column-gap: 0.5rem;
     border-top: 1px solid var(--c-border);
-    padding: 0.55rem 0;
+    padding: 0.4rem 0;
 }}
 html[data-layout="mobile"] .clue-row td {{ border: none; padding: 0; background: none; }}
 html[data-layout="mobile"] .clue-row:hover td {{ background: none; }}
 html[data-layout="mobile"] .clue-freq {{ grid-row: 1; grid-column: 1; padding-right: 0 !important; width: auto; }}
-html[data-layout="mobile"] .clue-body {{ grid-row: 1; grid-column: 2 / -1; }}
-html[data-layout="mobile"] .clue-ex {{ grid-row: 2; grid-column: 2; text-align: left; width: auto; align-self: center; }}
-html[data-layout="mobile"] .clue-tag {{ grid-row: 2; grid-column: 3; width: auto; align-self: center; }}
-html[data-layout="mobile"] .clue-ex:empty + .clue-tag {{ padding: 0.3rem 0 0; }}
+html[data-layout="mobile"] .clue-body {{ grid-row: 1; grid-column: 2; }}
 html[data-layout="mobile"] .clip-row {{ display: block; }}
 html[data-layout="mobile"] .clip-row td {{ display: block; padding: 0.4rem 0; }}
+html[data-layout="mobile"] .clue-freq .ex-icon {{ display: inline-flex; padding: 3px 2px; margin-top: 0; }}
 html[data-layout="mobile"] .ex-icon {{
     opacity: 1;
-    min-height: 32px;
-    display: inline-flex;
-    align-items: center;
+    display: inline;
+    padding: 0.4rem 0.2rem;  /* larger tap target without growing the line */
 }}
 html[data-layout="mobile"] .ex-icon:hover:not(.open) .ex-tooltip,
 html[data-layout="mobile"] .ex-icon:focus:not(.open) .ex-tooltip {{ display: none; }}
@@ -831,6 +887,7 @@ html[data-layout="mobile"] .related-chip {{
 {nav_html}
 {head_html}
 <div class="summary">{summary}</div>
+{place_legend}
 {works_html}
 {comp_summary_html}
 {related_html}

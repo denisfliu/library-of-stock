@@ -70,13 +70,16 @@ def _weighted_containment(a: frozenset, b: frozenset, weight: dict) -> float:
     return shared_w / denom if denom else 0.0
 
 
-def cluster_clues(clues: list[dict]) -> list[dict]:
+def cluster_clues(clues: list[dict], keep_members: bool = False,
+                  threshold: float = _SIM_THRESHOLD) -> list[dict]:
     """Greedy single-pass clustering of clue dicts by content-word overlap.
 
     Each clue dict needs 'text' and 'source'. Returns clusters sorted by
     size descending:
         {representative, count, variants, sources, in_power_count,
          is_giveaway_count}
+    With keep_members, each cluster also carries 'members_full' (the
+    clue dicts themselves) for callers that need per-member provenance.
     """
     word_sets = [_content_words(c.get('text', '')) for c in clues]
     df = Counter(w for ws in word_sets for w in ws)
@@ -92,7 +95,7 @@ def cluster_clues(clues: list[dict]) -> list[dict]:
             sim = _weighted_containment(words, c['_words'], weight)
             if sim > best_sim:
                 best, best_sim = c, sim
-        if best is not None and best_sim >= _SIM_THRESHOLD:
+        if best is not None and best_sim >= threshold:
             best['count'] += 1
             best['members'].append(clue)
             # Extend the cluster's word set so paraphrase chains attach,
@@ -125,6 +128,8 @@ def cluster_clues(clues: list[dict]) -> list[dict]:
         diffs = [d for d in diffs if d != '']
         c['diff_range'] = (min(diffs), max(diffs)) if diffs else None
         del c['_words']
+        if keep_members:
+            c['members_full'] = members
         del c['members']
 
     clusters.sort(key=lambda c: -c['count'])

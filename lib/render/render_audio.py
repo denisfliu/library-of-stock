@@ -100,9 +100,11 @@ def abc_to_mp3(abc_text: str, output_path: Path, soundfont: Path) -> bool:
             return False
 
         # Step 2: MIDI → WAV
+        # Options before the positional files: fluidsynth 2.6+ treats
+        # anything after the soundfont/MIDI arguments as more input files.
         r = subprocess.run([
-            "fluidsynth", "-ni", str(soundfont),
-            str(midi_file), "-F", str(wav_file), "-r", "44100",
+            "fluidsynth", "-ni", "-F", str(wav_file), "-r", "44100",
+            str(soundfont), str(midi_file),
         ], capture_output=True, text=True)
         if r.returncode != 0 or not wav_file.exists():
             msg = (r.stderr or r.stdout).strip().splitlines()
