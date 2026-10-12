@@ -269,6 +269,8 @@ html[data-layout="mobile"] #cluepanel .cluehead::before {{
 .srow {{ display: grid; grid-template-columns: minmax(0, 1fr) 44px 20px; gap: 8px; align-items: center;
   min-height: 38px; padding: 0 8px; margin: 0 -8px; border-top: 1px solid var(--border); font-size: 14px; border-radius: 8px; }}
 .srow:hover {{ background: var(--hover); }}
+.srow.can {{ cursor: pointer; }}
+.srow.on {{ background: var(--hover); }}
 .srow .a {{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
 .srow .at {{ text-align: right; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }}
 .srow .m {{ text-align: center; font-weight: 700; }}
@@ -791,7 +793,7 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
           <span class="disttotal" id="disttotal"></span>
         </div>
       </details>
-      <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
+      <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous &middot; <kbd>J</kbd> forward &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
       <div class="hint taphint">Skip is never counted. Swipe the question left to skip or advance, right to go back.</div>
     </div>
     <div class="panel" id="panel-cluesearch">
