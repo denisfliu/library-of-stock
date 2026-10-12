@@ -784,6 +784,7 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
       <details class="distpanel" id="distpanel">
         <summary>Category distribution</summary>
         <label class="setting disttoggle"><input type="checkbox" id="usedist" checked> Follow distribution</label>
+        <label class="setting disttoggle"><input type="checkbox" id="exactdist"> Take turns exactly instead of at random</label>
         <div class="dtree" id="disttree"></div>
         <div class="distfoot">
           <button class="linkbtn" id="distreset">Reset to standard</button>

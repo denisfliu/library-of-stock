@@ -21,10 +21,10 @@ function slice(startMarker, endMarker) {
 const ctx = vm.createContext({ console, Set, Map, Object, Array, JSON, Number, String, Math });
 vm.runInContext(
   slice('function distWeights(', '\nfunction rebuildQueue(')
-  + '\n; globalThis.__api = { distWeights };',
+  + '\n; globalThis.__api = { distWeights, balancedOrder };',
   ctx, { filename: 'reader.js (sliced)' });
 ctx.globalThis = ctx;
-const { distWeights } = vm.runInContext('__api', ctx);
+const { distWeights, balancedOrder } = vm.runInContext('__api', ctx);
 
 /* ---- helpers ---- */
 let pass = 0, fail = 0;
@@ -343,6 +343,89 @@ ed.renderDistEditor();
 const sciRow = byId.disttree.children.find(c => c.children.some(x => x._text === 'Science'));
 check('editor: Science share 19% of the default mix',
   sciRow.children.find(c => c._cls.has('dpct'))._text === '19%');
+
+/* ---- exact mix (balancedOrder): shares take turns, not sampled ---- */
+{
+  // Fine Arts scoped to VFA + three Other Fine Arts subtypes: VFA and OFA
+  // strictly alternate, and each run of three OFA turns visits every
+  // subtype once, in an order reshuffled per round.
+  const mkRows = (tag, n) => Array.from({ length: n }, (_, i) => tag + i);
+  // shares as rebuildQueue builds them: float sums, not exact fractions
+  const sum = (x, n) => { let t = 0; for (let i = 0; i < n; i++) t += x / n; return t; };
+  const leaves = () => [
+    { path: ['Fine Arts', 'Visual Fine Arts'], w: sum(1 / 2, 755), rows: mkRows('V', 755) },
+    { path: ['Fine Arts', 'Other Fine Arts', 'Opera'], w: sum(1 / 6, 77), rows: mkRows('O', 77) },
+    { path: ['Fine Arts', 'Other Fine Arts', 'Jazz'], w: sum(1 / 6, 58), rows: mkRows('J', 58) },
+    { path: ['Fine Arts', 'Other Fine Arts', 'Photography'], w: sum(1 / 6, 26), rows: mkRows('P', 26) },
+  ];
+  let alternates = true, rounds = true, noRepeat = true;
+  const orders = new Set(), firsts = new Set();
+  for (let trial = 0; trial < 50; trial++) {
+    const t = balancedOrder(leaves()).map(x => x[0]);
+    firsts.add(t[0] === 'V' ? 'V' : 'OFA');
+    // 26 Photography rows cover 26 rounds of three = 156 questions
+    for (let i = 1; i < 156; i++) if ((t[i] === 'V') === (t[i - 1] === 'V')) alternates = false;
+    const ofa = t.slice(0, 156).filter(x => x !== 'V');
+    for (let i = 0; i < ofa.length; i += 3) {
+      const r = ofa.slice(i, i + 3);
+      if (new Set(r).size !== 3) rounds = false;
+      orders.add(r.join(''));
+    }
+    for (let i = 1; i < ofa.length; i++) if (ofa[i] === ofa[i - 1]) noRepeat = false;
+  }
+  check('exact: two subcategories strictly alternate', alternates);
+  check('exact: each round of three visits every subtype once', rounds);
+  check('exact: no subtype twice in a row across rounds', noRepeat);
+  check('exact: the round order is reshuffled', orders.size === 6, String(orders.size));
+  check('exact: either side can go first', firsts.size === 2);
+
+  const q = balancedOrder(leaves());
+  check('exact: every row dealt once', q.length === 916 && new Set(q).size === 916);
+  check('exact: rows keep their play order within a leaf',
+    q.filter(x => x[0] === 'P').map(x => Number(x.slice(1))).every((v, i) => v === i));
+  // once Photography runs out, Opera and Jazz alternate in the OFA turns
+  const t = q.map(x => x[0]);
+  const from = t.lastIndexOf('P') + 1, next = t.slice(from, from + 40);
+  const ofa = next.filter(x => x !== 'V');
+  check('exact: an exhausted subtype yields to its siblings, not to VFA',
+    ofa.length === 20 && ofa.every((x, i) => i === 0 || x !== ofa[i - 1]), next.join(''));
+}
+{
+  // unequal weights: running counts stay within one question of the shares
+  const rowsOf = (tag, n) => Array.from({ length: n }, (_, i) => tag + i);
+  const q = balancedOrder([
+    { path: ['Literature', 'American Literature'], w: 4, rows: rowsOf('L', 500) },
+    { path: ['Fine Arts', 'Visual Fine Arts'], w: 3, rows: rowsOf('F', 500) },
+    { path: ['Mythology', 'Mythology'], w: 1, rows: rowsOf('M', 500) },
+  ]);
+  let ok = true;
+  const n = { L: 0, F: 0, M: 0 };
+  for (let i = 0; i < 400; i++) {
+    n[q[i][0]]++;
+    const t = i + 1;
+    if (Math.abs(n.L - t / 2) > 1 || Math.abs(n.F - 3 * t / 8) > 1 || Math.abs(n.M - t / 8) > 1) ok = false;
+  }
+  check('exact: unequal shares stay within one question', ok, JSON.stringify(n));
+  // 4 : 3 completes a full round of seven before anything repeats, even
+  // with the normalized float shares rebuildQueue passes in
+  let roundsOk = true;
+  const pats = new Set();
+  for (let trial = 0; trial < 40; trial++) {
+    const t = balancedOrder([
+      { path: ['Literature', 'American Literature'], w: 4 / 7, rows: rowsOf('L', 400) },
+      { path: ['Fine Arts', 'Visual Fine Arts'], w: 3 / 7, rows: rowsOf('F', 300) },
+    ]).map(x => x[0]);
+    for (let lo = 0; lo < 700; lo += 7) {
+      const r = t.slice(lo, lo + 7);
+      if (r.filter(x => x === 'L').length !== 4) roundsOk = false;
+      pats.add(r.join(''));
+    }
+  }
+  check('exact: 4 : 3 deals four and three in every round of seven', roundsOk, [...pats].join(' '));
+  check('exact: zero-weight and empty leaves are left out',
+    balancedOrder([{ path: ['A', 'a'], w: 0, rows: ['x'] }, { path: ['B', 'b'], w: 1, rows: [] },
+      { path: ['C', 'c'], w: 1, rows: ['y'] }]).join() === 'y');
+}
 
 console.log(pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
