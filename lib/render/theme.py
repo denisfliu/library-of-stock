@@ -155,7 +155,7 @@ html[data-layout="mobile"] .site-nav {{ gap: 0.3rem 0.9rem; }}
 
 
 def site_nav(root: str, active: str = '', right: str = '') -> str:
-    """Shared top bar: Library of Stock · Wiki · Reader · Search, then
+    """Shared top bar: Library of Stock · Wiki · Reader · Binaries · Search, then
     `right` (page tools such as the guide search box + Random). `root` is
     the relative path to the site root ('' at the top level, '../../' on
     output/<slug>/ pages)."""
@@ -167,6 +167,7 @@ def site_nav(root: str, active: str = '', right: str = '') -> str:
         f'<a class="site-home" href="{root}index.html">Library of Stock</a>'
         + link('wiki', f'{root}wiki.html', 'Wiki')
         + link('reader', f'{root}reader.html', 'Reader')
+        + link('binaries', f'{root}binaries.html', 'Binaries')
         + link('search', 'https://qbsuite.github.io/qb-semantic-search/app/', 'Search')
         + '<span class="site-sp"></span>' + right + '</nav>'
     )

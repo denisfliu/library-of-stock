@@ -22,7 +22,7 @@ from lib.units import UNITS_BY_SLUG
 
 SEARCH_URL = "https://qbsuite.github.io/qb-semantic-search/app/"
 
-# Inline stroke icons for the three tiles (book / headphones / magnifier).
+# Inline stroke icons for the four tiles (book / headphones / key / magnifier).
 _SVG = ('<svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" '
         'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" '
         'stroke-linejoin="round" aria-hidden="true">{}</svg>')
@@ -31,6 +31,8 @@ ICON_BOOK = _SVG.format('<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0
 ICON_HEADPHONES = _SVG.format('<path d="M4 14v-2a8 8 0 0 1 16 0v2"/>'
                               '<rect x="3" y="14" width="4" height="7" rx="1.5"/>'
                               '<rect x="17" y="14" width="4" height="7" rx="1.5"/>')
+ICON_KEY = _SVG.format('<circle cx="7.5" cy="15.5" r="4.5"/>'
+                       '<path d="M10.7 12.3L21 2"/><path d="M17 6l3 3"/><path d="M14.5 8.5l2.5 2.5"/>')
 ICON_SEARCH = _SVG.format('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>')
 
 TEMPLATE = """<!DOCTYPE html>
@@ -64,8 +66,8 @@ a:hover { text-decoration: underline; }
 .statline span + span::before { content: ' \\00b7  '; white-space: pre; }
 
 .tiles {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;
-  margin: 40px auto 0; max-width: 600px;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;
+  margin: 40px auto 0; max-width: 800px;
 }
 a.tile {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -105,7 +107,7 @@ footer a { color: var(--c-muted); text-decoration: underline; }
 
 html[data-layout="mobile"] .wrap { padding: 40px 16px 48px; }
 html[data-layout="mobile"] .masthead h1 { font-size: 28px; }
-html[data-layout="mobile"] .tiles { gap: 10px; margin-top: 28px; }
+html[data-layout="mobile"] .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 28px; }
 html[data-layout="mobile"] a.tile { height: 104px; }
 html[data-layout="mobile"] a.tile .nm { font-size: 16px; }
 html[data-layout="mobile"] .sec-head { margin-top: 44px; }
@@ -124,6 +126,7 @@ html[data-layout="mobile"] .ov-cols > div { padding: 5px 0; }
 <nav class="tiles" aria-label="Sections">
   <a class="tile" href="wiki.html" title="Study guides for GUIDE_COUNT topics, category overviews, timeline and location views">ICON_BOOK<span class="nm">Wiki</span></a>
   <a class="tile" href="reader.html" title="Get questions read to you, buzz, and learn where you're weak">ICON_HEADPHONES<span class="nm">Reader</span></a>
+  <a class="tile" href="binaries.html" title="Phrases that pin down one answer, across the whole corpus">ICON_KEY<span class="nm">Binaries</span></a>
   <a class="tile" href="SEARCH_URL" title="Find clues by meaning, not keywords, across the whole corpus">ICON_SEARCH<span class="nm">Search</span></a>
 </nav>
 
@@ -230,6 +233,7 @@ def build(analyses=None) -> None:
             .replace("GUIDE_COUNT", str(guide_count))
             .replace("ICON_BOOK", ICON_BOOK)
             .replace("ICON_HEADPHONES", ICON_HEADPHONES)
+            .replace("ICON_KEY", ICON_KEY)
             .replace("ICON_SEARCH", ICON_SEARCH)
             .replace("SEARCH_URL", SEARCH_URL)
             .replace("OVERVIEW_LINKS", "\n  ".join(overview_links))
