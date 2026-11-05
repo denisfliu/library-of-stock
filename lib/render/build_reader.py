@@ -315,6 +315,8 @@ html[data-layout="mobile"] #cluepanel .cluehead::before {{
   color: var(--bg); background: var(--link); border-radius: 4px; padding: 0 5px; margin: 0 4px;
   vertical-align: 0.2em; font-family: var(--sans);
 }}
+.qtext .buzzmark.ok {{ background: var(--good); }}
+.qtext .buzzmark.neg {{ background: var(--bad); }}
 .qtext .powermark {{ color: var(--accent); font-weight: 600; }}
 .qtext .caret {{ display: inline-block; width: 2px; height: 1.1em; background: var(--link); vertical-align: -0.15em; margin-left: 3px; }}
 .qtext .empty {{ padding: 2.5rem 0; }}
@@ -325,19 +327,7 @@ html[data-layout="mobile"] #cluepanel .cluehead::before {{
 }}
 .skiptoggle:hover {{ color: var(--text); border-color: var(--muted); }}
 .taplookup {{ margin-top: 8px; font-size: 13px; }}
-.prevpanel {{ margin-top: 1.2rem; border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 1rem 0.85rem; }}
-.prevpanel[hidden] {{ display: none; }}
-.pvhead {{ display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; font-size: 0.84rem; margin-bottom: 0.35rem; }}
-.pvhead .pvlbl {{ font-weight: 600; color: var(--text); }}
-.pvhead .sp {{ flex: 1; }}
-.pvhead button {{
-  font-family: var(--sans); font-size: 0.8rem; color: var(--link); background: var(--bg);
-  border: 1px solid var(--border); border-radius: 6px; padding: 0.15rem 0.55rem;
-}}
-.pvhead button:hover:not(:disabled) {{ border-color: var(--link); }}
-.pvhead button:disabled {{ opacity: 0.4; cursor: default; }}
-.prevpanel .qtext {{ font-size: calc(var(--qsize, 17px) * 0.92); min-height: 0; margin-top: 8px; }}
-.prevpanel .judge {{ display: block; }}
+
 .pvsrc {{ font-size: 13px; color: var(--muted); margin-top: 8px; }}
 .railempty {{ font-size: 13px; color: var(--muted); padding: 14px 0; line-height: 1.45; }}
 
@@ -406,20 +396,26 @@ html[data-layout="mobile"] #cluepanel .cluehead::before {{
   border-radius: 10px; padding: 0 14px; font-size: 16px; font-family: var(--sans);
 }}
 .answerrow input:focus {{ outline: none; box-shadow: 0 0 0 3px var(--c-selbg); }}
-.judge {{ display: none; margin-top: 10px; border-radius: 12px; padding: 12px 16px; background: var(--raised); color: var(--text); }}
+.judge {{ display: none; margin-top: 14px; color: var(--text); }}
+/* qbreader-style buzz lines: a coloured Buzz badge (green accepted, red
+   rejected, yellow prompt, blue while answering), who, what they said. */
+.bline {{ font-size: 15px; line-height: 1.55; margin: 2px 0; }}
+.bbadge {{ display: inline-block; font-size: 11px; font-weight: 700; line-height: 1.6; border-radius: 4px;
+  padding: 0 6px; vertical-align: 1px; background: var(--link); color: var(--bg); font-family: var(--sans); }}
+.bbadge.ok {{ background: var(--good); }}
+.bbadge.neg {{ background: var(--bad); }}
+.bbadge.prompt {{ background: var(--warn); }}
+.bbadge.none {{ background: var(--border); color: var(--text); }}
+.bline b {{ font-weight: 600; color: var(--bright); }}
+.bline .bnote {{ color: var(--muted); font-size: 14px; }}
+.ansline {{ margin-top: 8px; font-size: 15px; }}
+.ansline:has(.answerline:empty) {{ display: none; }}
+.anslbl {{ font-weight: 700; letter-spacing: 0.02em; }}
 .judge.show {{ display: block; }}
-.judge:has(.verdict.c) {{ background: var(--c-winbg); color: var(--c-winfg); }}
-.judge:has(.verdict.w) {{ background: color-mix(in srgb, var(--bad) 13%, var(--bg)); }}
-.judge:has(.verdict.p) {{ background: var(--c-hl); }}
-.jrow {{ display: flex; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; }}
-.jsp {{ flex-grow: 1; }}
-.verdict {{ font-size: 16px; font-weight: 600; }}
-.verdict span {{ font-weight: 400; font-size: 14px; }}
-.verdict.w {{ color: var(--bad); }}
 .answerline {{ font-size: 15px; color: inherit; }}
 .answerline:empty {{ display: none; }}
 .answerline b u, .answerline u b {{ color: inherit; }}
-#j-guide {{ color: inherit; text-decoration: underline; text-underline-offset: 2px; font-size: 14px; }}
+#j-guide {{ color: var(--link); font-size: 14px; margin-left: 6px; }}
 #j-guide:empty {{ display: none; }}
 .srcline {{ display: none; font-size: 13px; color: var(--muted); margin-top: 8px; }}
 .judge.show:not(:has(.verdict.p)) + .srcline {{ display: block; }}
@@ -620,9 +616,35 @@ body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ 
 #chatinput {{ width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
   padding: 0.4rem 0.55rem; font-size: 0.9rem; font-family: var(--sans); }}
 #chatinput:focus {{ outline: none; border-color: var(--link); }}
-.chatlog .cl.buzz {{ color: var(--muted); }}
-.chatlog .cl.ok {{ color: var(--good); }}
-.chatlog .cl.neg {{ color: var(--bad); }}
+.chatlog .bline {{ font-size: inherit; margin: 1px 0; }}
+.chatlog .bline .bnote {{ font-size: inherit; }}
+.chatlog .bbadge {{ font-size: 10px; }}
+/* Previous questions: collapsed cards under the chat, newest first. */
+.qhist {{ margin-top: 1.2rem; display: flex; flex-direction: column; gap: 8px; }}
+.qhist:empty {{ display: none; }}
+.qh {{ border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }}
+.qh-head {{ display: flex; align-items: baseline; gap: 12px; width: 100%; background: var(--raised); border: none;
+  color: var(--text); padding: 9px 14px; text-align: left; font-size: 15px; font-family: var(--sans); }}
+.qh-head:hover {{ background: var(--hover); }}
+.qh-ans {{ flex: 1; min-width: 0; }}
+.qh-meta {{ font-size: 12px; color: var(--muted); white-space: nowrap; }}
+.qh-res {{ font-size: 12px; font-weight: 600; white-space: nowrap; color: var(--muted); }}
+.qh-res.ok {{ color: var(--good); }}
+.qh-res.neg {{ color: var(--bad); }}
+.qh-body {{ display: none; padding: 2px 14px 12px; }}
+.qh.open .qh-body {{ display: block; }}
+.qh.open .qh-head {{ border-bottom: 1px solid var(--line2); }}
+.qh .qtext {{ font-size: calc(var(--qsize, 17px) * 0.92); min-height: 0; margin-top: 10px; }}
+.qh .verdict {{ margin-top: 10px; }}
+.qh-foot {{ display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-top: 8px; }}
+html[data-layout="mobile"] .qh-meta {{ display: none; }}
+/* Session score above "This session": points, then powers/10s/negs/0s and celerity. */
+.scorebox {{ border-bottom: 1px solid var(--line2); padding-bottom: 14px; margin-bottom: 14px; }}
+.scorebox .bigscore {{ padding-top: 0; }}
+.sbstats {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }}
+.sbstats div {{ display: flex; flex-direction: column; gap: 1px; }}
+.sbstats b {{ font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); }}
+.sbstats span {{ font-size: 11px; color: var(--muted); }}
 /* Another player's answer as they type it, under the frozen question. */
 .liveans {{ margin-top: 10px; font-size: 0.95rem; color: var(--text); background: var(--raised);
   border-radius: 10px; padding: 0.45rem 0.8rem; overflow-wrap: anywhere; }}
@@ -678,12 +700,8 @@ body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ 
           <input id="answerinput" type="text" placeholder="Answer&hellip;" autocomplete="off" spellcheck="false" aria-label="Your answer">
         </div>
         <div class="judge" id="judge">
-          <div class="jrow">
-            <span class="verdict" id="verdict"></span>
-            <span class="answerline" id="answerline"></span>
-            <span class="jsp"></span>
-            <a id="j-guide" href="#"></a>
-          </div>
+          <div class="verdict" id="verdict"></div>
+          <div class="ansline"><span class="anslbl">ANSWER:</span> <span class="answerline" id="answerline"></span> <a id="j-guide" href="#"></a></div>
         </div>
         <div class="srcline" id="srcline"><span id="m-set"></span><span id="m-src"></span></div>
         <div class="controls">
@@ -699,30 +717,6 @@ body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ 
           </div>
         </div>
       </div>
-      <section class="prevpanel" id="prevpanel" hidden aria-label="Previous questions">
-        <div class="pvhead">
-          <span class="pvlbl" id="pv-pos">Previous question</span>
-          <span class="sp"></span>
-          <button id="pv-older" title="Older (k)">&#9664; Older</button>
-          <button id="pv-newer" title="Newer (j)">Newer &#9654;</button>
-          <button id="pv-close" title="Close (Esc)">Close</button>
-        </div>
-        <div class="qmeta" id="pv-meta"></div>
-        <div class="qtext" id="pv-text"></div>
-        <div class="judge">
-          <div class="jrow">
-            <span class="verdict" id="pv-verdict"></span>
-            <span class="answerline" id="pv-answer"></span>
-            <span class="jsp"></span>
-            <a id="pv-guide" href="#"></a>
-          </div>
-        </div>
-        <div class="pvsrc" id="pv-src"></div>
-      </section>
-      <section class="chatpanel" id="chatpanel" hidden aria-label="Room chat">
-        <div class="chatlog" id="chatlog" aria-live="polite"></div>
-        <input id="chatinput" type="text" maxlength="300" placeholder="Message the room (Enter)" autocomplete="off" aria-label="Message the room">
-      </section>
       <div class="wikibox" id="wikibox">
         <div id="w-topicblock">
           <h3>From the wiki</h3>
@@ -736,6 +730,11 @@ body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ 
           <div class="chips" id="w-practice"></div>
         </div>
       </div>
+      <section class="chatpanel" id="chatpanel" hidden aria-label="Room chat">
+        <div class="chatlog" id="chatlog" aria-live="polite"></div>
+        <input id="chatinput" type="text" maxlength="300" placeholder="Message the room (Enter)" autocomplete="off" aria-label="Message the room">
+      </section>
+      <section class="qhist" id="qhist" aria-label="Previous questions"></section>
       <div id="qspacer" hidden></div>
     </section>
 
@@ -767,8 +766,8 @@ body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ 
   </aside>
 
   <aside class="side" id="sessrail" hidden>
+    <div class="scorebox" id="scorebox"></div>
     <div class="sidehead"><h3>This session</h3><button class="linkbtn" id="rail-stats">My stats</button></div>
-    <div class="bigscore" id="rail-score"></div>
     <div id="rail-list"></div>
   </aside>
   </div>
@@ -881,7 +880,7 @@ body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ 
           <span class="disttotal" id="disttotal"></span>
         </div>
       </details>
-      <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous question (any time) &middot; <kbd>J</kbd> newer &middot; <kbd>Esc</kbd> close it &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
+      <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> show/hide the last question &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
       <div class="hint taphint">Skip is never counted. Swipe the question left to skip or advance, right to go back.</div>
     </div>
     <div class="panel" id="panel-cluesearch">
