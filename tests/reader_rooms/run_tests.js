@@ -75,8 +75,8 @@ console.log('pure helpers');
     && RRmod.buzzPoints(false, 10, 5, 10) === 0);
   const tl = RRmod.tally([{ buzzes: [{ name: 'A', res: 'W', pts: -5 }, { name: 'B', res: 'C', pts: 15 }] },
     { buzzes: [{ name: 'A', res: 'C', pts: 10 }, { name: 'B', res: 'W', pts: 0 }] }]);
-  check('tally sums points and P/G/N', tl.A.pts === 5 && tl.A.g === 1 && tl.A.n === 1
-    && tl.B.pts === 15 && tl.B.p === 1 && tl.B.n === 0, tl);
+  check('tally sums points and P/G/N/0', tl.A.pts === 5 && tl.A.g === 1 && tl.A.n === 1 && tl.A.z === 0
+    && tl.B.pts === 15 && tl.B.p === 1 && tl.B.n === 0 && tl.B.z === 1, tl);
 
   const clk = RRmod.makeClock();
   clk.sample(1000, 6050, 1100);   // rtt 100, server 5000 ahead
@@ -249,6 +249,7 @@ function togglePop() {}
 function showWiki() {}
 function syncMobileBar() {}
 function syncSession() {}
+function renderScoreboard() {}
 function syncQPane() {}
 function prefetchAudio() {}
 function audioMode() { return false; }

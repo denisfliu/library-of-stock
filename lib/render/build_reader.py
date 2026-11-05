@@ -408,7 +408,7 @@ html[data-layout="mobile"] #cluepanel .cluehead::before {{
 .bbadge.none {{ background: var(--border); color: var(--text); }}
 .bline b {{ font-weight: 600; color: var(--bright); }}
 .bline .bnote {{ color: var(--muted); font-size: 14px; }}
-.ansline {{ margin-top: 8px; font-size: 15px; }}
+.ansline {{ margin-bottom: 8px; font-size: 15px; }}
 .ansline:has(.answerline:empty) {{ display: none; }}
 .anslbl {{ font-weight: 700; letter-spacing: 0.02em; }}
 .judge.show {{ display: block; }}
@@ -635,16 +635,24 @@ body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ 
 .qh.open .qh-body {{ display: block; }}
 .qh.open .qh-head {{ border-bottom: 1px solid var(--line2); }}
 .qh .qtext {{ font-size: calc(var(--qsize, 17px) * 0.92); min-height: 0; margin-top: 10px; }}
-.qh .verdict {{ margin-top: 10px; }}
+.qh .ansline {{ margin-top: 10px; }}
 .qh-foot {{ display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-top: 8px; }}
 html[data-layout="mobile"] .qh-meta {{ display: none; }}
-/* Session score above "This session": points, then powers/10s/negs/0s and celerity. */
-.scorebox {{ border-bottom: 1px solid var(--line2); padding-bottom: 14px; margin-bottom: 14px; }}
-.scorebox .bigscore {{ padding-top: 0; }}
-.sbstats {{ display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }}
-.sbstats div {{ display: flex; flex-direction: column; gap: 1px; }}
-.sbstats b {{ font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--text); }}
-.sbstats span {{ font-size: 11px; color: var(--muted); }}
+/* Score table above "This session": each player's powers/10s/negs/0s and points. */
+.scorebox {{ margin-bottom: 18px; }}
+.sbt {{ width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }}
+.sbt th {{ font-size: 11px; font-weight: 600; color: var(--muted); text-align: center; padding: 0 4px 6px;
+  border-bottom: 1px solid var(--line2); }}
+.sbt th.nm {{ text-align: left; font-size: 15px; color: var(--text); padding-left: 0; }}
+.sbt td {{ text-align: center; font-size: 15px; padding: 7px 4px; border-bottom: 1px solid var(--line2); color: var(--text); }}
+.sbt td.nm {{ text-align: left; padding-left: 0; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+.sbt th.pts, .sbt td.pts {{ text-align: right; padding-right: 0; }}
+.sbt td.pts {{ font-weight: 700; font-size: 17px; }}
+.sbt td.pw {{ color: var(--accent); font-weight: 600; }}
+.sbt td.ng {{ color: var(--bad); font-weight: 600; }}
+.sbt tr.me td.nm {{ font-weight: 600; color: var(--bright); }}
+.sbt tr.off td {{ color: var(--faint); }}
+.sbcel {{ font-size: 12px; color: var(--muted); margin-top: 6px; text-align: right; }}
 /* Another player's answer as they type it, under the frozen question. */
 .liveans {{ margin-top: 10px; font-size: 0.95rem; color: var(--text); background: var(--raised);
   border-radius: 10px; padding: 0.45rem 0.8rem; overflow-wrap: anywhere; }}
@@ -700,8 +708,8 @@ html[data-layout="mobile"] .qh-meta {{ display: none; }}
           <input id="answerinput" type="text" placeholder="Answer&hellip;" autocomplete="off" spellcheck="false" aria-label="Your answer">
         </div>
         <div class="judge" id="judge">
-          <div class="verdict" id="verdict"></div>
           <div class="ansline"><span class="anslbl">ANSWER:</span> <span class="answerline" id="answerline"></span> <a id="j-guide" href="#"></a></div>
+          <div class="verdict" id="verdict"></div>
         </div>
         <div class="srcline" id="srcline"><span id="m-set"></span><span id="m-src"></span></div>
         <div class="controls">
@@ -724,10 +732,6 @@ html[data-layout="mobile"] .qh-meta {{ display: none; }}
           <div class="tmeta" id="w-meta"></div>
           <div class="chips" id="w-tags"></div>
           <div class="chips" id="w-rel" style="margin-top:0.4rem"></div>
-        </div>
-        <div id="w-practiceblock" style="display:none;margin-top:0.7rem">
-          <h3>Practice more</h3>
-          <div class="chips" id="w-practice"></div>
         </div>
       </div>
       <section class="chatpanel" id="chatpanel" hidden aria-label="Room chat">
