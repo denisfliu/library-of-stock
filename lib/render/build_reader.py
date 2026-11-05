@@ -652,6 +652,13 @@ html[data-layout="mobile"] .qh-meta {{ display: none; }}
 .sbt td.ng {{ color: var(--bad); font-weight: 600; }}
 .sbt tr.me td.nm {{ font-weight: 600; color: var(--bright); }}
 .sbt tr.off td {{ color: var(--faint); }}
+.sbt tr.buzz td.nm {{ color: var(--link); font-weight: 700; }}
+.sbt tr.buzz td.nm::after {{ content: ' · buzzed'; font-size: 11px; font-weight: 600; }}
+.sbt tr.out td.nm {{ text-decoration: line-through; color: var(--muted); }}
+/* With the score table showing, the strip above the question keeps only the
+   room code and connection warnings; narrower pages (no table) keep the
+   player chips. */
+.wrap:has(#sessrail:not([hidden])) .roombar .rp {{ display: none; }}
 .sbcel {{ font-size: 12px; color: var(--muted); margin-top: 6px; text-align: right; }}
 /* Another player's answer as they type it, under the frozen question. */
 .liveans {{ margin-top: 10px; font-size: 0.95rem; color: var(--text); background: var(--raised);
