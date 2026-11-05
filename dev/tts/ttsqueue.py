@@ -36,7 +36,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ttscorpus import WORK, DB, worklist, out_path
+from ttscorpus import WORK, DB, worklist, out_path, scope_where
 
 QUEUE_DB = WORK / "tts_queue.db"
 LEASE_S = 1800            # a claimed-but-not-completed item re-serves after this (30 min:
@@ -79,8 +79,8 @@ def init(reseed=False):
         print(f"purged {purged:,} out-of-scope items", flush=True)
     mirror = sqlite3.connect(DB)
     wl = worklist(mirror)
-    sets = dict(mirror.execute(
-        "SELECT id, set_name FROM tossups WHERE difficulty IN (7,8,9)"))
+    where, params = scope_where()
+    sets = dict(mirror.execute(f"SELECT id, set_name FROM tossups WHERE {where}", params))
     con.executemany("INSERT OR IGNORE INTO items(qid, kind, set_name) VALUES(?, ?, ?)",
                     [(qid, kind, sets.get(qid)) for kind, qid, _ in wl])
     con.executemany("UPDATE items SET set_name=? WHERE qid=? AND set_name IS NULL",

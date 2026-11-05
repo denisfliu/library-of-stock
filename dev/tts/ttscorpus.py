@@ -3,15 +3,27 @@ queue_db: the worklist (which questions to synthesize), chunk splitting, and the
 output-path layout. Kept free of torch/numpy so the queue can be claimed over SSH
 without paying a multi-second model import on every call.
 """
+import os
 import re
+import sys
 from pathlib import Path
 
-from ttsclean import clean   # single source of truth for guide/note stripping
+try:
+    from ttsclean import clean   # single source of truth for guide/note stripping
+except ModuleNotFoundError:      # repo checkout: it lives in lib/audio/, not beside us
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib" / "audio"))
+    from ttsclean import clean
 
 WORK = Path.home() / "los_tts"
-DB = WORK / "qbreader.sqlite"
+# LOS_TTS_DB points a machine at an existing mirror (e.g. the repo's
+# mirror/qbreader.sqlite on the Mac) instead of a copy under WORK.
+DB = Path(os.environ.get("LOS_TTS_DB") or WORK / "qbreader.sqlite")
 OUT = WORK / "out"
 DIFFS = (7, 8, 9)
+# Sets voiced in full regardless of difficulty, chosen by name (Nov 2026: the
+# five post-2026-Nationals sets imported from quizbowlpackets.com).
+VOICE_SETS = ("2026 ACF Fall", "2026 PARAGONE", "2026 NEET", "2026 Notepad++",
+              "2026 VOPS")
 MAX_CHARS = 200     # split chunks longer than this (runaway risk)
 MIN_CHARS = 12      # merge chunks shorter than this (babble risk)
 
@@ -57,18 +69,41 @@ def chunk_text(text):
         if buf: chunks.append(buf)
     return chunks
 
+def scope_where():
+    """(SQL WHERE clause, params) selecting the in-scope tossups: every DIFFS
+    tossup plus every tossup of a VOICE_SETS set, whatever its difficulty."""
+    marks = lambda xs: ",".join("?" * len(xs))
+    clause = f"difficulty IN ({marks(DIFFS)})"
+    if VOICE_SETS:
+        clause = f"({clause} OR set_name IN ({marks(VOICE_SETS)}))"
+    return clause, (*DIFFS, *VOICE_SETS)
+
 def worklist(conn):
-    """(kind, qid, cleaned_text) for every diff 7-9 tossup, id-ordered.
+    """(kind, qid, cleaned_text) for every in-scope tossup (scope_where), id-ordered.
     The canonical set of items every worker and the queue agree on.
     Tossups only since July 20, 2026 — bonuses were dropped from scope (the
     reader only plays tossup audio; cutting them halved the remaining run).
     The ~15k bonus files generated before the cut stay on HF and in the
     manifest; out_path stays kind-generic so they remain addressable."""
     items = []
-    q = "SELECT id, question_sanitized FROM tossups WHERE difficulty IN (7,8,9) ORDER BY id"
-    for qid, text in conn.execute(q):
+    where, params = scope_where()
+    q = f"SELECT id, question_sanitized FROM tossups WHERE {where} ORDER BY id"
+    for qid, text in conn.execute(q, params):
         items.append(("tossups", qid, clean(text)))
     return items
+
+HF_BASE = "https://huggingface.co/datasets/uild42/qb-audio/resolve/main"
+
+def published_ids(kind="tossups"):
+    """Ids already in the published HF audio_index.json, or None if it can't be
+    fetched. Lets a machine whose out/ lacks other machines' files skip what's
+    already published instead of regenerating it."""
+    import json, urllib.request
+    try:
+        with urllib.request.urlopen(f"{HF_BASE}/audio_index.json", timeout=60) as r:
+            return set(json.loads(r.read()).get(kind, []))
+    except Exception:
+        return None
 
 def out_path(kind, qid):
     # Shard on the LAST two hex chars (the ObjectId counter — uniform), not the

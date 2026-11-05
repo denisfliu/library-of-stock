@@ -39,12 +39,12 @@ in this order — the ordering constraints below are load-bearing.
 ```bash
 # 1. MIRROR SYNC — the only live-API step. Nothing sees new questions first.
 qbmirror sync --db mirror/qbreader.sqlite       # --refresh "SET" for edits to an existing set
+#    1b. Sets NOT on qbreader (quizbowlpackets.com only): see "Sets qbreader
+#        doesn't have" below — parse + `qbmirror import-packets`.
 
-# 2. AUDIO (diff 7-9 tossups+bonuses) — see the Audio section for detail.
-#    MSL queries its OWN copy of the mirror, so refresh it, then generate.
-scp mirror/qbreader.sqlite msl:~/los_tts/qbreader.sqlite
-ssh msl 'tmux new-session -d -s tts "~/venvs/chatterbox-tts/bin/python ~/los_tts/gen_tts.py > ~/los_tts/gen.log 2>&1"'
-#    (uploader tmux `upload` runs upload_hf.py continuously; relaunch if dead)
+# 2. AUDIO (diff 7-9 tossups + dev/tts VOICE_SETS) — see the Audio section.
+#    Package what's unvoiced, copy it to the 4070 laptop, generate there.
+python dev/tts/export_worklist_db.py --mirror mirror/qbreader.sqlite --out ~/los_tts/tts_worklist.sqlite
 
 # 3. OVERVIEWS / METADATA — per affected unit (lib/units.py). Agent steps noted.
 python lib/sweep/author.py scaffold UNIT        # mechanical (surfaces NEW answerlines)
@@ -78,24 +78,66 @@ git add -A && git commit && git push origin main   # triggers the Pages deploy
 ```
 
 **Minimal path** (just want the new questions playable/readable, no new pages):
-`sync` → refresh MSL mirror + generate audio → `publish --upload`. Everything
+`sync` → package + generate audio on the 4070 → `publish --upload`. Everything
 else (overviews, crossref, search, site build) is additive and can follow.
 
 ---
 
-## Audio in detail (`dev/tts/`, runs on MSL)
+## Sets qbreader doesn't have (quizbowlpackets.com)
 
-The generator queries a **copy** of the mirror on MSL, so new sets need the
-copy refreshed before generating.
+Some sets on quizbowlpackets.com (collegiate / HS) never reach qbreader, or
+haven't yet. They are parsed with qbreader's own tool,
+[qbreader/packet-parser](https://github.com/qbreader/packet-parser) — same
+output format and category classifier qbreader uses — and imported:
 
-1. `scp mirror/qbreader.sqlite msl:~/los_tts/qbreader.sqlite` — refresh MSL's mirror.
-2. Relaunch the generator: `ssh msl 'tmux new-session -d -s tts "~/venvs/chatterbox-tts/bin/python ~/los_tts/gen_tts.py > ~/los_tts/gen.log 2>&1"'`. It is **resumable/skip-existing**, so it only synthesizes questions whose `.opus` doesn't exist yet — i.e. exactly the new diff 7-9 tossups/bonuses.
-3. Ensure the uploader is running: `ssh msl 'tmux ls'` should list `upload`. If not: `ssh msl 'cd ~/los_tts && tmux new-session -d -s upload "~/venvs/chatterbox-tts/bin/python upload_hf.py > upload.log 2>&1"'`. It commits new opus + a refreshed `audio_index.json` every 10 min.
-4. Nothing else to do — the reader picks up the new manifest on the next load
+1. Download the set's `.docx` packets (`https://<level>.quizbowlpackets.com/<id>/`
+   lists `files.quizbowlpackets.com/<id>/...` links; prefer docx over pdf).
+2. In a packet-parser checkout: `modules/docx-to-txt.py` each packet into a
+   folder, then `packet-parser.py -i TXT -o OUT/ -s` (it prompts "question
+   numbers?" / "category tags?" — answer tags `y` if questions carry
+   `<Author, Category>` lines, else `n` to use the classifier). Fix any
+   WARN/ERROR in the txt and re-run.
+3. Tidy the JSON filenames — they become packet names (drop the repeated set
+   name; packets order by natural sort).
+4. `qbmirror import-packets OUT/ --db mirror/qbreader.sqlite --set-name "2026 X"
+   --year 2026 --difficulty N [--standard] --source-url URL` (qbreader 0-10
+   scale: ACF Fall 6, regular college 7, Regionals 8, Nationals 9, open 10).
+5. Keep the packets + JSON under `mirror/raw/packets/<set name>/` (gitignored
+   like the rest of the mirror) — a re-seed via `import-backup` drops imported
+   sets, and this makes re-importing one command.
+
+When qbreader later publishes a set of the same name, plain `qbmirror sync`
+replaces the local copy and records old → new question ids in the mirror's
+`id_remap` table; run `dev/tts/remap_audio.py` before generating (Audio
+section) so existing audio carries over instead of being re-voiced.
+Imported Nov 2026: 2026 ACF Fall, PARAGONE, NEET, Notepad++, VOPS.
+
+---
+
+## Audio in detail (`dev/tts/`, runs on the 4070 laptop)
+
+MSL (the 4090) is gone as of Nov 2026; the laptop 4070 (~1.7x realtime) runs
+the generator in local mode against a small packaged worklist DB instead of
+a full mirror copy.
+
+1. On this machine: `python dev/tts/export_worklist_db.py --mirror
+   mirror/qbreader.sqlite --out ~/los_tts/tts_worklist.sqlite` — the in-scope
+   tossups (`DIFFS` 7-9 + `VOICE_SETS` in `dev/tts/ttscorpus.py`) not yet in
+   the published HF manifest, plus the `id_remap` table. A few MB.
+2. Copy it to the laptop's `~/los_tts/` and point `LOS_TTS_DB` at it.
+3. If a packet-imported set was replaced by qbreader's copy since the last
+   run: `remap_audio.py --db %LOS_TTS_DB% --from-hf` — copies existing audio to
+   the new ids so it isn't regenerated.
+4. Run `gen_tts.py`. It is **resumable/skip-existing**, and in local mode also
+   skips anything already in the published manifest, so it only synthesizes
+   what's genuinely new. Laptop setup + launch: `dev/tts/README.md`.
+5. Upload with `upload_hf.py` (needs `~/los_tts/.hf_token` on that machine). It
+   commits new opus + a refreshed `audio_index.json` (unioned with the remote
+   one) every 10 min. The reader picks up the new manifest on the next load
    and the new questions enter audio-mode scope automatically.
-- Monitor: `ssh msl 'grep made ~/los_tts/gen.log | tail -1'`.
 - Scope/format/host decisions + the full setup live in `dev/tts/README.md`.
-- To cover more difficulties, edit `DIFFS` in `dev/tts/gen_tts.py`.
+- To voice a whole set at any difficulty, add it to `VOICE_SETS`; to cover more
+  difficulties, edit `DIFFS` (both in `dev/tts/ttscorpus.py`).
 
 ---
 
@@ -104,7 +146,10 @@ copy refreshed before generating.
 - **sync (1) before everything** — nothing downstream sees new questions until
   the mirror has them. `publish` *aborts* with `DANGLING REF` if a committed
   ref (`questions_ref.json` / unit `questions.json`) points at an un-synced set.
-- **refresh MSL mirror before audio generation** — MSL has its own copy.
+- **export the worklist DB after sync (and after any import-packets)** — the
+  TTS machine sees only what that file holds.
+- **remap_audio before gen_tts** after qbreader replaces a packet-imported set
+  — otherwise the new ids look unvoiced and get regenerated.
 - **overview `assemble` + answerline_kb `compose` before publish** — publish
   builds a **fresh** `SectionIndex`/`KBLookup` every run; answerlines not yet
   placed in an `overview.json` section or enriched in the KB publish as section
@@ -138,5 +183,8 @@ copy refreshed before generating.
   wholly-missing sets.
 - **New sets do NOT re-generate audio for old questions** — audio is keyed by
   question id and skip-existing, so a re-run only fills genuinely new questions.
+- **Packet-imported sets change ids when qbreader adopts them.** Audio carries
+  over via `id_remap` + `remap_audio.py`; reader history rows (LOG) recorded
+  against the old ids don't — they keep the old id.
 - A reader/search page already open won't see new R2/HF data until reloaded
   (manifests load once per session).

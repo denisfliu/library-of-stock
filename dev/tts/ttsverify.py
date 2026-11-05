@@ -24,8 +24,13 @@ KEEP_LEAD_S = 0.08        # lead-in silence to keep before the real first word a
 
 
 def load_whisper(size="tiny"):
+    # faster-whisper (CTranslate2) has no Apple-GPU backend; off CUDA it runs on
+    # CPU int8, which is still fast for whisper-tiny on short chunks.
+    import torch
     from faster_whisper import WhisperModel
-    return WhisperModel(size, device="cuda", compute_type="float16")
+    if torch.cuda.is_available():
+        return WhisperModel(size, device="cuda", compute_type="float16")
+    return WhisperModel(size, device="cpu", compute_type="int8")
 
 
 def _to16k(w, sr):

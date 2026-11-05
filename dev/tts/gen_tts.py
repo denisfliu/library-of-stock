@@ -1,6 +1,8 @@
-"""gen_tts.py — Chatterbox TTS generation for the reader, run on MSL (4090).
+"""gen_tts.py — Chatterbox TTS generation for the reader (CUDA, else Apple MPS).
 
-Reads the qbreader mirror, synthesizes every diff 7-9 tossup with Chatterbox
+Ran on MSL (4090) through Oct 2026; the laptop 4070 since (README).
+Reads the mirror (or a packaged worklist DB via LOS_TTS_DB), synthesizes every
+in-scope tossup (ttscorpus.scope_where: diff 7-9 + VOICE_SETS) with Chatterbox
 (bonuses were dropped from scope July 20, 2026 — see ttscorpus.worklist),
 encodes to Opus 24k mono, and writes to
   out/tossups/{qid[-2:]}/{qid}.opus
@@ -48,7 +50,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ttsverify            # ASR gate (shared with verify_tts.py)
 import ttsqueue             # cross-machine work queue (claim/complete)
-from ttscorpus import DB, OUT, worklist, chunk_text, out_path
+from ttscorpus import DB, OUT, worklist, chunk_text, out_path, published_ids
 
 GAP = 0.12          # inter-sentence silence, seconds
 RETRIES = 3         # regenerate a chunk this many times if it runs away
@@ -98,6 +100,12 @@ def main():
                     help="worker id recorded in the queue (default: hostname)")
     ap.add_argument("--queue-batch", type=int, default=30,
                     help="items claimed per round in queue mode (small = fewer stranded on stop)")
+    ap.add_argument("--set", action="append", default=[], metavar="SET_NAME",
+                    help="local mode: only this set's in-scope tossups (repeatable). "
+                         "Use on a machine whose out/ doesn't hold the earlier runs' "
+                         "files, or skip-existing would redo the whole corpus")
+    ap.add_argument("--no-published-check", action="store_true",
+                    help="local mode: don't skip ids already in the published HF manifest")
     args = ap.parse_args()
 
     shard_i = shard_n = None
@@ -105,8 +113,10 @@ def main():
         shard_i, shard_n = (int(x) for x in args.shard.split("/"))
 
     from chatterbox.tts import ChatterboxTTS
-    print("loading Chatterbox + whisper-tiny...", flush=True)
-    model = ChatterboxTTS.from_pretrained(device="cuda")
+    device = ("cuda" if torch.cuda.is_available()
+              else "mps" if torch.backends.mps.is_available() else "cpu")
+    print(f"loading Chatterbox ({device}) + whisper-tiny...", flush=True)
+    model = ChatterboxTTS.from_pretrained(device=device)
     sr = model.sr
     wm = ttsverify.load_whisper()
 
@@ -226,6 +236,24 @@ def main():
         # Local mode: iterate this machine's full worklist (optionally a static
         # --shard slice) and skip-existing. No coordination.
         items = worklist(conn)
+        if args.set:
+            marks = ",".join("?" * len(args.set))
+            want = {qid for (qid,) in conn.execute(
+                f"SELECT id FROM tossups WHERE set_name IN ({marks})", args.set)}
+            items = [it for it in items if it[1] in want]
+            print(f"--set filter: {len(items):,} items from {len(args.set)} set(s)", flush=True)
+        if not args.no_published_check:
+            # out/ on this machine may not hold what other machines generated;
+            # the published manifest is the fleet-wide record of what's done.
+            published = published_ids()
+            if published is None:
+                print("WARNING: couldn't fetch the published manifest; "
+                      "skipping only what's in local out/", flush=True)
+            else:
+                before = len(items)
+                items = [it for it in items if it[1] not in published]
+                print(f"published-manifest check: {before - len(items):,} already "
+                      f"published, skipped", flush=True)
         if shard_n:
             items = items[shard_i::shard_n]
             print(f"shard {shard_i}/{shard_n}: {len(items):,} items", flush=True)

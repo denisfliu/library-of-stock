@@ -1,8 +1,10 @@
 # Reader voice audio — Chatterbox TTS generation pipeline
 
 Pre-generates spoken audio for the reader (a nicer voice than the browser's
-Web Speech API). Runs on **MSL** (RTX 4090) because Chatterbox is ~4.7x
-realtime there vs ~1.7x on the laptop 4070.
+Web Speech API). Ran on **MSL** (RTX 4090, ~4.7x realtime) through Oct 2026;
+**MSL is gone as of Nov 2026** and the **laptop 4070** (~1.7x realtime) now
+runs it alone, in local mode — see "Running on the 4070 (Nov 2026 on)". The
+M5 Mac measured ~0.7x realtime on Apple's GPU (MPS) — workable, not preferred.
 
 ## Decision trail (July 2026)
 - Compared Web Speech (bad), Kokoro-82M (~20x realtime, fine), and Chatterbox
@@ -16,6 +18,10 @@ realtime there vs ~1.7x on the laptop 4070.
   HF and in the manifest, unconsumed). Originally tossups + bonuses = 119,901
   items. Resumable, so it can be extended to more difficulties (or back to
   bonuses) later by editing `DIFFS`/`worklist`.
+- **Nov 2026: `VOICE_SETS`** (`ttscorpus.py`) adds whole sets at any
+  difficulty, by name. First entries: the five sets imported from
+  quizbowlpackets.com (2026 ACF Fall, PARAGONE, NEET, Notepad++, VOPS — 942
+  tossups, ~13.6 h of audio). `scope_where()` is the one definition of scope.
 - Hosting: **Hugging Face public dataset** `<user>/qb-audio`
   (R2 free tier is only 10 GB and already ~1 GB used; HF gives effectively
   unlimited public-dataset storage with a CDN + CORS + Range support, all
@@ -104,12 +110,46 @@ realtime there vs ~1.7x on the laptop 4070.
   batched (~100 items/round) so the round-trip is negligible. `Client(host)`
   wraps local-vs-ssh for gen_tts. Self-test (atomicity/lease/drain): the queue
   logic is exercised by a synthetic-DB test (see commit).
+- `export_worklist_db.py` — packages the in-scope tossups not yet in the
+  published manifest (+ the mirror's `id_remap` table) into a few-MB sqlite
+  for the TTS machine, so it needn't hold the 860 MB mirror.
+- `remap_audio.py` — after `qbmirror sync` replaces a packet-imported set
+  with qbreader's copy (new question ids), copies each surviving question's
+  `.opus` + sidecar from its old id to its new one (from local `out/`, or the
+  public dataset with `--from-hf`), so it isn't re-voiced. Run before gen_tts.
 - `upload_hf.py` — CommitScheduler uploader (second tmux session). Reads a
   write token from `~/los_tts/.hf_token` (chmod 600, never on the cmdline),
   creates the dataset repo, commits new `*.opus` + `*.json` sidecars every
   10 min. Idempotent.
 
-## MSL layout
+## Running on the 4070 (Nov 2026 on)
+Local mode, no queue (the queue host was MSL). The laptop already has the
+`cbox` conda env (CUDA torch, chatterbox-tts, faster-whisper, ffmpeg) and the
+repo at `C:\Users\denis\code\library-of-stock`.
+  1. `git pull` the repo. `ttscorpus` finds `lib/audio/ttsclean.py` on its own.
+  2. Get the worklist DB from the Mac (`export_worklist_db.py`, see
+     docs/adding_content.md) into `%USERPROFILE%\los_tts\tts_worklist.sqlite`.
+  3. PowerShell, from the repo root:
+     ```
+     $env:LOS_TTS_DB = "$env:USERPROFILE\los_tts\tts_worklist.sqlite"
+     $envroot = "$env:USERPROFILE\miniforge3\envs\cbox"
+     $env:PATH = "$envroot;$envroot\Library\bin;$envroot\Library\mingw-w64\bin;$envroot\Scripts;$env:PATH"
+     & "$envroot\python.exe" dev\tts\remap_audio.py --db $env:LOS_TTS_DB --from-hf   # no-op until a set is replaced
+     & "$envroot\python.exe" dev\tts\gen_tts.py --limit 5     # smoke test first
+     & "$envroot\python.exe" dev\tts\gen_tts.py               # full run (resumable)
+     ```
+     (`Library\bin` on PATH or ffmpeg isn't found — `WinError 2` at encode.)
+     Local mode skips ids already in the published manifest (fetched at start;
+     `--no-published-check` to disable) as well as files in local `out/`.
+     Disable AC sleep while it runs: `powercfg -change -standby-timeout-ac 0`.
+  4. Upload from the laptop with `upload_hf.py` (needs the write token in
+     `%USERPROFILE%\los_tts\.hf_token`; it unions the remote manifest, so it
+     can't drop MSL-era entries). With MSL gone there's only one uploader, so
+     the old "never run a second uploader" rule is moot.
+  5. `worker_ctl.ps1` still targets MSL's queue (`--queue --queue-host msl`)
+     and won't work as-is.
+
+## MSL layout (historical — MSL is gone as of Nov 2026)
 - Workdir `~/los_tts/` : `qbreader.sqlite` (mirror copy), `gen_tts.py`,
   `ttscorpus.py`, `ttsqueue.py`, `ttsclean.py`, `ttsverify.py`, `upload_hf.py`,
   `out/`, `tts_queue.db`, `gen.log`, `.hf_token`.
@@ -200,4 +240,6 @@ The reader (`lib/js/reader.js`) plays this audio when "Read aloud" is on:
    regen worklist. Chunk sidecars serve as alignment anchors + validation.
 4. New sets from `sync.py` won't have audio until a re-run; they simply won't
    appear in audio-mode scope until then (the manifest gates them out).
-5. Extend `DIFFS` in gen_tts.py to cover more difficulties later if wanted.
+5. Extend `DIFFS` / `VOICE_SETS` in ttscorpus.py to cover more later if wanted.
+6. Nov 2026 export found **2026 COOT** (265 diff-8 tossups) + 7 stray older
+   tossups never voiced — MSL went away first; they're in the next run.
