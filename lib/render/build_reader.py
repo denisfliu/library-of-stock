@@ -719,7 +719,7 @@ body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ 
       </section>
       <section class="chatpanel" id="chatpanel" hidden aria-label="Room chat">
         <div class="chatlog" id="chatlog" aria-live="polite"></div>
-        <input id="chatinput" type="text" maxlength="300" placeholder="Message the room" autocomplete="off" aria-label="Message the room">
+        <input id="chatinput" type="text" maxlength="300" placeholder="Message the room (Enter)" autocomplete="off" aria-label="Message the room">
       </section>
       <div class="wikibox" id="wikibox">
         <div id="w-topicblock">
