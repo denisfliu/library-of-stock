@@ -543,5 +543,32 @@ for (const nm of ['statTable', 'trendBlock', 'exposureBlock', 'calibrationBlock'
                   'progressBlock', 'drawProgress', 'wireProgress', 'drawSpark', 'aggBy'])
   check('reader.js still defines ' + nm, new RegExp('function\\s+' + nm + '\\s*\\(').test(src));
 
+/* Set + packet facets: derived from each row's question id through the
+   catalog, so attempts from random play count toward their set too. */
+{
+  ctx.CAT = {
+    sets: [{ name: '2025 ACF Regionals' }, { name: '2025 ACF Fall' }],
+    tossups: { set: [0, 0, 0, 1], packet: [1, 1, 2, 3] },
+  };
+  ctx.ID2ROW = new Map([['a', 0], ['b', 1], ['c', 2], ['d', 3]]);
+  const sr = (id, res, ts) => ({ id, cat: 'Literature', sub: 'American Literature', section: null, diff: 7, res, bf: 0.5, ts });
+  const SL = [sr('a', 'C', 1), sr('b', 'W', 2), sr('c', 'C', 3), sr('d', 'D', 4), sr('zz', 'C', 5)];
+  api.setLog(SL);
+  resetScope(); api.statsDims.clear(); api.statsDims.add('cat');
+  check('sets offered, most recent first', String(api.facetVals('set')) === '2025 ACF Fall,2025 ACF Regionals');
+  api.statsScope.set.add('2025 ACF Regionals');
+  check('set scope -> its attempts (any mode)', api.scopedLog().map(r => r.id).join() === 'a,b,c');
+  check('packets of the picked set, numeric', String(api.facetVals('packet')) === '1,2');
+  api.statsScope.packet.add('2');
+  check('packet scope', api.scopedLog().map(r => r.id).join() === 'c');
+  api.statsDims.add('packet');
+  check('packet dimension key', api.compositeKey(SL[2]).split(api.KEY_SEP).join('|') === 'Packet 2|Literature');
+  api.statsScope.set.add('2025 ACF Fall');
+  api.pruneScope();
+  check('two sets -> packet facet + dimension dropped', !api.statsScope.packet.size && !api.statsDims.has('packet'));
+  check('question missing from the catalog has no set', api.DIMS.set(SL[4]) === null);
+  api.setLog(FIXTURE); resetScope(); api.statsDims.clear(); api.statsDims.add('cat');
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

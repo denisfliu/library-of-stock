@@ -270,7 +270,7 @@ function rebuildQueue() { rebuilt++; }
 const edCode = [
   edPreamble,
   slice('let SUBTYPED_SUBS = null;', '// A unit needs a real presence'),
-  slice('function computeSubtypedSubs()', '// Hierarchical filter semantics'),
+  slice('function computeSubtypedSubs()', '\n// Display order for the category picker'),
   slice('// Standard quizbowl', '\nlet queue = []'),
   slice('const catName =', '\nfunction rowInScope('),
   slice('/* ---------- distribution editor', '/* ---------- controls ----------'),

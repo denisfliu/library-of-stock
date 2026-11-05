@@ -74,6 +74,9 @@ function saveLog() {}
 
 const code = [
   preamble,
+  'const { buildUnits, slowSpans } = globalThis.qbRevealUnits;',
+  slice('const ABBREV', 'const { buildUnits'),
+  slice('function scoreMask(', '\n/* ---------- answer'),
   slice('function clearTicks', '\n/* ---------- voice reading'),
   slice('function startGrace', '\nfunction renderQText'),
   slice('function buzz()', '\n/* ---------- previous-question review'),
@@ -83,7 +86,7 @@ const code = [
   slice("$('skipbtn').onclick", "$('qtext').addEventListener"),
 ].join('\n') + `
 ; globalThis.__api = {
-  settings, buzz, submitAnswer, goDead, regrade, firePending, $,
+  settings, buzz, submitAnswer, goDead, regrade, firePending, $, readingPlan,
   LOG: () => LOG, resetLog: () => { LOG = []; },
   setCur: c => { cur = c; }, getCur: () => cur,
   setPhase: p => { phase = p; }, getPhase: () => phase,
@@ -92,9 +95,11 @@ const code = [
   status: () => __status, calls: __calls,
 };`;
 
-const ctx = vm.createContext({ console, Set, Map, Object, Array, JSON, Number, String, Math, Date, globalThis: {} });
+const ctx = vm.createContext({ console, Set, Map, Object, Array, JSON, Number, String, Math, Date, RegExp, globalThis: {} });
 ctx.globalThis = ctx;
 ctx.qbCheckAnswer = checkAnswer;
+vm.runInContext(fs.readFileSync(path.join(__dirname, '../../lib/js/reveal_units.js'), 'utf8'),
+                ctx, { filename: 'reveal_units.js' });
 vm.runInContext(code, ctx, { filename: 'reader.js (sliced)' });
 const api = ctx.__api;
 
@@ -102,10 +107,12 @@ const api = ctx.__api;
 // 10 reveal units with the power mark at index 5
 function mkCur(answerline) {
   const words = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', '(*)', 'zeta', 'eta', 'theta', 'iota'];
+  const plan = api.readingPlan(words.join(' '), 0, true);   // 10 units, full read
   return {
     q: { id: 'q1', slug: null, a: answerline, as: answerline, cat: 'Science', sub: 'Chemistry', section: null, d: 7 },
-    units: words.map(t => ({ t, sep: ' ' })),
-    skipWords: 0, startSent: 0, sents: [], slow: new Set(), showSkipped: false,
+    plan, units: plan.units,
+    skipWords: plan.skipWords, startSent: plan.startSent, sents: plan.sents,
+    slow: new Set(), showSkipped: false, openSegs: new Set(),
     prompted: false, userRaw: null, firstBuzzAt: null, negged: false, lateCorrect: false,
     voice: false,
   };

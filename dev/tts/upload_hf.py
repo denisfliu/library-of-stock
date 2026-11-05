@@ -56,7 +56,17 @@ def build_manifest(repo_id=None):
     # committed (July 18, 2026) and broke the reader's read-aloud mode.
     tmp = OUT / "audio_index.json.tmp"   # .tmp matches no allow_pattern
     tmp.write_text(json.dumps(idx, separators=(",", ":")))
-    tmp.replace(OUT / "audio_index.json")
+    # Windows refuses to replace a file another handle has open, and the
+    # scheduler's upload thread reads the manifest on its own timer (Nov 2026,
+    # the 4070: WinError 5 killed the uploader). Retry until it lets go.
+    for attempt in range(60):
+        try:
+            tmp.replace(OUT / "audio_index.json")
+            break
+        except PermissionError:
+            if attempt == 59:
+                raise
+            time.sleep(1)
     return sum(len(v) for v in idx.values())
 
 def main():

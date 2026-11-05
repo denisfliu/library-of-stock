@@ -116,7 +116,7 @@ html[data-layout="desktop"] .pop {{
   max-height: min(72vh, 620px); border: 1px solid var(--border); border-radius: 12px;
   box-shadow: 0 10px 34px rgba(0,0,0,0.16); padding-bottom: 0;
 }}
-html[data-layout="desktop"] #pop-scope {{ width: 400px; }}
+html[data-layout="desktop"] #pop-set {{ width: 390px; }}
 html[data-layout="desktop"] #pop-more {{ width: 360px; }}
 html[data-layout="desktop"] .pop .los-sheet-handle {{ display: none; }}
 html[data-layout="desktop"] .pop .los-sheet-body {{ padding: 0.95rem 1rem 0.6rem; }}
@@ -196,20 +196,78 @@ html[data-layout="mobile"] .d-only {{ display: none !important; }}
 .chip.on {{ background: var(--pick); border-color: var(--pickline); color: var(--bright); font-weight: 600; }}
 .chip .n {{ color: var(--muted); font-weight: 400; font-size: 0.75rem; font-variant-numeric: tabular-nums; }}
 .subhead {{ font-size: 0.78rem; color: var(--muted); margin: 0.7rem 0 0.35rem; }}
-/* Group facet accordion: one collapsible row per overview unit. */
-.groupacc details {{ border-top: 1px solid var(--line2); }}
-.groupacc details:first-child {{ border-top: none; }}
-.groupacc summary {{ list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 0.4rem;
-  padding: 0.32rem 0; font-size: 0.82rem; color: var(--text); user-select: none; }}
-.groupacc summary::-webkit-details-marker {{ display: none; }}
-.groupacc summary::before {{ content: '▸'; font-size: 0.7rem; color: var(--faint); }}
-.groupacc details[open] > summary::before {{ content: '▾'; }}
-.groupacc summary:hover {{ color: var(--link); }}
-.groupacc summary .n {{ margin-left: auto; font-size: 0.72rem; color: var(--faint); font-variant-numeric: tabular-nums; }}
-.groupacc summary .picked {{ font-size: 0.72rem; color: var(--link); }}
-.groupacc details .chips {{ padding: 0.15rem 0 0.5rem 0.85rem; }}
-.groupacc .groupextra {{ padding: 0.35rem 0 0.1rem; }}
-.clearrow {{ margin-top: 0.7rem; }}
+/* Category picker: qbreader's modal (outlined, colour-coded buttons; filled
+   = on) plus a Group column, one block per unit in scope. The category
+   colours are qbreader's own, the same in both themes. */
+.cmodal {{ position: fixed; inset: 0; z-index: 95; background: rgba(0,0,0,.55); overflow-y: auto;
+  padding: 1.75rem max(16px, env(safe-area-inset-right, 0px)) 1.75rem max(16px, env(safe-area-inset-left, 0px)); }}
+.cbox {{ max-width: 1060px; margin: 0 auto; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }}
+.chead {{ display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; padding: .8rem 1rem; border-bottom: 1px solid var(--border); }}
+.chead h2 {{ font-size: 17px; font-weight: 600; color: var(--bright); }}
+.chead .tog {{ font-size: 13px; background: var(--link); color: var(--bg); border: 0; border-radius: 6px; padding: .25rem .65rem; }}
+.chead .cnt {{ font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }}
+.chead .x {{ font-size: 22px; line-height: 1; background: none; border: 0; color: var(--muted); padding: 0 .2rem; }}
+.ccols {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.35fr); gap: 1rem; padding: 1rem; }}
+.ccols h3 {{ text-align: center; font-size: 15px; font-weight: 600; margin: 0 0 .4rem; color: var(--bright); }}
+.chint {{ text-align: center; color: var(--muted); font-size: 13px; padding: .3rem 0; }}
+.cb {{ display: block; width: 100%; margin: .25rem 0; padding: .3rem .5rem; font-size: 13.5px; text-align: center;
+  background: transparent; border: 1px solid var(--k); color: var(--k); border-radius: 0; }}
+.cb[aria-pressed="true"], .gb[aria-pressed="true"], .gall[aria-pressed="true"] {{ background: var(--k); color: #fff; }}
+.k-lit {{ --k: #4f7cac; }} .k-hist {{ --k: #00a67c; }} .k-sci {{ --k: #d9483b; }} .k-arts {{ --k: #e8740c; }} .k-other {{ --k: #7d858e; }}
+.gunit {{ margin-bottom: .7rem; }}
+.guhead {{ display: flex; align-items: baseline; gap: .5rem; font-size: 12.5px; color: var(--muted); margin: .1rem 0 .25rem; }}
+.guhead b {{ color: var(--text); font-weight: 600; }}
+.gall {{ margin-left: auto; font-size: 12px; padding: .05rem .5rem; border: 1px solid var(--k); color: var(--k); background: transparent; }}
+.gchips {{ display: flex; flex-wrap: wrap; gap: .25rem; }}
+.gb {{ font-size: 12.5px; padding: .15rem .5rem; border: 1px solid var(--k); color: var(--k); background: transparent; text-align: left; }}
+.cb:focus-visible, .gb:focus-visible, .gall:focus-visible, .chead button:focus-visible {{ outline: 2px solid var(--link); outline-offset: 2px; }}
+html[data-layout="mobile"] .ccols {{ grid-template-columns: minmax(0, 1fr); }}
+html[data-layout="mobile"] .cmodal {{ padding: 0; }}
+html[data-layout="mobile"] .cbox {{ border-radius: 0; min-height: 100%; }}
+/* Set picker + packet grid */
+.pill.set {{ border-color: var(--link); }}
+.pill.dim, .pill:disabled {{ color: var(--faint); border-style: dashed; cursor: default; }}
+.pill.dim .c {{ display: none; }}
+.setsearch {{ width: 100%; font: inherit; font-size: 14px; color: var(--text); background: var(--inset); border: 1px solid var(--border);
+  border-radius: 8px; padding: .45rem .6rem; }}
+.setsearch:focus {{ outline: none; border-color: var(--link); }}
+.setlist {{ margin-top: .5rem; max-height: 250px; overflow-y: auto; border-top: 1px solid var(--border); }}
+.setyear {{ font-size: 12px; color: var(--muted); padding: .5rem .2rem .2rem; font-variant-numeric: tabular-nums; }}
+.setrow {{ display: grid; grid-template-columns: 1fr auto; gap: .1rem .8rem; width: 100%; text-align: left; background: none;
+  border: 0; padding: .38rem .45rem; border-radius: 6px; color: var(--text); }}
+.setrow:hover {{ background: var(--hover); }}
+.setrow.on {{ background: var(--c-selbg); box-shadow: inset 0 0 0 1px var(--c-selline); }}
+.setrow .nm {{ font-size: 14px; }}
+.setrow .meta {{ color: var(--faint); font-size: 12px; grid-column: 1; }}
+.setrow .prog {{ grid-row: 1 / span 2; grid-column: 2; align-self: center; text-align: right; font-size: 12px; color: var(--muted);
+  font-variant-numeric: tabular-nums; line-height: 1.35; }}
+.setrow .prog b {{ color: var(--text); font-weight: 600; }}
+.prange {{ display: flex; align-items: center; gap: .45rem; margin-top: .8rem; font-size: 13px; color: var(--muted); }}
+.prange label {{ margin-right: .2rem; }}
+.pksel {{ font: inherit; font-size: 13px; color: var(--text); background: var(--inset); border: 1px solid var(--border);
+  border-radius: 6px; padding: .2rem .35rem; font-variant-numeric: tabular-nums; }}
+.setfoot {{ display: flex; justify-content: space-between; align-items: center; margin-top: .75rem; font-size: 12.5px; color: var(--muted); }}
+.pmap {{ margin-top: .6rem; display: grid; gap: 3px; }}
+.prow {{ display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) 2.8rem; align-items: center; gap: .4rem; }}
+.prow.out {{ opacity: .35; }}
+.prow .pn, .prow .pc {{ font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }}
+.prow .pn {{ text-align: right; }} .prow .pc {{ color: var(--muted); }}
+.sq {{ display: flex; flex-wrap: wrap; gap: 2px; }}
+.sq i, .plegend i {{ display: inline-block; width: 11px; height: 11px; border-radius: 2px; flex: none; }}
+.pmap.big .sq {{ gap: 3px; }} .pmap.big .sq i {{ width: 18px; height: 18px; border-radius: 3px; }}
+.pmap.big .prow {{ grid-template-columns: 1.8rem auto 3rem; justify-content: start; }}
+.pmap.big .pn, .pmap.big .pc {{ font-size: 12.5px; }}
+.rP {{ background: var(--accent); }} .rC {{ background: var(--good); }} .rW {{ background: var(--bad); }}
+.rD {{ background: var(--faint); opacity: .55; }} .rH {{ background: var(--faint); opacity: .3; }}
+.r0 {{ background: transparent; box-shadow: inset 0 0 0 1px var(--border); }}
+.plegend {{ display: flex; flex-wrap: wrap; gap: .3rem .8rem; margin: .45rem 0 0 2rem; font-size: 11.5px; color: var(--muted); }}
+.plegend span {{ display: inline-flex; align-items: center; gap: .3rem; }}
+.pmap.big .plegend {{ font-size: 12.5px; margin-left: 2.2rem; }}
+.setdone {{ text-align: center; padding: 2.4rem 0 1.2rem; }}
+.setdone .t {{ font-size: 1.15rem; font-weight: 600; color: var(--text); }}
+.setdone .s {{ color: var(--muted); margin-top: .35rem; font-variant-numeric: tabular-nums; }}
+.setdone .row {{ display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; margin-top: 1.2rem; }}
+.facetmore {{ align-self: center; }}
 .linkbtn {{ background: none; border: none; color: var(--link); font-size: 0.82rem; padding: 0; }}
 .linkbtn:hover {{ text-decoration: underline; }}
 
@@ -330,6 +388,13 @@ html[data-layout="mobile"] #cluepanel .cluehead::before {{
 
 .pvsrc {{ font-size: 13px; color: var(--muted); margin-top: 8px; }}
 .railempty {{ font-size: 13px; color: var(--muted); padding: 14px 0; line-height: 1.45; }}
+/* Score-clue mode: inline per-gap pills for hidden clue runs, a warm tint
+   on notation sentences, and highlighted note runs (the units the reveal
+   pacing slows down for). */
+.qtext .segtoggle {{ margin: 0.1rem 0.15rem; vertical-align: 0.12em; }}
+.qtext .noterun {{ background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--bright); border-radius: 3px; padding: 0 0.12rem; }}
+.qtext .scoresent {{ background: color-mix(in srgb, var(--accent) 7%, transparent); border-radius: 3px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 7%, transparent); }}
+.qtext .scoremark {{ color: var(--accent); font-size: 0.85em; user-select: none; }}
 
 .distpanel {{ margin-top: 0.7rem; border-top: 1px solid var(--border); padding-top: 0.6rem; }}
 .distpanel summary {{ cursor: pointer; color: var(--text); font-size: 0.88rem; font-weight: 600; }}
@@ -686,7 +751,8 @@ html[data-layout="mobile"] .qh-meta {{ display: none; }}
 
 <div class="wrap" id="wrap" data-view="play">
   <div class="pills" id="pills">
-    <button class="pill" id="pill-scope" data-pop="scope" aria-haspopup="dialog"><span id="pl-scope">All categories</span><span class="c">&#9662;</span></button>
+    <button class="pill" id="pill-scope" aria-haspopup="dialog" aria-controls="catmodal"><span id="pl-scope">All categories</span><span class="c">&#9662;</span></button>
+    <button class="pill" id="pill-set" data-pop="set" aria-haspopup="dialog"><span id="pl-set">Any set</span><span class="c">&#9662;</span></button>
     <button class="pill" id="pill-diff" data-pop="diff" aria-haspopup="dialog"><span id="pl-diff">Difficulty</span><span class="c">&#9662;</span></button>
     <button class="pill" id="pill-speed" data-pop="speed" aria-haspopup="dialog"><span id="pl-speed">380 wpm</span><span class="c">&#9662;</span></button>
     <button class="pill" id="pill-sent" data-pop="sent" aria-haspopup="dialog"><span id="pl-sent">Full question</span><span class="c">&#9662;</span></button>
@@ -794,26 +860,35 @@ html[data-layout="mobile"] .qh-meta {{ display: none; }}
   </div>
 </div>
 
+<div class="cmodal" id="catmodal" hidden role="dialog" aria-modal="true" aria-labelledby="cattitle">
+  <div class="cbox">
+    <div class="chead"><h2 id="cattitle">Select Categories</h2>
+      <button type="button" class="tog" id="cattoggle">Toggle all</button>
+      <span class="cnt" id="catcount"></span>
+      <button type="button" class="x" id="catclose" aria-label="Close">&times;</button></div>
+    <div class="ccols">
+      <div><h3>Category</h3><div id="c-cat"></div></div>
+      <div><h3>Subcategory</h3><div id="c-sub"></div></div>
+      <div><h3>Alternate Subcategory</h3><div id="c-alt"></div></div>
+      <div class="gcol"><h3>Group</h3><div id="c-grp"></div></div>
+    </div>
+  </div>
+</div>
+
 <!-- Setting popovers: anchored dropdowns on desktop, bottom sheets on a
      phone. Each holds the reader's existing control panels, unchanged. -->
-<div class="los-sheet pop" id="pop-scope" role="dialog" aria-label="Categories">
+<div class="los-sheet pop" id="pop-set" role="dialog" aria-label="Set">
   <div class="los-sheet-handle"></div>
   <div class="los-sheet-body">
-    <div class="panel" id="panel-scope">
-      <h2>Categories <span class="count" id="scopecount"></span></h2>
-      <div class="subhead">Category</div>
-      <div class="chips" id="f-cats"></div>
-      <div class="subhead" id="subs-head" style="display:none">Subcategory</div>
-      <div class="chips" id="f-subs"></div>
-      <div class="subhead" id="subsub-head" style="display:none">Subtype</div>
-      <div class="chips" id="f-subsub"></div>
-      <div class="subhead" id="tags-head" style="display:none">Focus (movements &amp; schools)</div>
-      <div class="chips" id="f-tags"></div>
-      <div class="subhead" id="eras-head" style="display:none">Era</div>
-      <div class="chips" id="f-eras"></div>
-      <div class="subhead" id="groups-head" style="display:none">Group (overview sections)</div>
-      <div class="chips" id="f-groups"></div>
-      <div class="clearrow"><button class="linkbtn" id="clearfilters">Reset scope</button></div>
+    <div class="panel">
+      <h2>Set <button class="linkbtn" id="setany" style="margin-left:auto">Any set</button></h2>
+      <input class="setsearch" id="setq" type="search" placeholder="Search sets" autocomplete="off" aria-label="Search sets">
+      <div class="setlist" id="setlist"></div>
+      <div id="setdetail" hidden>
+        <div class="prange"><label for="pfrom">Packets</label><select class="pksel" id="pfrom"></select><span>to</span><select class="pksel" id="pto" aria-label="to packet"></select></div>
+        <div id="setmap"></div>
+        <div class="setfoot"><span id="setfoot"></span><button class="linkbtn" id="setstats">Stats for this set</button></div>
+      </div>
     </div>
   </div>
 </div>
@@ -845,8 +920,11 @@ html[data-layout="mobile"] .qh-meta {{ display: none; }}
       <div class="seg" id="sentmode">
         <button data-n="0" class="on">Full question</button>
         <input type="number" id="sentn" min="1" max="99" inputmode="numeric" placeholder="last n" aria-label="read only the last n sentences">
+        <button id="sentscore" title="read only sentences containing musical notation">&#9834; Score</button>
       </div>
-      <div class="hint">Type a number to read only the last n sentences.</div>
+      <label class="drilltoggle" id="scoregrow" style="display:none"><input type="checkbox" id="scoregive" checked> Also read the giveaway</label>
+      <div class="hint" id="senthint">Type a number to read only the last n sentences.</div>
+      <div class="hint" id="scorehint" style="display:none">Only sentences containing musical notation (note runs) are revealed; other clues collapse into tappable pills. The scope narrows to questions with notation, and read-aloud is unavailable in this mode.</div>
     </div>
   </div>
 </div>

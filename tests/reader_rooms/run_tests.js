@@ -202,8 +202,10 @@ let HEARD_LOG = [];
 const HEARD_MAX = 5000;
 function saveHeard() {}
 const sessionHeard = [];
-const settings = { wpm: 600, sent: 0, voice: false, drill: false, useDist: true, exactDist: false };
-const filters = { cats: new Set(), subs: new Set(), subsubs: new Set(), sections: new Set(), diffs: new Set([7]) };
+const settings = { wpm: 600, sent: 0, scoreGiveaway: true, voice: false, drill: false, useDist: true, exactDist: false };
+const filters = { cats: new Set(), subsOff: new Set(), altsOff: new Set(), sections: new Set(), diffs: new Set([7]) };
+const setPick = { slug: null, from: null, to: null };
+let SET_IDX = null;
 const window = { losReaderHook: {}, history: { replaceState() {} }, addEventListener() {} };
 const location = { href: 'https://example.test/reader.html', search: '' };
 let __saves = 0;
@@ -247,6 +249,7 @@ function stopAudio() {}
 function pushHistory() { if (cur) history.push({ snap: cur, buzzAt, res: cur.res != null ? cur.res : null }); }
 function togglePop() {}
 function showWiki() {}
+function scoreModeOn() { return settings.sent === 'score'; }
 function syncMobileBar() {}
 function syncSession() {}
 function renderScoreboard() {}
@@ -266,6 +269,7 @@ function shardFor() { return Promise.resolve(__DOCS); }
 const { buildUnits, slowSpans, SLOW_FACTOR } = globalThis.qbRevealUnits;
 `,
   slice('const ABBREV', 'const { buildUnits'),
+  slice('/* ---------- reading plan', '\n/* ---------- answer checking'),
   slice('function wordUnitStarts', '\n// Reveal-unit index for'),
   slice('function startQuestion(', '\nfunction scheduleStep()'),
   slice('function renderVerdict', '\nfunction showJudge'),
@@ -280,7 +284,7 @@ globalThis.__api = {
   get HEARD() { return HEARD_LOG; },
   get status() { return __status; }, get queue() { return queue; },
   get saves() { return __saves; },
-  settings, filters, $, roomPillsChanged, savePrefs, roomNext, roomSkip, roomPause, roomChatSend, roomTyping, roomEnter, roomLeave, roomMain, roomBuzz, roomSubmit, roomOverride,
+  settings, filters, setPick, $, roomPillsChanged, savePrefs, roomNext, roomSkip, roomPause, roomChatSend, roomTyping, roomEnter, roomLeave, roomMain, roomBuzz, roomSubmit, roomOverride,
   roomHostPause, roomHostSkip, roomHostNext,
   boot(cat, id2row, q) { CAT = cat; ID2ROW = id2row; queue = q; qpos = -1; },
 };`,
@@ -548,6 +552,20 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   await advance(1500);
   check('the host clamps a player\'s settings', H.settings.wpm === 700);
   K.settings.wpm = 600; K.savePrefs();
+  await advance(1500);
+
+  // sets are pickable in a room: a player's set pick reaches the host (whose
+  // queue it drives) and every other player; an unknown set is ignored
+  K.setPick.slug = '2026-test'; K.setPick.from = 2; K.setPick.to = 3;
+  K.savePrefs();
+  await advance(1500);
+  check('a player\'s set pick reaches the host', H.setPick.slug === '2026-test' && H.setPick.from === 2 && H.setPick.to === 3,
+    JSON.stringify(H.setPick));
+  check('...and the other players', M.setPick.slug === '2026-test' && M.setPick.to === 3, JSON.stringify(M.setPick));
+  H.setPick.slug = 'no-such-set'; H.roomPillsChanged();
+  await advance(1500);
+  check('an unknown set is ignored', K.setPick.slug === null, JSON.stringify(K.setPick));
+  H.setPick.slug = null; H.setPick.from = H.setPick.to = null; H.roomPillsChanged();
   await advance(1500);
 
   // chat

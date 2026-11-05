@@ -24,8 +24,9 @@ vm.runInContext(
 
 const readerSrc = fs.readFileSync(path.join(__dirname, '../../lib/js/reader.js'), 'utf8');
 vm.runInContext(
-  'const { buildUnits } = globalThis.qbRevealUnits;\n'
+  'const { buildUnits, slowSpans } = globalThis.qbRevealUnits;\n'
   + slice(readerSrc, 'const ABBREV', 'const { buildUnits', 'reader.js (splitSentences)')
+  + slice(readerSrc, 'function scoreMask(', '\n/* ---------- answer', 'reader.js (readingPlan)')
   + slice(readerSrc, 'function missedQueryFor(', '\nfunction missedOrder(', 'reader.js (missedQueryFor)')
   + '\n; globalThis.__t = { splitSentences, missedQueryFor, buildUnits };',
   ctx, { filename: 'reader.js (sliced)' });

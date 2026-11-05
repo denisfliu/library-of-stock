@@ -8,7 +8,8 @@ re-uploaded only when its hash differs from the remote manifest's.
 
   sets/{slug}.json    one file per set — the unit of fetch for reading
   catalog.json        columnar index of every question (id, set, packet,
-                      number, taxonomy, difficulty) — random mode + filters
+                      number, taxonomy, difficulty, notation bit) — random
+                      mode + filters
   answerlines.json    answer text aligned with catalog rows — client-side
                       answerline search
   topics.json         study-guide overlay: our metadata (year, country,
@@ -31,6 +32,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor
@@ -132,6 +134,42 @@ def stage_sets(conn, catalog, slug_map: dict[str, str]) -> int:
     return written
 
 
+def _notation_bits(texts: list[str]) -> list[int] | None:
+    """Per-tossup "has a musical note run" bits for the catalog's notation
+    column (the reader's score-clue mode restricts its scope by them).
+
+    Computed by node running lib/mirror/notation_scan.js, which requires the
+    reader's own lib/js/reveal_units.js — single source of truth, no Python
+    port to drift. Fail-soft: on any error the column is omitted (with a
+    loud warning) and the reader falls back to detecting notation
+    client-side after each shard loads.
+    """
+    script = Path(__file__).resolve().parent / "notation_scan.js"
+    tmp = None
+    try:
+        with tempfile.NamedTemporaryFile(
+                "w", suffix=".jsonl", delete=False, encoding="utf-8") as f:
+            tmp = Path(f.name)
+            for t in texts:
+                f.write(json.dumps(t, ensure_ascii=False) + "\n")
+        res = subprocess.run(["node", str(script), str(tmp)],
+                             capture_output=True, text=True, timeout=600)
+        if res.returncode != 0:
+            raise RuntimeError(res.stderr.strip() or f"node exited {res.returncode}")
+        bits = res.stdout.strip()
+        if len(bits) != len(texts):
+            raise RuntimeError(f"bit count {len(bits)} != rows {len(texts)}")
+        return [1 if b == "1" else 0 for b in bits]
+    except Exception as exc:  # noqa: BLE001 — fail-soft by design
+        print(f"WARNING: notation column skipped ({exc}) — the reader's "
+              f"score-clue mode will fall back to client-side detection",
+              file=sys.stderr)
+        return None
+    finally:
+        if tmp is not None:
+            tmp.unlink(missing_ok=True)
+
+
 def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
     """Columnar catalog + aligned answerline arrays, one pass per table.
 
@@ -230,14 +268,20 @@ def stage_catalog_and_answerlines(conn, slug_map: dict[str, str]) -> dict:
         # bold-underline core.
         san_col = "answer_sanitized" if table == "tossups" else "answers_sanitized"
         raw_col = "answer" if table == "tossups" else "answers"
+        q_sel = ", question_sanitized AS q_san" if table == "tossups" else ""
         rows = conn.execute(
             f"SELECT id, set_name, packet_number, number, category, "
             f"subcategory, alternate_subcategory, difficulty, "
-            f"{san_col} AS ans_san, {raw_col} AS ans_raw "
+            f"{san_col} AS ans_san, {raw_col} AS ans_raw{q_sel} "
             f"FROM {table}").fetchall()
         rows.sort(key=lambda r: (set_index.get(r["set_name"], 1 << 30),
                                  r["packet_number"] or 0, r["number"] or 0,
                                  r["id"]))
+        if table == "tossups":
+            # Aligned with the sorted rows, like every other column.
+            bits = _notation_bits([r["q_san"] or "" for r in rows])
+            if bits is not None:
+                cols["notation"] = bits
         for r in rows:
             cols["id"].append(r["id"])
             cols["set"].append(set_index.get(r["set_name"], -1))
