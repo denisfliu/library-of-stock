@@ -618,6 +618,15 @@ body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ 
 #chatinput {{ width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
   padding: 0.4rem 0.55rem; font-size: 0.9rem; font-family: var(--sans); }}
 #chatinput:focus {{ outline: none; border-color: var(--link); }}
+.chatlog .cl.buzz {{ color: var(--muted); }}
+.chatlog .cl.ok {{ color: var(--good); }}
+.chatlog .cl.neg {{ color: var(--bad); }}
+/* Another player's answer as they type it, under the frozen question. */
+.liveans {{ margin-top: 10px; font-size: 0.95rem; color: var(--text); background: var(--raised);
+  border-radius: 10px; padding: 0.45rem 0.8rem; overflow-wrap: anywhere; }}
+.liveans[hidden] {{ display: none; }}
+.liveans b {{ font-weight: 600; margin-right: 0.3rem; }}
+.liveans .dots {{ color: var(--faint); }}
 </style>
 </head>
 <body>
@@ -661,6 +670,7 @@ body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ 
           <div class="timerbar"><i id="timerfill"></i></div>
         </div>
         <div class="qtext" id="qtext"></div>
+        <div class="liveans" id="liveans" hidden aria-live="polite"></div>
         <div class="hint taplookup" id="taplookup" style="display:none">Tap any sentence to find similar clues from other questions.</div>
         <div class="answerrow" id="answerrow">
           <input id="answerinput" type="text" placeholder="Answer&hellip;" autocomplete="off" spellcheck="false" aria-label="Your answer">

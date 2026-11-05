@@ -139,6 +139,7 @@ function makeServer() {
   S.recv = (c, m) => {
     if (!c.open) return;
     if (m.t === 'sync') { deliver(c, { t: 'sync', c: m.c, s: NOW }); return; }
+    if (m.t === 'typing') { bcast({ t: 'typing', name: c.name, text: String(m.text || '').slice(0, 300) }, c); return; }
     if (m.t === 'chat') { const text = String(m.text || '').trim().slice(0, 300); if (text) bcast({ t: 'chat', name: c.name, text }); return; }
     if (c.role === 'player') {
       if (m.t === 'request') { for (const h of S.conns) if (h.role === 'host') deliver(h, { t: 'request', name: c.name, data: m.data }); return; }
@@ -273,7 +274,7 @@ globalThis.__api = {
   get wordIdx() { return wordIdx; }, get buzzAt() { return buzzAt; }, get LOG() { return LOG; },
   get status() { return __status; }, get queue() { return queue; },
   get saves() { return __saves; },
-  settings, filters, $, roomPillsChanged, savePrefs, roomNext, roomSkip, roomPause, roomChatSend, roomEnter, roomLeave, roomMain, roomBuzz, roomSubmit, roomOverride,
+  settings, filters, $, roomPillsChanged, savePrefs, roomNext, roomSkip, roomPause, roomChatSend, roomTyping, roomEnter, roomLeave, roomMain, roomBuzz, roomSubmit, roomOverride,
   roomHostPause, roomHostSkip, roomHostNext,
   boot(cat, id2row, q) { CAT = cat; ID2ROW = id2row; queue = q; qpos = -1; },
 };`,
@@ -384,8 +385,21 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   await advance(100);
   check('nobody else can buzz during an answer', H.room.g.buzzer === 'Kim' && !M.room.myBuzz);
 
+  check('a buzz line opens in everyone\'s chat', [H, M].every(c => c.room.chat.some(x => x.name === 'Kim' && x.text === 'buzzed…')));
+  K.$('answerinput').value = 'Prok'; K.roomTyping();
+  K.$('answerinput').value = 'Prokof'; K.roomTyping();   // within 150ms: folded into a trailing send
+  await advance(100);
+  check('others see the answer as it\'s typed (throttled)', M.room.typing && M.room.typing.text === 'Prok'
+    && /Prok/.test(M.$('liveans').innerHTML) && !M.$('liveans').hidden);
+  await advance(200);
+  check('the trailing send lands the latest text', M.room.typing.text === 'Prokof'
+    && M.room.chat.some(x => x.name === 'Kim' && x.text === 'buzzed: Prokof'));
+  check('the buzzer doesn\'t get the live box', K.$('liveans').hidden);
   answer(K, 'Prokofiev');
   await advance(300);
+  check('the buzz line becomes the verdict', [H, K, M].every(c => c.room.chat.some(x => x.name === 'Kim' && x.text === 'buzzed: Prokofiev, wrong −5')),
+    M.room.chat.map(x => x.text));
+  check('the live box closes', M.$('liveans').hidden);
   check('wrong answer: Kim locked out, -5 while reading', H.room.g.locked.includes('Kim')
     && H.room.g.buzzes[0].pts === -5 && H.room.g.phase === 'reading');
   check('reading resumed for everyone', [H, K, M].every(c => c.phase === 'reading'));
@@ -456,6 +470,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   answer(K, 'Igor');   // the same answer again still reopens the box (prompt rounds)
   await advance(300);
   check('a repeated prompt reopens the box', K.$('answerrow').classList.contains('show') && H.room.g.prompt.n === 2);
+  check('the prompt shows in the buzz line', M.room.chat.some(x => x.name === 'Kim' && /^buzzed: Igor \(prompt/.test(x.text)));
   answer(K, 'Igor Stravinsky');
   await advance(300);
   check('power: +15 and pow logged', H.room.g.buzzes[0].pts === 15 && logRow(K, 'q2').pow === true
