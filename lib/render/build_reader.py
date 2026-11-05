@@ -313,20 +313,21 @@ html[data-layout="mobile"] #cluepanel .cluehead::before {{
 }}
 .skiptoggle:hover {{ color: var(--text); border-color: var(--muted); }}
 .taplookup {{ margin-top: 8px; font-size: 13px; }}
-.reviewbar {{
-  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
-  font-size: 0.84rem; color: var(--text); background: var(--c-selbg);
-  border: 1px solid var(--c-selline); border-radius: 10px;
-  padding: 0.4rem 0.7rem; margin-top: 0.8rem;
-}}
-.reviewbar .rlbl {{ font-weight: 600; }}
-.reviewbar button {{
+.prevpanel {{ margin-top: 1.2rem; border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem 1rem 0.85rem; }}
+.prevpanel[hidden] {{ display: none; }}
+.pvhead {{ display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; font-size: 0.84rem; margin-bottom: 0.35rem; }}
+.pvhead .pvlbl {{ font-weight: 600; color: var(--text); }}
+.pvhead .sp {{ flex: 1; }}
+.pvhead button {{
   font-family: var(--sans); font-size: 0.8rem; color: var(--link); background: var(--bg);
   border: 1px solid var(--border); border-radius: 6px; padding: 0.15rem 0.55rem;
 }}
-.reviewbar button:hover:not(:disabled) {{ border-color: var(--link); }}
-.reviewbar button:disabled {{ opacity: 0.4; cursor: default; }}
-.reviewbar .rspacer {{ flex: 1; }}
+.pvhead button:hover:not(:disabled) {{ border-color: var(--link); }}
+.pvhead button:disabled {{ opacity: 0.4; cursor: default; }}
+.prevpanel .qtext {{ font-size: calc(var(--qsize, 17px) * 0.92); min-height: 0; margin-top: 8px; }}
+.prevpanel .judge {{ display: block; }}
+.pvsrc {{ font-size: 13px; color: var(--muted); margin-top: 8px; }}
+.railempty {{ font-size: 13px; color: var(--muted); padding: 14px 0; line-height: 1.45; }}
 
 .distpanel {{ margin-top: 0.7rem; border-top: 1px solid var(--border); padding-top: 0.6rem; }}
 .distpanel summary {{ cursor: pointer; color: var(--text); font-size: 0.88rem; font-weight: 600; }}
@@ -566,6 +567,38 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
 .simlist {{ display: none; }}
 .simlist.open {{ display: block; }}
 @media (prefers-reduced-motion: reduce) {{ .timerbar i {{ transition: none !important; }} }}
+/* Multiplayer rooms (reader.js "multiplayer rooms"): the scoreboard strip
+   on the question card, the room popover, and guest mode, where the
+   host's scope/difficulty/speed/sentence pills don't apply. */
+.roombar {{ display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.4rem; margin-bottom: 0.6rem;
+  font-size: 0.84rem; font-variant-numeric: tabular-nums; }}
+.roombar[hidden] {{ display: none; }}
+.roombar .rcode {{ background: none; border: none; padding: 0; color: var(--muted); font-size: 0.78rem;
+  letter-spacing: 0.04em; margin-right: 0.2rem; }}
+.roombar .rcode:hover {{ color: var(--link); }}
+.roombar .rp {{ border: 1px solid var(--border); border-radius: 99px; padding: 0.1rem 0.6rem; white-space: nowrap; }}
+.roombar .rp b {{ font-weight: 600; margin-left: 0.15rem; }}
+.roombar .rp.me {{ border-color: var(--pickline); background: var(--pick); color: var(--bright); }}
+.roombar .rp.buzz {{ border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-dim); }}
+.roombar .rp.out {{ opacity: 0.5; text-decoration: line-through; }}
+.roombar .rp.off {{ border-style: dashed; color: var(--faint); }}
+.roombar .rwarn {{ color: var(--warn); font-size: 0.78rem; }}
+.rmrow {{ display: flex; gap: 0.4rem; margin-top: 0.6rem; }}
+.rmrow input, #roompanel .setting input {{ flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text); padding: 0.4rem 0.55rem; font-size: 0.9rem; font-family: var(--sans); }}
+#roompanel .setting input {{ display: block; width: 100%; margin-top: 0.25rem; }}
+#rm-code {{ text-transform: uppercase; letter-spacing: 0.12em; max-width: 7.5rem; text-align: center; }}
+.rmrow input:focus, #roompanel .setting input:focus {{ outline: none; border-color: var(--link); }}
+.rmcode {{ letter-spacing: 0.08em; margin-left: 0.35rem; color: var(--bright); }}
+.rmerr:empty {{ display: none; }}
+/* Players see the host's settings: the four reading pills mirror them and
+   open the Multiplayer popover's read-only summary; the reading panel under
+   More (read-aloud, drill, distribution) is the host's to set. */
+.pill.locked {{ color: var(--muted); }}
+body[data-room="guest"] #panel-reading > :not(h2):not(.hint) {{ display: none; }}
+.rmcfg {{ display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.8rem; font-size: 0.86rem; margin: 0.2rem 0 0.4rem; }}
+.rmcfg dt {{ color: var(--muted); }}
+.rmcfg dd {{ color: var(--text); }}
 </style>
 </head>
 <body>
@@ -591,13 +624,15 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
     <button class="pill" id="pill-sent" data-pop="sent" aria-haspopup="dialog"><span id="pl-sent">Full question</span><span class="c">&#9662;</span></button>
     <button class="pill" id="pill-text" data-pop="text" aria-haspopup="dialog"><span id="pl-text">Text 17px</span><span class="c">&#9662;</span></button>
     <button class="pill" id="pill-more" data-pop="more" aria-haspopup="dialog">More<span class="c">&#9662;</span></button>
-    <button class="sessline" id="sessline" title="Show or hide the session column"></button>
+    <button class="pill" id="pill-room" data-pop="room" aria-haspopup="dialog"><span id="pl-room">Multiplayer</span><span class="c">&#9662;</span></button>
+    <span class="sessline" id="sessline"></span>
   </div>
 
   <div class="stage">
   <main>
     <section id="view-play">
       <div class="qcard" id="qcard">
+        <div class="roombar" id="roombar" hidden></div>
         <div class="qmeta">
           <span id="m-cat"></span><span class="diff" id="m-diff"></span>
           <span class="status" id="m-status"></span>
@@ -606,7 +641,6 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
           <div class="qprog"><i id="qprogfill"></i></div>
           <div class="timerbar"><i id="timerfill"></i></div>
         </div>
-        <div class="reviewbar" id="reviewbar" style="display:none"></div>
         <div class="qtext" id="qtext"></div>
         <div class="hint taplookup" id="taplookup" style="display:none">Tap any sentence to find similar clues from other questions.</div>
         <div class="answerrow" id="answerrow">
@@ -634,6 +668,26 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
           </div>
         </div>
       </div>
+      <section class="prevpanel" id="prevpanel" hidden aria-label="Previous questions">
+        <div class="pvhead">
+          <span class="pvlbl" id="pv-pos">Previous question</span>
+          <span class="sp"></span>
+          <button id="pv-older" title="Older (k)">&#9664; Older</button>
+          <button id="pv-newer" title="Newer (j)">Newer &#9654;</button>
+          <button id="pv-close" title="Close (Esc)">Close</button>
+        </div>
+        <div class="qmeta" id="pv-meta"></div>
+        <div class="qtext" id="pv-text"></div>
+        <div class="judge">
+          <div class="jrow">
+            <span class="verdict" id="pv-verdict"></span>
+            <span class="answerline" id="pv-answer"></span>
+            <span class="jsp"></span>
+            <a id="pv-guide" href="#"></a>
+          </div>
+        </div>
+        <div class="pvsrc" id="pv-src"></div>
+      </section>
       <div class="wikibox" id="wikibox">
         <div id="w-topicblock">
           <h3>From the wiki</h3>
@@ -782,7 +836,6 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
           <input type="range" id="focus" min="0" max="100" value="55">
         </label>
       </div>
-      <label class="setting drilltoggle d-only"><input type="checkbox" id="railtoggle"> Session column</label>
       <details class="distpanel" id="distpanel">
         <summary>Category distribution</summary>
         <label class="setting disttoggle"><input type="checkbox" id="usedist" checked> Follow distribution</label>
@@ -793,7 +846,7 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
           <span class="disttotal" id="disttotal"></span>
         </div>
       </details>
-      <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous &middot; <kbd>J</kbd> forward &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
+      <div class="hint kbdhint"><kbd>Space</kbd> buzz &middot; <kbd>Enter</kbd> submit &middot; <kbd>N</kbd> next &middot; <kbd>K</kbd> previous question (any time) &middot; <kbd>J</kbd> newer &middot; <kbd>Esc</kbd> close it &middot; <kbd>S</kbd> skip &middot; <kbd>P</kbd> pause</div>
       <div class="hint taphint">Skip is never counted. Swipe the question left to skip or advance, right to go back.</div>
     </div>
     <div class="panel" id="panel-cluesearch">
@@ -805,6 +858,12 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
       <div class="hint">Cloud needs sign in. In browser runs the model on this device, 600 MB, downloads once.</div>
       <div class="hint" id="csprog" style="display:none"></div>
     </div>
+  </div>
+</div>
+<div class="los-sheet pop" id="pop-room" role="dialog" aria-label="Multiplayer">
+  <div class="los-sheet-handle"></div>
+  <div class="los-sheet-body">
+    <div class="panel" id="roompanel"></div>
   </div>
 </div>
 <div class="los-sheet pop" id="pop-sync" role="dialog" aria-label="Sync">
@@ -822,6 +881,7 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
 <script src="lib/js/answer_checker.js?v={js_v('answer_checker.js')}"></script>
 <script src="lib/js/reveal_units.js?v={js_v('reveal_units.js')}"></script>
 <script src="lib/js/clue_search.js?v={js_v('clue_search.js')}"></script>
+<script src="lib/js/reader_room.js?v={js_v('reader_room.js')}"></script>
 <script src="lib/js/reader.js?v={js_v('reader.js')}"></script>
 <script src="lib/js/sync.js?v={js_v('sync.js')}"></script>
 </body>

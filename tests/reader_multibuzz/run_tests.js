@@ -23,6 +23,7 @@ function slice(startMarker, endMarker) {
 // and stubs for the DOM-heavy collaborators that aren't under test.
 const preamble = `
 let cur = null, phase = 'idle', wordIdx = 0, buzzAt = null;
+let room = null;   // solo play (the handlers' multiplayer branches stay off)
 let tick = null, graceTimer = null, graceAnim = null;
 let LOG = [];
 const sessionRows = [];

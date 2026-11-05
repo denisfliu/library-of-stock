@@ -4,7 +4,24 @@ Status: **promoted into qb-scorekeeper v1** (July 18, 2026 — see
 `docs/scorekeeper.md`, which supersedes this doc's framing but keeps its
 architecture verbatim: DO-per-room on the existing Worker, clock protocol,
 server-side checker). Kept as the detailed reference for the room-server
-internals. Nothing here is built yet.
+internals.
+
+**Reader rooms v1 BUILT (Nov 2026)** — the reader's Multiplayer pill. It
+reuses the qb-scorekeeper room server rather than building the DO below:
+the relay is payload-blind, so the reader is its third consumer (after
+qb-scorekeeper and consensus-scorekeeper). Like scorekeeper v1 it is
+host-authoritative: the hosting reader picks questions from its own queue,
+runs the checker, keeps scores and broadcasts snapshots; every client
+renders from snapshots and derives the reveal from `{t0, u0, wpm}` on a
+synced server clock (the clock protocol below, as designed). The host also
+plays: it holds a player socket and buzzes through the same arbitration.
+The one server change was additive — a buzz may carry the buzzer's
+reveal-unit position `u`, relayed on `buzz_pending`/`buzz` so a power is
+credited where the buzzer saw the text (the host clamps it to a window
+behind its own clock). Client: `lib/js/reader_room.js` + the "multiplayer
+rooms" block of `lib/js/reader.js`; tests `tests/reader_rooms/`. Still
+open from this doc: server-authoritative grading / host migration (closing
+the host tab ends the room) and sentence-streamed text (anti-cheat).
 
 ## Why the pieces already line up
 
