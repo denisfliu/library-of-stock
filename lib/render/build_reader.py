@@ -601,14 +601,23 @@ html[data-layout="mobile"] .sparkcell, html[data-layout="mobile"] table.acc th.s
 .rmrow input:focus, #roompanel .setting input:focus {{ outline: none; border-color: var(--link); }}
 .rmcode {{ letter-spacing: 0.08em; margin-left: 0.35rem; color: var(--bright); }}
 .rmerr:empty {{ display: none; }}
-/* Players see the host's settings: the four reading pills mirror them and
-   open the Multiplayer popover's read-only summary; the reading panel under
-   More (read-aloud, drill, distribution) is the host's to set. */
-.pill.locked {{ color: var(--muted); }}
-body[data-room="guest"] #panel-reading > :not(h2):not(.hint) {{ display: none; }}
-.rmcfg {{ display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.8rem; font-size: 0.86rem; margin: 0.2rem 0 0.4rem; }}
-.rmcfg dt {{ color: var(--muted); }}
-.rmcfg dd {{ color: var(--text); }}
+/* In a room everyone's controls edit the shared settings, except multibuzz
+   (rooms use lockouts) and, for players, drill (it's built from the host's
+   own history). */
+body[data-room="host"] label:has(#multibuzz), body[data-room="host"] #multibuzzrow,
+body[data-room="guest"] label:has(#multibuzz), body[data-room="guest"] #multibuzzrow,
+body[data-room="guest"] label:has(#drill), body[data-room="guest"] #drillrow {{ display: none; }}
+/* Room chat, under the question card. */
+.chatpanel {{ margin-top: 1.2rem; border: 1px solid var(--border); border-radius: 12px; padding: 0.55rem 0.8rem 0.7rem; }}
+.chatpanel[hidden] {{ display: none; }}
+.chatlog {{ max-height: 9.5rem; overflow-y: auto; font-size: 0.86rem; line-height: 1.45; padding: 0.1rem 0 0.35rem; }}
+.chatlog .cl {{ overflow-wrap: anywhere; }}
+.chatlog .cl b {{ font-weight: 600; color: var(--bright); }}
+.chatlog .cl.me b {{ color: var(--link); }}
+.chatlog .cl.sys {{ color: var(--faint); font-size: 0.8rem; }}
+#chatinput {{ width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+  padding: 0.4rem 0.55rem; font-size: 0.9rem; font-family: var(--sans); }}
+#chatinput:focus {{ outline: none; border-color: var(--link); }}
 </style>
 </head>
 <body>
@@ -697,6 +706,10 @@ body[data-room="guest"] #panel-reading > :not(h2):not(.hint) {{ display: none; }
           </div>
         </div>
         <div class="pvsrc" id="pv-src"></div>
+      </section>
+      <section class="chatpanel" id="chatpanel" hidden aria-label="Room chat">
+        <div class="chatlog" id="chatlog" aria-live="polite"></div>
+        <input id="chatinput" type="text" maxlength="300" placeholder="Message the room" autocomplete="off" aria-label="Message the room">
       </section>
       <div class="wikibox" id="wikibox">
         <div id="w-topicblock">

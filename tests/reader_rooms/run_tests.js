@@ -139,7 +139,9 @@ function makeServer() {
   S.recv = (c, m) => {
     if (!c.open) return;
     if (m.t === 'sync') { deliver(c, { t: 'sync', c: m.c, s: NOW }); return; }
+    if (m.t === 'chat') { const text = String(m.text || '').trim().slice(0, 300); if (text) bcast({ t: 'chat', name: c.name, text }); return; }
     if (c.role === 'player') {
+      if (m.t === 'request') { for (const h of S.conns) if (h.role === 'host') deliver(h, { t: 'request', name: c.name, data: m.data }); return; }
       if (m.t === 'answer') { for (const h of S.conns) if (h.role === 'host') deliver(h, { t: 'answer', name: c.name, text: m.text }); return; }
       if (m.t !== 'buzz') return;
       const u = Number.isInteger(m.u) && m.u >= 0 ? m.u : null;
@@ -197,10 +199,20 @@ let LOG = [];
 const sessionRows = [];
 const settings = { wpm: 600, sent: 0, voice: false, drill: false, useDist: true, exactDist: false };
 const filters = { cats: new Set(), subs: new Set(), subsubs: new Set(), sections: new Set(), diffs: new Set([7]) };
-const document = { body: { dataset: {} } };
 const window = { losReaderHook: {}, history: { replaceState() {} }, addEventListener() {} };
 const location = { href: 'https://example.test/reader.html', search: '' };
-const localStorage = { getItem: () => null, setItem() {} };
+let __saves = 0;
+const localStorage = { getItem: () => null, setItem() { __saves++; } };
+const PREFS = 'losReaderPrefsV1';
+const DEFAULT_DIST = { 'Literature': 4, 'History': 4, 'Science': 4, 'Fine Arts': 3 };
+let AUDIO_HAVE = null;
+function loadAudioIndex() { return Promise.resolve(null); }
+function enterAudioMode() {}
+function syncControls() {}
+function renderFilters() {}
+function rebuildQueue() {}
+function onFilter() { savePrefs(); }   // the real one also prunes + rebuilds the queue
+const document = { body: { dataset: {} }, createElement: () => ({ className: '', innerHTML: '' }) };
 const navigator = {};
 const audioEl = null;
 const POPS = {};
@@ -214,7 +226,9 @@ function $(id) {
       toggle(c, on) { (on === undefined ? !this._s.has(c) : on) ? this._s.add(c) : this._s.delete(c); },
       contains(c) { return this._s.has(c); } },
     style: {}, dataset: {}, value: '', textContent: '', innerHTML: '', className: '', hidden: false, disabled: false,
-    focus() {}, select() {}, addEventListener() {},
+    focus() {}, select() {}, blur() {}, addEventListener() {},
+    children: [], appendChild(c) { this.children.push(c); }, removeChild(c) { this.children.splice(this.children.indexOf(c), 1); },
+    get firstChild() { return this.children[0]; }, scrollHeight: 0, scrollTop: 0, clientHeight: 0,
   });
   return __els.get(id);
 }
@@ -251,13 +265,15 @@ const { buildUnits, slowSpans, SLOW_FACTOR } = globalThis.qbRevealUnits;
   slice('function renderVerdict', '\nfunction showJudge'),
   slice('function record(', '\n// --- stats state ---'),
   slice('function pillLabels()', '\nfunction syncPills()'),
+  slice('function prefsObject()', '\n// Sentences-read control'),
   roomBlock,
   `
 globalThis.__api = {
   get room() { return room; }, get cur() { return cur; }, get phase() { return phase; },
   get wordIdx() { return wordIdx; }, get buzzAt() { return buzzAt; }, get LOG() { return LOG; },
   get status() { return __status; }, get queue() { return queue; },
-  settings, filters, $, roomPillsChanged, roomEnter, roomLeave, roomMain, roomBuzz, roomSubmit, roomOverride,
+  get saves() { return __saves; },
+  settings, filters, $, roomPillsChanged, savePrefs, roomNext, roomSkip, roomPause, roomChatSend, roomEnter, roomLeave, roomMain, roomBuzz, roomSubmit, roomOverride,
   roomHostPause, roomHostSkip, roomHostNext,
   boot(cat, id2row, q) { CAT = cat; ID2ROW = id2row; queue = q; qpos = -1; },
 };`,
@@ -351,7 +367,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   // guests may not pause/skip/advance
   K.roomHostPause(); K.roomHostSkip();
   await advance(20);
-  check('a guest cannot pause or skip', H.room.g.phase === 'reading');
+  check('host-only functions stay host-only', H.room.g.phase === 'reading');
 
   K.roomBuzz();
   const kimU = K.room.myBuzz.u;
@@ -482,19 +498,38 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   check('late joiner gets the scoreboard', L.room.snap.scores.Kim != null);
   check('the server never stored a snapshot (the host re-sent it to the joiner)', S.snapshot === null && S.states > 0);
 
-  // the host's settings reach the players
+  // the host's settings reach the players' own controls
   H.settings.wpm = 450; H.filters.cats.add('Literature'); H.filters.diffs.add(3);
   H.roomPillsChanged();
   await advance(600);
-  const cfg = K.room.snap.cfg;
-  check('players see the host settings', cfg.wpm === 450 && cfg.cats.join() === 'Literature'
-    && cfg.diffs.join() === '3,7', cfg);
-  check('player pills mirror the host', K.$('pl-speed').textContent === '450 wpm'
-    && K.$('pl-scope').textContent === 'Literature' && K.$('pill-scope').classList.contains('locked'));
+  check('players mirror the host settings', K.settings.wpm === 450 && [...K.filters.cats].join() === 'Literature'
+    && [...K.filters.diffs].sort().join() === '3,7', [K.settings.wpm, [...K.filters.cats]]);
   const seqNow = H.room.g.seq;
   H.roomPillsChanged();
   await advance(600);
   check('unchanged settings send nothing', H.room.g.seq === seqNow);
+
+  // a player edits the settings: the host applies them, everyone mirrors
+  const kSaves = K.saves;
+  K.settings.wpm = 320; K.filters.cats.clear(); K.filters.cats.add('History');
+  K.savePrefs();
+  await advance(1500);
+  check('a player\'s edit reaches the host', H.settings.wpm === 320 && [...H.filters.cats].join() === 'History',
+    [H.settings.wpm, [...H.filters.cats]]);
+  check('...and the other players', M.settings.wpm === 320 && [...M.filters.cats].join() === 'History');
+  check('a player\'s own saved settings are untouched', K.saves === kSaves);
+  K.settings.wpm = 9999; K.savePrefs();
+  await advance(1500);
+  check('the host clamps a player\'s settings', H.settings.wpm === 700);
+  K.settings.wpm = 600; K.savePrefs();
+  await advance(1500);
+
+  // chat
+  K.$('chatinput').value = 'nice buzz';
+  K.roomChatSend();
+  await advance(200);
+  check('chat reaches everyone, sender included', [H, K, M, L].every(c => c.room.chat.some(x => x.name === 'Kim' && x.text === 'nice buzz')));
+  check('join lines in the chat', H.room.chat.some(x => x.name == null && x.text === 'Lee joined.'));
 
   // duplicate name -> renamed
   const K2 = makeClient(S, 'Kim', { lat: 30 });
@@ -502,7 +537,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   check('a duplicate name is renamed', K2.room.name === 'Kim 2' && H.room.roster.has('Kim 2'));
 
   // host pause / resume, partway into a fresh question
-  H.roomHostSkip();
+  if (H.room.g.phase === 'done') H.roomNext(); else H.roomHostSkip();
   await advance(1800 + 800);
   H.roomHostPause();
   await advance(200);
@@ -516,10 +551,35 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   await advance(800);
   check('resume continues from the pause point', M.phase === 'reading' && M.wordIdx > pz && pz < n(M), [M.phase, M.wordIdx, pz, n(M)]);
 
+  // players drive the game: pause, resume, skip, next
+  M.roomPause();
+  await advance(300);
+  check('a player can pause', H.room.g.phase === 'paused' && K.phase === 'paused');
+  M.roomPause();
+  await advance(300);
+  check('a player can resume', H.room.g.phase === 'reading');
+  const qnBefore = H.room.g.qn;
+  K.roomSkip();
+  await advance(300);
+  check('a player can skip (voids, moves on)', H.room.g.qn === qnBefore + 1);
+  await advance(2000);
+  M.roomBuzz(); await advance(200); answer(M, 'Stravinsky'); await advance(300);
+  check('question over', H.room.g.phase === 'done');
+  const qnDone = H.room.g.qn;
+  K.roomNext(); M.roomNext();   // both press Next at once
+  await advance(400);
+  check('two Next presses advance once', H.room.g.qn === qnDone + 1, [qnDone, H.room.g.qn]);
+  await advance(2000);
+  M.roomPause();   // a stale press: pressed on question qnDone+1, then the host skips past it
+  H.roomHostSkip();
+  await advance(400);
+  check('a request for a question that\'s gone is ignored', H.room.g.phase !== 'paused');
+
   // host ends the room
   H.roomLeave(false);
   await advance(500);
   check('ending the room drops the guests back to solo', K.room === null && M.room === null && L.room === null);
+  check('leaving restores a player\'s own settings', K.settings.wpm === 600 && K.filters.cats.size === 0);
 
   /* ---- an older room server that drops the claimed position ---- */
   console.log('old server (no buzz position relay)');
