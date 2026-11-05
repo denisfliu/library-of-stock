@@ -285,6 +285,8 @@ html[data-layout="mobile"] #cluepanel .cluehead::before {{
 .srow .at {{ text-align: right; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }}
 .srow .m {{ text-align: center; font-weight: 700; }}
 .srow .m.x {{ color: var(--warn); }}
+.srow.heard .a {{ color: var(--muted); }}
+.srow .m.h {{ color: var(--faint); }}
 
 /* ---------- question ---------- */
 .qcard {{ position: relative; }}

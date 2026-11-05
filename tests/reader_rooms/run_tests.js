@@ -198,6 +198,10 @@ let wordIdx = 0, tick = null, graceTimer = null, graceAnim = null, buzzAt = null
 let history = [], prevIdx = -1;
 let LOG = [];
 const sessionRows = [];
+let HEARD_LOG = [];
+const HEARD_MAX = 5000;
+function saveHeard() {}
+const sessionHeard = [];
 const settings = { wpm: 600, sent: 0, voice: false, drill: false, useDist: true, exactDist: false };
 const filters = { cats: new Set(), subs: new Set(), subsubs: new Set(), sections: new Set(), diffs: new Set([7]) };
 const window = { losReaderHook: {}, history: { replaceState() {} }, addEventListener() {} };
@@ -272,6 +276,7 @@ const { buildUnits, slowSpans, SLOW_FACTOR } = globalThis.qbRevealUnits;
 globalThis.__api = {
   get room() { return room; }, get cur() { return cur; }, get phase() { return phase; },
   get wordIdx() { return wordIdx; }, get buzzAt() { return buzzAt; }, get LOG() { return LOG; },
+  get HEARD() { return HEARD_LOG; },
   get status() { return __status; }, get queue() { return queue; },
   get saves() { return __saves; },
   settings, filters, $, roomPillsChanged, savePrefs, roomNext, roomSkip, roomPause, roomChatSend, roomTyping, roomEnter, roomLeave, roomMain, roomBuzz, roomSubmit, roomOverride,
@@ -425,7 +430,10 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   check('Kim logged a neg with her buzz depth', kRow && kRow.res === 'W' && kRow.room === true
     && Math.abs(kRow.bf - kimU / n(K)) < 0.002, kRow);
   check('Sam logged a correct', sRow && sRow.res === 'C' && sRow.pow === (pts === 15), sRow);
-  check('the host (no buzz, someone got it) logs nothing', !logRow(H, 'q0'));
+  check('the host (no buzz, someone got it) logs no stats row', !logRow(H, 'q0'));
+  const heard = H.HEARD.find(r => r.id === 'q0');
+  check('...but keeps it as heard, with who got it', heard && heard.by === 'Sam' && heard.room === true && !heard.res, heard);
+  check('heard once, buzzers never', H.HEARD.length === 1 && !K.HEARD.length && !M.HEARD.length);
   check('one row per player per question', K.LOG.length === 1 && M.LOG.length === 1);
 
   // host override of the last buzz, then back
@@ -439,6 +447,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   H.roomOverride('C');
   await advance(200);
   check('override back restores Sam', logRow(M, 'q0').res === 'C' && H.room.snap.scores.Sam.pts === pts);
+  check('the heard entry follows the override', H.HEARD.find(r => r.id === 'q0').by === 'Sam');
 
   console.log('game: dead question');
   H.roomMain();   // Next
@@ -489,6 +498,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   await advance(300);
   check('skip voids the question: the neg is not scored', H.room.snap.scores.Sam.pts === samBefore + 5);
   check('skip moves on and logs nothing', !logRow(M, 'q3') && H.room.g.qn === 5);
+  check('a skipped question isn\'t "heard" either', ![H, K, M].some(c => c.HEARD.some(r => r.id === 'q3')));
   await advance(1800);
 
   // simultaneous buzz: same tick
