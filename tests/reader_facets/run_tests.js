@@ -121,6 +121,37 @@ setFilters(['Science'], ['Biology'], []);
 by = scopeCount();
 check('Biology not "constrained" by its noise CS row', by['Science/Biology'] === 100, JSON.stringify(by));
 
+// Group (overview-section) picks narrow only their own category — Nov 2026
+// bug: one group picked under Literature dropped a selected History whole.
+const pickGroups = ids => { ids.forEach(x => api.filters.sections.add(x)); api.refreshBranchScopes(); };
+setFilters(['Science', 'Mythology'], [], []);
+pickGroups([0]);   // Cells (Science) only
+by = scopeCount();
+check('group narrows its own category', by['Science/Biology'] === 100 && by['Science/Computer Science'] === 1
+  && !by['Science/Math'], JSON.stringify(by));
+check('category without a group pick stays whole', by['Mythology/Mythology'] === 100 && by['Mythology/Math'] === 1,
+  JSON.stringify(by));
+setFilters(['Science', 'Fine Arts'], [], []);
+pickGroups([0, 3]);   // Cells + Verdi: one group in each category
+by = scopeCount();
+check('groups in two categories compose', by['Science/Biology'] === 100 && by['Fine Arts/Opera'] === 100
+  && !by['Fine Arts/Film'] && !by['Fine Arts/Visual Fine Arts'] && !by['Science/Math'], JSON.stringify(by));
+setFilters(['Fine Arts', 'Mythology'], [], []);
+pickGroups([-1]);   // "Unsectioned" spans the whole selected scope
+by = scopeCount();
+check('unsectioned applies to every selected category', by['Fine Arts/Film'] === 100
+  && !by['Fine Arts/Opera'] && !by['Mythology/Mythology'], JSON.stringify(by));
+setFilters([], [], []);
+pickGroups([4]);   // no category selected: a group applies everywhere
+by = scopeCount();
+check('group with no category selected applies globally', Object.keys(by).length === 2
+  && by['Mythology/Mythology'] === 100, JSON.stringify(by));
+setFilters(['Fine Arts'], [], []);
+pickGroups([0, 3]);   // Cells belongs to Science, which isn't selected
+api.pruneOrphanedPicks();
+check('orphaned group pick pruned, own-category pick kept',
+  !api.filters.sections.has(0) && api.filters.sections.has(3), [...api.filters.sections].join());
+
 // deselecting all categories clears descendants (no invisible filters)
 setFilters([], ['Other Science'], ['Opera']);
 api.pruneOrphanedPicks();
