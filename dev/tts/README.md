@@ -112,7 +112,8 @@ M5 Mac measured ~0.7x realtime on Apple's GPU (MPS) — workable, not preferred.
   logic is exercised by a synthetic-DB test (see commit).
 - `export_worklist_db.py` — packages the in-scope tossups not yet in the
   published manifest (+ the mirror's `id_remap` table) into a few-MB sqlite
-  for the TTS machine, so it needn't hold the 860 MB mirror.
+  for the TTS machine, so it needn't hold the 860 MB mirror. Writes the
+  committed `worklist/tts_worklist.sqlite`; the TTS machine gets it by `git pull`.
 - `remap_audio.py` — after `qbmirror sync` replaces a packet-imported set
   with qbreader's copy (new question ids), copies each surviving question's
   `.opus` + sidecar from its old id to its new one (from local `out/`, or the
@@ -126,12 +127,13 @@ M5 Mac measured ~0.7x realtime on Apple's GPU (MPS) — workable, not preferred.
 Local mode, no queue (the queue host was MSL). The laptop already has the
 `cbox` conda env (CUDA torch, chatterbox-tts, faster-whisper, ffmpeg) and the
 repo at `C:\Users\denis\code\library-of-stock`.
-  1. `git pull` the repo. `ttscorpus` finds `lib/audio/ttsclean.py` on its own.
-  2. Get the worklist DB from the Mac (`export_worklist_db.py`, see
-     docs/adding_content.md) into `%USERPROFILE%\los_tts\tts_worklist.sqlite`.
-  3. PowerShell, from the repo root:
+  1. `git pull` the repo. That brings the worklist DB the Mac exported
+     (`dev/tts/worklist/tts_worklist.sqlite`, committed — see
+     docs/adding_content.md), and `ttscorpus` finds `lib/audio/ttsclean.py` on
+     its own.
+  2. PowerShell, from the repo root:
      ```
-     $env:LOS_TTS_DB = "$env:USERPROFILE\los_tts\tts_worklist.sqlite"
+     $env:LOS_TTS_DB = "$PWD\dev\tts\worklist\tts_worklist.sqlite"
      $envroot = "$env:USERPROFILE\miniforge3\envs\cbox"
      $env:PATH = "$envroot;$envroot\Library\bin;$envroot\Library\mingw-w64\bin;$envroot\Scripts;$env:PATH"
      & "$envroot\python.exe" dev\tts\remap_audio.py --db $env:LOS_TTS_DB --from-hf   # no-op until a set is replaced
@@ -142,11 +144,11 @@ repo at `C:\Users\denis\code\library-of-stock`.
      Local mode skips ids already in the published manifest (fetched at start;
      `--no-published-check` to disable) as well as files in local `out/`.
      Disable AC sleep while it runs: `powercfg -change -standby-timeout-ac 0`.
-  4. Upload from the laptop with `upload_hf.py` (needs the write token in
+  3. Upload from the laptop with `upload_hf.py` (needs the write token in
      `%USERPROFILE%\los_tts\.hf_token`; it unions the remote manifest, so it
      can't drop MSL-era entries). With MSL gone there's only one uploader, so
      the old "never run a second uploader" rule is moot.
-  5. `worker_ctl.ps1` still targets MSL's queue (`--queue --queue-host msl`)
+  4. `worker_ctl.ps1` still targets MSL's queue (`--queue --queue-host msl`)
      and won't work as-is.
 
 ## MSL layout (historical — MSL is gone as of Nov 2026)

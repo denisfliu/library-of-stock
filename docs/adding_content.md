@@ -43,8 +43,9 @@ qbmirror sync --db mirror/qbreader.sqlite       # --refresh "SET" for edits to a
 #        doesn't have" below — parse + `qbmirror import-packets`.
 
 # 2. AUDIO (diff 7-9 tossups + dev/tts VOICE_SETS) — see the Audio section.
-#    Package what's unvoiced, copy it to the 4070 laptop, generate there.
-python dev/tts/export_worklist_db.py --mirror mirror/qbreader.sqlite --out ~/los_tts/tts_worklist.sqlite
+#    Package what's unvoiced, commit + push it, generate on the 4070 laptop.
+python dev/tts/export_worklist_db.py --mirror mirror/qbreader.sqlite   # -> dev/tts/worklist/
+git add dev/tts/worklist/tts_worklist.sqlite && git commit -m "tts: refresh worklist" && git push
 
 # 3. OVERVIEWS / METADATA — per affected unit (lib/units.py). Agent steps noted.
 python lib/sweep/author.py scaffold UNIT        # mechanical (surfaces NEW answerlines)
@@ -121,10 +122,11 @@ the generator in local mode against a small packaged worklist DB instead of
 a full mirror copy.
 
 1. On this machine: `python dev/tts/export_worklist_db.py --mirror
-   mirror/qbreader.sqlite --out ~/los_tts/tts_worklist.sqlite` — the in-scope
-   tossups (`DIFFS` 7-9 + `VOICE_SETS` in `dev/tts/ttscorpus.py`) not yet in
-   the published HF manifest, plus the `id_remap` table. A few MB.
-2. Copy it to the laptop's `~/los_tts/` and point `LOS_TTS_DB` at it.
+   mirror/qbreader.sqlite` — the in-scope tossups (`DIFFS` 7-9 + `VOICE_SETS`
+   in `dev/tts/ttscorpus.py`) not yet in the published HF manifest, plus the
+   `id_remap` table, into the committed `dev/tts/worklist/tts_worklist.sqlite`
+   (a few MB). Commit + push it.
+2. On the laptop: `git pull`, and point `LOS_TTS_DB` at that file.
 3. If a packet-imported set was replaced by qbreader's copy since the last
    run: `remap_audio.py --db %LOS_TTS_DB% --from-hf` — copies existing audio to
    the new ids so it isn't regenerated.

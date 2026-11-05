@@ -4,10 +4,10 @@ The TTS machine (the 4070 laptop since MSL went away, Nov 2026) doesn't need
 the 860 MB mirror: the generator reads only `tossups`. This writes the
 in-scope tossups (ttscorpus.scope_where: DIFFS + VOICE_SETS) that aren't in
 the published HF manifest yet — a few MB — to copy over and point
-LOS_TTS_DB at.
+LOS_TTS_DB at. The default output is committed (dev/tts/worklist/), so the
+handoff is: export here -> commit + push -> `git pull` on the TTS machine.
 
-  python dev/tts/export_worklist_db.py --mirror mirror/qbreader.sqlite \\
-      --out ~/los_tts/tts_worklist.sqlite
+  python dev/tts/export_worklist_db.py --mirror mirror/qbreader.sqlite
   (add --include-published to package every in-scope tossup regardless)
 
 Also copies the mirror's id_remap table (if any) so remap_audio.py can run
@@ -21,11 +21,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from ttscorpus import published_ids, scope_where
 
+DEFAULT_OUT = Path(__file__).resolve().parent / "worklist" / "tts_worklist.sqlite"
+
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--mirror", type=Path, required=True)
-    ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--out", type=Path, default=DEFAULT_OUT,
+                    help="default: dev/tts/worklist/tts_worklist.sqlite (committed)")
     ap.add_argument("--include-published", action="store_true")
     args = ap.parse_args()
 
@@ -33,6 +36,7 @@ def main():
     if published is None:
         sys.exit("couldn't fetch the published manifest (use --include-published "
                  "to package everything in scope)")
+    args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.unlink(missing_ok=True)
     out = sqlite3.connect(args.out)
     out.execute("ATTACH DATABASE ? AS m", (str(args.mirror),))
