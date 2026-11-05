@@ -82,6 +82,16 @@ button {{ font-family: var(--sans); cursor: pointer; }}
 .wrap[data-view="stats"], .wrap[data-view="history"], .wrap[data-view="missed"] {{ max-width: 1040px; }}
 .wrap:has(#cluepanel.show), .wrap:has(#sessrail:not([hidden])) {{ max-width: 1220px; }}
 .wrap:not([data-view="play"]) .pills {{ display: none; }}
+/* With a side column up (session column, similar clues) the pills center
+   over the question column, not the whole page: the side is 300px + the
+   48px stage gap (main takes all the flex growth). From 1200px the column
+   is wide enough for the pills on one line; the session column only shows
+   from there (reader.js syncSession, RAIL_MQ). It carries the session
+   score, so the tally line steps aside. */
+@media (min-width: 1200px) {{
+  .wrap:has(#cluepanel.show) .pills, .wrap:has(#sessrail:not([hidden])) .pills {{ margin-right: 348px; }}
+}}
+.wrap:has(#sessrail:not([hidden])) .sessline {{ display: none; }}
 
 /* ---------- setting pills + popovers ---------- */
 .pills {{
@@ -612,6 +622,7 @@ body[data-room="guest"] #panel-reading > :not(h2):not(.hint) {{ display: none; }
     <button id="tab-missed">Missed clues</button>
     <button id="tab-history">History</button>
     <a class="tab" href="wiki.html">Wiki</a>
+    <button id="pill-room" data-pop="room" aria-haspopup="dialog"><span id="pl-room">Multiplayer</span></button>
     <button id="open-sync" data-pop="sync" style="display:none">Sign in</button>
   </nav>
 </header>
@@ -624,7 +635,6 @@ body[data-room="guest"] #panel-reading > :not(h2):not(.hint) {{ display: none; }
     <button class="pill" id="pill-sent" data-pop="sent" aria-haspopup="dialog"><span id="pl-sent">Full question</span><span class="c">&#9662;</span></button>
     <button class="pill" id="pill-text" data-pop="text" aria-haspopup="dialog"><span id="pl-text">Text 17px</span><span class="c">&#9662;</span></button>
     <button class="pill" id="pill-more" data-pop="more" aria-haspopup="dialog">More<span class="c">&#9662;</span></button>
-    <button class="pill" id="pill-room" data-pop="room" aria-haspopup="dialog"><span id="pl-room">Multiplayer</span><span class="c">&#9662;</span></button>
     <span class="sessline" id="sessline"></span>
   </div>
 

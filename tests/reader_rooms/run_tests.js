@@ -118,7 +118,7 @@ async function advance(ms) {
 // ---- the room server stand-in (rooms/worker.js semantics) ----
 const WINDOW_MS = 30;
 function makeServer() {
-  const S = { conns: [], snapshot: null, armed: false, pending: null, closed: false, dropU: false };
+  const S = { conns: [], snapshot: null, armed: false, pending: null, closed: false, dropU: false, states: 0 };
   const deliver = (c, m) => { if (c.open) addTimer(() => { if (c.open) c.onmsg(JSON.parse(JSON.stringify(m))); }, c.lat); };
   const bcast = (m, except) => { for (const c of S.conns) if (c !== except) deliver(c, m); };
   const withU = (m, u) => (u == null || S.dropU ? m : Object.assign({}, m, { u }));
@@ -155,7 +155,7 @@ function makeServer() {
       }, WINDOW_MS);
       return;
     }
-    if (m.t === 'state') { S.snapshot = m.snapshot; bcast({ t: 'state', snapshot: m.snapshot }, c); }
+    if (m.t === 'state') { if (m.store !== false) S.snapshot = m.snapshot; S.states++; bcast({ t: 'state', snapshot: m.snapshot }, c); }
     else if (m.t === 'arm') { S.armed = true; bcast({ t: 'arm' }, c); }
     else if (m.t === 'disarm') { S.armed = false; bcast({ t: 'disarm' }, c); }
     else if (m.t === 'close') {
@@ -480,6 +480,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   await advance(300);
   check('late joiner catches up to the clock', Math.abs(L.wordIdx - H.wordIdx) <= 1, [L.wordIdx, H.wordIdx]);
   check('late joiner gets the scoreboard', L.room.snap.scores.Kim != null);
+  check('the server never stored a snapshot (the host re-sent it to the joiner)', S.snapshot === null && S.states > 0);
 
   // the host's settings reach the players
   H.settings.wpm = 450; H.filters.cats.add('Literature'); H.filters.diffs.add(3);
