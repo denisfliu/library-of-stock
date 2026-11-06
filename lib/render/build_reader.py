@@ -725,12 +725,10 @@ html[data-layout="mobile"] .qh-meta {{ display: none; }}
    player chips. */
 .wrap:has(#sessrail:not([hidden])) .roombar .rp {{ display: none; }}
 .sbcel {{ font-size: 12px; color: var(--muted); margin-top: 6px; text-align: right; }}
-/* Another player's answer as they type it, under the frozen question. */
-.liveans {{ margin-top: 10px; font-size: 0.95rem; color: var(--text); background: var(--raised);
-  border-radius: 10px; padding: 0.45rem 0.8rem; overflow-wrap: anywhere; }}
+/* The room question's buzz lines (judged + the one being typed), under the
+   question until the next one starts. */
+.liveans {{ margin-top: 10px; color: var(--text); overflow-wrap: anywhere; }}
 .liveans[hidden] {{ display: none; }}
-.liveans b {{ font-weight: 600; margin-right: 0.3rem; }}
-.liveans .dots {{ color: var(--faint); }}
 </style>
 </head>
 <body>

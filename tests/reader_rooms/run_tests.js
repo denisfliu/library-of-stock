@@ -283,7 +283,7 @@ globalThis.__api = {
   get wordIdx() { return wordIdx; }, get buzzAt() { return buzzAt; }, get LOG() { return LOG; },
   get HEARD() { return HEARD_LOG; },
   get status() { return __status; }, get queue() { return queue; },
-  get saves() { return __saves; },
+  get saves() { return __saves; }, SLOW: SLOW_FACTOR,
   settings, filters, setPick, $, roomPillsChanged, savePrefs, roomNext, roomSkip, roomPause, roomChatSend, roomTyping, roomEnter, roomLeave, roomMain, roomBuzz, roomSubmit, roomOverride,
   roomHostPause, roomHostSkip, roomHostNext,
   boot(cat, id2row, q) { CAT = cat; ID2ROW = id2row; queue = q; qpos = -1; },
@@ -349,6 +349,13 @@ function makeClient(S, name, { skew = 0, lat = 20, host = false, code = 'TEST' }
   return api;
 }
 
+// Wait for the host to start reading (it starts as soon as every player has
+// the question, at most ROOM_LEAD_MS), then until `ms` past the reveal t0.
+async function afterStart(host, ms) {
+  const g = host.room.g;
+  for (let i = 0; i < 1000 && !(g.phase === 'reading' && g.t0 != null); i++) await advance(5);
+  await advance(Math.max(0, g.t0 + ms - NOW));
+}
 const answer = (cl, text) => { cl.$('answerinput').value = text; cl.roomSubmit(); };
 const n = cl => cl.cur.units.length;
 const powerIdx = cl => cl.cur.units.findIndex(u => u.t === '(*)');
@@ -367,8 +374,9 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
 
   H.roomMain();                         // Start
   await advance(200);
-  check('everyone is loading question 1', [H, K, M].every(c => c.phase === 'loading' && c.cur && c.cur.q.id === 'q0'));
-  await advance(1200 + 300 + 50);
+  check('everyone has question 1', [H, K, M].every(c => c.cur && c.cur.q.id === 'q0'));
+  check('reading starts once every player is ready, well before the cap', H.room.g.phase === 'reading');
+  await afterStart(H, 250);
   check('reading on every screen', [H, K, M].every(c => c.phase === 'reading'));
   await advance(1000);   // ~10 units at 600 wpm
   const us = [H, K, M].map(c => c.wordIdx);
@@ -409,7 +417,10 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   await advance(300);
   check('the buzz line becomes the verdict', [H, K, M].every(c => c.room.chat.some(x => x.name === 'Kim' && x.text === 'buzzed: Prokofiev, wrong −5')),
     M.room.chat.map(x => x.text));
-  check('the live box closes', M.$('liveans').hidden);
+  check('the buzz line stays under the question with its verdict (no jump)', [H, M].every(c => !c.$('liveans').hidden
+    && /Kim/.test(c.$('liveans').innerHTML) && /Prokofiev/.test(c.$('liveans').innerHTML) && /bbadge neg/.test(c.$('liveans').innerHTML)),
+    M.$('liveans').innerHTML);
+  check('the buzzer sees their judged line too, as You', !K.$('liveans').hidden && /<b>You<\/b>/.test(K.$('liveans').innerHTML));
   check('wrong answer: Kim locked out, -5 while reading', H.room.g.locked.includes('Kim')
     && H.room.g.buzzes[0].pts === -5 && H.room.g.phase === 'reading');
   check('reading resumed for everyone', [H, K, M].every(c => c.phase === 'reading'));
@@ -455,8 +466,24 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   check('the heard entry follows the override', H.HEARD.find(r => r.id === 'q0').by === 'Sam');
 
   console.log('game: dead question');
+  check('players preloaded the next question and told the host', ['Kim', 'Sam'].every(nm => H.room.g.pre.get(nm) === 'q1'),
+    [...H.room.g.pre]);
+  check('each player reported its latency', ['Kim', 'Sam'].every(nm => H.room.g.rtts.get(nm) > 0), [...H.room.g.rtts]);
+  const tNext = NOW;
   H.roomMain();   // Next
-  await advance(1800);
+  await advance(1);
+  check('a preloaded Next starts reading at once (no ready round trip)', H.room.g.phase === 'reading', H.room.g.phase);
+  const lead = H.room.g.t0 - tNext;
+  check('the start margin fits the measured latency, not the 300 ms cap', lead > 50 && lead < 200, lead);
+  {   // ...yet every screen gets the snapshot before t0: nobody starts mid-question
+    const firstU = new Map();
+    for (let i = 0; i < 400 && firstU.size < 3; i++) {
+      await advance(1);
+      for (const c of [H, K, M]) if (!firstU.has(c.name) && c.phase === 'reading' && c.cur.q.id === 'q1') firstU.set(c.name, c.wordIdx);
+    }
+    check('every screen starts reading from the first word', firstU.size === 3 && [...firstU.values()].every(u => u === 0), [...firstU]);
+  }
+  await afterStart(H, 300);
   check('question 2 reading', [H, K, M].every(c => c.phase === 'reading' && c.cur.q.id === 'q1'));
   check('lockouts reset for the new question', !H.room.g.locked.length && !K.$('mainbtn').disabled);
   await advance(n(H) * 100 + 1000);
@@ -467,7 +494,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
 
   console.log('game: prompt, then power');
   H.roomMain();
-  await advance(1800);
+  await afterStart(H, 300);
   // buzz before the power mark
   const pi = powerIdx(H);
   await advance((pi - 6) * 100);
@@ -492,7 +519,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
 
   console.log('game: skip, simultaneous buzz, timeout, late join');
   H.roomMain();
-  await advance(1800);
+  await afterStart(H, 300);
   await advance(500);
   M.roomBuzz();
   await advance(200);
@@ -504,7 +531,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   check('skip voids the question: the neg is not scored', H.room.snap.scores.Sam.pts === samBefore + 5);
   check('skip moves on and logs nothing', !logRow(M, 'q3') && H.room.g.qn === 5);
   check('a skipped question isn\'t "heard" either', ![H, K, M].some(c => c.HEARD.some(r => r.id === 'q3')));
-  await advance(1800);
+  await afterStart(H, 300);
 
   // simultaneous buzz: same tick
   await advance(400);
@@ -514,11 +541,23 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   const loser = winner === 'Kim' ? M : K;
   check('one winner of a simultaneous buzz', winner === 'Kim' || winner === 'Sam');
   check('the loser\'s answer box closes', !loser.$('answerrow').classList.contains('show') && !loser.room.myBuzz);
-  // the winner never answers: timeout after 10 s
-  await advance(9000);
+  const W = winner === 'Kim' ? K : M;
+  // nobody can skip while someone is answering
+  check('skip is disabled while a player is answering', [H, K, M].every(c => c.$('skipbtn').disabled));
+  const qnAns = H.room.g.qn;
+  loser.roomSkip(); H.roomHostSkip();
+  await advance(300);
+  check('a skip mid-answer is ignored', H.room.g.qn === qnAns && H.room.g.phase === 'buzzed' && H.room.g.buzzer === winner);
+  // the winner types but never submits: at 10 s what they typed is judged
+  W.$('answerinput').value = 'Debus'; W.roomTyping();
+  await advance(8400);
   check('still answering at 9 s', H.room.g.buzzer === winner);
+  W.$('answerinput').value = 'Debussy'; W.roomTyping();
   await advance(1500);
-  check('answer timeout counts as a wrong answer', H.room.g.locked.includes(winner) && H.room.g.phase === 'reading');
+  check('answer timeout judges the typed text', H.room.g.buzzes.at(-1).name === winner
+    && H.room.g.buzzes.at(-1).said === 'Debussy', H.room.g.buzzes.at(-1));
+  check('a wrong timed-out answer locks out', H.room.g.locked.includes(winner) && H.room.g.phase === 'reading');
+  check('skip works again once reading resumes', !K.$('skipbtn').disabled);
 
   const L = makeClient(S, 'Lee', { skew: 99999, lat: 60 });
   await advance(1200);
@@ -535,9 +574,9 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   check('players mirror the host settings', K.settings.wpm === 450 && [...K.filters.cats].join() === 'Literature'
     && [...K.filters.diffs].sort().join() === '3,7', [K.settings.wpm, [...K.filters.cats]]);
   const seqNow = H.room.g.seq;
-  H.roomPillsChanged();
-  await advance(600);
+  H.roomPillsChanged();   // the host broadcasts synchronously, so check right away
   check('unchanged settings send nothing', H.room.g.seq === seqNow);
+  await advance(600);
 
   // a player edits the settings: the host applies them, everyone mirrors
   const kSaves = K.saves;
@@ -582,7 +621,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
 
   // host pause / resume, partway into a fresh question
   if (H.room.g.phase === 'done') H.roomNext(); else H.roomHostSkip();
-  await advance(1800 + 800);
+  await afterStart(H, 1100);
   H.roomHostPause();
   await advance(200);
   const pz = M.wordIdx;
@@ -606,7 +645,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   K.roomSkip();
   await advance(300);
   check('a player can skip (voids, moves on)', H.room.g.qn === qnBefore + 1);
-  await advance(2000);
+  await afterStart(H, 500);
   M.roomBuzz(); await advance(200); answer(M, 'Stravinsky'); await advance(300);
   check('question over', H.room.g.phase === 'done');
   const qnDone = H.room.g.qn;
@@ -632,7 +671,7 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   const P2 = makeClient(S, 'Pat', { lat: 80, skew: 777, code: 'OLDS' });
   await advance(1000);
   H2.roomMain();
-  await advance(1800 + 1000);
+  await afterStart(H2, 1300);
   P2.roomBuzz();
   const patU = P2.room.myBuzz.u;
   await advance(400);
@@ -648,9 +687,22 @@ const logRow = (cl, qid) => cl.LOG.find(r => r.id === qid);
   console.log('host alone');
   S = makeServer();
   const H3 = makeClient(S, 'Solo', { host: true, code: 'ALON' });
-  await advance(800);
+  await advance(823);   // off the 50ms frame grid, so a frame-tick reveal would show late
   H3.roomMain();
-  await advance(1800 + 600);
+  await afterStart(H3, 0);
+  {   // each unit shows when it's due on the room clock, not on the next 50ms frame
+    const g = H3.room.g, lates = [];
+    let last = H3.wordIdx;
+    for (let i = 0; i < 600; i++) {
+      await advance(1);
+      if (H3.wordIdx !== last) {
+        last = H3.wordIdx;
+        lates.push(NOW - (g.t0 + RRmod.msUntilUnit(last, g.u0, H3.cur.slow, 60000 / g.wpm, H3.SLOW)));
+      }
+    }
+    check('words appear on time, not on the frame tick (within 2 ms)', lates.length >= 4 && lates.every(x => x >= 0 && x <= 2), lates);
+  }
+  await advance(300);
   H3.roomBuzz();
   await advance(200);
   answer(H3, 'Mahler');

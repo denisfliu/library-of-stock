@@ -93,3 +93,35 @@ so personal stats + sync keep working.
 
 Cost: effectively $0 at friends scale (free-plan DOs + hibernation);
 $5/mo Workers Paid is the escape hatch.
+
+## Responsiveness + buzz flow (Nov 5, 2026)
+
+Measured against the live room server in a two-browser Playwright run;
+the simulated-server harness (`tests/reader_rooms/`) pins each down.
+
+- **Start of a question**: the host used to wait a fixed 1.2 s
+  (`ROOM_LEAD_MS`) so guests could fetch the shard, then started the
+  reveal a fixed 300 ms ahead. Now each guest, once it has prefetched the
+  snapshot's `next` question, tells the host
+  (`{t:'request', data:{op:'preloaded', id, rtt}}`), so a Next press
+  starts reading at once; a question nobody preloaded waits for
+  `op:'ready'` acks instead, with 1.2 s as the cap (`roomHostMaybeStart`).
+  The reveal's t0 lead is sized from the clock-sync round trips the
+  players report: host one-way + slowest player one-way + 60 ms
+  (`roomStartLead`, 300 ms cap when a latency is unknown). Live server,
+  two browsers: Next/skip → first word 1.75 s → ~0.33 s (first question
+  of a session ~0.7 s: nothing preloaded yet). What's left is the press
+  reaching the host and the snapshot coming back (two relay hops), the
+  jitter allowance, and the first word's own duration (same as solo).
+- **Word timing**: the reveal followed a 50 ms polling frame, so each
+  word showed up to 50 ms late by a varying amount (stutter next to solo
+  play's exact per-word timer). `roomArmStep` now also wakes exactly
+  when the next unit is due on the room clock.
+- **Answer → verdict** is two relay hops (buzzer → host → everyone),
+  inherent to host-authoritative grading; ~0.25 s at 60 ms one-way.
+- **Buzz list**: the buzz lines stay under the question until the next
+  one (judged lines included), so nothing jumps when a buzz is judged.
+- **Time-out** judges what the buzzer had typed (their live typing
+  text; a flush just before the deadline), as qbreader does, not a blank.
+- **Skip** is disabled while someone is answering (button, guest
+  request, and host-side guard).
